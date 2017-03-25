@@ -8,6 +8,7 @@ use piston::input::RenderEvent;
 use piston::window::WindowSettings;
 use opengl_graphics::{OpenGL, GlGraphics};
 use sdl2_window::Sdl2Window;
+use graphics::{clear, polygon, Transformed};
 
 const RED: graphics::types::Color = [1., 0., 0., 1.];
 
@@ -25,8 +26,6 @@ fn main() {
     let mut gl = GlGraphics::new(opengl);
     let mut events = Events::new(EventSettings::new());
     while let Some(e) = events.next(&mut window) {
-        use graphics::*;
-
         if let Some(args) = e.render_args() {
             gl.draw(args.viewport(), |ctx, g| {
                 let transform = ctx.transform.trans(10.0, 100.0);
