@@ -1,0 +1,3 @@
+```
+brew install sdl2
+```
