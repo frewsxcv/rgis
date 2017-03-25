@@ -9,6 +9,8 @@ use piston::window::WindowSettings;
 use opengl_graphics::{OpenGL, GlGraphics};
 use sdl2_window::Sdl2Window;
 
+const RED: graphics::types::Color = [1., 0., 0., 1.];
+
 fn main() {
     let opengl = OpenGL::V3_2;
     let mut window: Sdl2Window = WindowSettings::new("opengl_graphics: hello_world", [800, 800])
@@ -27,6 +29,12 @@ fn main() {
                 let transform = ctx.transform.trans(10.0, 100.0);
 
                 clear([0.0, 0.0, 0.0, 1.0], g);
+
+                let polygon = polygon::Polygon::new(RED);
+
+                let square = [[0., 0.], [10., 0.], [10., 10.], [0., 10.]];
+
+                polygon.draw(&square, &ctx.draw_state, transform, g);
             });
         }
     }
