@@ -3,8 +3,8 @@ extern crate graphics;
 extern crate opengl_graphics;
 extern crate sdl2_window;
 
-use piston::event_loop::*;
-use piston::input::*;
+use piston::event_loop::{Events, EventSettings};
+use piston::input::RenderEvent;
 use piston::window::WindowSettings;
 use opengl_graphics::{OpenGL, GlGraphics};
 use sdl2_window::Sdl2Window;
