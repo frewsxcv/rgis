@@ -8,12 +8,22 @@ use piston::input::RenderEvent;
 use piston::window::WindowSettings;
 use opengl_graphics::{OpenGL, GlGraphics};
 use sdl2_window::Sdl2Window;
-use graphics::{clear, polygon, Transformed};
+use graphics::{clear, Transformed};
 
 const RED: graphics::types::Color = [1., 0., 0., 1.];
 
 const WINDOW_TITLE: &'static str = "rgis";
 const WINDOW_SIZE: [u32; 2] = [800u32, 800u32];
+
+fn render_polygon(draw_state: &graphics::draw_state::DrawState,
+                  transform: graphics::math::Matrix2d,
+                  gl: &mut GlGraphics) {
+    let polygon = graphics::polygon::Polygon::new(RED);
+
+    let square = [[0., 0.], [10., 0.], [10., 10.], [0., 10.]];
+
+    polygon.draw(&square, draw_state, transform, gl);
+}
 
 fn main() {
     let opengl = OpenGL::V3_2;
@@ -32,11 +42,7 @@ fn main() {
 
                 clear([0.0, 0.0, 0.0, 1.0], g);
 
-                let polygon = polygon::Polygon::new(RED);
-
-                let square = [[0., 0.], [10., 0.], [10., 10.], [0., 10.]];
-
-                polygon.draw(&square, &ctx.draw_state, transform, g);
+                render_polygon(&ctx.draw_state, transform, g);
             });
         }
     }
