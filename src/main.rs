@@ -24,8 +24,8 @@ fn main() {
         use graphics::*;
 
         if let Some(args) = e.render_args() {
-            gl.draw(args.viewport(), |c, g| {
-                let transform = c.transform.trans(10.0, 100.0);
+            gl.draw(args.viewport(), |ctx, g| {
+                let transform = ctx.transform.trans(10.0, 100.0);
 
                 clear([0.0, 0.0, 0.0, 1.0], g);
             });
