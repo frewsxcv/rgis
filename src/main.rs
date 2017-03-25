@@ -7,7 +7,6 @@ use piston::event_loop::*;
 use piston::input::*;
 use piston::window::WindowSettings;
 use opengl_graphics::{OpenGL, GlGraphics};
-use opengl_graphics::glyph_cache::GlyphCache;
 use sdl2_window::Sdl2Window;
 
 fn main() {
