@@ -12,7 +12,7 @@ use sdl2_window::Sdl2Window;
 
 fn main() {
     let opengl = OpenGL::V3_2;
-    let mut window: Sdl2Window = WindowSettings::new("opengl_graphics: hello_world", [200, 200])
+    let mut window: Sdl2Window = WindowSettings::new("opengl_graphics: hello_world", [800, 800])
         .exit_on_esc(true)
         .opengl(opengl)
         .build()
