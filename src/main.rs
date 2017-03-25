@@ -11,9 +11,12 @@ use sdl2_window::Sdl2Window;
 
 const RED: graphics::types::Color = [1., 0., 0., 1.];
 
+const WINDOW_TITLE: &'static str = "rgis";
+const WINDOW_SIZE: [u32; 2] = [800u32, 800u32];
+
 fn main() {
     let opengl = OpenGL::V3_2;
-    let mut window: Sdl2Window = WindowSettings::new("opengl_graphics: hello_world", [800, 800])
+    let mut window: Sdl2Window = WindowSettings::new(WINDOW_TITLE, WINDOW_SIZE)
         .exit_on_esc(true)
         .opengl(opengl)
         .build()
