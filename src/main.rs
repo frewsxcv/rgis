@@ -12,6 +12,7 @@ use graphics::{clear, Transformed};
 mod window;
 
 const RED: graphics::types::Color = [1., 0., 0., 1.];
+const WHITE: graphics::types::Color = [1., 1., 1., 1.];
 
 fn render_polygon(geo_polygon: &geo::Polygon<f64>,
                   draw_state: graphics::draw_state::DrawState,
@@ -66,7 +67,7 @@ fn main() {
     // };
 
     window::window_loop(|ctx, g| {
-        clear([0.0, 0.0, 0.0, 1.0], g);
+        clear(WHITE, g);
 
         render_polygon(&geo_polygon, ctx.draw_state, ctx.transform, g);
    });
