@@ -9,6 +9,7 @@ extern crate serde_json;
 use geo::boundingbox::BoundingBox;
 use graphics::{clear, Transformed};
 use std::fs;
+use std::env;
 use serde_json::from_reader;
 use geojson::conversion::TryInto;
 
@@ -47,7 +48,10 @@ fn render_polygon(geo_polygon: &geo::Polygon<f64>,
 }
 
 fn main() {
-    let geojson_file = fs::File::open("foo.geojson").unwrap();
+    let mut args = env::args();
+    let _ = args.next().unwrap();
+    let geojson_file_path = args.next().expect("usage: rgis <geojson file name>");
+    let geojson_file = fs::File::open(geojson_file_path).unwrap();
     let geojson_polygon: geojson::GeoJson = from_reader(geojson_file).unwrap();
     let geojson_polygon = match geojson_polygon {
         geojson::GeoJson::Geometry(g) => g,
