@@ -13,5 +13,5 @@ brew install sdl2
 # Usage
 
 ```
-cargo run
+cargo run sample-data/mexico.geojson
 ```
