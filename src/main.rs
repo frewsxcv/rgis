@@ -8,6 +8,9 @@ extern crate serde_json;
 
 use geo::boundingbox::BoundingBox;
 use graphics::{clear, Transformed};
+use std::fs;
+use serde_json::from_reader;
+use geojson::conversion::TryInto;
 
 mod window;
 
@@ -44,9 +47,6 @@ fn render_polygon(geo_polygon: &geo::Polygon<f64>,
 }
 
 fn main() {
-    use std::fs;
-    use serde_json::from_reader;
-    use geojson::conversion::TryInto;
     let geojson_file = fs::File::open("foo.geojson").unwrap();
     let geojson_polygon: geojson::GeoJson = from_reader(geojson_file).unwrap();
     let geojson_polygon = match geojson_polygon {
