@@ -6,7 +6,9 @@ use opengl_graphics::{OpenGL, GlGraphics};
 use sdl2_window::Sdl2Window;
 
 const WINDOW_TITLE: &'static str = "rgis";
-const WINDOW_SIZE: [u32; 2] = [800u32, 800u32];
+pub const WINDOW_SIZE_X: u32 = 800;
+pub const WINDOW_SIZE_Y: u32 = 800;
+pub const WINDOW_SIZE: [u32; 2] = [WINDOW_SIZE_X, WINDOW_SIZE_Y];
 
 pub fn window_loop<F>(f: F)
     where F: Fn(graphics::Context, &mut GlGraphics)

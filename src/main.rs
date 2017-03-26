@@ -4,6 +4,9 @@ extern crate graphics;
 extern crate opengl_graphics;
 extern crate sdl2_window;
 
+use geo::boundingbox::BoundingBox;
+use graphics::{clear, Transformed};
+
 mod window;
 
 const RED: graphics::types::Color = [1., 0., 0., 1.];
@@ -13,6 +16,16 @@ fn render_polygon(geo_polygon: &geo::Polygon<f64>,
                   transform: graphics::math::Matrix2d,
                   gl: &mut opengl_graphics::GlGraphics) {
     let graphics_polygon = graphics::polygon::Polygon::new(RED);
+
+    let bbox = geo_polygon.bbox().unwrap();
+
+    let bbox_width = bbox.xmax - bbox.xmin;
+    let x_scale = window::WINDOW_SIZE_X as f64 / bbox_width;
+
+    let bbox_height = bbox.ymax - bbox.ymin;
+    let y_scale = window::WINDOW_SIZE_Y as f64 / bbox_height;
+
+    let transform = transform.scale(x_scale, y_scale);
 
     let points = geo_polygon.exterior.0
         .iter()
@@ -37,12 +50,8 @@ fn main() {
     };
 
     window::window_loop(|ctx, g| {
-        use graphics::{clear, Transformed};
-
-        let transform = ctx.transform.trans(10.0, 100.0);
-
         clear([0.0, 0.0, 0.0, 1.0], g);
 
-        render_polygon(&geo_polygon, &ctx.draw_state, transform, g);
+        render_polygon(&geo_polygon, &ctx.draw_state, ctx.transform, g);
    });
 }
