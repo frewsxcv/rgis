@@ -5,7 +5,9 @@ authors = ["Corey Farwell <coreyf@rwell.org>"]
 
 [dependencies]
 geo = "*"
+geojson = "0.6.0"
 piston = "0.31.4"
 piston2d-graphics = "0.21.0"
 piston2d-opengl_graphics = "0.42.1"
 pistoncore-sdl2_window = "0.40.0"
+serde_json = "*"
