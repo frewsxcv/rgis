@@ -13,6 +13,7 @@ use std::env;
 use serde_json::from_reader;
 use geojson::conversion::TryInto;
 
+mod lla_to_ecef;
 mod window;
 
 const RED: graphics::types::Color = [1., 0., 0., 1.];
