@@ -1,7 +1,7 @@
 extern crate geo;
-extern crate piston;
 extern crate graphics;
 extern crate opengl_graphics;
+extern crate piston;
 extern crate sdl2_window;
 
 use geo::boundingbox::BoundingBox;
