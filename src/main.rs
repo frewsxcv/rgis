@@ -34,6 +34,8 @@ fn render_line_string(geo_line_string: &geo::LineString<f64>,
     let bbox_height = bbox.ymax - bbox.ymin;
     let y_scale = window::WINDOW_SIZE_Y as f64 / bbox_height;
 
+    let scale = x_scale.min(y_scale);
+
     //let transform = transform.trans(-bbox.xmin, -bbox.ymin);
     let transform = transform.flip_v();
     //let transform = transform.scale(x_scale, y_scale);
@@ -42,7 +44,7 @@ fn render_line_string(geo_line_string: &geo::LineString<f64>,
         .iter()
         .map(|point| point.0)
         .map(|coord| geo::Coordinate { x: coord.x - bbox.xmin, y: coord.y - bbox.ymax })
-        .map(|coord| geo::Coordinate { x: coord.x * x_scale, y: coord.y * y_scale })
+        .map(|coord| geo::Coordinate { x: coord.x * scale, y: coord.y * scale })
         .map(|coord| [coord.x, coord.y])
         .collect::<Vec<_>>();
 
@@ -65,6 +67,8 @@ fn render_polygon(geo_polygon: &geo::Polygon<f64>,
     let bbox_height = bbox.ymax - bbox.ymin;
     let y_scale = window::WINDOW_SIZE_Y as f64 / bbox_height;
 
+    let scale = x_scale.min(y_scale);
+
     //let transform = transform.trans(-bbox.xmin, -bbox.ymin);
     let transform = transform.flip_v();
     //let transform = transform.scale(x_scale, y_scale);
@@ -73,7 +77,7 @@ fn render_polygon(geo_polygon: &geo::Polygon<f64>,
         .iter()
         .map(|point| point.0)
         .map(|coord| geo::Coordinate { x: coord.x - bbox.xmin, y: coord.y - bbox.ymax })
-        .map(|coord| geo::Coordinate { x: coord.x * x_scale, y: coord.y * y_scale })
+        .map(|coord| geo::Coordinate { x: coord.x * scale, y: coord.y * scale })
         .map(|coord| [coord.x, coord.y])
         .collect::<Vec<_>>();
 
