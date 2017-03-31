@@ -102,15 +102,4 @@ fn main() {
             render_line_string(&geo_line_string, ctx.draw_state, ctx.transform, g);
         });
     }
-
-    // let geo_polygon = geo::Polygon {
-    //     exterior: geo::LineString(
-    //         vec![
-    //             geo::Point(geo::Coordinate { x: 1., y: 1. }),
-    //             geo::Point(geo::Coordinate { x: 3., y: 5. }),
-    //             geo::Point(geo::Coordinate { x: 5., y: 1. }),
-    //         ]
-    //     ),
-    //     interiors: vec![],
-    // };
 }
