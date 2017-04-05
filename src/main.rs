@@ -8,7 +8,7 @@ extern crate serde_json;
 
 use geo::boundingbox::BoundingBox;
 use graphics::{clear, Transformed};
-use std::{env, error, fs, io, process};
+use std::{env, error, fs, io, process, sync, thread};
 use std::io::Write;
 use serde_json::from_reader;
 use geojson::conversion::TryInto;
@@ -118,29 +118,42 @@ fn rgis() -> Result<(), Box<error::Error>> {
         None => return Err("usage: rgis <geojson file name>".into()),
     };
 
-    let geojson_file = fs::File::open(geojson_file_path)?;
-    let geojson_polygon: geojson::GeoJson = from_reader(geojson_file).unwrap();
-    let geojson_polygon = match geojson_polygon {
-        geojson::GeoJson::Geometry(g) => g,
-        _ => unreachable!(),
-    };
+    let layers: sync::Arc<sync::RwLock<Vec<geojson::Value>>> = sync::Arc::new(sync::RwLock::new(vec![]));
+    let lol = layers.clone();
 
-    if let Some(geo_polygon) =
-        geojson_polygon.value
-            .clone()
-            .try_into()
-            .ok() as Option<geo::Polygon<f64>> {
-        window::window_loop(|ctx, g| {
-                                clear(WHITE, g);
-                                render_polygon(&geo_polygon, ctx.draw_state, ctx.transform, g);
-                            });
-    } else if let Some(geo_line_string) =
-        geojson_polygon.value.try_into().ok() as Option<geo::LineString<f64>> {
-        window::window_loop(|ctx, g| {
-            clear(WHITE, g);
-            render_line_string(&geo_line_string, ctx.draw_state, ctx.transform, g);
-        });
-    }
+    // Start a file loading thread
+    let (tx, rx) = sync::mpsc::channel();
+    thread::spawn(move || {
+        while let Ok(geojson_file_path) = rx.recv() {
+            let geojson_file = fs::File::open(geojson_file_path).expect("TODO");
+            let geojson_polygon: geojson::GeoJson = from_reader(geojson_file).unwrap();
+            let geojson_polygon = match geojson_polygon {
+                geojson::GeoJson::Geometry(g) => g,
+                _ => unreachable!(),
+            };
+            (&mut lol.write().unwrap()).push(geojson_polygon.value);
+        }
+        writeln!(io::stderr(), "File loader thread died!").expect("could not write to stderr");
+    });
+
+    tx.send(geojson_file_path).expect("TODO");
+
+    window::window_loop(|ctx, g| {
+        clear(WHITE, g);
+        for geojson_value in &*layers.read().unwrap() {
+            if let Some(geo_polygon) =
+                geojson_value
+                    .clone()
+                    .try_into()
+                    .ok() as Option<geo::Polygon<f64>> {
+                render_polygon(&geo_polygon, ctx.draw_state, ctx.transform, g);
+            } else if let Some(geo_line_string) =
+                geojson_value.clone().try_into().ok() as Option<geo::LineString<f64>> {
+                render_line_string(&geo_line_string, ctx.draw_state, ctx.transform, g);
+            }
+        }
+    });
+
     Ok(())
 }
 
