@@ -5,7 +5,6 @@ use piston::window::WindowSettings;
 use opengl_graphics::{OpenGL, GlGraphics};
 use sdl2_window::Sdl2Window;
 
-const WINDOW_TITLE: &'static str = "rgis";
 pub const WINDOW_SIZE_X: u32 = 800;
 pub const WINDOW_SIZE_Y: u32 = 800;
 pub const WINDOW_SIZE: [u32; 2] = [WINDOW_SIZE_X, WINDOW_SIZE_Y];
@@ -13,7 +12,7 @@ pub const WINDOW_SIZE: [u32; 2] = [WINDOW_SIZE_X, WINDOW_SIZE_Y];
 const OPEN_GL_VERSION: OpenGL = OpenGL::V3_2;
 
 fn build_window() -> Sdl2Window {
-    WindowSettings::new(WINDOW_TITLE, WINDOW_SIZE)
+    WindowSettings::new(::PROGRAM_NAME, WINDOW_SIZE)
         .exit_on_esc(true)
         .opengl(OPEN_GL_VERSION)
         .build()
