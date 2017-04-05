@@ -8,14 +8,16 @@ extern crate serde_json;
 
 use geo::boundingbox::BoundingBox;
 use graphics::{clear, Transformed};
-use std::fs;
-use std::env;
+use std::{env, error, fs, io, process};
+use std::io::Write;
 use serde_json::from_reader;
 use geojson::conversion::TryInto;
 
 #[allow(dead_code)]
 mod lla_to_ecef;
 mod window;
+
+static PROGRAM_NAME: &'static str = "rgis";
 
 const RED: graphics::types::Color = [1., 0., 0., 1.];
 const WHITE: graphics::types::Color = [1., 1., 1., 1.];
@@ -108,7 +110,7 @@ fn render_polygon(geo_polygon: &geo::Polygon<f64>,
     graphics_polygon.draw(&points, &draw_state, transform, gl);
 }
 
-fn main() {
+fn rgis() -> Result<(), Box<error::Error>> {
     let mut args = env::args();
     let _ = args.next().unwrap();
     let geojson_file_path = args.next().expect("usage: rgis <geojson file name>");
@@ -134,5 +136,13 @@ fn main() {
             clear(WHITE, g);
             render_line_string(&geo_line_string, ctx.draw_state, ctx.transform, g);
         });
+    }
+    Ok(())
+}
+
+fn main() {
+    if let Err(e) = rgis() {
+        writeln!(io::stderr(), "{}: {}", PROGRAM_NAME, e).expect("could not write to stderr");
+        process::exit(1);
     }
 }
