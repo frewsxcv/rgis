@@ -42,7 +42,8 @@ fn render_line_string(geo_line_string: &geo::LineString<f64>,
     let transform = transform.flip_v();
     //let transform = transform.scale(x_scale, y_scale);
 
-    let points = geo_line_string.0
+    let points = geo_line_string
+        .0
         .iter()
         .map(|point| point.0)
         .map(|coord| {
@@ -88,7 +89,8 @@ fn render_polygon(geo_polygon: &geo::Polygon<f64>,
     let transform = transform.flip_v();
     //let transform = transform.scale(x_scale, y_scale);
 
-    let points = geo_polygon.exterior
+    let points = geo_polygon
+        .exterior
         .0
         .iter()
         .map(|point| point.0)
@@ -160,10 +162,7 @@ fn rgis() -> Result<(), Box<error::Error>> {
         clear(WHITE, g);
         for geojson_value in &*layers.read().unwrap() {
             if let Some(geo_polygon) =
-                geojson_value
-                    .clone()
-                    .try_into()
-                    .ok() as Option<geo::Polygon<f64>> {
+                geojson_value.clone().try_into().ok() as Option<geo::Polygon<f64>> {
                 render_polygon(&geo_polygon, ctx.draw_state, ctx.transform, g);
             } else if let Some(geo_line_string) =
                 geojson_value.clone().try_into().ok() as Option<geo::LineString<f64>> {
