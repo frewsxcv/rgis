@@ -110,6 +110,37 @@ fn render_polygon(geo_polygon: &geo::Polygon<f64>,
     graphics_polygon.draw(&points, &draw_state, transform, gl);
 }
 
+struct FileLoadingThread {
+    _join_handle: thread::JoinHandle<()>,
+    tx: sync::mpsc::Sender<String>,
+}
+
+impl FileLoadingThread {
+    fn spawn(layers: sync::Arc<sync::RwLock<Vec<geojson::Value>>>) -> FileLoadingThread {
+        let (tx, rx) = sync::mpsc::channel();
+        let join_handle = thread::spawn(move || {
+            while let Ok(geojson_file_path) = rx.recv() {
+                let geojson_file = fs::File::open(geojson_file_path).expect("TODO");
+                let geojson_polygon: geojson::GeoJson = from_reader(geojson_file).unwrap();
+                let geojson_polygon = match geojson_polygon {
+                    geojson::GeoJson::Geometry(g) => g,
+                    _ => unreachable!(),
+                };
+                (&mut layers.write().unwrap()).push(geojson_polygon.value);
+            }
+            writeln!(io::stderr(), "File loader thread died!").expect("could not write to stderr");
+        });
+        FileLoadingThread {
+            _join_handle: join_handle,
+            tx: tx,
+        }
+    }
+
+    fn load(&self, path: String) {
+        self.tx.send(path).expect("TODO");
+    }
+}
+
 fn rgis() -> Result<(), Box<error::Error>> {
     let mut args = env::args().skip(1);
 
@@ -118,25 +149,12 @@ fn rgis() -> Result<(), Box<error::Error>> {
         None => return Err("usage: rgis <geojson file name>".into()),
     };
 
-    let layers: sync::Arc<sync::RwLock<Vec<geojson::Value>>> = sync::Arc::new(sync::RwLock::new(vec![]));
-    let lol = layers.clone();
+    let layers = sync::Arc::new(sync::RwLock::new(vec![]));
+
+    let file_loading_thread = FileLoadingThread::spawn(layers.clone());
+    file_loading_thread.load(geojson_file_path);
 
     // Start a file loading thread
-    let (tx, rx) = sync::mpsc::channel();
-    thread::spawn(move || {
-        while let Ok(geojson_file_path) = rx.recv() {
-            let geojson_file = fs::File::open(geojson_file_path).expect("TODO");
-            let geojson_polygon: geojson::GeoJson = from_reader(geojson_file).unwrap();
-            let geojson_polygon = match geojson_polygon {
-                geojson::GeoJson::Geometry(g) => g,
-                _ => unreachable!(),
-            };
-            (&mut lol.write().unwrap()).push(geojson_polygon.value);
-        }
-        writeln!(io::stderr(), "File loader thread died!").expect("could not write to stderr");
-    });
-
-    tx.send(geojson_file_path).expect("TODO");
 
     window::window_loop(|ctx, g| {
         clear(WHITE, g);
