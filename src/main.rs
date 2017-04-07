@@ -22,94 +22,103 @@ static PROGRAM_NAME: &'static str = "rgis";
 const RED: graphics::types::Color = [1., 0., 0., 1.];
 const WHITE: graphics::types::Color = [1., 1., 1., 1.];
 
-fn render_line_string(geo_line_string: &geo::LineString<f64>,
-                      draw_state: graphics::draw_state::DrawState,
-                      transform: graphics::math::Matrix2d,
-                      gl: &mut opengl_graphics::GlGraphics) {
-    let graphics_line = graphics::line::Line::new(RED, 1.);
+trait Renderable: ::std::marker::Sync + ::std::marker::Send {
+    fn render(&self,
+              draw_state: graphics::draw_state::DrawState,
+              transform: graphics::math::Matrix2d,
+              gl: &mut opengl_graphics::GlGraphics);
+}
 
-    let bbox = geo_line_string.bbox().unwrap();
+impl Renderable for geo::LineString<f64> {
+    fn render(&self,
+              draw_state: graphics::draw_state::DrawState,
+              transform: graphics::math::Matrix2d,
+              gl: &mut opengl_graphics::GlGraphics) {
+        let graphics_line = graphics::line::Line::new(RED, 1.);
 
-    let bbox_width = bbox.xmax - bbox.xmin;
-    let x_scale = window::WINDOW_SIZE_X as f64 / bbox_width;
+        let bbox = self.bbox().unwrap();
 
-    let bbox_height = bbox.ymax - bbox.ymin;
-    let y_scale = window::WINDOW_SIZE_Y as f64 / bbox_height;
+        let bbox_width = bbox.xmax - bbox.xmin;
+        let x_scale = window::WINDOW_SIZE_X as f64 / bbox_width;
 
-    let scale = x_scale.min(y_scale);
+        let bbox_height = bbox.ymax - bbox.ymin;
+        let y_scale = window::WINDOW_SIZE_Y as f64 / bbox_height;
 
-    //let transform = transform.trans(-bbox.xmin, -bbox.ymin);
-    let transform = transform.flip_v();
-    //let transform = transform.scale(x_scale, y_scale);
+        let scale = x_scale.min(y_scale);
 
-    let points = geo_line_string
-        .0
-        .iter()
-        .map(|point| point.0)
-        .map(|coord| {
-                 geo::Coordinate {
-                     x: coord.x - bbox.xmin,
-                     y: coord.y - bbox.ymax,
-                 }
-             })
-        .map(|coord| {
-                 geo::Coordinate {
-                     x: coord.x * scale,
-                     y: coord.y * scale,
-                 }
-             })
-        .map(|coord| [coord.x, coord.y])
-        .collect::<Vec<_>>();
+        //let transform = transform.trans(-bbox.xmin, -bbox.ymin);
+        let transform = transform.flip_v();
+        //let transform = transform.scale(x_scale, y_scale);
 
-    for x in points.windows(2) {
-        graphics_line.draw([x[0][0], x[0][1], x[1][0], x[1][1]],
-                           &draw_state,
-                           transform,
-                           gl);
+        let points = self.0
+            .iter()
+            .map(|point| point.0)
+            .map(|coord| {
+                     geo::Coordinate {
+                         x: coord.x - bbox.xmin,
+                         y: coord.y - bbox.ymax,
+                     }
+                 })
+            .map(|coord| {
+                     geo::Coordinate {
+                         x: coord.x * scale,
+                         y: coord.y * scale,
+                     }
+                 })
+            .map(|coord| [coord.x, coord.y])
+            .collect::<Vec<_>>();
+
+        for x in points.windows(2) {
+            graphics_line.draw([x[0][0], x[0][1], x[1][0], x[1][1]],
+                               &draw_state,
+                               transform,
+                               gl);
+        }
     }
 }
 
-fn render_polygon(geo_polygon: &geo::Polygon<f64>,
-                  draw_state: graphics::draw_state::DrawState,
-                  transform: graphics::math::Matrix2d,
-                  gl: &mut opengl_graphics::GlGraphics) {
-    let graphics_polygon = graphics::polygon::Polygon::new(RED);
+impl Renderable for geo::Polygon<f64> {
+    fn render(&self,
+              draw_state: graphics::draw_state::DrawState,
+              transform: graphics::math::Matrix2d,
+              gl: &mut opengl_graphics::GlGraphics) {
+        let graphics_polygon = graphics::polygon::Polygon::new(RED);
 
-    let bbox = geo_polygon.bbox().unwrap();
+        let bbox = self.bbox().unwrap();
 
-    let bbox_width = bbox.xmax - bbox.xmin;
-    let x_scale = window::WINDOW_SIZE_X as f64 / bbox_width;
+        let bbox_width = bbox.xmax - bbox.xmin;
+        let x_scale = window::WINDOW_SIZE_X as f64 / bbox_width;
 
-    let bbox_height = bbox.ymax - bbox.ymin;
-    let y_scale = window::WINDOW_SIZE_Y as f64 / bbox_height;
+        let bbox_height = bbox.ymax - bbox.ymin;
+        let y_scale = window::WINDOW_SIZE_Y as f64 / bbox_height;
 
-    let scale = x_scale.min(y_scale);
+        let scale = x_scale.min(y_scale);
 
-    //let transform = transform.trans(-bbox.xmin, -bbox.ymin);
-    let transform = transform.flip_v();
-    //let transform = transform.scale(x_scale, y_scale);
+        //let transform = transform.trans(-bbox.xmin, -bbox.ymin);
+        let transform = transform.flip_v();
+        //let transform = transform.scale(x_scale, y_scale);
 
-    let points = geo_polygon
-        .exterior
-        .0
-        .iter()
-        .map(|point| point.0)
-        .map(|coord| {
-                 geo::Coordinate {
-                     x: coord.x - bbox.xmin,
-                     y: coord.y - bbox.ymax,
-                 }
-             })
-        .map(|coord| {
-                 geo::Coordinate {
-                     x: coord.x * scale,
-                     y: coord.y * scale,
-                 }
-             })
-        .map(|coord| [coord.x, coord.y])
-        .collect::<Vec<_>>();
+        let points = self.exterior
+            .0
+            .iter()
+            .map(|point| point.0)
+            .map(|coord| {
+                     geo::Coordinate {
+                         x: coord.x - bbox.xmin,
+                         y: coord.y - bbox.ymax,
+                     }
+                 })
+            .map(|coord| {
+                     geo::Coordinate {
+                         x: coord.x * scale,
+                         y: coord.y * scale,
+                     }
+                 })
+            .map(|coord| [coord.x, coord.y])
+            .collect::<Vec<_>>();
 
-    graphics_polygon.draw(&points, &draw_state, transform, gl);
+        graphics_polygon.draw(&points, &draw_state, transform, gl);
+    }
 }
 
 struct FileLoadingThread {
@@ -117,8 +126,10 @@ struct FileLoadingThread {
     tx: sync::mpsc::Sender<String>,
 }
 
+type Layers = sync::Arc<sync::RwLock<Vec<Box<Renderable>>>>;
+
 impl FileLoadingThread {
-    fn spawn(layers: sync::Arc<sync::RwLock<Vec<geojson::Value>>>) -> FileLoadingThread {
+    fn spawn(layers: Layers) -> FileLoadingThread {
         let (tx, rx) = sync::mpsc::channel();
         let join_handle = thread::spawn(move || {
             while let Ok(geojson_file_path) = rx.recv() {
@@ -128,7 +139,13 @@ impl FileLoadingThread {
                     geojson::GeoJson::Geometry(g) => g,
                     _ => unreachable!(),
                 };
-                (&mut layers.write().unwrap()).push(geojson_polygon.value);
+                if let Some(geo_polygon) =
+                    geojson_polygon.value.clone().try_into().ok() as Option<geo::Polygon<f64>> {
+                    (&mut layers.write().unwrap()).push(Box::new(geo_polygon));
+                } else if let Some(geo_line_string) =
+                    geojson_polygon.value.clone().try_into().ok() as Option<geo::LineString<f64>> {
+                    (&mut layers.write().unwrap()).push(Box::new(geo_line_string));
+                }
             }
             writeln!(io::stderr(), "File loader thread died!").expect("could not write to stderr");
         });
@@ -159,17 +176,11 @@ fn rgis() -> Result<(), Box<error::Error>> {
     // Start a file loading thread
 
     window::window_loop(|ctx, g| {
-        clear(WHITE, g);
-        for geojson_value in &*layers.read().unwrap() {
-            if let Some(geo_polygon) =
-                geojson_value.clone().try_into().ok() as Option<geo::Polygon<f64>> {
-                render_polygon(&geo_polygon, ctx.draw_state, ctx.transform, g);
-            } else if let Some(geo_line_string) =
-                geojson_value.clone().try_into().ok() as Option<geo::LineString<f64>> {
-                render_line_string(&geo_line_string, ctx.draw_state, ctx.transform, g);
-            }
-        }
-    });
+                            clear(WHITE, g);
+                            for renderable in &*layers.read().unwrap() {
+                                renderable.render(ctx.draw_state, ctx.transform, g);
+                            }
+                        });
 
     Ok(())
 }
