@@ -96,9 +96,18 @@ impl Renderable for geo::Polygon<f64> {
                          y: coord.y * scale,
                      }
                  })
-            .map(|coord| [coord.x, coord.y])
-            .collect::<Vec<_>>();
+            .map(|coord| [coord.x, coord.y]);
 
-        graphics_polygon.draw(&points, &draw_state, transform, gl);
+        let mut polygon = ::poly2tri::Polygon::new();
+        for p in points.skip(1) {
+            polygon.add_point(p[0], p[1]);
+        }
+        let cdt = ::poly2tri::CDT::new(polygon);
+        let triangle_vec = cdt.triangulate();
+
+        for i in 0..triangle_vec.size() {
+            let triangle = triangle_vec.get_triangle(i);
+            graphics_polygon.draw(&triangle.points, &draw_state, transform, gl);
+        }
     }
 }

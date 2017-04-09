@@ -3,6 +3,7 @@ extern crate geojson;
 extern crate graphics;
 extern crate opengl_graphics;
 extern crate piston;
+extern crate poly2tri;
 extern crate sdl2_window;
 extern crate serde_json;
 
