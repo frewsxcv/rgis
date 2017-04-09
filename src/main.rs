@@ -5,6 +5,7 @@ extern crate opengl_graphics;
 extern crate piston;
 extern crate sdl2_window;
 extern crate serde_json;
+extern crate spade;
 
 use graphics::clear;
 use std::{env, error, fs, io, process, sync, thread};
@@ -21,6 +22,7 @@ static PROGRAM_NAME: &'static str = "rgis";
 
 const RED: graphics::types::Color = [1., 0., 0., 1.];
 const WHITE: graphics::types::Color = [1., 1., 1., 1.];
+const BLACK: graphics::types::Color = [0., 0., 0., 1.];
 
 struct FileLoadingThread {
     _join_handle: thread::JoinHandle<()>,
