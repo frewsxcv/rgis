@@ -2,7 +2,7 @@
 
 GeoSpatial data viewer written in Rust
 
-# Installation
+## Installation
 
 Mac:
 
@@ -10,7 +10,7 @@ Mac:
 brew install sdl2
 ```
 
-# Usage
+## Usage
 
 ```
 cargo run sample-data/mexico-line-string.geojson
