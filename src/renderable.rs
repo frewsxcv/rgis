@@ -13,6 +13,40 @@ pub trait Renderable: ::std::marker::Sync + ::std::marker::Send {
     );
 }
 
+fn line_string_to_screen_coords<'a>(
+    line_string: &'a geo::LineString<f64>,
+) -> Box<Iterator<Item = [f64; 2]> + 'a> {
+    let bbox = line_string.bbox().unwrap();
+
+    let bbox_width = bbox.xmax - bbox.xmin;
+    let x_scale = window::WINDOW_SIZE_X as f64 / bbox_width;
+
+    let bbox_height = bbox.ymax - bbox.ymin;
+    let y_scale = window::WINDOW_SIZE_Y as f64 / bbox_height;
+
+    let scale = x_scale.min(y_scale);
+
+    Box::new(
+        line_string
+            .0
+            .iter()
+            .map(|point| point.0)
+            .map(move |coord| {
+                geo::Coordinate {
+                    x: coord.x - bbox.xmin,
+                    y: coord.y - bbox.ymax,
+                }
+            })
+            .map(move |coord| {
+                geo::Coordinate {
+                    x: coord.x * scale,
+                    y: coord.y * scale,
+                }
+            })
+            .map(|coord| [coord.x, coord.y]),
+    )
+}
+
 impl Renderable for geo::LineString<f64> {
     fn render(
         &self,
@@ -22,39 +56,14 @@ impl Renderable for geo::LineString<f64> {
     ) {
         let graphics_line = graphics::line::Line::new(::RED, 1.);
 
-        let bbox = self.bbox().unwrap();
-
-        let bbox_width = bbox.xmax - bbox.xmin;
-        let x_scale = window::WINDOW_SIZE_X as f64 / bbox_width;
-
-        let bbox_height = bbox.ymax - bbox.ymin;
-        let y_scale = window::WINDOW_SIZE_Y as f64 / bbox_height;
-
-        let scale = x_scale.min(y_scale);
-
         //let transform = transform.trans(-bbox.xmin, -bbox.ymin);
         let transform = transform.flip_v();
         //let transform = transform.scale(x_scale, y_scale);
 
-        let points = self.0
-            .iter()
-            .map(|point| point.0)
-            .map(|coord| {
-                geo::Coordinate {
-                    x: coord.x - bbox.xmin,
-                    y: coord.y - bbox.ymax,
-                }
-            })
-            .map(|coord| {
-                geo::Coordinate {
-                    x: coord.x * scale,
-                    y: coord.y * scale,
-                }
-            })
-            .map(|coord| [coord.x, coord.y])
-            .collect::<Vec<_>>();
-
-        for x in points.windows(2) {
+        for x in line_string_to_screen_coords(self)
+            .collect::<Vec<_>>()
+            .windows(2)
+        {
             graphics_line.draw(
                 [x[0][0], x[0][1], x[1][0], x[1][1]],
                 &draw_state,
@@ -74,37 +83,11 @@ impl Renderable for geo::Polygon<f64> {
     ) {
         let graphics_polygon = graphics::polygon::Polygon::new(::RED);
 
-        let bbox = self.bbox().unwrap();
-
-        let bbox_width = bbox.xmax - bbox.xmin;
-        let x_scale = window::WINDOW_SIZE_X as f64 / bbox_width;
-
-        let bbox_height = bbox.ymax - bbox.ymin;
-        let y_scale = window::WINDOW_SIZE_Y as f64 / bbox_height;
-
-        let scale = x_scale.min(y_scale);
-
         //let transform = transform.trans(-bbox.xmin, -bbox.ymin);
         let transform = transform.flip_v();
         //let transform = transform.scale(x_scale, y_scale);
 
-        let points = self.exterior
-            .0
-            .iter()
-            .map(|point| point.0)
-            .map(|coord| {
-                geo::Coordinate {
-                    x: coord.x - bbox.xmin,
-                    y: coord.y - bbox.ymax,
-                }
-            })
-            .map(|coord| {
-                geo::Coordinate {
-                    x: coord.x * scale,
-                    y: coord.y * scale,
-                }
-            })
-            .map(|coord| [coord.x, coord.y]);
+        let points = line_string_to_screen_coords(&self.exterior);
 
         let mut polygon = ::poly2tri::Polygon::new();
         for p in points.skip(1) {
