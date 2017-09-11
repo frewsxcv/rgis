@@ -20,7 +20,8 @@ fn build_window() -> Sdl2Window {
 }
 
 pub fn window_loop<F>(f: F)
-    where F: Fn(graphics::Context, &mut GlGraphics)
+where
+    F: Fn(graphics::Context, &mut GlGraphics),
 {
     let mut window = build_window();
     let mut gl = GlGraphics::new(OPEN_GL_VERSION);

@@ -5,17 +5,21 @@ use graphics::{self, Transformed};
 use window;
 
 pub trait Renderable: ::std::marker::Sync + ::std::marker::Send {
-    fn render(&self,
-              draw_state: graphics::draw_state::DrawState,
-              transform: graphics::math::Matrix2d,
-              gl: &mut opengl_graphics::GlGraphics);
+    fn render(
+        &self,
+        draw_state: graphics::draw_state::DrawState,
+        transform: graphics::math::Matrix2d,
+        gl: &mut opengl_graphics::GlGraphics,
+    );
 }
 
 impl Renderable for geo::LineString<f64> {
-    fn render(&self,
-              draw_state: graphics::draw_state::DrawState,
-              transform: graphics::math::Matrix2d,
-              gl: &mut opengl_graphics::GlGraphics) {
+    fn render(
+        &self,
+        draw_state: graphics::draw_state::DrawState,
+        transform: graphics::math::Matrix2d,
+        gl: &mut opengl_graphics::GlGraphics,
+    ) {
         let graphics_line = graphics::line::Line::new(::RED, 1.);
 
         let bbox = self.bbox().unwrap();
@@ -36,34 +40,38 @@ impl Renderable for geo::LineString<f64> {
             .iter()
             .map(|point| point.0)
             .map(|coord| {
-                     geo::Coordinate {
-                         x: coord.x - bbox.xmin,
-                         y: coord.y - bbox.ymax,
-                     }
-                 })
+                geo::Coordinate {
+                    x: coord.x - bbox.xmin,
+                    y: coord.y - bbox.ymax,
+                }
+            })
             .map(|coord| {
-                     geo::Coordinate {
-                         x: coord.x * scale,
-                         y: coord.y * scale,
-                     }
-                 })
+                geo::Coordinate {
+                    x: coord.x * scale,
+                    y: coord.y * scale,
+                }
+            })
             .map(|coord| [coord.x, coord.y])
             .collect::<Vec<_>>();
 
         for x in points.windows(2) {
-            graphics_line.draw([x[0][0], x[0][1], x[1][0], x[1][1]],
-                               &draw_state,
-                               transform,
-                               gl);
+            graphics_line.draw(
+                [x[0][0], x[0][1], x[1][0], x[1][1]],
+                &draw_state,
+                transform,
+                gl,
+            );
         }
     }
 }
 
 impl Renderable for geo::Polygon<f64> {
-    fn render(&self,
-              draw_state: graphics::draw_state::DrawState,
-              transform: graphics::math::Matrix2d,
-              gl: &mut opengl_graphics::GlGraphics) {
+    fn render(
+        &self,
+        draw_state: graphics::draw_state::DrawState,
+        transform: graphics::math::Matrix2d,
+        gl: &mut opengl_graphics::GlGraphics,
+    ) {
         let graphics_polygon = graphics::polygon::Polygon::new(::RED);
 
         let bbox = self.bbox().unwrap();
@@ -85,17 +93,17 @@ impl Renderable for geo::Polygon<f64> {
             .iter()
             .map(|point| point.0)
             .map(|coord| {
-                     geo::Coordinate {
-                         x: coord.x - bbox.xmin,
-                         y: coord.y - bbox.ymax,
-                     }
-                 })
+                geo::Coordinate {
+                    x: coord.x - bbox.xmin,
+                    y: coord.y - bbox.ymax,
+                }
+            })
             .map(|coord| {
-                     geo::Coordinate {
-                         x: coord.x * scale,
-                         y: coord.y * scale,
-                     }
-                 })
+                geo::Coordinate {
+                    x: coord.x * scale,
+                    y: coord.y * scale,
+                }
+            })
             .map(|coord| [coord.x, coord.y]);
 
         let mut polygon = ::poly2tri::Polygon::new();

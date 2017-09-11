@@ -35,16 +35,19 @@ impl FileLoadingThread {
         let join_handle = thread::spawn(move || {
             while let Ok(geojson_file_path) = rx.recv() {
                 let geojson_file = fs::File::open(geojson_file_path).expect("TODO");
-                let geojson_polygon: geojson::GeoJson = serde_json::from_reader(&geojson_file).unwrap();
+                let geojson_polygon: geojson::GeoJson = serde_json::from_reader(&geojson_file)
+                    .unwrap();
                 let geojson_polygon = match geojson_polygon {
                     geojson::GeoJson::Geometry(g) => g,
                     _ => unreachable!(),
                 };
                 if let Some(geo_polygon) =
-                    geojson_polygon.value.clone().try_into().ok() as Option<geo::Polygon<f64>> {
+                    geojson_polygon.value.clone().try_into().ok() as Option<geo::Polygon<f64>>
+                {
                     (&mut layers.write().unwrap()).push(Box::new(geo_polygon));
                 } else if let Some(geo_line_string) =
-                    geojson_polygon.value.clone().try_into().ok() as Option<geo::LineString<f64>> {
+                    geojson_polygon.value.clone().try_into().ok() as Option<geo::LineString<f64>>
+                {
                     (&mut layers.write().unwrap()).push(Box::new(geo_line_string));
                 }
             }
@@ -77,11 +80,11 @@ fn rgis() -> Result<(), Box<error::Error>> {
     // Start a file loading thread
 
     window::window_loop(|ctx, g| {
-                            clear(WHITE, g);
-                            for renderable in &*layers.read().unwrap() {
-                                renderable.render(ctx.draw_state, ctx.transform, g);
-                            }
-                        });
+        clear(WHITE, g);
+        for renderable in &*layers.read().unwrap() {
+            renderable.render(ctx.draw_state, ctx.transform, g);
+        }
+    });
 
     Ok(())
 }
