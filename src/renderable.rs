@@ -2,7 +2,7 @@ use geo;
 use geo::boundingbox::BoundingBox;
 use graphics::{self, Transformed};
 use opengl_graphics;
-use window;
+use crate::window;
 
 pub trait Renderable: ::std::marker::Sync + ::std::marker::Send {
     fn render(
@@ -48,7 +48,7 @@ impl Renderable for geo::LineString<f64> {
         transform: graphics::math::Matrix2d,
         gl: &mut opengl_graphics::GlGraphics,
     ) {
-        let graphics_line = graphics::line::Line::new(::RED, 1.);
+        let graphics_line = graphics::line::Line::new(crate::RED, 1.);
 
         //let transform = transform.trans(-bbox.xmin, -bbox.ymin);
         let transform = transform.flip_v();
@@ -75,7 +75,7 @@ impl Renderable for geo::Polygon<f64> {
         transform: graphics::math::Matrix2d,
         gl: &mut opengl_graphics::GlGraphics,
     ) {
-        let graphics_polygon = graphics::polygon::Polygon::new(::RED);
+        let graphics_polygon = graphics::polygon::Polygon::new(crate::RED);
 
         //let transform = transform.trans(-bbox.xmin, -bbox.ymin);
         let transform = transform.flip_v();

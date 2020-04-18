@@ -12,7 +12,7 @@ pub const WINDOW_SIZE: [u32; 2] = [WINDOW_SIZE_X, WINDOW_SIZE_Y];
 const OPEN_GL_VERSION: OpenGL = OpenGL::V3_2;
 
 fn build_window() -> Sdl2Window {
-    WindowSettings::new(::PROGRAM_NAME, WINDOW_SIZE)
+    WindowSettings::new(crate::PROGRAM_NAME, WINDOW_SIZE)
         .exit_on_esc(true)
         .opengl(OPEN_GL_VERSION)
         .build()
