@@ -15,7 +15,7 @@ pub trait Renderable: ::std::marker::Sync + ::std::marker::Send {
 
 fn line_string_to_screen_coords<'a>(
     line_string: &'a geo::LineString<f64>,
-) -> Box<dyn Iterator<Item = [f64; 2]> + 'a> {
+) -> impl Iterator<Item = [f64; 2]> + 'a {
     let bbox = line_string.bbox().unwrap();
 
     let bbox_width = bbox.xmax - bbox.xmin;
@@ -26,21 +26,19 @@ fn line_string_to_screen_coords<'a>(
 
     let scale = x_scale.min(y_scale);
 
-    Box::new(
-        line_string
-            .0
-            .iter()
-            .map(|point| point.0)
-            .map(move |coord| geo::Coordinate {
-                x: coord.x - bbox.xmin,
-                y: coord.y - bbox.ymax,
-            })
-            .map(move |coord| geo::Coordinate {
-                x: coord.x * scale,
-                y: coord.y * scale,
-            })
-            .map(|coord| [coord.x, coord.y]),
-    )
+    line_string
+        .0
+        .iter()
+        .map(|point| point.0)
+        .map(move |coord| geo::Coordinate {
+            x: coord.x - bbox.xmin,
+            y: coord.y - bbox.ymax,
+        })
+        .map(move |coord| geo::Coordinate {
+            x: coord.x * scale,
+            y: coord.y * scale,
+        })
+        .map(|coord| [coord.x, coord.y])
 }
 
 impl Renderable for geo::LineString<f64> {
