@@ -1,8 +1,8 @@
 use graphics;
-use piston::event_loop::{Events, EventSettings};
+use opengl_graphics::{GlGraphics, OpenGL};
+use piston::event_loop::{EventSettings, Events};
 use piston::input::RenderEvent;
 use piston::window::WindowSettings;
-use opengl_graphics::{OpenGL, GlGraphics};
 use sdl2_window::Sdl2Window;
 
 pub const WINDOW_SIZE_X: u32 = 800;

@@ -7,10 +7,10 @@ extern crate poly2tri;
 extern crate sdl2_window;
 extern crate serde_json;
 
-use graphics::clear;
-use std::{env, error, fs, io, process, sync, thread};
-use std::io::Write;
 use geojson::conversion::TryInto;
+use graphics::clear;
+use std::io::Write;
+use std::{env, error, fs, io, process, sync, thread};
 
 #[allow(dead_code)]
 mod lla_to_ecef;
@@ -35,8 +35,8 @@ impl FileLoadingThread {
         let join_handle = thread::spawn(move || {
             while let Ok(geojson_file_path) = rx.recv() {
                 let geojson_file = fs::File::open(geojson_file_path).expect("TODO");
-                let geojson_polygon: geojson::GeoJson = serde_json::from_reader(&geojson_file)
-                    .unwrap();
+                let geojson_polygon: geojson::GeoJson =
+                    serde_json::from_reader(&geojson_file).unwrap();
                 let geojson_polygon = match geojson_polygon {
                     geojson::GeoJson::Geometry(g) => g,
                     _ => unreachable!(),

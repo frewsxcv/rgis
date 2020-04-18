@@ -1,7 +1,7 @@
 use geo;
 use geo::boundingbox::BoundingBox;
-use opengl_graphics;
 use graphics::{self, Transformed};
+use opengl_graphics;
 use window;
 
 pub trait Renderable: ::std::marker::Sync + ::std::marker::Send {
@@ -31,17 +31,13 @@ fn line_string_to_screen_coords<'a>(
             .0
             .iter()
             .map(|point| point.0)
-            .map(move |coord| {
-                geo::Coordinate {
-                    x: coord.x - bbox.xmin,
-                    y: coord.y - bbox.ymax,
-                }
+            .map(move |coord| geo::Coordinate {
+                x: coord.x - bbox.xmin,
+                y: coord.y - bbox.ymax,
             })
-            .map(move |coord| {
-                geo::Coordinate {
-                    x: coord.x * scale,
-                    y: coord.y * scale,
-                }
+            .map(move |coord| geo::Coordinate {
+                x: coord.x * scale,
+                y: coord.y * scale,
             })
             .map(|coord| [coord.x, coord.y]),
     )
