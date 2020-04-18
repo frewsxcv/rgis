@@ -27,7 +27,7 @@ struct FileLoadingThread {
     tx: sync::mpsc::Sender<String>,
 }
 
-type Layers = sync::Arc<sync::RwLock<Vec<Box<renderable::Renderable>>>>;
+type Layers = sync::Arc<sync::RwLock<Vec<Box<dyn renderable::Renderable>>>>;
 
 impl FileLoadingThread {
     fn spawn(layers: Layers) -> FileLoadingThread {
@@ -64,7 +64,7 @@ impl FileLoadingThread {
     }
 }
 
-fn rgis() -> Result<(), Box<error::Error>> {
+fn rgis() -> Result<(), Box<dyn error::Error>> {
     let mut args = env::args().skip(1);
 
     let geojson_file_path = match args.next() {

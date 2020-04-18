@@ -15,7 +15,7 @@ pub trait Renderable: ::std::marker::Sync + ::std::marker::Send {
 
 fn line_string_to_screen_coords<'a>(
     line_string: &'a geo::LineString<f64>,
-) -> Box<Iterator<Item = [f64; 2]> + 'a> {
+) -> Box<dyn Iterator<Item = [f64; 2]> + 'a> {
     let bbox = line_string.bbox().unwrap();
 
     let bbox_width = bbox.xmax - bbox.xmin;
