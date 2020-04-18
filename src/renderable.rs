@@ -1,15 +1,13 @@
 use geo;
 use geo::boundingbox::BoundingBox;
-use graphics::{self, Transformed};
-use opengl_graphics;
 use crate::window;
+use pathfinder_canvas::{Canvas, CanvasFontContext, Path2D, CanvasRenderingContext2D};
+use pathfinder_geometry::vector::{vec2f, vec2i};
 
 pub trait Renderable: ::std::marker::Sync + ::std::marker::Send {
     fn render(
         &self,
-        draw_state: graphics::draw_state::DrawState,
-        transform: graphics::math::Matrix2d,
-        gl: &mut opengl_graphics::GlGraphics,
+        canvas: &mut CanvasRenderingContext2D,
     );
 }
 
@@ -38,61 +36,55 @@ fn line_string_to_screen_coords<'a>(
             x: coord.x * scale,
             y: coord.y * scale,
         })
+        .map(move |coord| geo::Coordinate {
+            x: coord.x,
+            y: -coord.y,
+        })
         .map(|coord| [coord.x, coord.y])
 }
 
 impl Renderable for geo::LineString<f64> {
     fn render(
         &self,
-        draw_state: graphics::draw_state::DrawState,
-        transform: graphics::math::Matrix2d,
-        gl: &mut opengl_graphics::GlGraphics,
+        canvas: &mut CanvasRenderingContext2D,
     ) {
-        let graphics_line = graphics::line::Line::new(crate::RED, 1.);
+        canvas.set_line_width(5.0);
 
-        //let transform = transform.trans(-bbox.xmin, -bbox.ymin);
-        let transform = transform.flip_v();
-        //let transform = transform.scale(x_scale, y_scale);
+        let mut coords = line_string_to_screen_coords(self);
+        let mut path = Path2D::new();
 
-        for x in line_string_to_screen_coords(self)
-            .collect::<Vec<_>>()
-            .windows(2)
-        {
-            graphics_line.draw(
-                [x[0][0], x[0][1], x[1][0], x[1][1]],
-                &draw_state,
-                transform,
-                gl,
-            );
+        if let Some(first_coord) = coords.next() {
+            path.move_to(vec2f(first_coord[0] as f32, first_coord[1] as f32));
         }
+
+        for coord in coords {
+            path.line_to(vec2f(coord[0] as f32, coord[1] as f32));
+        }
+
+        path.close_path();
+        canvas.stroke_path(path);
     }
 }
 
 impl Renderable for geo::Polygon<f64> {
     fn render(
         &self,
-        draw_state: graphics::draw_state::DrawState,
-        transform: graphics::math::Matrix2d,
-        gl: &mut opengl_graphics::GlGraphics,
+        canvas: &mut CanvasRenderingContext2D,
     ) {
-        let graphics_polygon = graphics::polygon::Polygon::new(crate::RED);
+        canvas.set_line_width(5.0);
 
-        //let transform = transform.trans(-bbox.xmin, -bbox.ymin);
-        let transform = transform.flip_v();
-        //let transform = transform.scale(x_scale, y_scale);
+        let mut coords = line_string_to_screen_coords(&self.exterior);
+        let mut path = Path2D::new();
 
-        let points = line_string_to_screen_coords(&self.exterior);
-
-        let mut polygon = ::poly2tri::Polygon::new();
-        for p in points.skip(1) {
-            polygon.add_point(p[0], p[1]);
+        if let Some(first_coord) = coords.next() {
+            path.move_to(vec2f(first_coord[0] as f32, first_coord[1] as f32));
         }
-        let cdt = ::poly2tri::CDT::new(polygon);
-        let triangle_vec = cdt.triangulate();
 
-        for i in 0..triangle_vec.size() {
-            let triangle = triangle_vec.get_triangle(i);
-            graphics_polygon.draw(&triangle.points, &draw_state, transform, gl);
+        for coord in coords {
+            path.line_to(vec2f(coord[0] as f32, coord[1] as f32));
         }
+
+        path.close_path();
+        canvas.fill_path(path, pathfinder_content::fill::FillRule::Winding);
     }
 }

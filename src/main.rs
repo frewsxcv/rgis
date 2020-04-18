@@ -1,5 +1,4 @@
 use geojson::conversion::TryInto;
-use graphics::clear;
 use std::io::Write;
 use std::{env, error, fs, io, process, sync, thread};
 
@@ -68,12 +67,10 @@ fn rgis() -> Result<(), Box<dyn error::Error>> {
     let file_loading_thread = FileLoadingThread::spawn(layers.clone());
     file_loading_thread.load(geojson_file_path);
 
-    // Start a file loading thread
 
-    window::window_loop(|ctx, g| {
-        clear(WHITE, g);
+    window::build_window(|canvas| {
         for renderable in &*layers.read().unwrap() {
-            renderable.render(ctx.draw_state, ctx.transform, g);
+            renderable.render(canvas);
         }
     });
 
