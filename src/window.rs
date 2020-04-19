@@ -1,9 +1,9 @@
 use glutin::dpi::PhysicalSize;
 use glutin::event_loop::{ControlFlow, EventLoop};
 use glutin::window::WindowBuilder;
-use pathfinder_geometry::vector::{vec2f, vec2i};
+use pathfinder_geometry::vector::{vec2i};
 use glutin::{ContextBuilder, GlProfile, GlRequest};
-use pathfinder_canvas::{Canvas, CanvasFontContext, Path2D, CanvasRenderingContext2D};
+use pathfinder_canvas::{Canvas, CanvasFontContext, CanvasRenderingContext2D};
 use pathfinder_renderer::concurrent::rayon::RayonExecutor;
 use pathfinder_renderer::concurrent::scene_proxy::SceneProxy;
 use pathfinder_renderer::gpu::renderer::Renderer;

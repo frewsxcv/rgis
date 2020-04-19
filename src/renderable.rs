@@ -1,8 +1,8 @@
 use geo;
 use geo::boundingbox::BoundingBox;
 use crate::window;
-use pathfinder_canvas::{Canvas, CanvasFontContext, Path2D, CanvasRenderingContext2D};
-use pathfinder_geometry::vector::{vec2f, vec2i};
+use pathfinder_canvas::{Path2D, CanvasRenderingContext2D};
+use pathfinder_geometry::vector::{vec2f};
 
 pub trait Renderable: ::std::marker::Sync + ::std::marker::Send {
     fn render(
