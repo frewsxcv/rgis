@@ -9,9 +9,6 @@ mod window;
 
 static PROGRAM_NAME: &'static str = "rgis";
 
-const RED: graphics::types::Color = [1., 0., 0., 1.];
-const WHITE: graphics::types::Color = [1., 1., 1., 1.];
-
 struct FileLoadingThread {
     _join_handle: thread::JoinHandle<()>,
     tx: sync::mpsc::Sender<String>,
