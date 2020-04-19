@@ -1,7 +1,8 @@
 use geojson::conversion::TryInto;
 use std::io::Write;
-use std::{env, error, fs, io, process, sync, thread};
+use std::{error, fs, io, process, sync, thread};
 
+mod cli;
 #[allow(dead_code)]
 mod lla_to_ecef;
 mod renderable;
@@ -52,18 +53,15 @@ impl FileLoadingThread {
 }
 
 fn rgis() -> Result<(), Box<dyn error::Error>> {
-    let mut args = env::args().skip(1);
-
-    let geojson_file_path = match args.next() {
-        Some(a) => a,
-        None => return Err("usage: rgis <geojson file name>".into()),
-    };
+    let geojson_file_paths = cli::run()?;
 
     let layers = sync::Arc::new(sync::RwLock::new(vec![]));
 
     let file_loading_thread = FileLoadingThread::spawn(layers.clone());
-    file_loading_thread.load(geojson_file_path);
 
+    for geojson_file_path in geojson_file_paths {
+        file_loading_thread.load(geojson_file_path);
+    }
 
     window::build_window(|canvas| {
         for renderable in &*layers.read().unwrap() {
