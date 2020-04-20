@@ -1,8 +1,8 @@
-use geojson::conversion::TryInto;
 use std::io::Write;
-use std::{error, fs, io, process, sync, thread};
+use std::{error, io, process, sync};
 
 mod cli;
+mod file_loader;
 #[allow(dead_code)]
 mod lla_to_ecef;
 mod renderable;
@@ -10,54 +10,14 @@ mod window;
 
 static PROGRAM_NAME: &'static str = "rgis";
 
-struct FileLoadingThread {
-    _join_handle: thread::JoinHandle<()>,
-    tx: sync::mpsc::Sender<String>,
-}
-
 type Layers = sync::Arc<sync::RwLock<Vec<Box<dyn renderable::Renderable>>>>;
-
-impl FileLoadingThread {
-    fn spawn(layers: Layers) -> FileLoadingThread {
-        let (tx, rx) = sync::mpsc::channel();
-        let join_handle = thread::spawn(move || {
-            while let Ok(geojson_file_path) = rx.recv() {
-                let geojson_file = fs::File::open(geojson_file_path).expect("TODO");
-                let geojson_polygon: geojson::GeoJson =
-                    serde_json::from_reader(&geojson_file).unwrap();
-                let geojson_polygon = match geojson_polygon {
-                    geojson::GeoJson::Geometry(g) => g,
-                    _ => unreachable!(),
-                };
-                if let Some(geo_polygon) =
-                    geojson_polygon.value.clone().try_into().ok() as Option<geo::Polygon<f64>>
-                {
-                    (&mut layers.write().unwrap()).push(Box::new(geo_polygon));
-                } else if let Some(geo_line_string) =
-                    geojson_polygon.value.clone().try_into().ok() as Option<geo::LineString<f64>>
-                {
-                    (&mut layers.write().unwrap()).push(Box::new(geo_line_string));
-                }
-            }
-            writeln!(io::stderr(), "File loader thread died!").expect("could not write to stderr");
-        });
-        FileLoadingThread {
-            _join_handle: join_handle,
-            tx: tx,
-        }
-    }
-
-    fn load(&self, path: String) {
-        self.tx.send(path).expect("TODO");
-    }
-}
 
 fn rgis() -> Result<(), Box<dyn error::Error>> {
     let geojson_file_paths = cli::run()?;
 
     let layers = sync::Arc::new(sync::RwLock::new(vec![]));
 
-    let file_loading_thread = FileLoadingThread::spawn(layers.clone());
+    let file_loading_thread = file_loader::Thread::spawn(layers.clone());
 
     for geojson_file_path in geojson_file_paths {
         file_loading_thread.load(geojson_file_path);
