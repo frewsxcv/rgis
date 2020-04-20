@@ -28,7 +28,7 @@ where
 
     // Open a window.
     let window_builder = WindowBuilder::new()
-        .with_title("Minimal example")
+        .with_title(crate::PROGRAM_NAME)
         .with_inner_size(physical_window_size);
 
     // Create an OpenGL 3.x context for Pathfinder to use.
