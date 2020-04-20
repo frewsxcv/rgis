@@ -132,7 +132,12 @@ impl Renderable for geo::MultiPolygon<f64> {
     }
 }
 
-fn render_polygon(polygon: &geo::Polygon<f64>, canvas: &mut CanvasRenderingContext2D, extent: geo::Rect<f64>, color: ColorU) {
+fn render_polygon(
+    polygon: &geo::Polygon<f64>,
+    canvas: &mut CanvasRenderingContext2D,
+    extent: geo::Rect<f64>,
+    color: ColorU,
+) {
     canvas.set_line_width(5.0);
 
     let mut coords = line_string_to_screen_coords(polygon.exterior(), extent);

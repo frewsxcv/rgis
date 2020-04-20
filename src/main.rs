@@ -34,7 +34,6 @@ fn rgis() -> Result<(), Box<dyn error::Error>> {
             if layers.len() > 0 {
                 let b = bbox_many(layers);
 
-
                 for layer in layers {
                     layer.geometry.to_owned().render(canvas, b);
                 }
