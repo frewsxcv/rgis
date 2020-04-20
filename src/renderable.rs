@@ -1,8 +1,23 @@
 use geo;
 use geo::boundingbox::BoundingBox;
 use crate::window;
-use pathfinder_canvas::{Path2D, CanvasRenderingContext2D};
+use std::iter;
+use std::slice;
+use std::sync;
+use pathfinder_canvas::{Path2D, CanvasRenderingContext2D, ColorU};
 use pathfinder_geometry::vector::{vec2f};
+
+static COLORS: [ColorU; 3] = [
+    ColorU { r: 255, g: 0, b: 0, a: 255 },
+    ColorU { r: 0, g: 255, b: 0, a: 255 },
+    ColorU { r: 0, g: 0, b: 255, a: 255 },
+];
+
+lazy_static::lazy_static! {
+    static ref COLOR_ITER: sync::Mutex<iter::Cycle<slice::Iter<'static, ColorU>>> = {
+        sync::Mutex::new(COLORS.iter().cycle())
+    };
+}
 
 pub trait Renderable: ::std::marker::Sync + ::std::marker::Send {
     fn render(
@@ -62,6 +77,7 @@ impl Renderable for geo::LineString<f64> {
         }
 
         path.close_path();
+        canvas.set_stroke_style(next_color());
         canvas.stroke_path(path);
     }
 }
@@ -85,6 +101,12 @@ impl Renderable for geo::Polygon<f64> {
         }
 
         path.close_path();
+
+        canvas.set_fill_style(next_color());
         canvas.fill_path(path, pathfinder_content::fill::FillRule::Winding);
     }
+}
+
+fn next_color() -> ColorU {
+    *COLOR_ITER.lock().unwrap().next().unwrap()
 }

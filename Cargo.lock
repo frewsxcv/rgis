@@ -1188,6 +1188,7 @@ dependencies = [
  "geojson 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "gl 0.14.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "glutin 0.24.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "lazy_static 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "pathfinder_canvas 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "pathfinder_color 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "pathfinder_content 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
