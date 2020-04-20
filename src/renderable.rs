@@ -1,6 +1,5 @@
 use crate::window;
 use geo;
-use geo::bounding_rect::BoundingRect;
 use pathfinder_canvas::{CanvasRenderingContext2D, ColorU, Path2D};
 use pathfinder_geometry::vector::vec2f;
 use std::iter;
@@ -35,17 +34,16 @@ lazy_static::lazy_static! {
 }
 
 pub trait Renderable: ::std::marker::Sync + ::std::marker::Send {
-    fn render(&self, canvas: &mut CanvasRenderingContext2D);
+    fn render(&self, canvas: &mut CanvasRenderingContext2D, extent: geo::Rect<f64>);
 }
 
 fn line_string_to_screen_coords<'a>(
     line_string: &'a geo::LineString<f64>,
+    extent: geo::Rect<f64>,
 ) -> impl Iterator<Item = [f64; 2]> + 'a {
-    let bbox = line_string.bounding_rect().unwrap();
+    let x_scale = window::WINDOW_SIZE_X as f64 / extent.width();
 
-    let x_scale = window::WINDOW_SIZE_X as f64 / bbox.width();
-
-    let y_scale = window::WINDOW_SIZE_Y as f64 / bbox.height();
+    let y_scale = window::WINDOW_SIZE_Y as f64 / extent.height();
 
     let scale = x_scale.min(y_scale);
 
@@ -53,8 +51,8 @@ fn line_string_to_screen_coords<'a>(
         .0
         .iter()
         .map(move |coord| geo::Coordinate {
-            x: coord.x - bbox.min().x,
-            y: coord.y - bbox.max().y,
+            x: coord.x - extent.min().x,
+            y: coord.y - extent.max().y,
         })
         .map(move |coord| geo::Coordinate {
             x: coord.x * scale,
@@ -68,10 +66,10 @@ fn line_string_to_screen_coords<'a>(
 }
 
 impl Renderable for geo::LineString<f64> {
-    fn render(&self, canvas: &mut CanvasRenderingContext2D) {
+    fn render(&self, canvas: &mut CanvasRenderingContext2D, extent: geo::Rect<f64>) {
         canvas.set_line_width(5.0);
 
-        let mut coords = line_string_to_screen_coords(self);
+        let mut coords = line_string_to_screen_coords(self, extent);
         let mut path = Path2D::new();
 
         if let Some(first_coord) = coords.next() {
@@ -89,10 +87,10 @@ impl Renderable for geo::LineString<f64> {
 }
 
 impl Renderable for geo::Polygon<f64> {
-    fn render(&self, canvas: &mut CanvasRenderingContext2D) {
+    fn render(&self, canvas: &mut CanvasRenderingContext2D, extent: geo::Rect<f64>) {
         canvas.set_line_width(5.0);
 
-        let mut coords = line_string_to_screen_coords(self.exterior());
+        let mut coords = line_string_to_screen_coords(self.exterior(), extent);
         let mut path = Path2D::new();
 
         if let Some(first_coord) = coords.next() {
@@ -107,6 +105,16 @@ impl Renderable for geo::Polygon<f64> {
 
         canvas.set_fill_style(next_color());
         canvas.fill_path(path, pathfinder_content::fill::FillRule::Winding);
+    }
+}
+
+impl Renderable for geo::Geometry<f64> {
+    fn render(&self, canvas: &mut CanvasRenderingContext2D, extent: geo::Rect<f64>) {
+        match self {
+            geo::Geometry::Polygon(p) => p.render(canvas, extent),
+            geo::Geometry::LineString(p) => p.render(canvas, extent),
+            _ => (),
+        }
     }
 }
 

@@ -56,11 +56,11 @@ impl Thread {
         if let Some(geo_polygon) =
             geojson_value.clone().try_into().ok() as Option<geo::Polygon<f64>>
         {
-            (&mut layers.write().unwrap()).push(Box::new(geo_polygon));
+            (&mut layers.write().unwrap()).push(geo::Geometry::Polygon(geo_polygon));
         } else if let Some(geo_line_string) =
             geojson_value.clone().try_into().ok() as Option<geo::LineString<f64>>
         {
-            (&mut layers.write().unwrap()).push(Box::new(geo_line_string));
+            (&mut layers.write().unwrap()).push(geo::Geometry::LineString(geo_line_string));
         }
     }
 
