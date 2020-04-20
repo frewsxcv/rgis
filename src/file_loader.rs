@@ -1,5 +1,5 @@
 use crate::Layers;
-use geojson::conversion::TryInto;
+use std::convert::TryInto;
 use std::io::Write;
 use std::{fs, io, sync, thread};
 
@@ -9,26 +9,25 @@ pub struct Thread {
 }
 
 impl Thread {
-    pub fn spawn(layers: Layers) -> Thread {
+    pub fn spawn(mut layers: Layers) -> Thread {
         let (tx, rx) = sync::mpsc::channel();
         let join_handle = thread::spawn(move || {
             while let Ok(geojson_file_path) = rx.recv() {
+                println!("received: {:?}", geojson_file_path);
                 let geojson_file = fs::File::open(geojson_file_path).expect("TODO");
-                let geojson_polygon: geojson::GeoJson =
+                println!("opened");
+                let geojson: geojson::GeoJson =
                     serde_json::from_reader(&geojson_file).unwrap();
-                let geojson_polygon = match geojson_polygon {
-                    geojson::GeoJson::Geometry(g) => g,
-                    _ => unreachable!(),
+                println!("parsed");
+                match geojson {
+                    geojson::GeoJson::Geometry(g) => Thread::load_geojson_geometry(&mut layers, g),
+                    geojson::GeoJson::Feature(f) => Thread::load_geojson_feature(&mut layers, f),
+                    geojson::GeoJson::FeatureCollection(f) => {
+                        for feature in f.features {
+                            Thread::load_geojson_feature(&mut layers, feature)
+                        }
+                    }
                 };
-                if let Some(geo_polygon) =
-                    geojson_polygon.value.clone().try_into().ok() as Option<geo::Polygon<f64>>
-                {
-                    (&mut layers.write().unwrap()).push(Box::new(geo_polygon));
-                } else if let Some(geo_line_string) =
-                    geojson_polygon.value.clone().try_into().ok() as Option<geo::LineString<f64>>
-                {
-                    (&mut layers.write().unwrap()).push(Box::new(geo_line_string));
-                }
             }
             writeln!(io::stderr(), "File loader thread died!").expect("could not write to stderr");
         });
@@ -38,7 +37,35 @@ impl Thread {
         }
     }
 
+    fn load_geojson_feature(layers: &mut Layers, geojson_feature: geojson::Feature) {
+        println!("feature loading");
+        if let Some(geometry) = geojson_feature.geometry {
+            Thread::load_geojson_geometry(layers, geometry)
+        }
+    }
+
+    fn load_geojson_geometry(layers: &mut Layers, geojson_geometry: geojson::Geometry) {
+        let geojson_value = geojson_geometry.value;
+        if let geojson::Value::GeometryCollection(geojson_geometry_collection) = geojson_value {
+            for geojson_geometry in geojson_geometry_collection {
+                Thread::load_geojson_geometry(layers, geojson_geometry);
+            }
+            return;
+        }
+
+        if let Some(geo_polygon) =
+            geojson_value.clone().try_into().ok() as Option<geo::Polygon<f64>>
+        {
+            (&mut layers.write().unwrap()).push(Box::new(geo_polygon));
+        } else if let Some(geo_line_string) =
+            geojson_value.clone().try_into().ok() as Option<geo::LineString<f64>>
+        {
+            (&mut layers.write().unwrap()).push(Box::new(geo_line_string));
+        }
+    }
+
     pub fn load(&self, path: String) {
+        println!("loading: {:?}", path);
         self.tx.send(path).expect("TODO");
     }
 }

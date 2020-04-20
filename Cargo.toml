@@ -6,8 +6,8 @@ license = "GPL-3.0-only"
 edition = "2018"
 
 [dependencies]
-geo = "0.6"
-geojson = "0.9"
+geo = "0.13"
+geojson = { version = "0.18", features = ['geo-types'] }
 gl = "0.14"
 glutin = "*"
 lazy_static = "1"

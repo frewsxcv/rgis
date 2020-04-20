@@ -24,8 +24,18 @@ fn rgis() -> Result<(), Box<dyn error::Error>> {
     }
 
     window::build_window(|canvas| {
-        for renderable in &*layers.read().unwrap() {
-            renderable.render(canvas);
+        loop {
+            println!("rerendering");
+
+            let tmp = &*layers.read().unwrap();
+            if tmp.len() > 0 {
+                for renderable in tmp {
+                    renderable.render(canvas);
+                }
+                break;
+            }
+
+            ::std::thread::sleep(::std::time::Duration::from_secs(1));
         }
     });
 

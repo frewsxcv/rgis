@@ -1,6 +1,6 @@
 use crate::window;
 use geo;
-use geo::boundingbox::BoundingBox;
+use geo::bounding_rect::BoundingRect;
 use pathfinder_canvas::{CanvasRenderingContext2D, ColorU, Path2D};
 use pathfinder_geometry::vector::vec2f;
 use std::iter;
@@ -41,23 +41,20 @@ pub trait Renderable: ::std::marker::Sync + ::std::marker::Send {
 fn line_string_to_screen_coords<'a>(
     line_string: &'a geo::LineString<f64>,
 ) -> impl Iterator<Item = [f64; 2]> + 'a {
-    let bbox = line_string.bbox().unwrap();
+    let bbox = line_string.bounding_rect().unwrap();
 
-    let bbox_width = bbox.xmax - bbox.xmin;
-    let x_scale = window::WINDOW_SIZE_X as f64 / bbox_width;
+    let x_scale = window::WINDOW_SIZE_X as f64 / bbox.width();
 
-    let bbox_height = bbox.ymax - bbox.ymin;
-    let y_scale = window::WINDOW_SIZE_Y as f64 / bbox_height;
+    let y_scale = window::WINDOW_SIZE_Y as f64 / bbox.height();
 
     let scale = x_scale.min(y_scale);
 
     line_string
         .0
         .iter()
-        .map(|point| point.0)
         .map(move |coord| geo::Coordinate {
-            x: coord.x - bbox.xmin,
-            y: coord.y - bbox.ymax,
+            x: coord.x - bbox.min().x,
+            y: coord.y - bbox.max().y,
         })
         .map(move |coord| geo::Coordinate {
             x: coord.x * scale,
@@ -95,7 +92,7 @@ impl Renderable for geo::Polygon<f64> {
     fn render(&self, canvas: &mut CanvasRenderingContext2D) {
         canvas.set_line_width(5.0);
 
-        let mut coords = line_string_to_screen_coords(&self.exterior);
+        let mut coords = line_string_to_screen_coords(self.exterior());
         let mut path = Path2D::new();
 
         if let Some(first_coord) = coords.next() {
