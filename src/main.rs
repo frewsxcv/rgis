@@ -1,6 +1,6 @@
+use crate::renderable::Renderable;
 use std::io::Write;
 use std::{error, io, process, sync};
-use crate::renderable::Renderable;
 
 mod cli;
 mod file_loader;

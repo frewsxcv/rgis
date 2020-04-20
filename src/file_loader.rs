@@ -17,8 +17,7 @@ impl Thread {
                 println!("received: {:?}", geojson_file_path);
                 let geojson_file = fs::File::open(geojson_file_path).expect("TODO");
                 println!("opened");
-                let geojson: geojson::GeoJson =
-                    serde_json::from_reader(&geojson_file).unwrap();
+                let geojson: geojson::GeoJson = serde_json::from_reader(&geojson_file).unwrap();
                 println!("parsed");
                 match geojson {
                     geojson::GeoJson::Geometry(g) => Thread::load_geojson_geometry(&mut layers, g),
