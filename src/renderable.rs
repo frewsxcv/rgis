@@ -6,23 +6,54 @@ use std::iter;
 use std::slice;
 use std::sync;
 
-static COLORS: [ColorU; 3] = [
+static COLORS: [ColorU; 7] = [
+    // Red
     ColorU {
         r: 255,
         g: 0,
         b: 0,
         a: 255,
     },
+    // Orange
+    ColorU {
+        r: 255,
+        g: 127,
+        b: 0,
+        a: 255,
+    },
+    // Yellow
+    ColorU {
+        r: 255,
+        g: 255,
+        b: 0,
+        a: 255,
+    },
+    // Green
     ColorU {
         r: 0,
         g: 255,
         b: 0,
         a: 255,
     },
+    // Blue
     ColorU {
         r: 0,
         g: 0,
         b: 255,
+        a: 255,
+    },
+    // Indigo
+    ColorU {
+        r: 75,
+        g: 0,
+        b: 130,
+        a: 255,
+    },
+    // Violet
+    ColorU {
+        r: 148,
+        g: 0,
+        b: 211,
         a: 255,
     },
 ];
