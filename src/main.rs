@@ -15,9 +15,7 @@ static PROGRAM_NAME: &'static str = "rgis";
 fn rgis() -> Result<(), Box<dyn error::Error>> {
     let geojson_file_paths = cli::run()?;
 
-    let layers = sync::Arc::new(sync::RwLock::new(vec![]));
-
-    let file_loading_thread = file_loader::Thread::spawn(layers.clone());
+    let file_loading_thread = file_loader::Thread::spawn();
 
     for geojson_file_path in geojson_file_paths {
         file_loading_thread.load(geojson_file_path);
@@ -29,14 +27,9 @@ fn rgis() -> Result<(), Box<dyn error::Error>> {
 
             ::std::thread::sleep(::std::time::Duration::from_secs(5));
 
-            let layers = &*layers.read().unwrap();
             // if tmp.len() > 80 {
-            if layers.len() > 0 {
-                let b = bbox_many(layers);
-
-                for layer in layers {
-                    layer.geometry.to_owned().render(canvas, b);
-                }
+            if layer::LAYERS.read().unwrap().len() > 0 {
+                render(canvas);
                 break;
             }
 
@@ -45,6 +38,16 @@ fn rgis() -> Result<(), Box<dyn error::Error>> {
     });
 
     Ok(())
+}
+
+fn render(canvas: &mut pathfinder_canvas::CanvasRenderingContext2D) {
+    let layers = &layer::LAYERS.read().unwrap();
+
+    let b = bbox_many(&layers[..]);
+
+    for layer in &layers[..] {
+        layer.geometry.to_owned().render(canvas, b);
+    }
 }
 
 fn bbox_many(geometries: &[layer::Layer]) -> geo::Rect<f64> {

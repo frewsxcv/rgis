@@ -5,4 +5,8 @@ pub struct Layer {
     pub bounding_rect: geo::Rect<f64>,
 }
 
-pub type Layers = sync::Arc<sync::RwLock<Vec<Layer>>>;
+lazy_static::lazy_static! {
+    pub static ref LAYERS: sync::RwLock<Vec<Layer>> = {
+        sync::RwLock::new(vec![])
+    };
+}
