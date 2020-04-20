@@ -1,4 +1,5 @@
-use crate::Layers;
+use crate::layer::{Layer, Layers};
+use geo::bounding_rect::BoundingRect;
 use std::convert::TryInto;
 use std::io::Write;
 use std::{fs, io, sync, thread};
@@ -56,11 +57,17 @@ impl Thread {
         if let Some(geo_polygon) =
             geojson_value.clone().try_into().ok() as Option<geo::Polygon<f64>>
         {
-            (&mut layers.write().unwrap()).push(geo::Geometry::Polygon(geo_polygon));
+            (&mut layers.write().unwrap()).push(Layer {
+                bounding_rect: geo_polygon.bounding_rect().unwrap(),
+                geometry: geo::Geometry::Polygon(geo_polygon),
+            });
         } else if let Some(geo_line_string) =
             geojson_value.clone().try_into().ok() as Option<geo::LineString<f64>>
         {
-            (&mut layers.write().unwrap()).push(geo::Geometry::LineString(geo_line_string));
+            (&mut layers.write().unwrap()).push(Layer {
+                bounding_rect: geo_line_string.bounding_rect().unwrap(),
+                geometry: geo::Geometry::LineString(geo_line_string),
+            });
         }
     }
 

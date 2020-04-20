@@ -1,18 +1,16 @@
 use std::io::Write;
 use std::{error, io, process, sync};
-use geo::bounding_rect::BoundingRect;
 use crate::renderable::Renderable;
 
 mod cli;
 mod file_loader;
+mod layer;
 #[allow(dead_code)]
 mod lla_to_ecef;
 mod renderable;
 mod window;
 
 static PROGRAM_NAME: &'static str = "rgis";
-
-type Layers = sync::Arc<sync::RwLock<Vec<geo::Geometry<f64>>>>;
 
 fn rgis() -> Result<(), Box<dyn error::Error>> {
     let geojson_file_paths = cli::run()?;
@@ -29,13 +27,13 @@ fn rgis() -> Result<(), Box<dyn error::Error>> {
         loop {
             println!("rerendering");
 
-            let tmp = &*layers.read().unwrap();
+            let layers = &*layers.read().unwrap();
             // if tmp.len() > 80 {
-            if tmp.len() > 0 {
-                let b = bbox_many(tmp);
+            if layers.len() > 0 {
+                let b = bbox_many(layers);
 
-                for renderable in tmp {
-                    renderable.to_owned().render(canvas, b);
+                for layer in layers {
+                    layer.geometry.to_owned().render(canvas, b);
                 }
                 break;
             }
@@ -47,15 +45,15 @@ fn rgis() -> Result<(), Box<dyn error::Error>> {
     Ok(())
 }
 
-fn bbox_many(geometries: &[geo::Geometry<f64>]) -> geo::Rect<f64> {
+fn bbox_many(geometries: &[layer::Layer]) -> geo::Rect<f64> {
     let mut iter = geometries.into_iter();
-    let r = bbox_one(iter.next().unwrap());
+    let r = iter.next().unwrap().bounding_rect;
     let mut min_x = r.min().x;
     let mut min_y = r.min().y;
     let mut max_x = r.max().x;
     let mut max_y = r.max().y;
     for g in iter {
-        let b = bbox_one(g);
+        let b = g.bounding_rect;
         if b.min().x < min_x {
             min_x = b.min().x;
         }
@@ -73,14 +71,6 @@ fn bbox_many(geometries: &[geo::Geometry<f64>]) -> geo::Rect<f64> {
         geo::Coordinate { x: min_x, y: min_y },
         geo::Coordinate { x: max_x, y: max_y },
     )
-}
-
-fn bbox_one(geometry: &geo::Geometry<f64>) -> geo::Rect<f64> {
-    match geometry {
-        geo::Geometry::Polygon(p) => p.bounding_rect().unwrap(),
-        geo::Geometry::LineString(p) => p.bounding_rect().unwrap(),
-        _ => unimplemented!("bbox_one not implemented for type"),
-    }
 }
 
 fn main() {
