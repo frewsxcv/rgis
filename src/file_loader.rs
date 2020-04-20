@@ -67,6 +67,13 @@ impl Thread {
                 bounding_rect: geo_line_string.bounding_rect().unwrap(),
                 geometry: geo::Geometry::LineString(geo_line_string),
             });
+        } else if let Some(geo_multi_polygon) =
+            geojson_value.clone().try_into().ok() as Option<geo::MultiPolygon<f64>>
+        {
+            (&mut layers.write().unwrap()).push(Layer {
+                bounding_rect: geo_multi_polygon.bounding_rect().unwrap(),
+                geometry: geo::Geometry::MultiPolygon(geo_multi_polygon),
+            });
         }
     }
 

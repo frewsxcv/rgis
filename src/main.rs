@@ -27,10 +27,13 @@ fn rgis() -> Result<(), Box<dyn error::Error>> {
         loop {
             println!("rerendering");
 
+            ::std::thread::sleep(::std::time::Duration::from_secs(5));
+
             let layers = &*layers.read().unwrap();
             // if tmp.len() > 80 {
             if layers.len() > 0 {
                 let b = bbox_many(layers);
+
 
                 for layer in layers {
                     layer.geometry.to_owned().render(canvas, b);

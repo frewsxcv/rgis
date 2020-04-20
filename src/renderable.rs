@@ -139,11 +139,21 @@ impl Renderable for geo::Polygon<f64> {
     }
 }
 
+impl Renderable for geo::MultiPolygon<f64> {
+    fn render(&self, canvas: &mut CanvasRenderingContext2D, extent: geo::Rect<f64>) {
+        for polygon in &self.0 {
+            // TODO: this should keep the same color for each polygon
+            polygon.render(canvas, extent);
+        }
+    }
+}
+
 impl Renderable for geo::Geometry<f64> {
     fn render(&self, canvas: &mut CanvasRenderingContext2D, extent: geo::Rect<f64>) {
         match self {
             geo::Geometry::Polygon(p) => p.render(canvas, extent),
             geo::Geometry::LineString(p) => p.render(canvas, extent),
+            geo::Geometry::MultiPolygon(p) => p.render(canvas, extent),
             _ => (),
         }
     }
