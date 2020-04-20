@@ -1,7 +1,7 @@
 use std::env;
 use std::error::Error;
 
-pub fn run() -> Result<impl Iterator<Item=String>, Box<dyn Error>> {
+pub fn run() -> Result<impl Iterator<Item = String>, Box<dyn Error>> {
     let args = env::args();
 
     if args.len() < 2 {

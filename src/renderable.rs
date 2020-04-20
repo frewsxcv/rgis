@@ -1,16 +1,31 @@
+use crate::window;
 use geo;
 use geo::boundingbox::BoundingBox;
-use crate::window;
+use pathfinder_canvas::{CanvasRenderingContext2D, ColorU, Path2D};
+use pathfinder_geometry::vector::vec2f;
 use std::iter;
 use std::slice;
 use std::sync;
-use pathfinder_canvas::{Path2D, CanvasRenderingContext2D, ColorU};
-use pathfinder_geometry::vector::{vec2f};
 
 static COLORS: [ColorU; 3] = [
-    ColorU { r: 255, g: 0, b: 0, a: 255 },
-    ColorU { r: 0, g: 255, b: 0, a: 255 },
-    ColorU { r: 0, g: 0, b: 255, a: 255 },
+    ColorU {
+        r: 255,
+        g: 0,
+        b: 0,
+        a: 255,
+    },
+    ColorU {
+        r: 0,
+        g: 255,
+        b: 0,
+        a: 255,
+    },
+    ColorU {
+        r: 0,
+        g: 0,
+        b: 255,
+        a: 255,
+    },
 ];
 
 lazy_static::lazy_static! {
@@ -20,10 +35,7 @@ lazy_static::lazy_static! {
 }
 
 pub trait Renderable: ::std::marker::Sync + ::std::marker::Send {
-    fn render(
-        &self,
-        canvas: &mut CanvasRenderingContext2D,
-    );
+    fn render(&self, canvas: &mut CanvasRenderingContext2D);
 }
 
 fn line_string_to_screen_coords<'a>(
@@ -59,10 +71,7 @@ fn line_string_to_screen_coords<'a>(
 }
 
 impl Renderable for geo::LineString<f64> {
-    fn render(
-        &self,
-        canvas: &mut CanvasRenderingContext2D,
-    ) {
+    fn render(&self, canvas: &mut CanvasRenderingContext2D) {
         canvas.set_line_width(5.0);
 
         let mut coords = line_string_to_screen_coords(self);
@@ -83,10 +92,7 @@ impl Renderable for geo::LineString<f64> {
 }
 
 impl Renderable for geo::Polygon<f64> {
-    fn render(
-        &self,
-        canvas: &mut CanvasRenderingContext2D,
-    ) {
+    fn render(&self, canvas: &mut CanvasRenderingContext2D) {
         canvas.set_line_width(5.0);
 
         let mut coords = line_string_to_screen_coords(&self.exterior);

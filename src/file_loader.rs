@@ -1,5 +1,5 @@
-use geojson::conversion::TryInto;
 use crate::Layers;
+use geojson::conversion::TryInto;
 use std::io::Write;
 use std::{fs, io, sync, thread};
 
