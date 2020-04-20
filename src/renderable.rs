@@ -119,33 +119,37 @@ impl Renderable for geo::LineString<f64> {
 
 impl Renderable for geo::Polygon<f64> {
     fn render(&self, canvas: &mut CanvasRenderingContext2D, extent: geo::Rect<f64>) {
-        canvas.set_line_width(5.0);
-
-        let mut coords = line_string_to_screen_coords(self.exterior(), extent);
-        let mut path = Path2D::new();
-
-        if let Some(first_coord) = coords.next() {
-            path.move_to(vec2f(first_coord[0] as f32, first_coord[1] as f32));
-        }
-
-        for coord in coords {
-            path.line_to(vec2f(coord[0] as f32, coord[1] as f32));
-        }
-
-        path.close_path();
-
-        canvas.set_fill_style(next_color());
-        canvas.fill_path(path, pathfinder_content::fill::FillRule::Winding);
+        render_polygon(self, canvas, extent, next_color())
     }
 }
 
 impl Renderable for geo::MultiPolygon<f64> {
     fn render(&self, canvas: &mut CanvasRenderingContext2D, extent: geo::Rect<f64>) {
+        let color = next_color();
         for polygon in &self.0 {
-            // TODO: this should keep the same color for each polygon
-            polygon.render(canvas, extent);
+            render_polygon(polygon, canvas, extent, color)
         }
     }
+}
+
+fn render_polygon(polygon: &geo::Polygon<f64>, canvas: &mut CanvasRenderingContext2D, extent: geo::Rect<f64>, color: ColorU) {
+    canvas.set_line_width(5.0);
+
+    let mut coords = line_string_to_screen_coords(polygon.exterior(), extent);
+    let mut path = Path2D::new();
+
+    if let Some(first_coord) = coords.next() {
+        path.move_to(vec2f(first_coord[0] as f32, first_coord[1] as f32));
+    }
+
+    for coord in coords {
+        path.line_to(vec2f(coord[0] as f32, coord[1] as f32));
+    }
+
+    path.close_path();
+
+    canvas.set_fill_style(color);
+    canvas.fill_path(path, pathfinder_content::fill::FillRule::Winding);
 }
 
 impl Renderable for geo::Geometry<f64> {
