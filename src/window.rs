@@ -79,7 +79,10 @@ pub fn build_window() {
             } => {
                 *control_flow = ControlFlow::Exit;
             }
-            Event::WindowEvent { event: WindowEvent::Resized(window_size), .. } => {
+            Event::WindowEvent {
+                event: WindowEvent::Resized(window_size),
+                ..
+            } => {
                 let window_size = vec2i(window_size.width as i32, window_size.height as i32);
                 renderer.set_main_framebuffer_size(window_size);
                 let canvas = crate::render(window_size);

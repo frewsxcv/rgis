@@ -1,7 +1,7 @@
 use crate::renderable::Render;
+use pathfinder_canvas::{Canvas, CanvasFontContext};
 use std::io::Write;
 use std::{error, io, process};
-use pathfinder_canvas::{Canvas, CanvasFontContext};
 
 mod cli;
 mod file_loader;
@@ -27,7 +27,9 @@ fn rgis() -> Result<(), Box<dyn error::Error>> {
     Ok(())
 }
 
-fn render(window_size: pathfinder_geometry::vector::Vector2I) -> pathfinder_canvas::CanvasRenderingContext2D {
+fn render(
+    window_size: pathfinder_geometry::vector::Vector2I,
+) -> pathfinder_canvas::CanvasRenderingContext2D {
     let font_context = CanvasFontContext::from_system_source();
     let mut canvas = Canvas::new(window_size.to_f32()).get_context_2d(font_context);
 
@@ -36,7 +38,10 @@ fn render(window_size: pathfinder_geometry::vector::Vector2I) -> pathfinder_canv
     let b = bbox_many(&layers[..]);
 
     for layer in &layers[..] {
-        layer.geometry.to_owned().render(&mut canvas, b, layer.color);
+        layer
+            .geometry
+            .to_owned()
+            .render(&mut canvas, b, layer.color);
     }
 
     canvas

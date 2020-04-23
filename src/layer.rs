@@ -1,5 +1,5 @@
-use std::sync;
 use pathfinder_canvas::ColorU;
+use std::sync;
 
 pub struct Layer {
     pub geometry: geo::Geometry<f64>,
