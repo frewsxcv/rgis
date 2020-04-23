@@ -64,7 +64,7 @@ lazy_static::lazy_static! {
     };
 }
 
-pub trait Renderable: ::std::marker::Sync + ::std::marker::Send {
+pub trait Render: ::std::marker::Sync + ::std::marker::Send {
     fn render(&self, canvas: &mut CanvasRenderingContext2D, extent: geo::Rect<f64>);
 }
 
@@ -96,13 +96,13 @@ fn line_string_to_screen_coords<'a>(
         .map(|coord| [coord.x, coord.y])
 }
 
-impl Renderable for geo::LineString<f64> {
+impl Render for geo::LineString<f64> {
     fn render(&self, canvas: &mut CanvasRenderingContext2D, extent: geo::Rect<f64>) {
         render_line_string(self, canvas, extent, next_color())
     }
 }
 
-impl Renderable for geo::MultiLineString<f64> {
+impl Render for geo::MultiLineString<f64> {
     fn render(&self, canvas: &mut CanvasRenderingContext2D, extent: geo::Rect<f64>) {
         let color = next_color();
         for line_string in &self.0 {
@@ -135,13 +135,13 @@ fn render_line_string(
     canvas.stroke_path(path);
 }
 
-impl Renderable for geo::Polygon<f64> {
+impl Render for geo::Polygon<f64> {
     fn render(&self, canvas: &mut CanvasRenderingContext2D, extent: geo::Rect<f64>) {
         render_polygon(self, canvas, extent, next_color())
     }
 }
 
-impl Renderable for geo::MultiPolygon<f64> {
+impl Render for geo::MultiPolygon<f64> {
     fn render(&self, canvas: &mut CanvasRenderingContext2D, extent: geo::Rect<f64>) {
         let color = next_color();
         for polygon in &self.0 {
@@ -175,7 +175,7 @@ fn render_polygon(
     canvas.fill_path(path, pathfinder_content::fill::FillRule::Winding);
 }
 
-impl Renderable for geo::Geometry<f64> {
+impl Render for geo::Geometry<f64> {
     fn render(&self, canvas: &mut CanvasRenderingContext2D, extent: geo::Rect<f64>) {
         match self {
             geo::Geometry::Polygon(p) => p.render(canvas, extent),

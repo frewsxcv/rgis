@@ -1,4 +1,4 @@
-use crate::renderable::Renderable;
+use crate::renderable::Render;
 use std::io::Write;
 use std::{error, io, process};
 use pathfinder_canvas::{Canvas, CanvasFontContext};
