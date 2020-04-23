@@ -1,7 +1,7 @@
 use crate::renderable::Renderable;
 use std::io::Write;
-use std::{error, io, process, sync};
-use pathfinder_canvas::{Canvas, CanvasFontContext, CanvasRenderingContext2D};
+use std::{error, io, process};
+use pathfinder_canvas::{Canvas, CanvasFontContext};
 
 mod cli;
 mod file_loader;
