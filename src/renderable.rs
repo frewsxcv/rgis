@@ -98,23 +98,41 @@ fn line_string_to_screen_coords<'a>(
 
 impl Renderable for geo::LineString<f64> {
     fn render(&self, canvas: &mut CanvasRenderingContext2D, extent: geo::Rect<f64>) {
-        canvas.set_line_width(5.0);
-
-        let mut coords = line_string_to_screen_coords(self, extent);
-        let mut path = Path2D::new();
-
-        if let Some(first_coord) = coords.next() {
-            path.move_to(vec2f(first_coord[0] as f32, first_coord[1] as f32));
-        }
-
-        for coord in coords {
-            path.line_to(vec2f(coord[0] as f32, coord[1] as f32));
-        }
-
-        path.close_path();
-        canvas.set_stroke_style(next_color());
-        canvas.stroke_path(path);
+        render_line_string(self, canvas, extent, next_color())
     }
+}
+
+impl Renderable for geo::MultiLineString<f64> {
+    fn render(&self, canvas: &mut CanvasRenderingContext2D, extent: geo::Rect<f64>) {
+        let color = next_color();
+        for line_string in &self.0 {
+            render_line_string(line_string, canvas, extent, color)
+        }
+    }
+}
+
+fn render_line_string(
+    polygon: &geo::LineString<f64>,
+    canvas: &mut CanvasRenderingContext2D,
+    extent: geo::Rect<f64>,
+    color: ColorU,
+) {
+    canvas.set_line_width(5.0);
+
+    let mut coords = line_string_to_screen_coords(polygon, extent);
+    let mut path = Path2D::new();
+
+    if let Some(first_coord) = coords.next() {
+        path.move_to(vec2f(first_coord[0] as f32, first_coord[1] as f32));
+    }
+
+    for coord in coords {
+        path.line_to(vec2f(coord[0] as f32, coord[1] as f32));
+    }
+
+    path.close_path();
+    canvas.set_stroke_style(color);
+    canvas.stroke_path(path);
 }
 
 impl Renderable for geo::Polygon<f64> {
@@ -162,6 +180,7 @@ impl Renderable for geo::Geometry<f64> {
         match self {
             geo::Geometry::Polygon(p) => p.render(canvas, extent),
             geo::Geometry::LineString(p) => p.render(canvas, extent),
+            geo::Geometry::MultiLineString(p) => p.render(canvas, extent),
             geo::Geometry::MultiPolygon(p) => p.render(canvas, extent),
             _ => (),
         }
