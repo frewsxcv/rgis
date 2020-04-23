@@ -14,11 +14,10 @@ impl Thread {
         let (tx, rx) = sync::mpsc::channel();
         let join_handle = thread::spawn(move || {
             while let Ok(geojson_file_path) = rx.recv() {
-                println!("received: {:?}", geojson_file_path);
-                let geojson_file = fs::File::open(geojson_file_path).expect("TODO");
-                println!("opened");
+                log::info!("Opening file: {:?}", geojson_file_path);
+                let geojson_file = fs::File::open(&geojson_file_path).expect("TODO");
+                log::info!("Parsing file: {:?}", geojson_file_path);
                 let geojson: geojson::GeoJson = serde_json::from_reader(&geojson_file).unwrap();
-                println!("parsed");
                 match geojson {
                     geojson::GeoJson::Geometry(g) => Thread::load_geojson_geometry(g),
                     geojson::GeoJson::Feature(f) => Thread::load_geojson_feature(f),
@@ -38,7 +37,6 @@ impl Thread {
     }
 
     fn load_geojson_feature(geojson_feature: geojson::Feature) {
-        println!("feature loading");
         if let Some(geometry) = geojson_feature.geometry {
             Thread::load_geojson_geometry(geometry)
         }
@@ -78,7 +76,6 @@ impl Thread {
     }
 
     pub fn load(&self, path: String) {
-        println!("loading: {:?}", path);
         self.tx.send(path).expect("TODO");
     }
 }

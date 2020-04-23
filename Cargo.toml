@@ -6,11 +6,13 @@ license = "GPL-3.0-only"
 edition = "2018"
 
 [dependencies]
+env_logger = "*"
 geo = "0.13"
 geojson = { version = "0.18", features = ['geo-types'] }
 gl = "0.14"
 glutin = "*"
 lazy_static = "1"
+log = "*"
 pathfinder_canvas = "*"
 pathfinder_color = "*"
 pathfinder_content = "*"

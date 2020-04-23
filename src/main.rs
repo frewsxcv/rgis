@@ -71,6 +71,8 @@ fn bbox_many(geometries: &[layer::Layer]) -> geo::Rect<f64> {
 }
 
 fn main() {
+    env_logger::init();
+
     if let Err(e) = rgis() {
         writeln!(io::stderr(), "{}: {}", PROGRAM_NAME, e).expect("could not write to stderr");
         process::exit(1);
