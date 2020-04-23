@@ -44,41 +44,42 @@ impl Thread {
 
     fn load_geojson_geometry(geojson_geometry: geojson::Geometry) {
         let geojson_value = geojson_geometry.value;
-        if let geojson::Value::GeometryCollection(geojson_geometry_collection) = geojson_value {
-            for geojson_geometry in geojson_geometry_collection {
-                Thread::load_geojson_geometry(geojson_geometry);
-            }
-            return;
-        }
 
-        if let Some(geo_polygon) =
-            geojson_value.clone().try_into().ok() as Option<geo::Polygon<f64>>
-        {
-            (&mut LAYERS.write().unwrap()).push(Layer {
-                bounding_rect: geo_polygon.bounding_rect().unwrap(),
-                geometry: geo::Geometry::Polygon(geo_polygon),
-            });
-        } else if let Some(geo_line_string) =
-            geojson_value.clone().try_into().ok() as Option<geo::LineString<f64>>
-        {
-            (&mut LAYERS.write().unwrap()).push(Layer {
-                bounding_rect: geo_line_string.bounding_rect().unwrap(),
-                geometry: geo::Geometry::LineString(geo_line_string),
-            });
-        } else if let Some(geo_multi_line_string) =
-            geojson_value.clone().try_into().ok() as Option<geo::MultiLineString<f64>>
-        {
-            (&mut LAYERS.write().unwrap()).push(Layer {
-                bounding_rect: geo_multi_line_string.bounding_rect().unwrap(),
-                geometry: geo::Geometry::MultiLineString(geo_multi_line_string),
-            });
-        } else if let Some(geo_multi_polygon) =
-            geojson_value.clone().try_into().ok() as Option<geo::MultiPolygon<f64>>
-        {
-            (&mut LAYERS.write().unwrap()).push(Layer {
-                bounding_rect: geo_multi_polygon.bounding_rect().unwrap(),
-                geometry: geo::Geometry::MultiPolygon(geo_multi_polygon),
-            });
+        match geojson_value {
+            g @ geojson::Value::LineString(_) => {
+                let g = (g.try_into().ok() as Option<geo::LineString<f64>>).unwrap();
+                (&mut LAYERS.write().unwrap()).push(Layer {
+                    bounding_rect: g.bounding_rect().unwrap(),
+                    geometry: geo::Geometry::LineString(g),
+                });
+            },
+            g @ geojson::Value::Polygon(_) => {
+                let g = (g.try_into().ok() as Option<geo::Polygon<f64>>).unwrap();
+                (&mut LAYERS.write().unwrap()).push(Layer {
+                    bounding_rect: g.bounding_rect().unwrap(),
+                    geometry: geo::Geometry::Polygon(g),
+                });
+            },
+            g @ geojson::Value::MultiLineString(_) => {
+                let g = (g.try_into().ok() as Option<geo::MultiLineString<f64>>).unwrap();
+                (&mut LAYERS.write().unwrap()).push(Layer {
+                    bounding_rect: g.bounding_rect().unwrap(),
+                    geometry: geo::Geometry::MultiLineString(g),
+                });
+            },
+            g @ geojson::Value::MultiPolygon(_) => {
+                let g = (g.try_into().ok() as Option<geo::MultiPolygon<f64>>).unwrap();
+                (&mut LAYERS.write().unwrap()).push(Layer {
+                    bounding_rect: g.bounding_rect().unwrap(),
+                    geometry: geo::Geometry::MultiPolygon(g),
+                });
+            },
+            geojson::Value::GeometryCollection(g) => {
+                for geojson_geometry in g {
+                    Thread::load_geojson_geometry(geojson_geometry);
+                }
+            }
+            _ => {}
         }
     }
 
