@@ -38,10 +38,7 @@ fn render(
     let b = bbox_many(&layers[..]);
 
     for layer in &layers[..] {
-        layer
-            .geometry
-            .to_owned()
-            .render(&mut canvas, b, layer.color);
+        layer.geometry.render(&mut canvas, b, layer.color);
     }
 
     canvas
