@@ -65,7 +65,7 @@ lazy_static::lazy_static! {
 }
 
 pub trait Render: ::std::marker::Sync + ::std::marker::Send {
-    fn render(&self, canvas: &mut CanvasRenderingContext2D, extent: geo::Rect<f64>);
+    fn render(&self, canvas: &mut CanvasRenderingContext2D, extent: geo::Rect<f64>, color: ColorU);
 }
 
 fn line_string_to_screen_coords<'a>(
@@ -97,14 +97,13 @@ fn line_string_to_screen_coords<'a>(
 }
 
 impl Render for geo::LineString<f64> {
-    fn render(&self, canvas: &mut CanvasRenderingContext2D, extent: geo::Rect<f64>) {
-        render_line_string(self, canvas, extent, next_color())
+    fn render(&self, canvas: &mut CanvasRenderingContext2D, extent: geo::Rect<f64>, color: ColorU) {
+        render_line_string(self, canvas, extent, color)
     }
 }
 
 impl Render for geo::MultiLineString<f64> {
-    fn render(&self, canvas: &mut CanvasRenderingContext2D, extent: geo::Rect<f64>) {
-        let color = next_color();
+    fn render(&self, canvas: &mut CanvasRenderingContext2D, extent: geo::Rect<f64>, color: ColorU) {
         for line_string in &self.0 {
             render_line_string(line_string, canvas, extent, color)
         }
@@ -136,14 +135,13 @@ fn render_line_string(
 }
 
 impl Render for geo::Polygon<f64> {
-    fn render(&self, canvas: &mut CanvasRenderingContext2D, extent: geo::Rect<f64>) {
-        render_polygon(self, canvas, extent, next_color())
+    fn render(&self, canvas: &mut CanvasRenderingContext2D, extent: geo::Rect<f64>, color: ColorU) {
+        render_polygon(self, canvas, extent, color)
     }
 }
 
 impl Render for geo::MultiPolygon<f64> {
-    fn render(&self, canvas: &mut CanvasRenderingContext2D, extent: geo::Rect<f64>) {
-        let color = next_color();
+    fn render(&self, canvas: &mut CanvasRenderingContext2D, extent: geo::Rect<f64>, color: ColorU) {
         for polygon in &self.0 {
             render_polygon(polygon, canvas, extent, color)
         }
@@ -176,17 +174,17 @@ fn render_polygon(
 }
 
 impl Render for geo::Geometry<f64> {
-    fn render(&self, canvas: &mut CanvasRenderingContext2D, extent: geo::Rect<f64>) {
+    fn render(&self, canvas: &mut CanvasRenderingContext2D, extent: geo::Rect<f64>, color: ColorU) {
         match self {
-            geo::Geometry::Polygon(p) => p.render(canvas, extent),
-            geo::Geometry::LineString(p) => p.render(canvas, extent),
-            geo::Geometry::MultiLineString(p) => p.render(canvas, extent),
-            geo::Geometry::MultiPolygon(p) => p.render(canvas, extent),
+            geo::Geometry::Polygon(p) => p.render(canvas, extent, color),
+            geo::Geometry::LineString(p) => p.render(canvas, extent, color),
+            geo::Geometry::MultiLineString(p) => p.render(canvas, extent, color),
+            geo::Geometry::MultiPolygon(p) => p.render(canvas, extent, color),
             _ => (),
         }
     }
 }
 
-fn next_color() -> ColorU {
+pub fn next_color() -> ColorU {
     *COLOR_ITER.lock().unwrap().next().unwrap()
 }

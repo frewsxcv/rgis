@@ -3,6 +3,7 @@ use geo::bounding_rect::BoundingRect;
 use std::convert::TryInto;
 use std::io::Write;
 use std::{fs, io, sync, thread};
+use crate::renderable::next_color;
 
 pub struct Thread {
     _join_handle: thread::JoinHandle<()>,
@@ -51,6 +52,7 @@ impl Thread {
                 (&mut LAYERS.write().unwrap()).push(Layer {
                     bounding_rect: g.bounding_rect().unwrap(),
                     geometry: geo::Geometry::LineString(g),
+                    color: next_color(),
                 });
             },
             g @ geojson::Value::Polygon(_) => {
@@ -58,6 +60,7 @@ impl Thread {
                 (&mut LAYERS.write().unwrap()).push(Layer {
                     bounding_rect: g.bounding_rect().unwrap(),
                     geometry: geo::Geometry::Polygon(g),
+                    color: next_color(),
                 });
             },
             g @ geojson::Value::MultiLineString(_) => {
@@ -65,6 +68,7 @@ impl Thread {
                 (&mut LAYERS.write().unwrap()).push(Layer {
                     bounding_rect: g.bounding_rect().unwrap(),
                     geometry: geo::Geometry::MultiLineString(g),
+                    color: next_color(),
                 });
             },
             g @ geojson::Value::MultiPolygon(_) => {
@@ -72,6 +76,7 @@ impl Thread {
                 (&mut LAYERS.write().unwrap()).push(Layer {
                     bounding_rect: g.bounding_rect().unwrap(),
                     geometry: geo::Geometry::MultiPolygon(g),
+                    color: next_color(),
                 });
             },
             geojson::Value::GeometryCollection(g) => {

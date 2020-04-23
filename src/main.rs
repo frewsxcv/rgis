@@ -36,7 +36,7 @@ fn render(window_size: pathfinder_geometry::vector::Vector2I) -> pathfinder_canv
     let b = bbox_many(&layers[..]);
 
     for layer in &layers[..] {
-        layer.geometry.to_owned().render(&mut canvas, b);
+        layer.geometry.to_owned().render(&mut canvas, b, layer.color);
     }
 
     canvas
