@@ -44,32 +44,25 @@ fn render(
     canvas
 }
 
+fn bbox_merge(a: geo::Rect<f64>, b: geo::Rect<f64>) -> geo::Rect<f64> {
+    geo::Rect::new(
+        geo::Coordinate {
+            x: a.min().x.min(b.min().x),
+            y: a.min().y.min(b.min().y),
+        },
+        geo::Coordinate {
+            x: a.max().x.max(b.max().x),
+            y: a.max().y.max(b.max().y),
+        },
+    )
+}
+
 fn bbox_many(geometries: &[layer::Layer]) -> geo::Rect<f64> {
     let mut iter = geometries.into_iter();
-    let r = iter.next().unwrap().bounding_rect;
-    let mut min_x = r.min().x;
-    let mut min_y = r.min().y;
-    let mut max_x = r.max().x;
-    let mut max_y = r.max().y;
-    for g in iter {
-        let b = g.bounding_rect;
-        if b.min().x < min_x {
-            min_x = b.min().x;
-        }
-        if b.min().y < min_y {
-            min_y = b.min().y;
-        }
-        if b.max().x > max_x {
-            max_x = b.max().x;
-        }
-        if b.max().y > max_y {
-            max_y = b.max().y;
-        }
-    }
-    geo::Rect::new(
-        geo::Coordinate { x: min_x, y: min_y },
-        geo::Coordinate { x: max_x, y: max_y },
-    )
+    let first_rect = iter.next().unwrap().bounding_rect;
+    iter.fold(first_rect, |acc, next| {
+        bbox_merge(acc, next.bounding_rect)
+    })
 }
 
 fn main() {
