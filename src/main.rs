@@ -33,7 +33,7 @@ fn render(
     let font_context = CanvasFontContext::from_system_source();
     let mut canvas = Canvas::new(window_size.to_f32()).get_context_2d(font_context);
 
-    let layers = &layer::LAYERS.read().unwrap();
+    let layers = layer::LAYERS.0.read().unwrap();
 
     let b = bbox_many(&layers[..]);
 

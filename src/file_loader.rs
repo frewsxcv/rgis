@@ -1,6 +1,4 @@
-use crate::layer::{Layer, LAYERS};
-use crate::renderable::next_color;
-use geo::bounding_rect::BoundingRect;
+use crate::layer::LAYERS;
 use std::convert::TryInto;
 use std::io::Write;
 use std::{fs, io, sync, thread};
@@ -49,35 +47,19 @@ impl Thread {
         match geojson_value {
             g @ geojson::Value::LineString(_) => {
                 let g = (g.try_into().ok() as Option<geo::LineString<f64>>).unwrap();
-                (&mut LAYERS.write().unwrap()).push(Layer {
-                    bounding_rect: g.bounding_rect().unwrap(),
-                    geometry: geo::Geometry::LineString(g),
-                    color: next_color(),
-                });
+                LAYERS.add(geo::Geometry::LineString(g));
             }
             g @ geojson::Value::Polygon(_) => {
                 let g = (g.try_into().ok() as Option<geo::Polygon<f64>>).unwrap();
-                (&mut LAYERS.write().unwrap()).push(Layer {
-                    bounding_rect: g.bounding_rect().unwrap(),
-                    geometry: geo::Geometry::Polygon(g),
-                    color: next_color(),
-                });
+                LAYERS.add(geo::Geometry::Polygon(g));
             }
             g @ geojson::Value::MultiLineString(_) => {
                 let g = (g.try_into().ok() as Option<geo::MultiLineString<f64>>).unwrap();
-                (&mut LAYERS.write().unwrap()).push(Layer {
-                    bounding_rect: g.bounding_rect().unwrap(),
-                    geometry: geo::Geometry::MultiLineString(g),
-                    color: next_color(),
-                });
+                LAYERS.add(geo::Geometry::MultiLineString(g));
             }
             g @ geojson::Value::MultiPolygon(_) => {
                 let g = (g.try_into().ok() as Option<geo::MultiPolygon<f64>>).unwrap();
-                (&mut LAYERS.write().unwrap()).push(Layer {
-                    bounding_rect: g.bounding_rect().unwrap(),
-                    geometry: geo::Geometry::MultiPolygon(g),
-                    color: next_color(),
-                });
+                LAYERS.add(geo::Geometry::MultiPolygon(g));
             }
             geojson::Value::GeometryCollection(g) => {
                 for geojson_geometry in g {
