@@ -33,36 +33,14 @@ fn render(
     let font_context = CanvasFontContext::from_system_source();
     let mut canvas = Canvas::new(window_size.to_f32()).get_context_2d(font_context);
 
-    let layers = layer::LAYERS.0.read().unwrap();
-
-    let b = bbox_many(&layers[..]);
+    let layers = layer::LAYERS.data.read().unwrap();
+    let bounding_rect = layer::LAYERS.bounding_rect.read().unwrap();
 
     for layer in &layers[..] {
-        layer.geometry.render(&mut canvas, b, layer.color);
+        layer.geometry.render(&mut canvas, bounding_rect.unwrap(), layer.color);
     }
 
     canvas
-}
-
-fn bbox_merge(a: geo::Rect<f64>, b: geo::Rect<f64>) -> geo::Rect<f64> {
-    geo::Rect::new(
-        geo::Coordinate {
-            x: a.min().x.min(b.min().x),
-            y: a.min().y.min(b.min().y),
-        },
-        geo::Coordinate {
-            x: a.max().x.max(b.max().x),
-            y: a.max().y.max(b.max().y),
-        },
-    )
-}
-
-fn bbox_many(geometries: &[layer::Layer]) -> geo::Rect<f64> {
-    let mut iter = geometries.into_iter();
-    let first_rect = iter.next().unwrap().bounding_rect;
-    iter.fold(first_rect, |acc, next| {
-        bbox_merge(acc, next.bounding_rect)
-    })
 }
 
 fn main() {
