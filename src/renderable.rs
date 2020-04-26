@@ -65,7 +65,13 @@ lazy_static::lazy_static! {
 }
 
 pub trait Render: ::std::marker::Sync + ::std::marker::Send {
-    fn render(&self, canvas: &mut CanvasRenderingContext2D, extent: geo::Rect<f64>, color: ColorU, window_size: pathfinder_geometry::vector::Vector2I);
+    fn render(
+        &self,
+        canvas: &mut CanvasRenderingContext2D,
+        extent: geo::Rect<f64>,
+        color: ColorU,
+        window_size: pathfinder_geometry::vector::Vector2I,
+    );
 }
 
 fn line_string_to_screen_coords<'a>(
@@ -98,13 +104,25 @@ fn line_string_to_screen_coords<'a>(
 }
 
 impl Render for geo::LineString<f64> {
-    fn render(&self, canvas: &mut CanvasRenderingContext2D, extent: geo::Rect<f64>, color: ColorU, window_size: pathfinder_geometry::vector::Vector2I) {
+    fn render(
+        &self,
+        canvas: &mut CanvasRenderingContext2D,
+        extent: geo::Rect<f64>,
+        color: ColorU,
+        window_size: pathfinder_geometry::vector::Vector2I,
+    ) {
         render_line_string(self, canvas, extent, color, window_size)
     }
 }
 
 impl Render for geo::MultiLineString<f64> {
-    fn render(&self, canvas: &mut CanvasRenderingContext2D, extent: geo::Rect<f64>, color: ColorU, window_size: pathfinder_geometry::vector::Vector2I) {
+    fn render(
+        &self,
+        canvas: &mut CanvasRenderingContext2D,
+        extent: geo::Rect<f64>,
+        color: ColorU,
+        window_size: pathfinder_geometry::vector::Vector2I,
+    ) {
         for line_string in &self.0 {
             render_line_string(line_string, canvas, extent, color, window_size)
         }
@@ -137,13 +155,25 @@ fn render_line_string(
 }
 
 impl Render for geo::Polygon<f64> {
-    fn render(&self, canvas: &mut CanvasRenderingContext2D, extent: geo::Rect<f64>, color: ColorU, window_size: pathfinder_geometry::vector::Vector2I) {
+    fn render(
+        &self,
+        canvas: &mut CanvasRenderingContext2D,
+        extent: geo::Rect<f64>,
+        color: ColorU,
+        window_size: pathfinder_geometry::vector::Vector2I,
+    ) {
         render_polygon(self, canvas, extent, color, window_size)
     }
 }
 
 impl Render for geo::MultiPolygon<f64> {
-    fn render(&self, canvas: &mut CanvasRenderingContext2D, extent: geo::Rect<f64>, color: ColorU, window_size: pathfinder_geometry::vector::Vector2I) {
+    fn render(
+        &self,
+        canvas: &mut CanvasRenderingContext2D,
+        extent: geo::Rect<f64>,
+        color: ColorU,
+        window_size: pathfinder_geometry::vector::Vector2I,
+    ) {
         for polygon in &self.0 {
             render_polygon(polygon, canvas, extent, color, window_size)
         }
@@ -177,7 +207,13 @@ fn render_polygon(
 }
 
 impl Render for geo::Geometry<f64> {
-    fn render(&self, canvas: &mut CanvasRenderingContext2D, extent: geo::Rect<f64>, color: ColorU, window_size: pathfinder_geometry::vector::Vector2I) {
+    fn render(
+        &self,
+        canvas: &mut CanvasRenderingContext2D,
+        extent: geo::Rect<f64>,
+        color: ColorU,
+        window_size: pathfinder_geometry::vector::Vector2I,
+    ) {
         match self {
             geo::Geometry::Polygon(p) => p.render(canvas, extent, color, window_size),
             geo::Geometry::LineString(p) => p.render(canvas, extent, color, window_size),

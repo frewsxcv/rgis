@@ -30,14 +30,22 @@ fn rgis() -> Result<(), Box<dyn error::Error>> {
 fn render(
     window_size: pathfinder_geometry::vector::Vector2I,
 ) -> pathfinder_canvas::CanvasRenderingContext2D {
+    println!("rerendering with window size: {:?}", window_size);
     let font_context = CanvasFontContext::from_system_source();
     let mut canvas = Canvas::new(window_size.to_f32()).get_context_2d(font_context);
 
     let layers = layer::LAYERS.data.read().unwrap();
     let bounding_rect = layer::LAYERS.bounding_rect.read().unwrap();
 
+    println!("bounding_rect: {:?}", bounding_rect);
+
     for layer in &layers[..] {
-        layer.geometry.render(&mut canvas, bounding_rect.unwrap(), layer.color, window_size);
+        layer.geometry.render(
+            &mut canvas,
+            bounding_rect.unwrap(),
+            layer.color,
+            window_size,
+        );
     }
 
     canvas

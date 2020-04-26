@@ -1,6 +1,6 @@
-use pathfinder_canvas::ColorU;
 use crate::renderable::next_color;
 use geo::bounding_rect::BoundingRect;
+use pathfinder_canvas::ColorU;
 use std::sync;
 
 lazy_static::lazy_static! {
@@ -32,7 +32,9 @@ fn geometry_bounding_rect(geometry: &geo::Geometry<f64>) -> geo::Rect<f64> {
     match geometry {
         geo::Geometry::LineString(line_string) => line_string.bounding_rect().unwrap(),
         geo::Geometry::Polygon(polygon) => polygon.bounding_rect().unwrap(),
-        geo::Geometry::MultiLineString(multi_line_string) => multi_line_string.bounding_rect().unwrap(),
+        geo::Geometry::MultiLineString(multi_line_string) => {
+            multi_line_string.bounding_rect().unwrap()
+        }
         geo::Geometry::MultiPolygon(multi_polygon) => multi_polygon.bounding_rect().unwrap(),
         _ => unimplemented!(),
     }
