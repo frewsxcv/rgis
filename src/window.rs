@@ -104,6 +104,46 @@ pub fn build_window() {
                 scene.build_and_render(&mut renderer, BuildOptions::default());
                 gl_context.swap_buffers().unwrap();
             }
+            Event::WindowEvent {
+                event:
+                    WindowEvent::KeyboardInput {
+                        input:
+                            KeyboardInput {
+                                virtual_keycode: Some(VirtualKeyCode::Up),
+                                ..
+                            },
+                        ..
+                    },
+                ..
+            } => {
+                let view_box = scene.copy_scene().view_box();
+                scene.set_view_box(pathfinder_geometry::rect::RectF::new(
+                    pathfinder_geometry::vector::Vector2F::new(view_box.min_x(), view_box.min_y() + 10.),
+                    pathfinder_geometry::vector::Vector2F::new(view_box.max_x(), view_box.max_y() + 10.),
+                ));
+                scene.build_and_render(&mut renderer, BuildOptions::default());
+                gl_context.swap_buffers().unwrap();
+            }
+            Event::WindowEvent {
+                event:
+                    WindowEvent::KeyboardInput {
+                        input:
+                            KeyboardInput {
+                                virtual_keycode: Some(VirtualKeyCode::Down),
+                                ..
+                            },
+                        ..
+                    },
+                ..
+            } => {
+                let view_box = scene.copy_scene().view_box();
+                scene.set_view_box(pathfinder_geometry::rect::RectF::new(
+                    pathfinder_geometry::vector::Vector2F::new(view_box.min_x(), view_box.min_y() - 10.),
+                    pathfinder_geometry::vector::Vector2F::new(view_box.max_x(), view_box.max_y() - 10.),
+                ));
+                scene.build_and_render(&mut renderer, BuildOptions::default());
+                gl_context.swap_buffers().unwrap();
+            }
             _ => {
                 *control_flow = ControlFlow::Wait;
             }
