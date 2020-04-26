@@ -79,11 +79,11 @@ fn line_string_to_screen_coords<'a>(
     extent: geo::Rect<f64>,
     window_size: pathfinder_geometry::vector::Vector2I,
 ) -> impl Iterator<Item = [f64; 2]> + 'a {
-    let scale = if window_size.x() < window_size.y() {
-        window_size.x() as f64 / extent.width()
-    } else {
-        window_size.y() as f64 / extent.height()
-    };
+    let x_scale = window_size.x() as f64 / extent.width();
+
+    let y_scale = window_size.y() as f64 / extent.height();
+
+    let scale = x_scale.min(y_scale);
 
     line_string
         .0
