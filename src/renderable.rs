@@ -74,20 +74,18 @@ pub trait Render: ::std::marker::Sync + ::std::marker::Send {
     );
 }
 
-fn line_string_to_screen_coords<'a>(
-    line_string: &'a geo::LineString<f64>,
+fn coords_to_screen_coords(
+    coords: impl Iterator<Item = geo::Coordinate<f64>>,
     extent: geo::Rect<f64>,
     window_size: pathfinder_geometry::vector::Vector2I,
-) -> impl Iterator<Item = [f64; 2]> + 'a {
+) -> impl Iterator<Item = [f64; 2]> {
     let x_scale = window_size.x() as f64 / extent.width();
 
     let y_scale = window_size.y() as f64 / extent.height();
 
     let scale = x_scale.min(y_scale);
 
-    line_string
-        .0
-        .iter()
+    coords
         .map(move |coord| geo::Coordinate {
             x: coord.x - extent.min().x,
             y: coord.y - extent.max().y,
@@ -130,7 +128,7 @@ impl Render for geo::MultiLineString<f64> {
 }
 
 fn render_line_string(
-    polygon: &geo::LineString<f64>,
+    line_string: &geo::LineString<f64>,
     canvas: &mut CanvasRenderingContext2D,
     extent: geo::Rect<f64>,
     color: ColorU,
@@ -138,7 +136,7 @@ fn render_line_string(
 ) {
     canvas.set_line_width(5.0);
 
-    let mut coords = line_string_to_screen_coords(polygon, extent, window_size);
+    let mut coords = coords_to_screen_coords(line_string.0.iter().copied(), extent, window_size);
     let mut path = Path2D::new();
 
     if let Some(first_coord) = coords.next() {
@@ -189,7 +187,8 @@ fn render_polygon(
 ) {
     canvas.set_line_width(5.0);
 
-    let mut coords = line_string_to_screen_coords(polygon.exterior(), extent, window_size);
+    let mut coords =
+        coords_to_screen_coords(polygon.exterior().0.iter().copied(), extent, window_size);
     let mut path = Path2D::new();
 
     if let Some(first_coord) = coords.next() {
