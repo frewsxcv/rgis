@@ -1,4 +1,3 @@
-use crate::window;
 use geo;
 use pathfinder_canvas::{CanvasRenderingContext2D, ColorU, Path2D};
 use pathfinder_geometry::vector::vec2f;

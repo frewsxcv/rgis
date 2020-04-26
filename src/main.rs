@@ -22,9 +22,9 @@ fn rgis() -> Result<(), Box<dyn error::Error>> {
         file_loading_thread.load(geojson_file_path);
     }
 
-    window::build_window();
+    let window = window::Window::new();
 
-    Ok(())
+    window.start_event_loop();
 }
 
 fn render(
