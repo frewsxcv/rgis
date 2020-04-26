@@ -16,18 +16,18 @@ static PROGRAM_NAME: &'static str = "rgis";
 fn rgis() -> Result<(), Box<dyn error::Error>> {
     let geojson_file_paths = cli::run()?;
 
+    let window = window::Window::new();
+
+    let event_loop_proxy = window.event_loop.create_proxy();
+
     let file_loading_thread = file_loader::Thread::spawn();
 
     for geojson_file_path in geojson_file_paths {
         file_loading_thread.load(geojson_file_path);
     }
 
-    let window = window::Window::new();
-
-    let event_loop_proxy = window.event_loop.create_proxy();
-
     ::std::thread::spawn(move || {
-        ::std::thread::sleep(::std::time::Duration::from_secs(3));
+        file_loading_thread.after_load_rx.recv().unwrap();
         event_loop_proxy.send_event(window::UserEvent::Render).unwrap();
     });
 
