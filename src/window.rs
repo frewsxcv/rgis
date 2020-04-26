@@ -16,9 +16,13 @@ use pathfinder_resources::fs::FilesystemResourceLoader;
 pub const WINDOW_SIZE_X: i32 = 800;
 pub const WINDOW_SIZE_Y: i32 = 800;
 
+enum UserEvent {
+    Render,
+}
+
 pub fn build_window() {
     // Calculate the right logical size of the window.
-    let event_loop = EventLoop::new();
+    let event_loop: EventLoop<UserEvent> = EventLoop::with_user_event();
     let window_size = vec2i(WINDOW_SIZE_X, WINDOW_SIZE_Y);
     let physical_window_size = PhysicalSize::new(window_size.x() as f64, window_size.y() as f64);
 
@@ -58,6 +62,12 @@ pub fn build_window() {
     scene.build_and_render(&mut renderer, BuildOptions::default());
     gl_context.swap_buffers().unwrap();
 
+    // let event_loop_proxy = event_loop.create_proxy();
+
+    // std::thread::spawn(move || {
+    //     event_loop_proxy.send_event(UserEvent::Render);
+    // });
+
     // Wait for a keypress.
     event_loop.run(move |event, _, control_flow| {
         match event {
@@ -87,6 +97,10 @@ pub fn build_window() {
                 renderer.set_main_framebuffer_size(window_size);
                 let canvas = crate::render(window_size);
                 scene.replace_scene(canvas.into_canvas().into_scene());
+                // scene.set_view_box(pathfinder_geometry::rect::RectF::new(
+                //     pathfinder_geometry::vector::Vector2F::zero(),
+                //     window_size.to_f32(),
+                // ));
                 scene.build_and_render(&mut renderer, BuildOptions::default());
                 gl_context.swap_buffers().unwrap();
             }

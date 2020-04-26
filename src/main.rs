@@ -37,7 +37,7 @@ fn render(
     let bounding_rect = layer::LAYERS.bounding_rect.read().unwrap();
 
     for layer in &layers[..] {
-        layer.geometry.render(&mut canvas, bounding_rect.unwrap(), layer.color);
+        layer.geometry.render(&mut canvas, bounding_rect.unwrap(), layer.color, window_size);
     }
 
     canvas
