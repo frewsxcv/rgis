@@ -16,13 +16,14 @@ use pathfinder_resources::fs::FilesystemResourceLoader;
 pub const WINDOW_SIZE_X: i32 = 800;
 pub const WINDOW_SIZE_Y: i32 = 800;
 
-enum UserEvent {
+#[derive(Debug)]
+pub enum UserEvent {
     Render,
 }
 
 pub struct Window {
     scene_proxy: SceneProxy,
-    event_loop: EventLoop<UserEvent>,
+    pub event_loop: EventLoop<UserEvent>,
     renderer: Renderer<GLDevice>,
     gl_context: glutin::ContextWrapper<glutin::PossiblyCurrent, glutin::window::Window>,
 }
@@ -50,7 +51,7 @@ impl Window {
         gl::load_with(|name| gl_context.get_proc_address(name) as *const _);
 
         // Create a Pathfinder renderer.
-        let mut renderer = Renderer::new(
+        let renderer = Renderer::new(
             GLDevice::new(GLVersion::GL3, 0),
             &FilesystemResourceLoader::locate(),
             DestFramebuffer::full_window(window_size),
@@ -59,15 +60,9 @@ impl Window {
             },
         );
 
-        /////////
-        ::std::thread::sleep(::std::time::Duration::from_secs(3));
-        let canvas = crate::render(window_size);
-        /////////
+        let scene_proxy = SceneProxy::new(RayonExecutor);
 
         // Render the canvas to screen.
-        let scene_proxy = SceneProxy::from_scene(canvas.into_canvas().into_scene(), RayonExecutor);
-        scene_proxy.build_and_render(&mut renderer, BuildOptions::default());
-        gl_context.swap_buffers().unwrap();
 
         // let event_loop_proxy = event_loop.create_proxy();
 
@@ -91,8 +86,17 @@ impl Window {
             gl_context,
         } = self;
 
+        // TODO: this is wrong
+        let window_size = vec2i(WINDOW_SIZE_X, WINDOW_SIZE_Y);
+
         event_loop.run(move |event, _, control_flow| {
             match event {
+                Event::UserEvent(UserEvent::Render) => {
+                    let canvas = crate::render(window_size);
+                    scene_proxy.replace_scene(canvas.into_canvas().into_scene());
+                    scene_proxy.build_and_render(&mut renderer, BuildOptions::default());
+                    gl_context.swap_buffers().unwrap();
+                }
                 Event::WindowEvent {
                     event: WindowEvent::CloseRequested,
                     ..

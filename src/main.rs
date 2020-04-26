@@ -24,6 +24,13 @@ fn rgis() -> Result<(), Box<dyn error::Error>> {
 
     let window = window::Window::new();
 
+    let event_loop_proxy = window.event_loop.create_proxy();
+
+    ::std::thread::spawn(move || {
+        ::std::thread::sleep(::std::time::Duration::from_secs(3));
+        event_loop_proxy.send_event(window::UserEvent::Render).unwrap();
+    });
+
     window.start_event_loop();
 }
 
