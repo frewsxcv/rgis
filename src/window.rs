@@ -32,7 +32,8 @@ impl Window {
     pub fn new() -> Self {
         let event_loop: EventLoop<UserEvent> = EventLoop::with_user_event();
         let window_size = vec2i(WINDOW_SIZE_X, WINDOW_SIZE_Y);
-        let physical_window_size = PhysicalSize::new(window_size.x() as f64, window_size.y() as f64);
+        let physical_window_size =
+            PhysicalSize::new(window_size.x() as f64, window_size.y() as f64);
 
         // Open a window.
         let window_builder = WindowBuilder::new()
@@ -144,8 +145,14 @@ impl Window {
                 } => {
                     let view_box = scene_proxy.copy_scene().view_box();
                     scene_proxy.set_view_box(pathfinder_geometry::rect::RectF::new(
-                        pathfinder_geometry::vector::Vector2F::new(view_box.min_x(), view_box.min_y() + 10.),
-                        pathfinder_geometry::vector::Vector2F::new(view_box.max_x(), view_box.max_y() + 10.),
+                        pathfinder_geometry::vector::Vector2F::new(
+                            view_box.min_x(),
+                            view_box.min_y() + 10.,
+                        ),
+                        pathfinder_geometry::vector::Vector2F::new(
+                            view_box.max_x(),
+                            view_box.max_y() + 10.,
+                        ),
                     ));
                     scene_proxy.build_and_render(&mut renderer, BuildOptions::default());
                     gl_context.swap_buffers().unwrap();
@@ -164,8 +171,14 @@ impl Window {
                 } => {
                     let view_box = scene_proxy.copy_scene().view_box();
                     scene_proxy.set_view_box(pathfinder_geometry::rect::RectF::new(
-                        pathfinder_geometry::vector::Vector2F::new(view_box.min_x(), view_box.min_y() - 10.),
-                        pathfinder_geometry::vector::Vector2F::new(view_box.max_x(), view_box.max_y() - 10.),
+                        pathfinder_geometry::vector::Vector2F::new(
+                            view_box.min_x(),
+                            view_box.min_y() - 10.,
+                        ),
+                        pathfinder_geometry::vector::Vector2F::new(
+                            view_box.max_x(),
+                            view_box.max_y() - 10.,
+                        ),
                     ));
                     scene_proxy.build_and_render(&mut renderer, BuildOptions::default());
                     gl_context.swap_buffers().unwrap();

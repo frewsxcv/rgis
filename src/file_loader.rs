@@ -1,8 +1,8 @@
 use crate::layer::LAYERS;
+use crate::window::UserEvent;
+use glutin::event_loop::EventLoopProxy;
 use std::convert::TryInto;
 use std::fs;
-use glutin::event_loop::{EventLoopProxy};
-use crate::window::UserEvent;
 
 pub fn load_file_in_thread(geojson_file_path: String, event_loop_proxy: EventLoopProxy<UserEvent>) {
     let e = event_loop_proxy.clone();
