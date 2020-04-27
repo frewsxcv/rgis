@@ -6,6 +6,7 @@ use std::fs;
 
 pub fn load_file_in_thread(geojson_file_path: String, event_loop_proxy: EventLoopProxy<UserEvent>) {
     let e = event_loop_proxy.clone();
+    log::info!("Spawning a new thread for loading: {}", geojson_file_path);
     rayon::spawn(move || {
         load_file(geojson_file_path);
         e.send_event(UserEvent::Render).unwrap();

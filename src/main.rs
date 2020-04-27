@@ -28,6 +28,8 @@ fn rgis() -> Result<(), Box<dyn error::Error>> {
 fn render(
     window_size: pathfinder_geometry::vector::Vector2I,
 ) -> pathfinder_canvas::CanvasRenderingContext2D {
+    log::info!("Creating a canvas");
+
     let font_context = CanvasFontContext::from_system_source();
     let mut canvas = Canvas::new(window_size.to_f32()).get_context_2d(font_context);
 
