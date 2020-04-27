@@ -17,19 +17,7 @@ impl Thread {
 
         let join_handle = thread::spawn(move || {
             while let Ok(geojson_file_path) = load_rx.recv() {
-                log::info!("Opening file: {:?}", geojson_file_path);
-                let geojson_file = fs::File::open(&geojson_file_path).expect("TODO");
-                log::info!("Parsing file: {:?}", geojson_file_path);
-                let geojson: geojson::GeoJson = serde_json::from_reader(&geojson_file).unwrap();
-                match geojson {
-                    geojson::GeoJson::Geometry(g) => load_geojson_geometry(g),
-                    geojson::GeoJson::Feature(f) => load_geojson_feature(f),
-                    geojson::GeoJson::FeatureCollection(f) => {
-                        for feature in f.features {
-                            load_geojson_feature(feature)
-                        }
-                    }
-                };
+                load_file(geojson_file_path);
                 after_load_tx.send(()).unwrap();
             }
             writeln!(io::stderr(), "File loader thread died!").expect("could not write to stderr");
@@ -45,6 +33,22 @@ impl Thread {
     pub fn load(&self, path: String) {
         self.load_tx.send(path).expect("TODO");
     }
+}
+
+fn load_file(geojson_file_path: String) {
+    log::info!("Opening file: {:?}", geojson_file_path);
+    let geojson_file = fs::File::open(&geojson_file_path).expect("TODO");
+    log::info!("Parsing file: {:?}", geojson_file_path);
+    let geojson: geojson::GeoJson = serde_json::from_reader(&geojson_file).unwrap();
+    match geojson {
+        geojson::GeoJson::Geometry(g) => load_geojson_geometry(g),
+        geojson::GeoJson::Feature(f) => load_geojson_feature(f),
+        geojson::GeoJson::FeatureCollection(f) => {
+            for feature in f.features {
+                load_geojson_feature(feature)
+            }
+        }
+    };
 }
 
 fn load_geojson_feature(geojson_feature: geojson::Feature) {
