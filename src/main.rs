@@ -18,14 +18,11 @@ fn rgis() -> Result<(), Box<dyn error::Error>> {
 
     let window = window::Window::new();
 
-    let event_loop_proxy = window.event_loop.create_proxy();
-
     for geojson_file_path in geojson_file_paths {
-        let e = event_loop_proxy.clone();
-        rayon::spawn(move || {
-            file_loader::load_file(geojson_file_path);
-            e.send_event(window::UserEvent::Render).unwrap();
-        })
+        file_loader::load_file_in_thread(
+            geojson_file_path,
+            window.event_loop.create_proxy()
+        );
     }
 
     window.start_event_loop();

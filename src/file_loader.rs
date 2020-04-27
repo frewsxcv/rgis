@@ -1,6 +1,16 @@
 use crate::layer::LAYERS;
 use std::convert::TryInto;
 use std::fs;
+use glutin::event_loop::{EventLoopProxy};
+use crate::window::UserEvent;
+
+pub fn load_file_in_thread(geojson_file_path: String, event_loop_proxy: EventLoopProxy<UserEvent>) {
+    let e = event_loop_proxy.clone();
+    rayon::spawn(move || {
+        load_file(geojson_file_path);
+        e.send_event(UserEvent::Render).unwrap();
+    })
+}
 
 pub fn load_file(geojson_file_path: String) {
     log::info!("Opening file: {:?}", geojson_file_path);
