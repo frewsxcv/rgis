@@ -20,16 +20,13 @@ fn rgis() -> Result<(), Box<dyn error::Error>> {
 
     let event_loop_proxy = window.event_loop.create_proxy();
 
-    let file_loading_thread = file_loader::Thread::spawn();
-
     for geojson_file_path in geojson_file_paths {
-        file_loading_thread.load(geojson_file_path);
+        let e = event_loop_proxy.clone();
+        rayon::spawn(move || {
+            file_loader::load_file(geojson_file_path);
+            e.send_event(window::UserEvent::Render).unwrap();
+        })
     }
-
-    ::std::thread::spawn(move || {
-        file_loading_thread.after_load_rx.recv().unwrap();
-        event_loop_proxy.send_event(window::UserEvent::Render).unwrap();
-    });
 
     window.start_event_loop();
 }
