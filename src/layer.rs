@@ -1,4 +1,4 @@
-use crate::renderable::next_color;
+use crate::render::next_color;
 use geo::bounding_rect::BoundingRect;
 use pathfinder_canvas::ColorU;
 use std::sync;

@@ -1,4 +1,4 @@
-use crate::renderable::Render;
+use crate::render::Render;
 use pathfinder_canvas::{Canvas, CanvasFontContext};
 use std::io::Write;
 use std::{error, io, process};
@@ -8,7 +8,7 @@ mod file_loader;
 mod layer;
 #[allow(dead_code)]
 mod lla_to_ecef;
-mod renderable;
+mod render;
 mod window;
 
 static PROGRAM_NAME: &'static str = "rgis";
@@ -37,12 +37,12 @@ fn render(
     let bounding_rect = layer::LAYERS.bounding_rect.read().unwrap();
 
     for layer in &layers[..] {
-        layer.geometry.render(
-            &mut canvas,
-            bounding_rect.unwrap(),
-            layer.color,
-            window_size,
-        );
+        layer.geometry.render(crate::render::RenderContext {
+            canvas: &mut canvas,
+            extent: bounding_rect.unwrap(),
+            color: layer.color,
+            window_size: window_size,
+        })
     }
 
     canvas
