@@ -18,10 +18,4 @@ cargo run sample-data/mexico-line-string.geojson
 
 ## Screenshots
 
-Rendering a `LineString`:
-
-![](http://i.imgur.com/YmjHeuw.png)
-
-Rendering a `Polygon`:
-
-![](http://i.imgur.com/LXWBNOl.png)
+![](https://i.imgur.com/snmeTTT.png)
