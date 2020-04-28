@@ -7,8 +7,15 @@ lazy_static::lazy_static! {
 }
 
 pub fn next() -> pathfinder_canvas::ColorU {
-    let index = COLOR_INDEX.fetch_add(1, sync::atomic::Ordering::AcqRel) % COLORS.len();
-    colorous_color_to_pathfinder_color(COLORS[index])
+    colorous_color_to_pathfinder_color(next_colorous_color())
+}
+
+fn next_colorous_color() -> colorous::Color {
+    COLORS[next_color_index()]
+}
+
+fn next_color_index() -> usize {
+    COLOR_INDEX.fetch_add(1, sync::atomic::Ordering::AcqRel) % COLORS.len()
 }
 
 fn colorous_color_to_pathfinder_color(c: colorous::Color) -> pathfinder_canvas::ColorU {
