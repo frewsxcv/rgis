@@ -5,64 +5,6 @@ use std::iter;
 use std::slice;
 use std::sync;
 
-static COLORS: [ColorU; 7] = [
-    // Red
-    ColorU {
-        r: 255,
-        g: 0,
-        b: 0,
-        a: 255,
-    },
-    // Orange
-    ColorU {
-        r: 255,
-        g: 127,
-        b: 0,
-        a: 255,
-    },
-    // Yellow
-    ColorU {
-        r: 255,
-        g: 255,
-        b: 0,
-        a: 255,
-    },
-    // Green
-    ColorU {
-        r: 0,
-        g: 255,
-        b: 0,
-        a: 255,
-    },
-    // Blue
-    ColorU {
-        r: 0,
-        g: 0,
-        b: 255,
-        a: 255,
-    },
-    // Indigo
-    ColorU {
-        r: 75,
-        g: 0,
-        b: 130,
-        a: 255,
-    },
-    // Violet
-    ColorU {
-        r: 148,
-        g: 0,
-        b: 211,
-        a: 255,
-    },
-];
-
-lazy_static::lazy_static! {
-    static ref COLOR_ITER: sync::Mutex<iter::Cycle<slice::Iter<'static, ColorU>>> = {
-        sync::Mutex::new(COLORS.iter().cycle())
-    };
-}
-
 pub struct RenderContext<'a> {
     pub canvas: &'a mut CanvasRenderingContext2D,
     pub extent: geo::Rect<f64>,
@@ -179,8 +121,4 @@ impl Render for geo::Geometry<f64> {
             _ => (),
         }
     }
-}
-
-pub fn next_color() -> ColorU {
-    *COLOR_ITER.lock().unwrap().next().unwrap()
 }

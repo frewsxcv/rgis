@@ -4,6 +4,7 @@ use std::io::Write;
 use std::{error, io, process};
 
 mod cli;
+mod color;
 mod file_loader;
 mod layer;
 #[allow(dead_code)]

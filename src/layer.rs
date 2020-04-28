@@ -1,4 +1,4 @@
-use crate::render::next_color;
+use crate::color;
 use geo::bounding_rect::BoundingRect;
 use pathfinder_canvas::ColorU;
 use std::sync;
@@ -64,7 +64,7 @@ impl Layer {
         Layer {
             bounding_rect: geometry_bounding_rect(&geometry),
             geometry: geometry,
-            color: next_color(),
+            color: crate::color::next(),
         }
     }
 }

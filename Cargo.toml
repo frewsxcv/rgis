@@ -6,6 +6,7 @@ license = "GPL-3.0-only"
 edition = "2018"
 
 [dependencies]
+colorous = "*"
 env_logger = "*"
 geo = "0.13"
 geojson = { version = "0.18", features = ['geo-types'] }

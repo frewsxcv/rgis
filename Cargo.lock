@@ -143,6 +143,11 @@ dependencies = [
 ]
 
 [[package]]
+name = "colorous"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
 name = "const-random"
 version = "0.1.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1035,6 +1040,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 name = "rgis"
 version = "0.1.0"
 dependencies = [
+ "colorous 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "env_logger 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "geo 0.13.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "geojson 0.18.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1476,6 +1482,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum cgl 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)" = "0ced0551234e87afee12411d535648dd89d2e7f34c78b753395567aff3d447ff"
 "checksum cloudabi 0.0.3 (registry+https://github.com/rust-lang/crates.io-index)" = "ddfc5b9aa5d4507acaf872de71051dfd0e309860e88966e1051e462a077aac4f"
 "checksum cocoa 0.19.1 (registry+https://github.com/rust-lang/crates.io-index)" = "f29f7768b2d1be17b96158e3285951d366b40211320fb30826a76cb7a0da6400"
+"checksum colorous 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)" = "ebeb47d6d3334179ee49ef9a1f3a03d177450b25705854d92e2e1d128b49c736"
 "checksum const-random 0.1.8 (registry+https://github.com/rust-lang/crates.io-index)" = "2f1af9ac737b2dd2d577701e59fd09ba34822f6f2ebdb30a7647405d9e55e16a"
 "checksum const-random-macro 0.1.8 (registry+https://github.com/rust-lang/crates.io-index)" = "25e4c606eb459dd29f7c57b2e0879f2b6f14ee130918c2b78ccb58a9624e6c7a"
 "checksum core-foundation 0.6.4 (registry+https://github.com/rust-lang/crates.io-index)" = "25b9e03f145fd4f2bf705e07b900cd41fc636598fe5dc452fd0db1441c3f496d"
