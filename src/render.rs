@@ -60,7 +60,8 @@ impl Render for geo::MultiLineString<f64> {
 fn render_line_string(line_string: &geo::LineString<f64>, ctx: &mut RenderContext) {
     ctx.canvas.set_line_width(5.0);
 
-    let mut coords = coords_to_screen_coords(line_string.0.iter().copied(), ctx.extent, ctx.window_size);
+    let mut coords =
+        coords_to_screen_coords(line_string.0.iter().copied(), ctx.extent, ctx.window_size);
     let mut path = Path2D::new();
 
     if let Some(first_coord) = coords.next() {
@@ -93,8 +94,11 @@ impl Render for geo::MultiPolygon<f64> {
 fn render_polygon(polygon: &geo::Polygon<f64>, ctx: &mut RenderContext) {
     ctx.canvas.set_line_width(5.0);
 
-    let mut coords =
-        coords_to_screen_coords(polygon.exterior().0.iter().copied(), ctx.extent, ctx.window_size);
+    let mut coords = coords_to_screen_coords(
+        polygon.exterior().0.iter().copied(),
+        ctx.extent,
+        ctx.window_size,
+    );
     let mut path = Path2D::new();
 
     if let Some(first_coord) = coords.next() {
@@ -108,7 +112,8 @@ fn render_polygon(polygon: &geo::Polygon<f64>, ctx: &mut RenderContext) {
     path.close_path();
 
     ctx.canvas.set_fill_style(ctx.color);
-    ctx.canvas.fill_path(path, pathfinder_content::fill::FillRule::Winding);
+    ctx.canvas
+        .fill_path(path, pathfinder_content::fill::FillRule::Winding);
 }
 
 impl Render for geo::Geometry<f64> {
