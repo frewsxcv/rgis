@@ -20,7 +20,7 @@ fn rgis() -> Result<(), Box<dyn error::Error>> {
     let window = window::Window::new();
 
     for geojson_file_path in geojson_file_paths {
-        file_loader::load_file_in_thread(geojson_file_path, window.event_loop.create_proxy());
+        file_loader::load(geojson_file_path, window.event_loop.create_proxy());
     }
 
     window.start_event_loop();
