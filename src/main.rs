@@ -30,10 +30,7 @@ fn render(
     window_size: pathfinder_geometry::vector::Vector2I,
 ) -> pathfinder_canvas::CanvasRenderingContext2D {
     log::info!("Creating a canvas");
-
-    let font_context = CanvasFontContext::from_system_source();
-    let mut canvas = Canvas::new(window_size.to_f32()).get_context_2d(font_context);
-
+    let mut canvas = new_canvas(window_size);
     let layers = layer::LAYERS.data.read().unwrap();
     let bounding_rect = layer::LAYERS.bounding_rect.read().unwrap();
 
@@ -47,6 +44,13 @@ fn render(
     }
 
     canvas
+}
+
+fn new_canvas(
+    window_size: pathfinder_geometry::vector::Vector2I,
+) -> pathfinder_canvas::CanvasRenderingContext2D {
+    let font_context = CanvasFontContext::from_system_source();
+    Canvas::new(window_size.to_f32()).get_context_2d(font_context)
 }
 
 fn main() {
