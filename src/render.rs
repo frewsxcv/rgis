@@ -1,9 +1,6 @@
 use geo;
 use pathfinder_canvas::{CanvasRenderingContext2D, ColorU, Path2D};
 use pathfinder_geometry::vector::vec2f;
-use std::iter;
-use std::slice;
-use std::sync;
 
 pub struct RenderContext<'a> {
     pub canvas: &'a mut CanvasRenderingContext2D,

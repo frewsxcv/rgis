@@ -1,4 +1,3 @@
-use crate::color;
 use geo::bounding_rect::BoundingRect;
 use pathfinder_canvas::ColorU;
 use std::sync;
