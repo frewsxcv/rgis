@@ -4,7 +4,7 @@ use glutin::event_loop::{ControlFlow, EventLoop};
 use glutin::window::WindowBuilder;
 use glutin::{ContextBuilder, GlProfile, GlRequest};
 use pathfinder_color::ColorF;
-use pathfinder_geometry::vector::vec2i;
+use pathfinder_geometry::vector::{vec2f, vec2i};
 use pathfinder_gl::{GLDevice, GLVersion};
 use pathfinder_renderer::concurrent::rayon::RayonExecutor;
 use pathfinder_renderer::concurrent::scene_proxy::SceneProxy;
@@ -120,14 +120,11 @@ impl Window {
                     event: WindowEvent::Resized(window_size),
                     ..
                 } => {
-                    let window_size = vec2i(window_size.width as i32, window_size.height as i32);
-                    renderer.set_main_framebuffer_size(window_size);
-                    let canvas = crate::render(window_size);
+                    let window_size_i = vec2i(window_size.width as i32, window_size.height as i32);
+                    renderer.replace_dest_framebuffer(DestFramebuffer::full_window(window_size_i));
+                    gl_context.resize(PhysicalSize::new(window_size.width as u32, window_size.height as u32));
+                    let canvas = crate::render(window_size_i);
                     scene_proxy.replace_scene(canvas.into_canvas().into_scene());
-                    // scene.set_view_box(pathfinder_geometry::rect::RectF::new(
-                    //     pathfinder_geometry::vector::Vector2F::zero(),
-                    //     window_size.to_f32(),
-                    // ));
                     scene_proxy.build_and_render(&mut renderer, BuildOptions::default());
                     gl_context.swap_buffers().unwrap();
                 }
@@ -189,4 +186,13 @@ impl Window {
             };
         })
     }
+
+    // pub fn resize(&mut self, size: Vector2F) {
+    //     // let new_framebuffer_size = size.to_i32();
+    //     // if new_framebuffer_size != self.framebuffer_size {
+    //     //     self.framebuffer_size = new_framebuffer_size;
+    //     //     self.windowed_context.resize(PhysicalSize::new(self.framebuffer_size.x() as u32, self.framebuffer_size.y() as u32));
+    //     //     self.renderer.replace_dest_framebuffer(DestFramebuffer::full_window(self.framebuffer_size));
+    //     // }
+    // }
 }
