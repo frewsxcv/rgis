@@ -100,6 +100,17 @@ impl Window {
             gl_context: gl_context,
             layers: layers,
             window_size: window_size,
+            view_box: pathfinder_geometry::rect::RectF::new(
+                pathfinder_geometry::vector::Vector2F::new(
+                    0.,
+                    0.,
+                ),
+                pathfinder_geometry::vector::Vector2F::new(
+                    WINDOW_SIZE_X as f32,
+                    WINDOW_SIZE_Y as f32,
+                ),
+            ),
+            view_box_changed: false,
             resized: false,
         };
 
@@ -123,6 +134,8 @@ struct EventLoopContext {
     gl_context: glutin::ContextWrapper<glutin::PossiblyCurrent, glutin::window::Window>,
     window_size: Vector2I,
     layers: sync::Arc<sync::RwLock<Layers>>,
+    view_box: pathfinder_geometry::rect::RectF,
+    view_box_changed: bool,
     resized: bool,
 }
 
@@ -135,6 +148,11 @@ fn handle_redraw_requested(ctx: &mut EventLoopContext) {
             ctx.window_size.y() as u32,
         ));
         ctx.resized = false;
+    }
+
+    if ctx.view_box_changed {
+        ctx.scene_proxy.set_view_box(ctx.view_box);
+        ctx.view_box_changed = false;
     }
 
     ctx.scene_proxy
@@ -186,18 +204,11 @@ fn handle_window_event(
                 },
             ..
         } => {
-            let view_box = ctx.scene_proxy.copy_scene().view_box();
-            ctx.scene_proxy
-                .set_view_box(pathfinder_geometry::rect::RectF::new(
-                    pathfinder_geometry::vector::Vector2F::new(
-                        view_box.min_x(),
-                        view_box.min_y() + 10.,
-                    ),
-                    pathfinder_geometry::vector::Vector2F::new(
-                        view_box.max_x(),
-                        view_box.max_y() + 10.,
-                    ),
-                ));
+            ctx.view_box = ctx.view_box + pathfinder_geometry::vector::Vector2F::new(
+                0.,
+                10.,
+            );
+            ctx.view_box_changed = true;
             ctx.gl_context.window().request_redraw();
         }
         WindowEvent::KeyboardInput {
@@ -208,18 +219,11 @@ fn handle_window_event(
                 },
             ..
         } => {
-            let view_box = ctx.scene_proxy.copy_scene().view_box();
-            ctx.scene_proxy
-                .set_view_box(pathfinder_geometry::rect::RectF::new(
-                    pathfinder_geometry::vector::Vector2F::new(
-                        view_box.min_x(),
-                        view_box.min_y() - 10.,
-                    ),
-                    pathfinder_geometry::vector::Vector2F::new(
-                        view_box.max_x(),
-                        view_box.max_y() - 10.,
-                    ),
-                ));
+            ctx.view_box = ctx.view_box + pathfinder_geometry::vector::Vector2F::new(
+                0.,
+                -10.,
+            );
+            ctx.view_box_changed = true;
             ctx.gl_context.window().request_redraw();
         }
         _ => {
