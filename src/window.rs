@@ -110,7 +110,6 @@ impl Window {
                     WINDOW_SIZE_Y as f32,
                 ),
             ),
-            view_box_changed: false,
             resized: false,
         };
 
@@ -135,7 +134,6 @@ struct EventLoopContext {
     window_size: Vector2I,
     layers: sync::Arc<sync::RwLock<Layers>>,
     view_box: pathfinder_geometry::rect::RectF,
-    view_box_changed: bool,
     resized: bool,
 }
 
@@ -150,10 +148,7 @@ fn handle_redraw_requested(ctx: &mut EventLoopContext) {
         ctx.resized = false;
     }
 
-    if ctx.view_box_changed {
-        ctx.scene_proxy.set_view_box(ctx.view_box);
-        ctx.view_box_changed = false;
-    }
+    ctx.scene_proxy.set_view_box(ctx.view_box);
 
     ctx.scene_proxy
         .build_and_render(&mut ctx.renderer, BuildOptions::default());
@@ -208,7 +203,6 @@ fn handle_window_event(
                 0.,
                 10.,
             );
-            ctx.view_box_changed = true;
             ctx.gl_context.window().request_redraw();
         }
         WindowEvent::KeyboardInput {
@@ -223,7 +217,6 @@ fn handle_window_event(
                 0.,
                 -10.,
             );
-            ctx.view_box_changed = true;
             ctx.gl_context.window().request_redraw();
         }
         _ => {
