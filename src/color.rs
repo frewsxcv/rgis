@@ -2,9 +2,7 @@ use std::sync;
 
 const COLORS: [colorous::Color; 10] = colorous::CATEGORY10;
 
-lazy_static::lazy_static! {
-    static ref COLOR_INDEX: sync::atomic::AtomicUsize = sync::atomic::AtomicUsize::new(0);
-}
+static COLOR_INDEX: sync::atomic::AtomicUsize = sync::atomic::AtomicUsize::new(0);
 
 pub fn next() -> pathfinder_canvas::ColorU {
     colorous_color_to_pathfinder_color(next_colorous_color())

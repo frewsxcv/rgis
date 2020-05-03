@@ -1,7 +1,8 @@
+use crate::layer::Layers;
 use crate::render::Render;
 use pathfinder_canvas::{Canvas, CanvasFontContext};
 use std::io::Write;
-use std::{error, io, process};
+use std::{error, io, process, sync};
 
 mod cli;
 mod color;
@@ -17,10 +18,16 @@ static PROGRAM_NAME: &'static str = "rgis";
 fn rgis() -> Result<(), Box<dyn error::Error>> {
     let geojson_file_paths = cli::run()?;
 
-    let window = window::Window::new();
+    let layers = sync::Arc::new(sync::RwLock::new(layer::Layers::new()));
+
+    let window = window::Window::new(layers.clone());
 
     for geojson_file_path in geojson_file_paths {
-        file_loader::load(geojson_file_path, window.event_loop.create_proxy());
+        file_loader::load(
+            geojson_file_path,
+            window.event_loop.create_proxy(),
+            layers.clone(),
+        );
     }
 
     window.start_event_loop();
@@ -28,16 +35,16 @@ fn rgis() -> Result<(), Box<dyn error::Error>> {
 
 fn render(
     window_size: pathfinder_geometry::vector::Vector2I,
+    layers: sync::Arc<sync::RwLock<Layers>>,
 ) -> pathfinder_canvas::CanvasRenderingContext2D {
     log::info!("Creating a canvas");
     let mut canvas = new_canvas(window_size);
-    let layers = layer::LAYERS.data.read().unwrap();
-    let bounding_rect = layer::LAYERS.bounding_rect.read().unwrap();
+    let layers = layers.read().unwrap();
 
-    for layer in &layers[..] {
+    for layer in &layers.data {
         layer.geometry.render(crate::render::RenderContext {
             canvas: &mut canvas,
-            extent: bounding_rect.unwrap(),
+            extent: layers.bounding_rect.unwrap(),
             color: layer.color,
             window_size: window_size,
         })

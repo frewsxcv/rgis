@@ -1,29 +1,27 @@
 use geo::bounding_rect::BoundingRect;
 use pathfinder_canvas::ColorU;
-use std::sync;
-
-lazy_static::lazy_static! {
-    pub static ref LAYERS: Layers = Layers {
-        data: sync::RwLock::new(vec![]),
-        bounding_rect: sync::RwLock::new(None),
-    };
-}
 
 pub struct Layers {
-    pub data: sync::RwLock<Vec<Layer>>,
-    pub bounding_rect: sync::RwLock<Option<geo::Rect<f64>>>,
+    pub data: Vec<Layer>,
+    pub bounding_rect: Option<geo::Rect<f64>>,
 }
 
 impl Layers {
-    pub fn add(&self, geometry: geo::Geometry<f64>) {
-        let layer = Layer::from_geometry(geometry);
-        let mut guard = self.bounding_rect.write().unwrap();
-        if let Some(r) = *guard {
-            *guard = Some(bbox_merge(r, layer.bounding_rect));
-        } else {
-            *guard = Some(layer.bounding_rect);
+    pub fn new() -> Layers {
+        Layers {
+            data: vec![],
+            bounding_rect: None,
         }
-        self.data.write().unwrap().push(layer);
+    }
+
+    pub fn add(&mut self, geometry: geo::Geometry<f64>) {
+        let layer = Layer::from_geometry(geometry);
+        self.bounding_rect = Some(if let Some(r) = self.bounding_rect {
+            bbox_merge(r, layer.bounding_rect)
+        } else {
+            layer.bounding_rect
+        });
+        self.data.push(layer);
     }
 }
 

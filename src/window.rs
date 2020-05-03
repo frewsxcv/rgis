@@ -1,3 +1,4 @@
+use crate::layer::Layers;
 use glutin::dpi::PhysicalSize;
 use glutin::event::{Event, KeyboardInput, VirtualKeyCode, WindowEvent};
 use glutin::event_loop::{ControlFlow, EventLoop};
@@ -12,6 +13,7 @@ use pathfinder_renderer::gpu::options::{DestFramebuffer, RendererOptions};
 use pathfinder_renderer::gpu::renderer::Renderer;
 use pathfinder_renderer::options::BuildOptions;
 use pathfinder_resources::fs::FilesystemResourceLoader;
+use std::sync;
 
 pub const WINDOW_SIZE_X: i32 = 800;
 pub const WINDOW_SIZE_Y: i32 = 800;
@@ -26,10 +28,11 @@ pub struct Window {
     pub event_loop: EventLoop<UserEvent>,
     renderer: Renderer<GLDevice>,
     gl_context: glutin::ContextWrapper<glutin::PossiblyCurrent, glutin::window::Window>,
+    layers: sync::Arc<sync::RwLock<Layers>>,
 }
 
 impl Window {
-    pub fn new() -> Self {
+    pub fn new(layers: sync::Arc<sync::RwLock<Layers>>) -> Self {
         let event_loop: EventLoop<UserEvent> = EventLoop::with_user_event();
         let window_size = vec2i(WINDOW_SIZE_X, WINDOW_SIZE_Y);
         let physical_window_size =
@@ -76,6 +79,7 @@ impl Window {
             scene_proxy,
             renderer,
             gl_context,
+            layers,
         }
     }
 
@@ -85,6 +89,7 @@ impl Window {
             event_loop,
             mut renderer,
             gl_context,
+            layers,
         } = self;
 
         // TODO: this is wrong
@@ -93,7 +98,7 @@ impl Window {
         event_loop.run(move |event, _, control_flow| {
             match event {
                 Event::UserEvent(UserEvent::Render) => {
-                    let canvas = crate::render(window_size);
+                    let canvas = crate::render(window_size, layers.clone());
                     scene_proxy.replace_scene(canvas.into_canvas().into_scene());
                     scene_proxy.build_and_render(&mut renderer, BuildOptions::default());
                     gl_context.swap_buffers().unwrap();
@@ -126,7 +131,7 @@ impl Window {
                         window_size.width as u32,
                         window_size.height as u32,
                     ));
-                    let canvas = crate::render(window_size_i);
+                    let canvas = crate::render(window_size_i, layers.clone());
                     scene_proxy.replace_scene(canvas.into_canvas().into_scene());
                     scene_proxy.build_and_render(&mut renderer, BuildOptions::default());
                     gl_context.swap_buffers().unwrap();
