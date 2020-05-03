@@ -202,6 +202,30 @@ fn handle_window_event(
             ctx.view_box = ctx.view_box + Vector2F::new(0., -10.);
             ctx.gl_context.window().request_redraw();
         }
+        WindowEvent::KeyboardInput {
+            input:
+                KeyboardInput {
+                    virtual_keycode: Some(VirtualKeyCode::Left),
+                    state: ElementState::Pressed,
+                    ..
+                },
+            ..
+        } => {
+            ctx.view_box = ctx.view_box + Vector2F::new(10., 0.);
+            ctx.gl_context.window().request_redraw();
+        }
+        WindowEvent::KeyboardInput {
+            input:
+                KeyboardInput {
+                    virtual_keycode: Some(VirtualKeyCode::Right),
+                    state: ElementState::Pressed,
+                    ..
+                },
+            ..
+        } => {
+            ctx.view_box = ctx.view_box + Vector2F::new(-10., 0.);
+            ctx.gl_context.window().request_redraw();
+        }
         _ => {
             *control_flow = ControlFlow::Wait;
         }
