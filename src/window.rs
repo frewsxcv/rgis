@@ -1,11 +1,12 @@
 use crate::layer::Layers;
 use glutin::dpi::PhysicalSize;
-use glutin::event::{Event, KeyboardInput, VirtualKeyCode, WindowEvent};
+use glutin::event::{Event, KeyboardInput, VirtualKeyCode, WindowEvent, ElementState};
 use glutin::event_loop::{ControlFlow, EventLoop};
 use glutin::window::WindowBuilder;
 use glutin::{ContextBuilder, GlProfile, GlRequest};
 use pathfinder_color::ColorF;
-use pathfinder_geometry::vector::{vec2i, Vector2I};
+use pathfinder_geometry::rect::RectF;
+use pathfinder_geometry::vector::{vec2i, Vector2F, Vector2I};
 use pathfinder_gl::{GLDevice, GLVersion};
 use pathfinder_renderer::concurrent::rayon::RayonExecutor;
 use pathfinder_renderer::concurrent::scene_proxy::SceneProxy;
@@ -92,15 +93,9 @@ impl Window {
             gl_context: gl_context,
             layers: layers,
             window_size: window_size,
-            view_box: pathfinder_geometry::rect::RectF::new(
-                pathfinder_geometry::vector::Vector2F::new(
-                    0.,
-                    0.,
-                ),
-                pathfinder_geometry::vector::Vector2F::new(
-                    WINDOW_SIZE_X as f32,
-                    WINDOW_SIZE_Y as f32,
-                ),
+            view_box: RectF::new(
+                Vector2F::new(0., 0.),
+                Vector2F::new(WINDOW_SIZE_X as f32, WINDOW_SIZE_Y as f32),
             ),
             resized: false,
         };
@@ -187,28 +182,24 @@ fn handle_window_event(
             input:
                 KeyboardInput {
                     virtual_keycode: Some(VirtualKeyCode::Up),
+                    state: ElementState::Pressed,
                     ..
                 },
             ..
         } => {
-            ctx.view_box = ctx.view_box + pathfinder_geometry::vector::Vector2F::new(
-                0.,
-                10.,
-            );
+            ctx.view_box = ctx.view_box + Vector2F::new(0., 10.);
             ctx.gl_context.window().request_redraw();
         }
         WindowEvent::KeyboardInput {
             input:
                 KeyboardInput {
                     virtual_keycode: Some(VirtualKeyCode::Down),
+                    state: ElementState::Pressed,
                     ..
                 },
             ..
         } => {
-            ctx.view_box = ctx.view_box + pathfinder_geometry::vector::Vector2F::new(
-                0.,
-                -10.,
-            );
+            ctx.view_box = ctx.view_box + Vector2F::new(0., -10.);
             ctx.gl_context.window().request_redraw();
         }
         _ => {
