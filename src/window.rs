@@ -66,14 +66,6 @@ impl Window {
 
         let scene_proxy = SceneProxy::new(RayonExecutor);
 
-        // Render the canvas to screen.
-
-        // let event_loop_proxy = event_loop.create_proxy();
-
-        // std::thread::spawn(move || {
-        //     event_loop_proxy.send_event(UserEvent::Render);
-        // });
-
         Window {
             event_loop,
             scene_proxy,
