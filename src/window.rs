@@ -5,7 +5,7 @@ use glutin::event_loop::{ControlFlow, EventLoop};
 use glutin::window::WindowBuilder;
 use glutin::{ContextBuilder, GlProfile, GlRequest};
 use pathfinder_color::ColorF;
-use pathfinder_geometry::vector::vec2i;
+use pathfinder_geometry::vector::{vec2i, Vector2I};
 use pathfinder_gl::{GLDevice, GLVersion};
 use pathfinder_renderer::concurrent::rayon::RayonExecutor;
 use pathfinder_renderer::concurrent::scene_proxy::SceneProxy;
@@ -87,120 +87,138 @@ impl Window {
         let Window {
             scene_proxy,
             event_loop,
-            mut renderer,
+            renderer,
             gl_context,
             layers,
         } = self;
 
-        // TODO: this is wrong
         let window_size = vec2i(WINDOW_SIZE_X, WINDOW_SIZE_Y);
+
+        let mut ctx = EventLoopContext {
+            scene_proxy: scene_proxy,
+            renderer: renderer,
+            gl_context: gl_context,
+            layers: layers,
+            // TODO: this never gets updated
+            window_size: window_size,
+        };
 
         event_loop.run(move |event, _, control_flow| {
             match event {
-                Event::UserEvent(UserEvent::Render) => {
-                    let canvas = crate::render(window_size, layers.clone());
-                    scene_proxy.replace_scene(canvas.into_canvas().into_scene());
-                    scene_proxy.build_and_render(&mut renderer, BuildOptions::default());
-                    gl_context.swap_buffers().unwrap();
-                }
+                Event::UserEvent(user_event) => handle_user_event(&mut ctx, user_event),
                 Event::WindowEvent {
-                    event: WindowEvent::CloseRequested,
+                    event: window_event,
                     ..
-                }
-                | Event::WindowEvent {
-                    event:
-                        WindowEvent::KeyboardInput {
-                            input:
-                                KeyboardInput {
-                                    virtual_keycode: Some(VirtualKeyCode::Escape),
-                                    ..
-                                },
-                            ..
-                        },
-                    ..
-                } => {
-                    *control_flow = ControlFlow::Exit;
-                }
-                Event::WindowEvent {
-                    event: WindowEvent::Resized(window_size),
-                    ..
-                } => {
-                    let window_size_i = vec2i(window_size.width as i32, window_size.height as i32);
-                    renderer.replace_dest_framebuffer(DestFramebuffer::full_window(window_size_i));
-                    gl_context.resize(PhysicalSize::new(
-                        window_size.width as u32,
-                        window_size.height as u32,
-                    ));
-                    let canvas = crate::render(window_size_i, layers.clone());
-                    scene_proxy.replace_scene(canvas.into_canvas().into_scene());
-                    scene_proxy.build_and_render(&mut renderer, BuildOptions::default());
-                    gl_context.swap_buffers().unwrap();
-                }
-                Event::WindowEvent {
-                    event:
-                        WindowEvent::KeyboardInput {
-                            input:
-                                KeyboardInput {
-                                    virtual_keycode: Some(VirtualKeyCode::Up),
-                                    ..
-                                },
-                            ..
-                        },
-                    ..
-                } => {
-                    let view_box = scene_proxy.copy_scene().view_box();
-                    scene_proxy.set_view_box(pathfinder_geometry::rect::RectF::new(
-                        pathfinder_geometry::vector::Vector2F::new(
-                            view_box.min_x(),
-                            view_box.min_y() + 10.,
-                        ),
-                        pathfinder_geometry::vector::Vector2F::new(
-                            view_box.max_x(),
-                            view_box.max_y() + 10.,
-                        ),
-                    ));
-                    scene_proxy.build_and_render(&mut renderer, BuildOptions::default());
-                    gl_context.swap_buffers().unwrap();
-                }
-                Event::WindowEvent {
-                    event:
-                        WindowEvent::KeyboardInput {
-                            input:
-                                KeyboardInput {
-                                    virtual_keycode: Some(VirtualKeyCode::Down),
-                                    ..
-                                },
-                            ..
-                        },
-                    ..
-                } => {
-                    let view_box = scene_proxy.copy_scene().view_box();
-                    scene_proxy.set_view_box(pathfinder_geometry::rect::RectF::new(
-                        pathfinder_geometry::vector::Vector2F::new(
-                            view_box.min_x(),
-                            view_box.min_y() - 10.,
-                        ),
-                        pathfinder_geometry::vector::Vector2F::new(
-                            view_box.max_x(),
-                            view_box.max_y() - 10.,
-                        ),
-                    ));
-                    scene_proxy.build_and_render(&mut renderer, BuildOptions::default());
-                    gl_context.swap_buffers().unwrap();
-                }
-                _ => {
-                    *control_flow = ControlFlow::Wait;
-                }
+                } => handle_window_event(&mut ctx, window_event, control_flow),
+                _ => *control_flow = ControlFlow::Wait,
             };
         })
     }
+}
 
-    // pub fn resize(&mut self, size: Vector2F) {
-    //     // let new_framebuffer_size = size.to_i32();
-    //     // if new_framebuffer_size != self.framebuffer_size {
-    //     //     self.framebuffer_size = new_framebuffer_size;
-    //     //     self.windowed_context.resize(PhysicalSize::new(self.framebuffer_size.x() as u32, self.framebuffer_size.y() as u32));
-    //     //     self.renderer.replace_dest_framebuffer(DestFramebuffer::full_window(self.framebuffer_size));
-    //     // }
-    // }
+struct EventLoopContext {
+    scene_proxy: SceneProxy,
+    renderer: Renderer<GLDevice>,
+    gl_context: glutin::ContextWrapper<glutin::PossiblyCurrent, glutin::window::Window>,
+    window_size: Vector2I,
+    layers: sync::Arc<sync::RwLock<Layers>>,
+}
+
+fn handle_user_event(ctx: &mut EventLoopContext, user_event: UserEvent) {
+    match user_event {
+        UserEvent::Render => {
+            let canvas = crate::render(ctx.window_size, ctx.layers.clone());
+            ctx.scene_proxy
+                .replace_scene(canvas.into_canvas().into_scene());
+            ctx.scene_proxy
+                .build_and_render(&mut ctx.renderer, BuildOptions::default());
+            ctx.gl_context.swap_buffers().unwrap();
+        }
+    }
+}
+
+fn handle_window_event(
+    ctx: &mut EventLoopContext,
+    window_event: WindowEvent,
+    control_flow: &mut ControlFlow,
+) {
+    match window_event {
+        WindowEvent::CloseRequested
+        | WindowEvent::KeyboardInput {
+            input:
+                KeyboardInput {
+                    virtual_keycode: Some(VirtualKeyCode::Escape),
+                    ..
+                },
+            ..
+        } => {
+            *control_flow = ControlFlow::Exit;
+        }
+        WindowEvent::Resized(window_size) => {
+            let window_size_i = vec2i(window_size.width as i32, window_size.height as i32);
+            ctx.renderer
+                .replace_dest_framebuffer(DestFramebuffer::full_window(window_size_i));
+            ctx.gl_context.resize(PhysicalSize::new(
+                window_size.width as u32,
+                window_size.height as u32,
+            ));
+            let canvas = crate::render(window_size_i, ctx.layers.clone());
+            ctx.scene_proxy
+                .replace_scene(canvas.into_canvas().into_scene());
+            ctx.scene_proxy
+                .build_and_render(&mut ctx.renderer, BuildOptions::default());
+            ctx.gl_context.swap_buffers().unwrap();
+        }
+        WindowEvent::KeyboardInput {
+            input:
+                KeyboardInput {
+                    virtual_keycode: Some(VirtualKeyCode::Up),
+                    ..
+                },
+            ..
+        } => {
+            let view_box = ctx.scene_proxy.copy_scene().view_box();
+            ctx.scene_proxy
+                .set_view_box(pathfinder_geometry::rect::RectF::new(
+                    pathfinder_geometry::vector::Vector2F::new(
+                        view_box.min_x(),
+                        view_box.min_y() + 10.,
+                    ),
+                    pathfinder_geometry::vector::Vector2F::new(
+                        view_box.max_x(),
+                        view_box.max_y() + 10.,
+                    ),
+                ));
+            ctx.scene_proxy
+                .build_and_render(&mut ctx.renderer, BuildOptions::default());
+            ctx.gl_context.swap_buffers().unwrap();
+        }
+        WindowEvent::KeyboardInput {
+            input:
+                KeyboardInput {
+                    virtual_keycode: Some(VirtualKeyCode::Down),
+                    ..
+                },
+            ..
+        } => {
+            let view_box = ctx.scene_proxy.copy_scene().view_box();
+            ctx.scene_proxy
+                .set_view_box(pathfinder_geometry::rect::RectF::new(
+                    pathfinder_geometry::vector::Vector2F::new(
+                        view_box.min_x(),
+                        view_box.min_y() - 10.,
+                    ),
+                    pathfinder_geometry::vector::Vector2F::new(
+                        view_box.max_x(),
+                        view_box.max_y() - 10.,
+                    ),
+                ));
+            ctx.scene_proxy
+                .build_and_render(&mut ctx.renderer, BuildOptions::default());
+            ctx.gl_context.swap_buffers().unwrap();
+        }
+        _ => {
+            *control_flow = ControlFlow::Wait;
+        }
+    }
 }
