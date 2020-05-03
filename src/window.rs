@@ -99,12 +99,13 @@ impl Window {
             renderer: renderer,
             gl_context: gl_context,
             layers: layers,
-            // TODO: this never gets updated
             window_size: window_size,
+            resized: false,
         };
 
         event_loop.run(move |event, _, control_flow| {
             match event {
+                Event::RedrawRequested(_) => handle_redraw_requested(&mut ctx),
                 Event::UserEvent(user_event) => handle_user_event(&mut ctx, user_event),
                 Event::WindowEvent {
                     event: window_event,
@@ -122,6 +123,23 @@ struct EventLoopContext {
     gl_context: glutin::ContextWrapper<glutin::PossiblyCurrent, glutin::window::Window>,
     window_size: Vector2I,
     layers: sync::Arc<sync::RwLock<Layers>>,
+    resized: bool,
+}
+
+fn handle_redraw_requested(ctx: &mut EventLoopContext) {
+    if ctx.resized {
+        ctx.renderer
+            .replace_dest_framebuffer(DestFramebuffer::full_window(ctx.window_size));
+        ctx.gl_context.resize(PhysicalSize::new(
+            ctx.window_size.x() as u32,
+            ctx.window_size.y() as u32,
+        ));
+        ctx.resized = false;
+    }
+
+    ctx.scene_proxy
+        .build_and_render(&mut ctx.renderer, BuildOptions::default());
+    ctx.gl_context.swap_buffers().unwrap();
 }
 
 fn handle_user_event(ctx: &mut EventLoopContext, user_event: UserEvent) {
@@ -130,9 +148,7 @@ fn handle_user_event(ctx: &mut EventLoopContext, user_event: UserEvent) {
             let canvas = crate::render(ctx.window_size, ctx.layers.clone());
             ctx.scene_proxy
                 .replace_scene(canvas.into_canvas().into_scene());
-            ctx.scene_proxy
-                .build_and_render(&mut ctx.renderer, BuildOptions::default());
-            ctx.gl_context.swap_buffers().unwrap();
+            ctx.gl_context.window().request_redraw();
         }
     }
 }
@@ -155,19 +171,12 @@ fn handle_window_event(
             *control_flow = ControlFlow::Exit;
         }
         WindowEvent::Resized(window_size) => {
-            let window_size_i = vec2i(window_size.width as i32, window_size.height as i32);
-            ctx.renderer
-                .replace_dest_framebuffer(DestFramebuffer::full_window(window_size_i));
-            ctx.gl_context.resize(PhysicalSize::new(
-                window_size.width as u32,
-                window_size.height as u32,
-            ));
-            let canvas = crate::render(window_size_i, ctx.layers.clone());
+            ctx.window_size = vec2i(window_size.width as i32, window_size.height as i32);
+            let canvas = crate::render(ctx.window_size, ctx.layers.clone());
             ctx.scene_proxy
                 .replace_scene(canvas.into_canvas().into_scene());
-            ctx.scene_proxy
-                .build_and_render(&mut ctx.renderer, BuildOptions::default());
-            ctx.gl_context.swap_buffers().unwrap();
+            ctx.resized = true;
+            ctx.gl_context.window().request_redraw();
         }
         WindowEvent::KeyboardInput {
             input:
@@ -189,9 +198,7 @@ fn handle_window_event(
                         view_box.max_y() + 10.,
                     ),
                 ));
-            ctx.scene_proxy
-                .build_and_render(&mut ctx.renderer, BuildOptions::default());
-            ctx.gl_context.swap_buffers().unwrap();
+            ctx.gl_context.window().request_redraw();
         }
         WindowEvent::KeyboardInput {
             input:
@@ -213,9 +220,7 @@ fn handle_window_event(
                         view_box.max_y() - 10.,
                     ),
                 ));
-            ctx.scene_proxy
-                .build_and_render(&mut ctx.renderer, BuildOptions::default());
-            ctx.gl_context.swap_buffers().unwrap();
+            ctx.gl_context.window().request_redraw();
         }
         _ => {
             *control_flow = ControlFlow::Wait;
