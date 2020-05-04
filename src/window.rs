@@ -1,11 +1,12 @@
 use crate::layer::Layers;
 use glutin::dpi::PhysicalSize;
-use glutin::event::{Event, KeyboardInput, VirtualKeyCode, WindowEvent, ElementState};
+use glutin::event::{ElementState, Event, KeyboardInput, VirtualKeyCode, WindowEvent};
 use glutin::event_loop::{ControlFlow, EventLoop};
 use glutin::window::WindowBuilder;
 use glutin::{ContextBuilder, GlProfile, GlRequest};
 use pathfinder_color::ColorF;
 use pathfinder_geometry::rect::RectF;
+use pathfinder_geometry::transform2d::Transform2F;
 use pathfinder_geometry::vector::{vec2i, Vector2F, Vector2I};
 use pathfinder_gl::{GLDevice, GLVersion};
 use pathfinder_renderer::concurrent::rayon::RayonExecutor;
@@ -13,6 +14,7 @@ use pathfinder_renderer::concurrent::scene_proxy::SceneProxy;
 use pathfinder_renderer::gpu::options::{DestFramebuffer, RendererOptions};
 use pathfinder_renderer::gpu::renderer::Renderer;
 use pathfinder_renderer::options::BuildOptions;
+use pathfinder_renderer::options::RenderTransform;
 use pathfinder_resources::fs::FilesystemResourceLoader;
 use std::sync;
 
@@ -126,6 +128,10 @@ struct EventLoopContext {
 
 fn handle_redraw_requested(ctx: &mut EventLoopContext) {
     if ctx.resized {
+        ctx.view_box = RectF::new(
+            Vector2F::new(0., 0.),
+            Vector2F::new(ctx.window_size.x() as f32, ctx.window_size.y() as f32),
+        );
         ctx.renderer
             .replace_dest_framebuffer(DestFramebuffer::full_window(ctx.window_size));
         ctx.gl_context.resize(PhysicalSize::new(
@@ -135,10 +141,22 @@ fn handle_redraw_requested(ctx: &mut EventLoopContext) {
         ctx.resized = false;
     }
 
+    let bounding_rect = ctx.layers.read().unwrap().bounding_rect.unwrap();
+
+    let scale = (ctx.window_size.x() as f64 / bounding_rect.width())
+        .min(ctx.window_size.y() as f64 / bounding_rect.height());
+
     ctx.scene_proxy.set_view_box(ctx.view_box);
 
-    ctx.scene_proxy
-        .build_and_render(&mut ctx.renderer, BuildOptions::default());
+    let transform = Transform2F::from_scale(Vector2F::splat(scale as f32));
+
+    let options = BuildOptions {
+        transform: RenderTransform::Transform2D(transform),
+        dilation: Vector2F::default(),
+        subpixel_aa_enabled: false,
+    };
+
+    ctx.scene_proxy.build_and_render(&mut ctx.renderer, options);
     ctx.gl_context.swap_buffers().unwrap();
 }
 
@@ -172,9 +190,6 @@ fn handle_window_event(
         }
         WindowEvent::Resized(window_size) => {
             ctx.window_size = vec2i(window_size.width as i32, window_size.height as i32);
-            let canvas = crate::render(ctx.window_size, ctx.layers.clone());
-            ctx.scene_proxy
-                .replace_scene(canvas.into_canvas().into_scene());
             ctx.resized = true;
             ctx.gl_context.window().request_redraw();
         }

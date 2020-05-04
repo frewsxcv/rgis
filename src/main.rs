@@ -46,7 +46,6 @@ fn render(
             canvas: &mut canvas,
             extent: layers.bounding_rect.unwrap(),
             color: layer.color,
-            window_size: window_size,
         })
     }
 

@@ -6,7 +6,6 @@ pub struct RenderContext<'a> {
     pub canvas: &'a mut CanvasRenderingContext2D,
     pub extent: geo::Rect<f64>,
     pub color: ColorU,
-    pub window_size: pathfinder_geometry::vector::Vector2I,
 }
 
 pub trait Render: ::std::marker::Sync + ::std::marker::Send {
@@ -16,22 +15,11 @@ pub trait Render: ::std::marker::Sync + ::std::marker::Send {
 fn coords_to_screen_coords(
     coords: impl Iterator<Item = geo::Coordinate<f64>>,
     extent: geo::Rect<f64>,
-    window_size: pathfinder_geometry::vector::Vector2I,
 ) -> impl Iterator<Item = [f64; 2]> {
-    let x_scale = window_size.x() as f64 / extent.width();
-
-    let y_scale = window_size.y() as f64 / extent.height();
-
-    let scale = x_scale.min(y_scale);
-
     coords
         .map(move |coord| geo::Coordinate {
             x: coord.x - extent.min().x,
             y: coord.y - extent.max().y,
-        })
-        .map(move |coord| geo::Coordinate {
-            x: coord.x * scale,
-            y: coord.y * scale,
         })
         .map(move |coord| geo::Coordinate {
             x: coord.x,
@@ -57,8 +45,7 @@ impl Render for geo::MultiLineString<f64> {
 fn render_line_string(line_string: &geo::LineString<f64>, ctx: &mut RenderContext) {
     ctx.canvas.set_line_width(5.0);
 
-    let mut coords =
-        coords_to_screen_coords(line_string.0.iter().copied(), ctx.extent, ctx.window_size);
+    let mut coords = coords_to_screen_coords(line_string.0.iter().copied(), ctx.extent);
     let mut path = Path2D::new();
 
     if let Some(first_coord) = coords.next() {
@@ -91,11 +78,7 @@ impl Render for geo::MultiPolygon<f64> {
 fn render_polygon(polygon: &geo::Polygon<f64>, ctx: &mut RenderContext) {
     ctx.canvas.set_line_width(5.0);
 
-    let mut coords = coords_to_screen_coords(
-        polygon.exterior().0.iter().copied(),
-        ctx.extent,
-        ctx.window_size,
-    );
+    let mut coords = coords_to_screen_coords(polygon.exterior().0.iter().copied(), ctx.extent);
     let mut path = Path2D::new();
 
     if let Some(first_coord) = coords.next() {
