@@ -105,6 +105,9 @@ impl Window {
                 Vector2F::new(0., 0.),
                 Vector2F::new(WINDOW_SIZE_X as f32, WINDOW_SIZE_Y as f32),
             ),
+            // The initial view center value doesn't matter. It'll get populated
+            // with a meaningful value after we load the first layer.
+            view_center: Vector2F::new(1., 1.),
             // The initial scale value doesn't matter. It'll get populated with
             // a meaningful value after we load the first layer.
             scale: 1.,
@@ -132,6 +135,7 @@ struct EventLoopContext {
     window_size: Vector2I,
     layers: sync::Arc<sync::RwLock<Layers>>,
     view_box: pathfinder_geometry::rect::RectF,
+    view_center: Vector2F,
     bounding_rect: pathfinder_geometry::rect::RectF,
     scale: f32,
     resized: bool,
@@ -158,9 +162,12 @@ fn handle_redraw_requested(ctx: &mut EventLoopContext) {
         ctx.resized = false;
     }
 
+    // ctx.view_center = ctx.view_box.origin() + ctx.view_box.size() * 0.5;
+
     ctx.scene_proxy.set_view_box(ctx.view_box);
 
-    let transform = Transform2F::from_scale(Vector2F::splat(ctx.scale as f32));
+    let transform = Transform2F::from_scale(Vector2F::splat(ctx.scale as f32)) *
+        Transform2F::from_translation(-ctx.view_center);
 
     let options = BuildOptions {
         transform: RenderTransform::Transform2D(transform),
@@ -219,7 +226,7 @@ fn handle_window_event(
                 },
             ..
         } => {
-            ctx.view_box = ctx.view_box + Vector2F::new(0., 10.);
+            ctx.view_center = ctx.view_center + Vector2F::new(0., -10.);
             ctx.gl_context.window().request_redraw();
         }
         WindowEvent::KeyboardInput {
@@ -231,7 +238,7 @@ fn handle_window_event(
                 },
             ..
         } => {
-            ctx.view_box = ctx.view_box + Vector2F::new(0., -10.);
+            ctx.view_center = ctx.view_center + Vector2F::new(0., 10.);
             ctx.gl_context.window().request_redraw();
         }
         WindowEvent::KeyboardInput {
@@ -243,7 +250,7 @@ fn handle_window_event(
                 },
             ..
         } => {
-            ctx.view_box = ctx.view_box + Vector2F::new(10., 0.);
+            ctx.view_center = ctx.view_center + Vector2F::new(-10., 0.);
             ctx.gl_context.window().request_redraw();
         }
         WindowEvent::KeyboardInput {
@@ -255,7 +262,7 @@ fn handle_window_event(
                 },
             ..
         } => {
-            ctx.view_box = ctx.view_box + Vector2F::new(-10., 0.);
+            ctx.view_center = ctx.view_center + Vector2F::new(10., 0.);
             ctx.gl_context.window().request_redraw();
         }
         _ => {
