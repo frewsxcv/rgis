@@ -1,6 +1,8 @@
 use crate::layer::Layers;
 use glutin::dpi::PhysicalSize;
-use glutin::event::{ElementState, Event, KeyboardInput, VirtualKeyCode, WindowEvent, ModifiersState};
+use glutin::event::{
+    ElementState, Event, KeyboardInput, ModifiersState, VirtualKeyCode, WindowEvent
+};
 use glutin::event_loop::{ControlFlow, EventLoop};
 use glutin::window::WindowBuilder;
 use glutin::{ContextBuilder, GlProfile, GlRequest};
@@ -111,6 +113,7 @@ impl Window {
             // The initial scale value doesn't matter. It'll get populated with
             // a meaningful value after we load the first layer.
             scale: 1.,
+            shift_pressed: false,
             resized: false,
         };
 
@@ -139,6 +142,7 @@ struct EventLoopContext {
     bounding_rect: pathfinder_geometry::rect::RectF,
     scale: f32,
     resized: bool,
+    shift_pressed: bool,
 }
 
 fn handle_redraw_requested(ctx: &mut EventLoopContext) {
@@ -201,6 +205,9 @@ fn handle_window_event(
             ctx.resized = true;
             ctx.gl_context.window().request_redraw();
         }
+        WindowEvent::ModifiersChanged(modifiers) => {
+            handle_modifiers_changed(ctx, modifiers)
+        }
         WindowEvent::KeyboardInput {
             input: keyboard_input,
             ..
@@ -209,6 +216,13 @@ fn handle_window_event(
             *control_flow = ControlFlow::Wait;
         }
     }
+}
+
+fn handle_modifiers_changed(
+    ctx: &mut EventLoopContext,
+    modifiers: ModifiersState
+) {
+    ctx.shift_pressed = modifiers.shift();
 }
 
 fn handle_keyboard_input(
@@ -256,11 +270,13 @@ fn handle_keyboard_input(
         KeyboardInput {
             virtual_keycode: Some(VirtualKeyCode::Equals),
             state: ElementState::Pressed,
-            modifiers: ModifiersState::SHIFT,
             ..
         } => {
-            ctx.scale *= 1.1;
-            ctx.gl_context.window().request_redraw();
+            if ctx.shift_pressed {
+                ctx.scale *= 1.1;
+                // ctx.view_center = ctx.view_center + Vector2F::new(10., 0.);
+                ctx.gl_context.window().request_redraw();
+            }
         }
         KeyboardInput {
             virtual_keycode: Some(VirtualKeyCode::Minus),
