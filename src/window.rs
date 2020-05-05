@@ -166,8 +166,8 @@ fn handle_redraw_requested(ctx: &mut EventLoopContext) {
 
     ctx.scene_proxy.set_view_box(ctx.view_box);
 
-    let transform = Transform2F::from_scale(Vector2F::splat(ctx.scale as f32)) *
-        Transform2F::from_translation(-ctx.view_center);
+    let transform = Transform2F::from_scale(Vector2F::splat(ctx.scale as f32))
+        * Transform2F::from_translation(-ctx.view_center);
 
     let options = BuildOptions {
         transform: RenderTransform::Transform2D(transform),
@@ -201,65 +201,59 @@ fn handle_window_event(
     control_flow: &mut ControlFlow,
 ) {
     match window_event {
-        WindowEvent::CloseRequested
-        | WindowEvent::KeyboardInput {
-            input:
-                KeyboardInput {
-                    virtual_keycode: Some(VirtualKeyCode::Escape),
-                    ..
-                },
-            ..
-        } => {
-            *control_flow = ControlFlow::Exit;
-        }
+        WindowEvent::CloseRequested => *control_flow = ControlFlow::Exit,
         WindowEvent::Resized(window_size) => {
             ctx.window_size = vec2i(window_size.width as i32, window_size.height as i32);
             ctx.resized = true;
             ctx.gl_context.window().request_redraw();
         }
         WindowEvent::KeyboardInput {
-            input:
-                KeyboardInput {
-                    virtual_keycode: Some(VirtualKeyCode::Up),
-                    state: ElementState::Pressed,
-                    ..
-                },
+            input: keyboard_input,
+            ..
+        } => handle_keyboard_input(ctx, keyboard_input, control_flow),
+        _ => {
+            *control_flow = ControlFlow::Wait;
+        }
+    }
+}
+
+fn handle_keyboard_input(
+    ctx: &mut EventLoopContext,
+    keyboard_input: KeyboardInput,
+    control_flow: &mut ControlFlow,
+) {
+    match keyboard_input {
+        KeyboardInput {
+            virtual_keycode: Some(VirtualKeyCode::Escape),
+            ..
+        } => *control_flow = ControlFlow::Exit,
+        KeyboardInput {
+            virtual_keycode: Some(VirtualKeyCode::Up),
+            state: ElementState::Pressed,
             ..
         } => {
             ctx.view_center = ctx.view_center + Vector2F::new(0., -10.);
             ctx.gl_context.window().request_redraw();
         }
-        WindowEvent::KeyboardInput {
-            input:
-                KeyboardInput {
-                    virtual_keycode: Some(VirtualKeyCode::Down),
-                    state: ElementState::Pressed,
-                    ..
-                },
+        KeyboardInput {
+            virtual_keycode: Some(VirtualKeyCode::Down),
+            state: ElementState::Pressed,
             ..
         } => {
             ctx.view_center = ctx.view_center + Vector2F::new(0., 10.);
             ctx.gl_context.window().request_redraw();
         }
-        WindowEvent::KeyboardInput {
-            input:
-                KeyboardInput {
-                    virtual_keycode: Some(VirtualKeyCode::Left),
-                    state: ElementState::Pressed,
-                    ..
-                },
+        KeyboardInput {
+            virtual_keycode: Some(VirtualKeyCode::Left),
+            state: ElementState::Pressed,
             ..
         } => {
             ctx.view_center = ctx.view_center + Vector2F::new(-10., 0.);
             ctx.gl_context.window().request_redraw();
         }
-        WindowEvent::KeyboardInput {
-            input:
-                KeyboardInput {
-                    virtual_keycode: Some(VirtualKeyCode::Right),
-                    state: ElementState::Pressed,
-                    ..
-                },
+        KeyboardInput {
+            virtual_keycode: Some(VirtualKeyCode::Right),
+            state: ElementState::Pressed,
             ..
         } => {
             ctx.view_center = ctx.view_center + Vector2F::new(10., 0.);

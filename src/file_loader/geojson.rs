@@ -68,6 +68,6 @@ fn load_geojson_geometry(
             }
             count
         }
-        _ => 0
+        _ => 0,
     }
 }
