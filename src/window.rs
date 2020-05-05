@@ -23,7 +23,7 @@ pub const WINDOW_SIZE_Y: i32 = 800;
 
 #[derive(Debug)]
 pub enum UserEvent {
-    Render,
+    LayerAdded,
 }
 
 pub struct Window {
@@ -162,7 +162,7 @@ fn handle_redraw_requested(ctx: &mut EventLoopContext) {
 
 fn handle_user_event(ctx: &mut EventLoopContext, user_event: UserEvent) {
     match user_event {
-        UserEvent::Render => {
+        UserEvent::LayerAdded => {
             let canvas = crate::render(ctx.window_size, ctx.layers.clone());
             ctx.scene_proxy
                 .replace_scene(canvas.into_canvas().into_scene());

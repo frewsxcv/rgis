@@ -14,6 +14,6 @@ pub fn load(
     log::info!("Spawning a new thread for loading: {}", file_path);
     rayon::spawn(move || {
         geojson::load(file_path, layers);
-        e.send_event(UserEvent::Render).unwrap();
+        e.send_event(UserEvent::LayerAdded).unwrap();
     })
 }
