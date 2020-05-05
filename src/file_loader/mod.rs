@@ -13,7 +13,9 @@ pub fn load(
     let e = event_loop_proxy.clone();
     log::info!("Spawning a new thread for loading: {}", file_path);
     rayon::spawn(move || {
-        geojson::load(file_path, layers);
-        e.send_event(UserEvent::LayerAdded).unwrap();
+        let count = geojson::load(file_path, layers);
+        if count > 0 {
+            e.send_event(UserEvent::LayerAdded).unwrap();
+        }
     })
 }
