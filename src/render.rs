@@ -44,10 +44,15 @@ impl Render for geo::MultiLineString<f64> {
 }
 
 fn render_line_string(line_string: &geo::LineString<f64>, ctx: &mut RenderContext) {
+    let path = line_string_to_path(line_string, ctx);
     ctx.canvas.set_line_width(5.0 / ctx.scale);
+    ctx.canvas.set_stroke_style(ctx.color);
+    ctx.canvas.stroke_path(path);
+}
 
-    let mut coords = coords_to_screen_coords(line_string.0.iter().copied(), ctx.extent);
+fn line_string_to_path(line_string: &geo::LineString<f64>, ctx: &mut RenderContext) -> Path2D {
     let mut path = Path2D::new();
+    let mut coords = coords_to_screen_coords(line_string.0.iter().copied(), ctx.extent);
 
     if let Some(first_coord) = coords.next() {
         path.move_to(vec2f(first_coord[0] as f32, first_coord[1] as f32));
@@ -58,8 +63,8 @@ fn render_line_string(line_string: &geo::LineString<f64>, ctx: &mut RenderContex
     }
 
     path.close_path();
-    ctx.canvas.set_stroke_style(ctx.color);
-    ctx.canvas.stroke_path(path);
+
+    path
 }
 
 impl Render for geo::Polygon<f64> {
@@ -77,21 +82,8 @@ impl Render for geo::MultiPolygon<f64> {
 }
 
 fn render_polygon(polygon: &geo::Polygon<f64>, ctx: &mut RenderContext) {
+    let path = line_string_to_path(polygon.exterior(), ctx);
     ctx.canvas.set_line_width(5.0 / ctx.scale);
-
-    let mut coords = coords_to_screen_coords(polygon.exterior().0.iter().copied(), ctx.extent);
-    let mut path = Path2D::new();
-
-    if let Some(first_coord) = coords.next() {
-        path.move_to(vec2f(first_coord[0] as f32, first_coord[1] as f32));
-    }
-
-    for coord in coords {
-        path.line_to(vec2f(coord[0] as f32, coord[1] as f32));
-    }
-
-    path.close_path();
-
     ctx.canvas.set_fill_style(ctx.color);
     ctx.canvas
         .fill_path(path, pathfinder_content::fill::FillRule::Winding);
