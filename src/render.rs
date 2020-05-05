@@ -6,6 +6,7 @@ pub struct RenderContext<'a> {
     pub canvas: &'a mut CanvasRenderingContext2D,
     pub extent: geo::Rect<f64>,
     pub color: ColorU,
+    pub scale: f32,
 }
 
 pub trait Render: ::std::marker::Sync + ::std::marker::Send {
@@ -43,7 +44,7 @@ impl Render for geo::MultiLineString<f64> {
 }
 
 fn render_line_string(line_string: &geo::LineString<f64>, ctx: &mut RenderContext) {
-    ctx.canvas.set_line_width(5.0);
+    ctx.canvas.set_line_width(5.0 / ctx.scale);
 
     let mut coords = coords_to_screen_coords(line_string.0.iter().copied(), ctx.extent);
     let mut path = Path2D::new();
@@ -76,7 +77,7 @@ impl Render for geo::MultiPolygon<f64> {
 }
 
 fn render_polygon(polygon: &geo::Polygon<f64>, ctx: &mut RenderContext) {
-    ctx.canvas.set_line_width(5.0);
+    ctx.canvas.set_line_width(5.0 / ctx.scale);
 
     let mut coords = coords_to_screen_coords(polygon.exterior().0.iter().copied(), ctx.extent);
     let mut path = Path2D::new();

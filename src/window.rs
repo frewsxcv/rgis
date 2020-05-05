@@ -151,6 +151,10 @@ fn handle_redraw_requested(ctx: &mut EventLoopContext) {
         ));
         ctx.scale = (ctx.window_size.x() as f32 / ctx.bounding_rect.width())
             .min(ctx.window_size.y() as f32 / ctx.bounding_rect.height());
+        let layers: &Layers = &ctx.layers.read().unwrap();
+        let canvas = crate::render(ctx.window_size, layers, ctx.scale);
+        ctx.scene_proxy
+            .replace_scene(canvas.into_canvas().into_scene());
         ctx.resized = false;
     }
 
@@ -176,7 +180,7 @@ fn handle_user_event(ctx: &mut EventLoopContext, user_event: UserEvent) {
             ctx.bounding_rect = geo_rect_to_pathfinder_rect(geo_bounding_rect);
             ctx.scale = (ctx.window_size.x() as f32 / ctx.bounding_rect.width())
                 .min(ctx.window_size.y() as f32 / ctx.bounding_rect.height());
-            let canvas = crate::render(ctx.window_size, layers);
+            let canvas = crate::render(ctx.window_size, layers, ctx.scale);
             ctx.scene_proxy
                 .replace_scene(canvas.into_canvas().into_scene());
             ctx.gl_context.window().request_redraw();

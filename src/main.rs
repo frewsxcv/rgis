@@ -36,6 +36,7 @@ fn rgis() -> Result<(), Box<dyn error::Error>> {
 fn render(
     window_size: pathfinder_geometry::vector::Vector2I,
     layers: &Layers,
+    scale: f32,
 ) -> pathfinder_canvas::CanvasRenderingContext2D {
     log::info!("Creating a canvas");
     let mut canvas = new_canvas(window_size);
@@ -44,6 +45,7 @@ fn render(
         layer.geometry.render(crate::render::RenderContext {
             canvas: &mut canvas,
             extent: layers.bounding_rect.unwrap(),
+            scale,
             color: layer.color,
         })
     }
