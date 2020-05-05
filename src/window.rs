@@ -99,6 +99,8 @@ impl Window {
                 Vector2F::new(0., 0.),
                 Vector2F::new(WINDOW_SIZE_X as f32, WINDOW_SIZE_Y as f32),
             ),
+            // The initial bounding rectangle value doesn't matter. It'll get
+            // populated with a meaningful value after we load the first layer.
             bounding_rect: RectF::new(
                 Vector2F::new(0., 0.),
                 Vector2F::new(WINDOW_SIZE_X as f32, WINDOW_SIZE_Y as f32),
