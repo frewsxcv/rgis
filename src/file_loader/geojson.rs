@@ -8,7 +8,8 @@ pub fn load(geojson_file_path: String, layers: sync::Arc<sync::RwLock<Layers>>) 
     let geojson_file = fs::File::open(&geojson_file_path).expect("TODO");
     log::info!("Parsing file: {:?}", geojson_file_path);
     let geojson: geojson::GeoJson = serde_json::from_reader(&geojson_file).unwrap();
-    match geojson {
+    log::info!("Parsed file: {:?}", geojson_file_path);
+    let count = match geojson {
         geojson::GeoJson::Geometry(g) => load_geojson_geometry(g, layers),
         geojson::GeoJson::Feature(f) => load_geojson_feature(f, layers),
         geojson::GeoJson::FeatureCollection(f) => {
@@ -18,7 +19,9 @@ pub fn load(geojson_file_path: String, layers: sync::Arc<sync::RwLock<Layers>>) 
             }
             count
         }
-    }
+    };
+    log::info!("Loaded file: {:?}", geojson_file_path);
+    count
 }
 
 fn load_geojson_feature(
