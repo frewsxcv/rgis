@@ -1,6 +1,6 @@
 use crate::layer::Layers;
 use glutin::dpi::PhysicalSize;
-use glutin::event::{ElementState, Event, KeyboardInput, VirtualKeyCode, WindowEvent};
+use glutin::event::{ElementState, Event, KeyboardInput, VirtualKeyCode, WindowEvent, ModifiersState};
 use glutin::event_loop::{ControlFlow, EventLoop};
 use glutin::window::WindowBuilder;
 use glutin::{ContextBuilder, GlProfile, GlRequest};
@@ -257,6 +257,23 @@ fn handle_keyboard_input(
             ..
         } => {
             ctx.view_center = ctx.view_center + Vector2F::new(10., 0.);
+            ctx.gl_context.window().request_redraw();
+        }
+        KeyboardInput {
+            virtual_keycode: Some(VirtualKeyCode::Equals),
+            state: ElementState::Pressed,
+            modifiers: ModifiersState::SHIFT,
+            ..
+        } => {
+            ctx.scale *= 1.1;
+            ctx.gl_context.window().request_redraw();
+        }
+        KeyboardInput {
+            virtual_keycode: Some(VirtualKeyCode::Minus),
+            state: ElementState::Pressed,
+            ..
+        } => {
+            ctx.scale /= 1.1;
             ctx.gl_context.window().request_redraw();
         }
         _ => {
