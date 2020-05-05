@@ -35,11 +35,10 @@ fn rgis() -> Result<(), Box<dyn error::Error>> {
 
 fn render(
     window_size: pathfinder_geometry::vector::Vector2I,
-    layers: sync::Arc<sync::RwLock<Layers>>,
+    layers: &Layers,
 ) -> pathfinder_canvas::CanvasRenderingContext2D {
     log::info!("Creating a canvas");
     let mut canvas = new_canvas(window_size);
-    let layers = layers.read().unwrap();
 
     for layer in &layers.data {
         layer.geometry.render(crate::render::RenderContext {
