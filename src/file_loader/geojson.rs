@@ -1,13 +1,14 @@
 use crate::layer::Layers;
 use std::convert::TryInto;
 use std::fs;
+use std::io;
 use std::sync;
 
 pub fn load(geojson_file_path: String, layers: sync::Arc<sync::RwLock<Layers>>) -> usize {
     log::info!("Opening file: {:?}", geojson_file_path);
-    let geojson_file = fs::File::open(&geojson_file_path).expect("TODO");
+    let geojson_file = io::BufReader::new(fs::File::open(&geojson_file_path).expect("TODO"));
     log::info!("Parsing file: {:?}", geojson_file_path);
-    let geojson: geojson::GeoJson = serde_json::from_reader(&geojson_file).unwrap();
+    let geojson: geojson::GeoJson = serde_json::from_reader(geojson_file).unwrap();
     log::info!("Parsed file: {:?}", geojson_file_path);
     let count = match geojson {
         geojson::GeoJson::Geometry(g) => load_geojson_geometry(g, layers),
