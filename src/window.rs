@@ -105,6 +105,9 @@ impl Window {
                 Vector2F::new(0., 0.),
                 Vector2F::new(WINDOW_SIZE_X as f32, WINDOW_SIZE_Y as f32),
             ),
+            // The initial scale value doesn't matter. It'll get populated with
+            // a meaningful value after we load the first layer.
+            scale: 1.,
             resized: false,
         };
 
@@ -130,6 +133,7 @@ struct EventLoopContext {
     layers: sync::Arc<sync::RwLock<Layers>>,
     view_box: pathfinder_geometry::rect::RectF,
     bounding_rect: pathfinder_geometry::rect::RectF,
+    scale: f32,
     resized: bool,
 }
 
@@ -145,15 +149,14 @@ fn handle_redraw_requested(ctx: &mut EventLoopContext) {
             ctx.window_size.x() as u32,
             ctx.window_size.y() as u32,
         ));
+        ctx.scale = (ctx.window_size.x() as f32 / ctx.bounding_rect.width())
+            .min(ctx.window_size.y() as f32 / ctx.bounding_rect.height());
         ctx.resized = false;
     }
 
-    let scale = (ctx.window_size.x() as f32 / ctx.bounding_rect.width())
-        .min(ctx.window_size.y() as f32 / ctx.bounding_rect.height());
-
     ctx.scene_proxy.set_view_box(ctx.view_box);
 
-    let transform = Transform2F::from_scale(Vector2F::splat(scale as f32));
+    let transform = Transform2F::from_scale(Vector2F::splat(ctx.scale as f32));
 
     let options = BuildOptions {
         transform: RenderTransform::Transform2D(transform),
@@ -171,6 +174,8 @@ fn handle_user_event(ctx: &mut EventLoopContext, user_event: UserEvent) {
             let canvas = crate::render(ctx.window_size, ctx.layers.clone());
             let geo_bounding_rect = ctx.layers.read().unwrap().bounding_rect.unwrap();
             ctx.bounding_rect = geo_rect_to_pathfinder_rect(geo_bounding_rect);
+            ctx.scale = (ctx.window_size.x() as f32 / ctx.bounding_rect.width())
+                .min(ctx.window_size.y() as f32 / ctx.bounding_rect.height());
             ctx.scene_proxy
                 .replace_scene(canvas.into_canvas().into_scene());
             ctx.gl_context.window().request_redraw();
