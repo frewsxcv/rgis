@@ -153,12 +153,6 @@ fn handle_redraw_requested(ctx: &mut EventLoopContext) {
             ctx.window_size.x() as u32,
             ctx.window_size.y() as u32,
         ));
-        ctx.scale = (ctx.window_size.x() as f32 / ctx.bounding_rect.width())
-            .min(ctx.window_size.y() as f32 / ctx.bounding_rect.height());
-        let layers: &Layers = &ctx.layers.read().unwrap();
-        let canvas = crate::render(ctx.window_size, layers, ctx.scale);
-        ctx.scene_proxy
-            .replace_scene(canvas.into_canvas().into_scene());
         ctx.resized = false;
     }
 
