@@ -99,6 +99,10 @@ impl Window {
                 Vector2F::new(0., 0.),
                 Vector2F::new(WINDOW_SIZE_X as f32, WINDOW_SIZE_Y as f32),
             ),
+            bounding_rect: RectF::new(
+                Vector2F::new(0., 0.),
+                Vector2F::new(WINDOW_SIZE_X as f32, WINDOW_SIZE_Y as f32),
+            ),
             resized: false,
         };
 
@@ -123,6 +127,7 @@ struct EventLoopContext {
     window_size: Vector2I,
     layers: sync::Arc<sync::RwLock<Layers>>,
     view_box: pathfinder_geometry::rect::RectF,
+    bounding_rect: pathfinder_geometry::rect::RectF,
     resized: bool,
 }
 
@@ -141,10 +146,8 @@ fn handle_redraw_requested(ctx: &mut EventLoopContext) {
         ctx.resized = false;
     }
 
-    let bounding_rect = ctx.layers.read().unwrap().bounding_rect.unwrap();
-
-    let scale = (ctx.window_size.x() as f64 / bounding_rect.width())
-        .min(ctx.window_size.y() as f64 / bounding_rect.height());
+    let scale = (ctx.window_size.x() as f32 / ctx.bounding_rect.width())
+        .min(ctx.window_size.y() as f32 / ctx.bounding_rect.height());
 
     ctx.scene_proxy.set_view_box(ctx.view_box);
 
@@ -164,6 +167,8 @@ fn handle_user_event(ctx: &mut EventLoopContext, user_event: UserEvent) {
     match user_event {
         UserEvent::LayerAdded => {
             let canvas = crate::render(ctx.window_size, ctx.layers.clone());
+            let geo_bounding_rect = ctx.layers.read().unwrap().bounding_rect.unwrap();
+            ctx.bounding_rect = geo_rect_to_pathfinder_rect(geo_bounding_rect);
             ctx.scene_proxy
                 .replace_scene(canvas.into_canvas().into_scene());
             ctx.gl_context.window().request_redraw();
@@ -245,4 +250,11 @@ fn handle_window_event(
             *control_flow = ControlFlow::Wait;
         }
     }
+}
+
+fn geo_rect_to_pathfinder_rect(geo_rect: geo::Rect<f64>) -> RectF {
+    RectF::new(
+        Vector2F::new(geo_rect.min().x as f32, geo_rect.max().y as f32),
+        Vector2F::new(geo_rect.width() as f32, geo_rect.height() as f32),
+    )
 }
