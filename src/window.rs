@@ -1,7 +1,7 @@
 use crate::layer::Layers;
 use glutin::dpi::PhysicalSize;
 use glutin::event::{
-    ElementState, Event, KeyboardInput, ModifiersState, VirtualKeyCode, WindowEvent
+    ElementState, Event, KeyboardInput, ModifiersState, VirtualKeyCode, WindowEvent,
 };
 use glutin::event_loop::{ControlFlow, EventLoop};
 use glutin::window::WindowBuilder;
@@ -205,9 +205,7 @@ fn handle_window_event(
             ctx.resized = true;
             ctx.gl_context.window().request_redraw();
         }
-        WindowEvent::ModifiersChanged(modifiers) => {
-            handle_modifiers_changed(ctx, modifiers)
-        }
+        WindowEvent::ModifiersChanged(modifiers) => handle_modifiers_changed(ctx, modifiers),
         WindowEvent::KeyboardInput {
             input: keyboard_input,
             ..
@@ -218,12 +216,11 @@ fn handle_window_event(
     }
 }
 
-fn handle_modifiers_changed(
-    ctx: &mut EventLoopContext,
-    modifiers: ModifiersState
-) {
+fn handle_modifiers_changed(ctx: &mut EventLoopContext, modifiers: ModifiersState) {
     ctx.shift_pressed = modifiers.shift();
 }
+
+const PAN_FACTOR: f32 = 0.05;
 
 fn handle_keyboard_input(
     ctx: &mut EventLoopContext,
@@ -240,7 +237,8 @@ fn handle_keyboard_input(
             state: ElementState::Pressed,
             ..
         } => {
-            ctx.view_center = ctx.view_center + Vector2F::new(0., -10.);
+            ctx.view_center = ctx.view_center
+                + Vector2F::new(0., ctx.view_box.height() * -1. * PAN_FACTOR / ctx.scale);
             ctx.gl_context.window().request_redraw();
         }
         KeyboardInput {
@@ -248,7 +246,8 @@ fn handle_keyboard_input(
             state: ElementState::Pressed,
             ..
         } => {
-            ctx.view_center = ctx.view_center + Vector2F::new(0., 10.);
+            ctx.view_center =
+                ctx.view_center + Vector2F::new(0., ctx.view_box.height() * PAN_FACTOR / ctx.scale);
             ctx.gl_context.window().request_redraw();
         }
         KeyboardInput {
@@ -256,7 +255,8 @@ fn handle_keyboard_input(
             state: ElementState::Pressed,
             ..
         } => {
-            ctx.view_center = ctx.view_center + Vector2F::new(-10., 0.);
+            ctx.view_center = ctx.view_center
+                + Vector2F::new(ctx.view_box.width() * -1. * PAN_FACTOR / ctx.scale, 0.);
             ctx.gl_context.window().request_redraw();
         }
         KeyboardInput {
@@ -264,7 +264,8 @@ fn handle_keyboard_input(
             state: ElementState::Pressed,
             ..
         } => {
-            ctx.view_center = ctx.view_center + Vector2F::new(10., 0.);
+            ctx.view_center =
+                ctx.view_center + Vector2F::new(ctx.view_box.width() * PAN_FACTOR / ctx.scale, 0.);
             ctx.gl_context.window().request_redraw();
         }
         KeyboardInput {
