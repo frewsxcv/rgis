@@ -6,6 +6,7 @@ use std::{error, io, process, sync};
 
 mod cli;
 mod color;
+mod event_loop;
 mod file_loader;
 mod layer;
 #[allow(dead_code)]
