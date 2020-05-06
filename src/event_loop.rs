@@ -31,6 +31,42 @@ pub struct EventLoopContext {
     pub shift_pressed: bool,
 }
 
+impl EventLoopContext {
+    pub fn new(
+        scene_proxy: SceneProxy,
+        renderer: Renderer<GLDevice>,
+        gl_context: glutin::ContextWrapper<glutin::PossiblyCurrent, glutin::window::Window>,
+        layers: sync::Arc<sync::RwLock<Layers>>,
+        window_size: Vector2I,
+    ) -> Self {
+        EventLoopContext {
+            scene_proxy: scene_proxy,
+            renderer: renderer,
+            gl_context: gl_context,
+            layers: layers,
+            window_size: window_size,
+            view_box: RectF::new(
+                Vector2F::new(0., 0.),
+                Vector2F::new(window_size.x() as f32, window_size.y() as f32),
+            ),
+            // The initial bounding rectangle value doesn't matter. It'll get
+            // populated with a meaningful value after we load the first layer.
+            bounding_rect: RectF::new(
+                Vector2F::new(0., 0.),
+                Vector2F::new(window_size.x() as f32, window_size.y() as f32),
+            ),
+            // The initial view center value doesn't matter. It'll get populated
+            // with a meaningful value after we load the first layer.
+            view_center: Vector2F::new(1., 1.),
+            // The initial scale value doesn't matter. It'll get populated with
+            // a meaningful value after we load the first layer.
+            scale: 1.,
+            shift_pressed: false,
+            resized: false,
+        }
+    }
+}
+
 pub fn handle_redraw_requested(ctx: &mut EventLoopContext) {
     if ctx.resized {
         ctx.view_box = RectF::new(

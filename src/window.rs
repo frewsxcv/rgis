@@ -6,9 +6,9 @@ use glutin::event_loop::{ControlFlow, EventLoop};
 use glutin::window::WindowBuilder;
 use glutin::{ContextBuilder, GlProfile, GlRequest};
 use pathfinder_color::ColorF;
-use pathfinder_geometry::rect::RectF;
 
-use pathfinder_geometry::vector::{vec2i, Vector2F};
+
+use pathfinder_geometry::vector::{vec2i};
 use pathfinder_gl::{GLDevice, GLVersion};
 use pathfinder_renderer::concurrent::rayon::RayonExecutor;
 use pathfinder_renderer::concurrent::scene_proxy::SceneProxy;
@@ -89,31 +89,13 @@ impl Window {
 
         let window_size = vec2i(WINDOW_SIZE_X, WINDOW_SIZE_Y);
 
-        let mut ctx = event_loop::EventLoopContext {
-            scene_proxy: scene_proxy,
-            renderer: renderer,
-            gl_context: gl_context,
-            layers: layers,
-            window_size: window_size,
-            view_box: RectF::new(
-                Vector2F::new(0., 0.),
-                Vector2F::new(WINDOW_SIZE_X as f32, WINDOW_SIZE_Y as f32),
-            ),
-            // The initial bounding rectangle value doesn't matter. It'll get
-            // populated with a meaningful value after we load the first layer.
-            bounding_rect: RectF::new(
-                Vector2F::new(0., 0.),
-                Vector2F::new(WINDOW_SIZE_X as f32, WINDOW_SIZE_Y as f32),
-            ),
-            // The initial view center value doesn't matter. It'll get populated
-            // with a meaningful value after we load the first layer.
-            view_center: Vector2F::new(1., 1.),
-            // The initial scale value doesn't matter. It'll get populated with
-            // a meaningful value after we load the first layer.
-            scale: 1.,
-            shift_pressed: false,
-            resized: false,
-        };
+        let mut ctx = event_loop::EventLoopContext::new(
+            scene_proxy,
+            renderer,
+            gl_context,
+            layers,
+            window_size,
+        );
 
         event_loop.run(move |event, _, control_flow| {
             match event {
