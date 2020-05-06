@@ -238,8 +238,8 @@ fn handle_keyboard_input(
             state: ElementState::Pressed,
             ..
         } => {
-            ctx.view_center = ctx.view_center
-                + Vector2F::new(0., ctx.view_box.height() * -1. * PAN_FACTOR / ctx.scale);
+            ctx.view_center =
+                ctx.view_center - Vector2F::new(0., ctx.view_box.height() * PAN_FACTOR / ctx.scale);
             ctx.gl_context.window().request_redraw();
         }
         KeyboardInput {
@@ -256,8 +256,8 @@ fn handle_keyboard_input(
             state: ElementState::Pressed,
             ..
         } => {
-            ctx.view_center = ctx.view_center
-                + Vector2F::new(ctx.view_box.width() * -1. * PAN_FACTOR / ctx.scale, 0.);
+            ctx.view_center =
+                ctx.view_center - Vector2F::new(ctx.view_box.width() * PAN_FACTOR / ctx.scale, 0.);
             ctx.gl_context.window().request_redraw();
         }
         KeyboardInput {
