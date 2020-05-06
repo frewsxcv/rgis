@@ -221,6 +221,7 @@ fn handle_modifiers_changed(ctx: &mut EventLoopContext, modifiers: ModifiersStat
 }
 
 const PAN_FACTOR: f32 = 0.05;
+const ZOOM_FACTOR: f32 = 1.1;
 
 fn handle_keyboard_input(
     ctx: &mut EventLoopContext,
@@ -274,7 +275,7 @@ fn handle_keyboard_input(
             ..
         } => {
             if ctx.shift_pressed {
-                ctx.scale *= 1.1;
+                ctx.scale *= ZOOM_FACTOR;
                 // ctx.view_center = ctx.view_center + Vector2F::new(10., 0.);
                 ctx.gl_context.window().request_redraw();
             }
@@ -284,7 +285,7 @@ fn handle_keyboard_input(
             state: ElementState::Pressed,
             ..
         } => {
-            ctx.scale /= 1.1;
+            ctx.scale /= ZOOM_FACTOR;
             ctx.gl_context.window().request_redraw();
         }
         _ => {
