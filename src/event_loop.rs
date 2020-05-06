@@ -235,7 +235,7 @@ fn handle_keyboard_input(
 
 fn geo_rect_to_pathfinder_rect(geo_rect: geo::Rect<f64>) -> RectF {
     RectF::new(
-        Vector2F::new(geo_rect.min().x as f32, geo_rect.max().y as f32),
+        Vector2F::new(geo_rect.min().x as f32, geo_rect.min().y as f32),
         Vector2F::new(geo_rect.width() as f32, geo_rect.height() as f32),
     )
 }
