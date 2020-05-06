@@ -1,6 +1,7 @@
 use crate::layer::Layers;
 use crate::window::UserEvent;
 use glutin::dpi::PhysicalSize;
+use glutin::event::Event;
 use glutin::event::{ElementState, KeyboardInput, ModifiersState, VirtualKeyCode, WindowEvent};
 use glutin::event_loop::ControlFlow;
 
@@ -67,7 +68,23 @@ impl EventLoopContext {
     }
 }
 
-pub fn handle_redraw_requested(ctx: &mut EventLoopContext) {
+pub fn handle_event(
+    ctx: &mut EventLoopContext,
+    event: Event<UserEvent>,
+    control_flow: &mut ControlFlow,
+) {
+    match event {
+        Event::RedrawRequested(_) => handle_redraw_requested(ctx),
+        Event::UserEvent(user_event) => handle_user_event(ctx, user_event),
+        Event::WindowEvent {
+            event: window_event,
+            ..
+        } => handle_window_event(ctx, window_event, control_flow),
+        _ => *control_flow = ControlFlow::Wait,
+    }
+}
+
+fn handle_redraw_requested(ctx: &mut EventLoopContext) {
     if ctx.resized {
         ctx.view_box = RectF::new(
             Vector2F::new(0., 0.),
@@ -99,7 +116,7 @@ pub fn handle_redraw_requested(ctx: &mut EventLoopContext) {
     ctx.gl_context.swap_buffers().unwrap();
 }
 
-pub fn handle_user_event(ctx: &mut EventLoopContext, user_event: UserEvent) {
+fn handle_user_event(ctx: &mut EventLoopContext, user_event: UserEvent) {
     match user_event {
         UserEvent::LayerAdded => {
             let layers: &Layers = &ctx.layers.read().unwrap();
@@ -115,7 +132,7 @@ pub fn handle_user_event(ctx: &mut EventLoopContext, user_event: UserEvent) {
     }
 }
 
-pub fn handle_window_event(
+fn handle_window_event(
     ctx: &mut EventLoopContext,
     window_event: WindowEvent,
     control_flow: &mut ControlFlow,

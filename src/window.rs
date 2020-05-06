@@ -1,14 +1,12 @@
-use crate::event_loop;
+use crate::event_loop::{handle_event, EventLoopContext};
 use crate::layer::Layers;
 use glutin::dpi::PhysicalSize;
-use glutin::event::Event;
-use glutin::event_loop::{ControlFlow, EventLoop};
+use glutin::event_loop::EventLoop;
 use glutin::window::WindowBuilder;
 use glutin::{ContextBuilder, GlProfile, GlRequest};
 use pathfinder_color::ColorF;
 
-
-use pathfinder_geometry::vector::{vec2i};
+use pathfinder_geometry::vector::vec2i;
 use pathfinder_gl::{GLDevice, GLVersion};
 use pathfinder_renderer::concurrent::rayon::RayonExecutor;
 use pathfinder_renderer::concurrent::scene_proxy::SceneProxy;
@@ -89,24 +87,8 @@ impl Window {
 
         let window_size = vec2i(WINDOW_SIZE_X, WINDOW_SIZE_Y);
 
-        let mut ctx = event_loop::EventLoopContext::new(
-            scene_proxy,
-            renderer,
-            gl_context,
-            layers,
-            window_size,
-        );
+        let mut ctx = EventLoopContext::new(scene_proxy, renderer, gl_context, layers, window_size);
 
-        event_loop.run(move |event, _, control_flow| {
-            match event {
-                Event::RedrawRequested(_) => event_loop::handle_redraw_requested(&mut ctx),
-                Event::UserEvent(user_event) => event_loop::handle_user_event(&mut ctx, user_event),
-                Event::WindowEvent {
-                    event: window_event,
-                    ..
-                } => event_loop::handle_window_event(&mut ctx, window_event, control_flow),
-                _ => *control_flow = ControlFlow::Wait,
-            };
-        })
+        event_loop.run(move |event, _, control_flow| handle_event(&mut ctx, event, control_flow))
     }
 }
