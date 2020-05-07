@@ -15,13 +15,8 @@ pub trait Render: ::std::marker::Sync + ::std::marker::Send {
 
 fn coords_to_screen_coords(
     coords: impl Iterator<Item = geo::Coordinate<f64>>,
-    extent: geo::Rect<f64>,
 ) -> impl Iterator<Item = [f64; 2]> {
     coords
-        .map(move |coord| geo::Coordinate {
-            x: coord.x - extent.min().x,
-            y: coord.y - extent.max().y,
-        })
         .map(move |coord| geo::Coordinate {
             x: coord.x,
             y: -coord.y,
@@ -44,15 +39,15 @@ impl Render for geo::MultiLineString<f64> {
 }
 
 fn render_line_string(line_string: &geo::LineString<f64>, ctx: &mut RenderContext) {
-    let path = line_string_to_path(line_string, ctx);
+    let path = line_string_to_path(line_string);
     ctx.canvas.set_line_width(5.0 / ctx.scale);
     ctx.canvas.set_stroke_style(ctx.color);
     ctx.canvas.stroke_path(path);
 }
 
-fn line_string_to_path(line_string: &geo::LineString<f64>, ctx: &mut RenderContext) -> Path2D {
+fn line_string_to_path(line_string: &geo::LineString<f64>) -> Path2D {
     let mut path = Path2D::new();
-    let mut coords = coords_to_screen_coords(line_string.0.iter().copied(), ctx.extent);
+    let mut coords = coords_to_screen_coords(line_string.0.iter().copied());
 
     if let Some(first_coord) = coords.next() {
         path.move_to(vec2f(first_coord[0] as f32, first_coord[1] as f32));
@@ -82,7 +77,7 @@ impl Render for geo::MultiPolygon<f64> {
 }
 
 fn render_polygon(polygon: &geo::Polygon<f64>, ctx: &mut RenderContext) {
-    let path = line_string_to_path(polygon.exterior(), ctx);
+    let path = line_string_to_path(polygon.exterior());
     ctx.canvas.set_line_width(5.0 / ctx.scale);
     ctx.canvas.set_fill_style(ctx.color);
     ctx.canvas

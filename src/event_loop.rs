@@ -24,9 +24,9 @@ pub struct EventLoopContext {
     pub gl_context: glutin::ContextWrapper<glutin::PossiblyCurrent, glutin::window::Window>,
     pub window_size: Vector2I,
     pub layers: sync::Arc<sync::RwLock<Layers>>,
-    pub view_box: pathfinder_geometry::rect::RectF,
+    pub view_box: RectF,
     pub view_center: Vector2F,
-    pub bounding_rect: pathfinder_geometry::rect::RectF,
+    pub canvas_bounding_rect: RectF,
     pub scale: f32,
     pub resized: bool,
     pub shift_pressed: bool,
@@ -52,10 +52,7 @@ impl EventLoopContext {
             ),
             // The initial bounding rectangle value doesn't matter. It'll get
             // populated with a meaningful value after we load the first layer.
-            bounding_rect: RectF::new(
-                Vector2F::new(0., 0.),
-                Vector2F::new(window_size.x() as f32, window_size.y() as f32),
-            ),
+            canvas_bounding_rect: RectF::new(Vector2F::new(0., 0.), Vector2F::new(1., 1.)),
             // The initial view center value doesn't matter. It'll get populated
             // with a meaningful value after we load the first layer.
             view_center: Vector2F::new(1., 1.),
@@ -121,9 +118,10 @@ fn handle_user_event(ctx: &mut EventLoopContext, user_event: UserEvent) {
         UserEvent::LayerAdded => {
             let layers: &Layers = &ctx.layers.read().unwrap();
             let geo_bounding_rect = layers.bounding_rect.unwrap();
-            ctx.bounding_rect = geo_rect_to_pathfinder_rect(geo_bounding_rect);
-            ctx.scale = (ctx.window_size.x() as f32 / ctx.bounding_rect.width())
-                .min(ctx.window_size.y() as f32 / ctx.bounding_rect.height());
+            ctx.canvas_bounding_rect = geo_bounding_rect_to_canvas_bounding_rect(geo_bounding_rect);
+            ctx.scale = (ctx.window_size.x() as f32 / ctx.canvas_bounding_rect.width())
+                .min(ctx.window_size.y() as f32 / ctx.canvas_bounding_rect.height());
+            ctx.view_center = ctx.canvas_bounding_rect.origin();
             let canvas = crate::render(ctx.window_size, layers, ctx.scale);
             ctx.scene_proxy
                 .replace_scene(canvas.into_canvas().into_scene());
@@ -233,9 +231,10 @@ fn handle_keyboard_input(
     }
 }
 
-fn geo_rect_to_pathfinder_rect(geo_rect: geo::Rect<f64>) -> RectF {
+fn geo_bounding_rect_to_canvas_bounding_rect(geo_rect: geo::Rect<f64>) -> RectF {
+    // Invert the y-origin because we're translating to screen coordinates
     RectF::new(
-        Vector2F::new(geo_rect.min().x as f32, geo_rect.min().y as f32),
+        Vector2F::new(geo_rect.min().x as f32, -geo_rect.max().y as f32),
         Vector2F::new(geo_rect.width() as f32, geo_rect.height() as f32),
     )
 }
