@@ -250,13 +250,23 @@ fn handle_mouse_input(
 ) {
     match (mouse_button, element_state) {
         (MouseButton::Left, ElementState::Pressed) => {
+            let geo_coordinate = physical_position_to_geo_coordinate(ctx, ctx.cursor_position);
             log::info!(
-                "Mouse clicked at: (x: {}, y: {})",
+                "Mouse clicked. Screen: (x: {}, y: {}). Geo: (x: {}, y: {}).",
                 ctx.cursor_position.x,
-                ctx.cursor_position.y
+                ctx.cursor_position.y,
+                geo_coordinate.x,
+                geo_coordinate.y,
             );
         }
         _ => {}
+    }
+}
+
+fn physical_position_to_geo_coordinate(ctx: &EventLoopContext, physical_position: PhysicalPosition<f64>) -> geo::Coordinate<f64> {
+    geo::Coordinate {
+        x: ctx.view_center.x() as f64 + (physical_position.x / (ctx.scale as f64)),
+        y: -(ctx.view_center.y() as f64 + (physical_position.y / (ctx.scale as f64))),
     }
 }
 
