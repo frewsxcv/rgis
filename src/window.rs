@@ -13,7 +13,7 @@ use pathfinder_renderer::concurrent::scene_proxy::SceneProxy;
 use pathfinder_renderer::gpu::options::{DestFramebuffer, RendererOptions};
 use pathfinder_renderer::gpu::renderer::Renderer;
 
-use pathfinder_resources::fs::FilesystemResourceLoader;
+use pathfinder_resources::embedded::EmbeddedResourceLoader;
 use std::sync;
 
 pub const WINDOW_SIZE_X: i32 = 800;
@@ -58,7 +58,7 @@ impl Window {
         // Create a Pathfinder renderer.
         let renderer = Renderer::new(
             GLDevice::new(GLVersion::GL3, 0),
-            &FilesystemResourceLoader::locate(),
+            &EmbeddedResourceLoader,
             DestFramebuffer::full_window(window_size),
             RendererOptions {
                 background_color: Some(ColorF::white()),
