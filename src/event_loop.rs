@@ -268,7 +268,10 @@ fn handle_mouse_input(
     }
 }
 
-fn physical_position_to_geo_coordinate(ctx: &EventLoopContext, physical_position: PhysicalPosition<f64>) -> geo::Coordinate<f64> {
+fn physical_position_to_geo_coordinate(
+    ctx: &EventLoopContext,
+    physical_position: PhysicalPosition<f64>,
+) -> geo::Coordinate<f64> {
     geo::Coordinate {
         x: ctx.view_center.x() as f64 + (physical_position.x / (ctx.scale as f64)),
         y: -(ctx.view_center.y() as f64 + (physical_position.y / (ctx.scale as f64))),

@@ -1,5 +1,5 @@
-use geo::contains::Contains;
 use geo::bounding_rect::BoundingRect;
+use geo::contains::Contains;
 use pathfinder_canvas::ColorU;
 
 #[derive(Clone, Debug)]
@@ -26,7 +26,11 @@ impl Layers {
             return vec![];
         }
 
-        self.data.iter().filter(|layer| layer.contains_coord(coord)).cloned().collect()
+        self.data
+            .iter()
+            .filter(|layer| layer.contains_coord(coord))
+            .cloned()
+            .collect()
     }
 
     pub fn add(&mut self, geometry: geo::Geometry<f64>, metadata: Option<Metadata>) {
