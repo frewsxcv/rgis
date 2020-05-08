@@ -6,6 +6,8 @@ use pathfinder_canvas::ColorU;
 pub struct Layers {
     pub data: Vec<Layer>,
     pub bounding_rect: Option<geo::Rect<f64>>,
+    // ID of the currently selected Layer
+    pub selected_layer_id: Option<i64>,
 }
 
 impl Layers {
@@ -13,6 +15,7 @@ impl Layers {
         Layers {
             data: vec![],
             bounding_rect: None,
+            selected_layer_id: None,
         }
     }
 
@@ -33,8 +36,15 @@ impl Layers {
             .collect()
     }
 
+    pub fn selected_layer(&self) -> Option<&Layer> {
+        self.selected_layer_id
+            .and_then(|layer_id| self.data.binary_search_by_key(&layer_id, |layer| layer.id).ok())
+            .and_then(|layer_index| self.data.get(layer_index))
+    }
+
     pub fn add(&mut self, geometry: geo::Geometry<f64>, metadata: Option<Metadata>) {
-        let layer = Layer::from_geometry(geometry, metadata);
+        let id = self.data.get(self.data.len() - 1).map(|layer| layer.id + 1).unwrap_or(1);
+        let layer = Layer::from_geometry(geometry, id, metadata);
         self.bounding_rect = Some(if let Some(r) = self.bounding_rect {
             bbox_merge(r, layer.bounding_rect)
         } else {
@@ -70,6 +80,7 @@ fn bbox_merge(a: geo::Rect<f64>, b: geo::Rect<f64>) -> geo::Rect<f64> {
 }
 
 pub type Metadata = serde_json::Map<String, serde_json::Value>;
+pub type Id = i64;
 
 #[derive(Clone, Debug)]
 pub struct Layer {
@@ -77,6 +88,7 @@ pub struct Layer {
     pub bounding_rect: geo::Rect<f64>,
     pub color: ColorU,
     pub metadata: Metadata,
+    pub id: Id,
 }
 
 impl Layer {
@@ -85,12 +97,13 @@ impl Layer {
             && self.geometry.contains(&geo::Point(coord))
     }
 
-    pub fn from_geometry(geometry: geo::Geometry<f64>, metadata: Option<Metadata>) -> Self {
+    pub fn from_geometry(geometry: geo::Geometry<f64>, id: i64, metadata: Option<Metadata>) -> Self {
         Layer {
             bounding_rect: geometry_bounding_rect(&geometry),
             geometry: geometry,
             color: crate::color::next(),
             metadata: metadata.unwrap_or_else(|| serde_json::Map::new()),
+            id,
         }
     }
 }

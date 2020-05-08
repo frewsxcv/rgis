@@ -48,6 +48,7 @@ fn render(
             extent: layers.bounding_rect.unwrap(),
             scale,
             color: layer.color,
+            selected: layers.selected_layer_id == Some(layer.id),
         })
     }
 

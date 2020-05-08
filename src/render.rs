@@ -7,6 +7,7 @@ pub struct RenderContext<'a> {
     pub extent: geo::Rect<f64>,
     pub color: ColorU,
     pub scale: f32,
+    pub selected: bool,
 }
 
 pub trait Render: ::std::marker::Sync + ::std::marker::Send {
@@ -40,8 +41,13 @@ impl Render for geo::MultiLineString<f64> {
 
 fn render_line_string(line_string: &geo::LineString<f64>, ctx: &mut RenderContext) {
     let path = line_string_to_path(line_string);
+    let color = if ctx.selected {
+        ColorU::black()
+    } else {
+        ctx.color
+    };
     ctx.canvas.set_line_width(5.0 / ctx.scale);
-    ctx.canvas.set_stroke_style(ctx.color);
+    ctx.canvas.set_stroke_style(color);
     ctx.canvas.stroke_path(path);
 }
 
@@ -78,8 +84,13 @@ impl Render for geo::MultiPolygon<f64> {
 
 fn render_polygon(polygon: &geo::Polygon<f64>, ctx: &mut RenderContext) {
     let path = line_string_to_path(polygon.exterior());
+    let color = if ctx.selected {
+        ColorU::black()
+    } else {
+        ctx.color
+    };
     ctx.canvas.set_line_width(5.0 / ctx.scale);
-    ctx.canvas.set_fill_style(ctx.color);
+    ctx.canvas.set_fill_style(color);
     ctx.canvas
         .fill_path(path, pathfinder_content::fill::FillRule::Winding);
 }
