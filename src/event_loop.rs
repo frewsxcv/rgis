@@ -1,8 +1,10 @@
 use crate::layer::Layers;
 use crate::window::UserEvent;
-use glutin::dpi::PhysicalSize;
+use glutin::dpi::{PhysicalPosition, PhysicalSize};
 use glutin::event::Event;
-use glutin::event::{ElementState, KeyboardInput, ModifiersState, VirtualKeyCode, WindowEvent};
+use glutin::event::{
+    ElementState, KeyboardInput, ModifiersState, MouseButton, VirtualKeyCode, WindowEvent,
+};
 use glutin::event_loop::ControlFlow;
 
 use pathfinder_geometry::rect::RectF;
@@ -30,6 +32,7 @@ pub struct EventLoopContext {
     pub scale: f32,
     pub resized: bool,
     pub shift_pressed: bool,
+    pub cursor_position: PhysicalPosition<f64>,
 }
 
 impl EventLoopContext {
@@ -59,6 +62,9 @@ impl EventLoopContext {
             // The initial scale value doesn't matter. It'll get populated with
             // a meaningful value after we load the first layer.
             scale: 1.,
+            // The initial cursor position value doesn't matter. It'll get populated with
+            // a meaningful value after the mouse is moved.
+            cursor_position: PhysicalPosition::new(1., 1.),
             shift_pressed: false,
             resized: false,
         }
@@ -147,6 +153,8 @@ fn handle_window_event(
             input: keyboard_input,
             ..
         } => handle_keyboard_input(ctx, keyboard_input, control_flow),
+        WindowEvent::CursorMoved { position, .. } => handle_cursor_moved(ctx, position),
+        WindowEvent::MouseInput { state, button, .. } => handle_mouse_input(ctx, state, button),
         _ => {
             *control_flow = ControlFlow::Wait;
         }
@@ -228,6 +236,27 @@ fn handle_keyboard_input(
         _ => {
             *control_flow = ControlFlow::Wait;
         }
+    }
+}
+
+fn handle_cursor_moved(ctx: &mut EventLoopContext, position: PhysicalPosition<f64>) {
+    ctx.cursor_position = position;
+}
+
+fn handle_mouse_input(
+    ctx: &mut EventLoopContext,
+    element_state: ElementState,
+    mouse_button: MouseButton,
+) {
+    match (mouse_button, element_state) {
+        (MouseButton::Left, ElementState::Pressed) => {
+            log::info!(
+                "Mouse clicked at: (x: {}, y: {})",
+                ctx.cursor_position.x,
+                ctx.cursor_position.y
+            );
+        }
+        _ => {}
     }
 }
 
