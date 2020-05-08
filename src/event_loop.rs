@@ -251,6 +251,7 @@ fn handle_mouse_input(
     match (mouse_button, element_state) {
         (MouseButton::Left, ElementState::Pressed) => {
             let geo_coordinate = physical_position_to_geo_coordinate(ctx, ctx.cursor_position);
+            let layers = ctx.layers.read().unwrap();
             log::info!(
                 "Mouse clicked. Screen: (x: {}, y: {}). Geo: (x: {}, y: {}).",
                 ctx.cursor_position.x,
@@ -258,6 +259,10 @@ fn handle_mouse_input(
                 geo_coordinate.x,
                 geo_coordinate.y,
             );
+            let intersecting = layers.containing_coord(geo_coordinate);
+            for i in intersecting {
+                log::info!("A geometry was clicked: {:?}", i);
+            }
         }
         _ => {}
     }

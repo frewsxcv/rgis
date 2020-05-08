@@ -1,6 +1,8 @@
+use geo::contains::Contains;
 use geo::bounding_rect::BoundingRect;
 use pathfinder_canvas::ColorU;
 
+#[derive(Clone, Debug)]
 pub struct Layers {
     pub data: Vec<Layer>,
     pub bounding_rect: Option<geo::Rect<f64>>,
@@ -12,6 +14,19 @@ impl Layers {
             data: vec![],
             bounding_rect: None,
         }
+    }
+
+    pub fn containing_coord(&self, coord: geo::Coordinate<f64>) -> Vec<Layer> {
+        let bounding_rect = match self.bounding_rect {
+            Some(b) => b,
+            None => return vec![],
+        };
+
+        if !bounding_rect.contains(&coord) {
+            return vec![];
+        }
+
+        self.data.iter().filter(|layer| layer.contains_coord(coord)).cloned().collect()
     }
 
     pub fn add(&mut self, geometry: geo::Geometry<f64>) {
@@ -50,6 +65,7 @@ fn bbox_merge(a: geo::Rect<f64>, b: geo::Rect<f64>) -> geo::Rect<f64> {
     )
 }
 
+#[derive(Clone, Debug)]
 pub struct Layer {
     pub geometry: geo::Geometry<f64>,
     pub bounding_rect: geo::Rect<f64>,
@@ -57,6 +73,11 @@ pub struct Layer {
 }
 
 impl Layer {
+    pub fn contains_coord(&self, coord: geo::Coordinate<f64>) -> bool {
+        self.bounding_rect.contains(&geo::Point(coord))
+            && self.geometry.contains(&geo::Point(coord))
+    }
+
     pub fn from_geometry(geometry: geo::Geometry<f64>) -> Self {
         Layer {
             bounding_rect: geometry_bounding_rect(&geometry),
