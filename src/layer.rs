@@ -36,6 +36,7 @@ impl Layers {
             .collect()
     }
 
+    #[allow(unused)]
     pub fn selected_layer(&self) -> Option<&Layer> {
         self.selected_layer_id
             .and_then(|layer_id| self.data.binary_search_by_key(&layer_id, |layer| layer.id).ok())
