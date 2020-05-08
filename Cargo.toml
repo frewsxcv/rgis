@@ -24,6 +24,5 @@ rayon = "*"
 serde_json = "1.0"
 
 [patch.crates-io]
-geo = { git = "https://github.com/georust/geo.git", branch = "frewsxcv-contains" }
-geo-types = { git = "https://github.com/georust/geo.git", branch = "frewsxcv-contains" }
-
+geo = { git = "https://github.com/georust/geo.git", branch = "master" }
+geo-types = { git = "https://github.com/georust/geo.git", branch = "master" }
