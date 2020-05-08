@@ -11,7 +11,7 @@ pub fn load(geojson_file_path: String, layers: sync::Arc<sync::RwLock<Layers>>) 
     let geojson: geojson::GeoJson = serde_json::from_reader(geojson_file).unwrap();
     log::info!("Parsed file: {:?}", geojson_file_path);
     let count = match geojson {
-        geojson::GeoJson::Geometry(g) => load_geojson_geometry(g, layers),
+        geojson::GeoJson::Geometry(g) => load_geojson_geometry(g, layers, None),
         geojson::GeoJson::Feature(f) => load_geojson_feature(f, layers),
         geojson::GeoJson::FeatureCollection(f) => {
             let mut count = 0;
@@ -30,7 +30,7 @@ fn load_geojson_feature(
     layers: sync::Arc<sync::RwLock<Layers>>,
 ) -> usize {
     if let Some(geometry) = geojson_feature.geometry {
-        load_geojson_geometry(geometry, layers)
+        load_geojson_geometry(geometry, layers, geojson_feature.properties)
     } else {
         0
     }
@@ -39,6 +39,7 @@ fn load_geojson_feature(
 fn load_geojson_geometry(
     geojson_geometry: geojson::Geometry,
     layers: sync::Arc<sync::RwLock<Layers>>,
+    metadata: Option<crate::layer::Metadata>,
 ) -> usize {
     let geojson_value = geojson_geometry.value;
 
@@ -47,28 +48,28 @@ fn load_geojson_geometry(
     match geojson_value {
         g @ geojson::Value::LineString(_) => {
             let g = (g.try_into().ok() as Option<geo::LineString<f64>>).unwrap();
-            l.add(geo::Geometry::LineString(g));
+            l.add(geo::Geometry::LineString(g), metadata);
             1
         }
         g @ geojson::Value::Polygon(_) => {
             let g = (g.try_into().ok() as Option<geo::Polygon<f64>>).unwrap();
-            l.add(geo::Geometry::Polygon(g));
+            l.add(geo::Geometry::Polygon(g), metadata);
             1
         }
         g @ geojson::Value::MultiLineString(_) => {
             let g = (g.try_into().ok() as Option<geo::MultiLineString<f64>>).unwrap();
-            l.add(geo::Geometry::MultiLineString(g));
+            l.add(geo::Geometry::MultiLineString(g), metadata);
             1
         }
         g @ geojson::Value::MultiPolygon(_) => {
             let g = (g.try_into().ok() as Option<geo::MultiPolygon<f64>>).unwrap();
-            l.add(geo::Geometry::MultiPolygon(g));
+            l.add(geo::Geometry::MultiPolygon(g), metadata);
             1
         }
         geojson::Value::GeometryCollection(g) => {
             let mut count = 0;
             for geojson_geometry in g {
-                count += load_geojson_geometry(geojson_geometry, layers.clone());
+                count += load_geojson_geometry(geojson_geometry, layers.clone(), metadata.clone());
             }
             count
         }

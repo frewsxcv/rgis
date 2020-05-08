@@ -29,8 +29,8 @@ impl Layers {
         self.data.iter().filter(|layer| layer.contains_coord(coord)).cloned().collect()
     }
 
-    pub fn add(&mut self, geometry: geo::Geometry<f64>) {
-        let layer = Layer::from_geometry(geometry);
+    pub fn add(&mut self, geometry: geo::Geometry<f64>, metadata: Option<Metadata>) {
+        let layer = Layer::from_geometry(geometry, metadata);
         self.bounding_rect = Some(if let Some(r) = self.bounding_rect {
             bbox_merge(r, layer.bounding_rect)
         } else {
@@ -65,11 +65,14 @@ fn bbox_merge(a: geo::Rect<f64>, b: geo::Rect<f64>) -> geo::Rect<f64> {
     )
 }
 
+pub type Metadata = serde_json::Map<String, serde_json::Value>;
+
 #[derive(Clone, Debug)]
 pub struct Layer {
     pub geometry: geo::Geometry<f64>,
     pub bounding_rect: geo::Rect<f64>,
     pub color: ColorU,
+    pub metadata: Metadata,
 }
 
 impl Layer {
@@ -78,11 +81,12 @@ impl Layer {
             && self.geometry.contains(&geo::Point(coord))
     }
 
-    pub fn from_geometry(geometry: geo::Geometry<f64>) -> Self {
+    pub fn from_geometry(geometry: geo::Geometry<f64>, metadata: Option<Metadata>) -> Self {
         Layer {
             bounding_rect: geometry_bounding_rect(&geometry),
             geometry: geometry,
             color: crate::color::next(),
+            metadata: metadata.unwrap_or_else(|| serde_json::Map::new()),
         }
     }
 }

@@ -261,7 +261,7 @@ fn handle_mouse_input(
             );
             let intersecting = layers.containing_coord(geo_coordinate);
             for i in intersecting {
-                log::info!("A geometry was clicked: {:?}", i);
+                log::info!("A geometry was clicked: {:?}", i.metadata);
             }
         }
         _ => {}
