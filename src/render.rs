@@ -9,7 +9,7 @@ pub struct RenderContext<'a> {
     pub selected: bool,
 }
 
-pub trait Render: ::std::marker::Sync + ::std::marker::Send {
+pub trait Render {
     fn render(&self, ctx: RenderContext);
 }
 
