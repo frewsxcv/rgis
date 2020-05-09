@@ -1,6 +1,6 @@
 use geo;
-use pathfinder_canvas::{CanvasRenderingContext2D, ColorU, Path2D};
-use pathfinder_geometry::vector::{vec2f, Vector2F};
+use pathfinder_canvas::{CanvasRenderingContext2D, ColorU};
+use crate::canvas::to_path::ToPath;
 
 pub struct RenderContext<'a> {
     pub canvas: &'a mut CanvasRenderingContext2D,
@@ -28,7 +28,7 @@ impl Render for geo::MultiLineString<f64> {
 }
 
 fn render_line_string(line_string: &geo::LineString<f64>, ctx: &mut RenderContext) {
-    let path = line_string_to_path(line_string);
+    let path = line_string.to_path();
     let color = if ctx.selected {
         ColorU::black()
     } else {
@@ -37,27 +37,6 @@ fn render_line_string(line_string: &geo::LineString<f64>, ctx: &mut RenderContex
     ctx.canvas.set_line_width(5.0 / ctx.scale);
     ctx.canvas.set_stroke_style(color);
     ctx.canvas.stroke_path(path);
-}
-
-fn line_string_to_path(line_string: &geo::LineString<f64>) -> Path2D {
-    let mut path = Path2D::new();
-    let mut coords = line_string.0.iter().copied().map(geo_coord_to_vec2f);
-
-    if let Some(first_coord) = coords.next() {
-        path.move_to(first_coord);
-    }
-
-    for coord in coords {
-        path.line_to(coord);
-    }
-
-    path.close_path();
-
-    path
-}
-
-fn geo_coord_to_vec2f(geo_coord: geo::Coordinate<f64>) -> Vector2F {
-    vec2f(geo_coord.x as f32, geo_coord.y as f32)
 }
 
 impl Render for geo::Polygon<f64> {
@@ -75,7 +54,7 @@ impl Render for geo::MultiPolygon<f64> {
 }
 
 fn render_polygon(polygon: &geo::Polygon<f64>, ctx: &mut RenderContext) {
-    let path = line_string_to_path(polygon.exterior());
+    let path = polygon.exterior().to_path();
     let color = if ctx.selected {
         ColorU::black()
     } else {

@@ -4,6 +4,7 @@ use pathfinder_canvas::{Canvas, CanvasFontContext};
 use std::io::Write;
 use std::{error, io, process, sync};
 
+mod canvas;
 mod cli;
 mod color;
 mod event_loop;
