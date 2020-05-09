@@ -13,13 +13,13 @@ geojson = { version = "0.18", features = ['geo-types'] }
 gl = "0.14"
 glutin = "0.24"
 log = "0.4"
-pathfinder_canvas = "0.5"
-pathfinder_color = "0.5"
-pathfinder_content = "0.5"
-pathfinder_geometry = "0.5"
-pathfinder_gl = "0.5"
-pathfinder_renderer = "0.5"
-pathfinder_resources = "0.5"
+pathfinder_canvas = { git = "https://github.com/servo/pathfinder.git" }
+pathfinder_color = { git = "https://github.com/servo/pathfinder.git" }
+pathfinder_content = { git = "https://github.com/servo/pathfinder.git" }
+pathfinder_geometry = { git = "https://github.com/servo/pathfinder.git" }
+pathfinder_gl = { git = "https://github.com/servo/pathfinder.git" }
+pathfinder_renderer = { git = "https://github.com/servo/pathfinder.git" }
+pathfinder_resources = { git = "https://github.com/servo/pathfinder.git" }
 rayon = "1"
 serde_json = "1"
 

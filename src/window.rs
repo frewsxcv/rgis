@@ -62,6 +62,7 @@ impl Window {
             DestFramebuffer::full_window(window_size),
             RendererOptions {
                 background_color: Some(ColorF::white()),
+                no_compute: false,
             },
         );
 

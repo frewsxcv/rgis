@@ -215,6 +215,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "crossbeam-channel"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "crossbeam-utils 0.7.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "maybe-uninit 2.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "crossbeam-deque"
 version = "0.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -327,6 +336,14 @@ dependencies = [
 name = "fuchsia-zircon-sys"
 version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "fxhash"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "byteorder 1.3.4 (registry+https://github.com/rust-lang/crates.io-index)",
+]
 
 [[package]]
 name = "geo"
@@ -798,92 +815,94 @@ dependencies = [
 [[package]]
 name = "pathfinder_canvas"
 version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
+source = "git+https://github.com/servo/pathfinder.git#aa1279d6923c8686db230bcd4d1c8ccd53739a47"
 dependencies = [
- "pathfinder_color 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "pathfinder_content 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "pathfinder_geometry 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "pathfinder_renderer 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pathfinder_color 0.5.0 (git+https://github.com/servo/pathfinder.git)",
+ "pathfinder_content 0.5.0 (git+https://github.com/servo/pathfinder.git)",
+ "pathfinder_geometry 0.5.1 (git+https://github.com/servo/pathfinder.git)",
+ "pathfinder_renderer 0.5.0 (git+https://github.com/servo/pathfinder.git)",
 ]
 
 [[package]]
 name = "pathfinder_color"
 version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
+source = "git+https://github.com/servo/pathfinder.git#aa1279d6923c8686db230bcd4d1c8ccd53739a47"
 dependencies = [
- "pathfinder_simd 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pathfinder_simd 0.5.0 (git+https://github.com/servo/pathfinder.git)",
 ]
 
 [[package]]
 name = "pathfinder_content"
 version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
+source = "git+https://github.com/servo/pathfinder.git#aa1279d6923c8686db230bcd4d1c8ccd53739a47"
 dependencies = [
  "arrayvec 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "bitflags 1.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "image 0.23.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "pathfinder_color 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "pathfinder_geometry 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "pathfinder_simd 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pathfinder_color 0.5.0 (git+https://github.com/servo/pathfinder.git)",
+ "pathfinder_geometry 0.5.1 (git+https://github.com/servo/pathfinder.git)",
+ "pathfinder_simd 0.5.0 (git+https://github.com/servo/pathfinder.git)",
  "smallvec 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "pathfinder_geometry"
 version = "0.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
+source = "git+https://github.com/servo/pathfinder.git#aa1279d6923c8686db230bcd4d1c8ccd53739a47"
 dependencies = [
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "pathfinder_simd 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pathfinder_simd 0.5.0 (git+https://github.com/servo/pathfinder.git)",
 ]
 
 [[package]]
 name = "pathfinder_gl"
 version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
+source = "git+https://github.com/servo/pathfinder.git#aa1279d6923c8686db230bcd4d1c8ccd53739a47"
 dependencies = [
  "gl 0.14.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "half 1.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "pathfinder_geometry 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "pathfinder_gpu 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "pathfinder_resources 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "pathfinder_simd 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pathfinder_geometry 0.5.1 (git+https://github.com/servo/pathfinder.git)",
+ "pathfinder_gpu 0.5.0 (git+https://github.com/servo/pathfinder.git)",
+ "pathfinder_resources 0.5.0 (git+https://github.com/servo/pathfinder.git)",
+ "pathfinder_simd 0.5.0 (git+https://github.com/servo/pathfinder.git)",
 ]
 
 [[package]]
 name = "pathfinder_gpu"
 version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
+source = "git+https://github.com/servo/pathfinder.git#aa1279d6923c8686db230bcd4d1c8ccd53739a47"
 dependencies = [
  "bitflags 1.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "half 1.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "image 0.23.4 (registry+https://github.com/rust-lang/crates.io-index)",
- "pathfinder_color 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "pathfinder_geometry 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "pathfinder_resources 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "pathfinder_simd 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pathfinder_color 0.5.0 (git+https://github.com/servo/pathfinder.git)",
+ "pathfinder_geometry 0.5.1 (git+https://github.com/servo/pathfinder.git)",
+ "pathfinder_resources 0.5.0 (git+https://github.com/servo/pathfinder.git)",
+ "pathfinder_simd 0.5.0 (git+https://github.com/servo/pathfinder.git)",
 ]
 
 [[package]]
 name = "pathfinder_renderer"
 version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
+source = "git+https://github.com/servo/pathfinder.git#aa1279d6923c8686db230bcd4d1c8ccd53739a47"
 dependencies = [
  "bitflags 1.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "byteorder 1.3.4 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crossbeam-channel 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "fxhash 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "half 1.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "hashbrown 0.7.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "instant 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "pathfinder_color 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "pathfinder_content 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "pathfinder_geometry 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "pathfinder_gpu 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "pathfinder_resources 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "pathfinder_simd 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "pathfinder_ui 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pathfinder_color 0.5.0 (git+https://github.com/servo/pathfinder.git)",
+ "pathfinder_content 0.5.0 (git+https://github.com/servo/pathfinder.git)",
+ "pathfinder_geometry 0.5.1 (git+https://github.com/servo/pathfinder.git)",
+ "pathfinder_gpu 0.5.0 (git+https://github.com/servo/pathfinder.git)",
+ "pathfinder_resources 0.5.0 (git+https://github.com/servo/pathfinder.git)",
+ "pathfinder_simd 0.5.0 (git+https://github.com/servo/pathfinder.git)",
+ "pathfinder_ui 0.5.0 (git+https://github.com/servo/pathfinder.git)",
  "rayon 1.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.106 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_json 1.0.52 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -894,12 +913,12 @@ dependencies = [
 [[package]]
 name = "pathfinder_resources"
 version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
+source = "git+https://github.com/servo/pathfinder.git#aa1279d6923c8686db230bcd4d1c8ccd53739a47"
 
 [[package]]
 name = "pathfinder_simd"
 version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
+source = "git+https://github.com/servo/pathfinder.git#aa1279d6923c8686db230bcd4d1c8ccd53739a47"
 dependencies = [
  "rustc_version 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -907,14 +926,14 @@ dependencies = [
 [[package]]
 name = "pathfinder_ui"
 version = "0.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
+source = "git+https://github.com/servo/pathfinder.git#aa1279d6923c8686db230bcd4d1c8ccd53739a47"
 dependencies = [
  "hashbrown 0.7.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "pathfinder_color 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "pathfinder_geometry 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "pathfinder_gpu 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "pathfinder_resources 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "pathfinder_simd 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pathfinder_color 0.5.0 (git+https://github.com/servo/pathfinder.git)",
+ "pathfinder_geometry 0.5.1 (git+https://github.com/servo/pathfinder.git)",
+ "pathfinder_gpu 0.5.0 (git+https://github.com/servo/pathfinder.git)",
+ "pathfinder_resources 0.5.0 (git+https://github.com/servo/pathfinder.git)",
+ "pathfinder_simd 0.5.0 (git+https://github.com/servo/pathfinder.git)",
  "serde 1.0.106 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.106 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_json 1.0.52 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1045,13 +1064,13 @@ dependencies = [
  "gl 0.14.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "glutin 0.24.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "pathfinder_canvas 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "pathfinder_color 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "pathfinder_content 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "pathfinder_geometry 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "pathfinder_gl 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "pathfinder_renderer 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "pathfinder_resources 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pathfinder_canvas 0.5.0 (git+https://github.com/servo/pathfinder.git)",
+ "pathfinder_color 0.5.0 (git+https://github.com/servo/pathfinder.git)",
+ "pathfinder_content 0.5.0 (git+https://github.com/servo/pathfinder.git)",
+ "pathfinder_geometry 0.5.1 (git+https://github.com/servo/pathfinder.git)",
+ "pathfinder_gl 0.5.0 (git+https://github.com/servo/pathfinder.git)",
+ "pathfinder_renderer 0.5.0 (git+https://github.com/servo/pathfinder.git)",
+ "pathfinder_resources 0.5.0 (git+https://github.com/servo/pathfinder.git)",
  "rayon 1.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_json 1.0.52 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -1483,6 +1502,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum core-graphics 0.19.0 (registry+https://github.com/rust-lang/crates.io-index)" = "59e78b2e0aaf43f08e7ae0d6bc96895ef72ff0921c7d4ff4762201b2dba376dd"
 "checksum core-video-sys 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)" = "34ecad23610ad9757664d644e369246edde1803fcb43ed72876565098a5d3828"
 "checksum crc32fast 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "ba125de2af0df55319f41944744ad91c71113bf74a4646efff39afe1f6842db1"
+"checksum crossbeam-channel 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)" = "cced8691919c02aac3cb0a1bc2e9b73d89e832bf9a06fc579d4e71b68a2da061"
 "checksum crossbeam-deque 0.7.3 (registry+https://github.com/rust-lang/crates.io-index)" = "9f02af974daeee82218205558e51ec8768b48cf524bd01d550abe5573a608285"
 "checksum crossbeam-epoch 0.8.2 (registry+https://github.com/rust-lang/crates.io-index)" = "058ed274caafc1f60c4997b5fc07bf7dc7cca454af7c6e81edffe5f33f70dace"
 "checksum crossbeam-queue 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "c695eeca1e7173472a32221542ae469b3e9aac3a4fc81f7696bcad82029493db"
@@ -1497,6 +1517,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum foreign-types-shared 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "00b0228411908ca8685dba7fc2cdd70ec9990a6e753e89b6ac91a84c40fbaf4b"
 "checksum fuchsia-zircon 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)" = "2e9763c69ebaae630ba35f74888db465e49e259ba1bc0eda7d06f4a067615d82"
 "checksum fuchsia-zircon-sys 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)" = "3dcaa9ae7725d12cdb85b3ad99a434db70b468c09ded17e012d86b5c1010f7a7"
+"checksum fxhash 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "c31b6d751ae2c7f11320402d34e41349dd1016f8d5d45e48c4312bc8625af50c"
 "checksum geo 0.13.0 (git+https://github.com/georust/geo.git)" = "<none>"
 "checksum geo-types 0.5.0 (git+https://github.com/georust/geo.git)" = "<none>"
 "checksum geographiclib-rs 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "b78e20d5d868fa2c4182a8170cb4df261e781a605810e3c1500269c1907da461"
@@ -1549,16 +1570,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum osmesa-sys 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "88cfece6e95d2e717e0872a7f53a8684712ad13822a7979bc760b9c77ec0013b"
 "checksum parking_lot 0.10.2 (registry+https://github.com/rust-lang/crates.io-index)" = "d3a704eb390aafdc107b0e392f56a82b668e3a71366993b5340f5833fd62505e"
 "checksum parking_lot_core 0.7.2 (registry+https://github.com/rust-lang/crates.io-index)" = "d58c7c768d4ba344e3e8d72518ac13e259d7c7ade24167003b8488e10b6740a3"
-"checksum pathfinder_canvas 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)" = "a566adea42766710762f021604453cc838444bc51780671ec3ec91ec4a4ff1c9"
-"checksum pathfinder_color 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)" = "69bdc0d277d559e35e1b374de56df9262a6b71e091ca04a8831a239f8c7f0c62"
-"checksum pathfinder_content 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)" = "6449e0cfa07ca782719467da7cf928625ea43375c9cd0f3104817ecd8825ca69"
-"checksum pathfinder_geometry 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)" = "0b7b7e7b4ea703700ce73ebf128e1450eb69c3a8329199ffbfb9b2a0418e5ad3"
-"checksum pathfinder_gl 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)" = "db360f1d54a86abff4f11f231fa3493db954255744628b6b94acbedf4b07e684"
-"checksum pathfinder_gpu 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)" = "ec01b201ed57fedd353d31e784a034a67edc1d73bb75026c92fcf3156eb2319b"
-"checksum pathfinder_renderer 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)" = "4d1fcb23360f0acecc76b1d6ac3af042d20ef41aa570c13826e470055434fb7b"
-"checksum pathfinder_resources 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)" = "7614a7cb5f3fad5c3fbd499ac4ce514892f98f812bc176bce837c1acaa6c04db"
-"checksum pathfinder_simd 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)" = "b451513912d6b3440e443aa75a73ab22203afedc4a90df8526d008c0f86f7cb3"
-"checksum pathfinder_ui 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)" = "a041d201743267167ec70624172ca789d18d92bf8181f3626be1efc7bb07ee89"
+"checksum pathfinder_canvas 0.5.0 (git+https://github.com/servo/pathfinder.git)" = "<none>"
+"checksum pathfinder_color 0.5.0 (git+https://github.com/servo/pathfinder.git)" = "<none>"
+"checksum pathfinder_content 0.5.0 (git+https://github.com/servo/pathfinder.git)" = "<none>"
+"checksum pathfinder_geometry 0.5.1 (git+https://github.com/servo/pathfinder.git)" = "<none>"
+"checksum pathfinder_gl 0.5.0 (git+https://github.com/servo/pathfinder.git)" = "<none>"
+"checksum pathfinder_gpu 0.5.0 (git+https://github.com/servo/pathfinder.git)" = "<none>"
+"checksum pathfinder_renderer 0.5.0 (git+https://github.com/servo/pathfinder.git)" = "<none>"
+"checksum pathfinder_resources 0.5.0 (git+https://github.com/servo/pathfinder.git)" = "<none>"
+"checksum pathfinder_simd 0.5.0 (git+https://github.com/servo/pathfinder.git)" = "<none>"
+"checksum pathfinder_ui 0.5.0 (git+https://github.com/servo/pathfinder.git)" = "<none>"
 "checksum pdqselect 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "4ec91767ecc0a0bbe558ce8c9da33c068066c57ecc8bb8477ef8c1ad3ef77c27"
 "checksum percent-encoding 2.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "d4fd5641d01c8f18a23da7b6fe29298ff4b55afcccdf78973b24cf3175fee32e"
 "checksum pkg-config 0.3.17 (registry+https://github.com/rust-lang/crates.io-index)" = "05da548ad6865900e60eaba7f589cc0783590a92e940c26953ff81ddbab2d677"
