@@ -10,10 +10,6 @@ pub fn handle(
 ) {
     match keyboard_input {
         KeyboardInput {
-            virtual_keycode: Some(VirtualKeyCode::Escape),
-            ..
-        } => *control_flow = ControlFlow::Exit,
-        KeyboardInput {
             virtual_keycode: Some(VirtualKeyCode::Up),
             state: ElementState::Pressed,
             ..
