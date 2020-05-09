@@ -78,7 +78,7 @@ fn handle_user_event(ctx: &mut EventLoopContext, user_event: UserEvent) {
                 ctx.scale = (ctx.window_size.x() as f32 / ctx.canvas_bounding_rect.width())
                     .min(ctx.window_size.y() as f32 / ctx.canvas_bounding_rect.height());
                 ctx.view_center = ctx.canvas_bounding_rect.origin();
-                crate::build_canvas(ctx.window_size, layers, ctx.scale)
+                crate::canvas::build(ctx.window_size, layers, ctx.scale)
             };
             ctx.replace_scene_canvas(canvas);
             ctx.gl_context.window().request_redraw();

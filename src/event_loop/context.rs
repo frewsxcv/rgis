@@ -67,7 +67,7 @@ impl EventLoopContext {
 
     pub fn build_canvas(&mut self) {
         let canvas =
-            crate::build_canvas(self.window_size, &self.layers.read().unwrap(), self.scale);
+            crate::canvas::build(self.window_size, &self.layers.read().unwrap(), self.scale);
         self.replace_scene_canvas(canvas);
     }
 
