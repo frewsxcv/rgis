@@ -39,8 +39,10 @@ fn build_canvas(
     layers: &Layers,
     scale: f32,
 ) -> pathfinder_canvas::CanvasRenderingContext2D {
-    log::info!("Creating a canvas");
+    log::info!("Building canvas");
     let mut canvas = new_canvas(window_size);
+
+    // Flip the y-axis to account for the cartesian → screen coordinate translation.
     canvas.scale(pathfinder_geometry::vector::vec2f(1., -1.));
 
     for layer in &layers.data {
