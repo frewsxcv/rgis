@@ -19,7 +19,7 @@ fn coords_to_screen_coords(
     coords
         .map(move |coord| geo::Coordinate {
             x: coord.x,
-            y: -coord.y,
+            y: coord.y,
         })
         .map(|coord| [coord.x, coord.y])
 }

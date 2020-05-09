@@ -68,8 +68,13 @@ impl EventLoopContext {
     pub fn build_canvas(&mut self) {
         let canvas =
             crate::build_canvas(self.window_size, &self.layers.read().unwrap(), self.scale);
-        self.scene_proxy
-            .replace_scene(canvas.into_canvas().into_scene());
+        self.replace_scene_canvas(canvas);
+    }
+
+    pub fn replace_scene_canvas(&mut self, canvas: pathfinder_canvas::CanvasRenderingContext2D) {
+        let scene = canvas.into_canvas().into_scene();
+        log::debug!("Replacing scene canvas. Canvas bounds: {:?}", scene.bounds());
+        self.scene_proxy.replace_scene(scene);
     }
 
     pub fn zoom_in(&mut self) {

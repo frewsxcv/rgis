@@ -70,15 +70,16 @@ fn handle_redraw_requested(ctx: &mut EventLoopContext) {
 fn handle_user_event(ctx: &mut EventLoopContext, user_event: UserEvent) {
     match user_event {
         UserEvent::LayerAdded => {
-            let layers: &Layers = &ctx.layers.read().unwrap();
-            let geo_bounding_rect = layers.bounding_rect.unwrap();
-            ctx.canvas_bounding_rect = geo_bounding_rect_to_canvas_bounding_rect(geo_bounding_rect);
-            ctx.scale = (ctx.window_size.x() as f32 / ctx.canvas_bounding_rect.width())
-                .min(ctx.window_size.y() as f32 / ctx.canvas_bounding_rect.height());
-            ctx.view_center = ctx.canvas_bounding_rect.origin();
-            let canvas = crate::build_canvas(ctx.window_size, layers, ctx.scale);
-            ctx.scene_proxy
-                .replace_scene(canvas.into_canvas().into_scene());
+            let canvas = {
+                let layers: &Layers = &ctx.layers.read().unwrap();
+                let geo_bounding_rect = layers.bounding_rect.unwrap();
+                ctx.canvas_bounding_rect = geo_bounding_rect_to_canvas_bounding_rect(geo_bounding_rect);
+                ctx.scale = (ctx.window_size.x() as f32 / ctx.canvas_bounding_rect.width())
+                    .min(ctx.window_size.y() as f32 / ctx.canvas_bounding_rect.height());
+                ctx.view_center = ctx.canvas_bounding_rect.origin();
+                crate::build_canvas(ctx.window_size, layers, ctx.scale)
+            };
+            ctx.replace_scene_canvas(canvas);
             ctx.gl_context.window().request_redraw();
         }
     }
@@ -195,8 +196,10 @@ fn handle_mouse_input(
     match (mouse_button, element_state) {
         (MouseButton::Left, ElementState::Pressed) => {
             let geo_coordinate = physical_position_to_geo_coordinate(ctx, ctx.cursor_position);
-            let mut layers = ctx.layers.write().unwrap();
-            let selected_layer_changed = layers.set_selected_layer_from_mouse_press(geo_coordinate);
+            let selected_layer_changed = {
+                let mut layers = ctx.layers.write().unwrap();
+                layers.set_selected_layer_from_mouse_press(geo_coordinate)
+            };
 
             log::info!(
                 "Mouse clicked. Screen: (x: {}, y: {}). Geo: (x: {}, y: {}).",
@@ -207,9 +210,7 @@ fn handle_mouse_input(
             );
 
             if selected_layer_changed {
-                let canvas = crate::build_canvas(ctx.window_size, &layers, ctx.scale);
-                ctx.scene_proxy
-                    .replace_scene(canvas.into_canvas().into_scene());
+                ctx.build_canvas();
                 ctx.gl_context.window().request_redraw();
             }
         }

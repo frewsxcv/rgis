@@ -1,6 +1,7 @@
 use crate::layer::Layers;
 use crate::render::Render;
 use pathfinder_canvas::{Canvas, CanvasFontContext};
+use pathfinder_geometry::transform2d::Transform2F;
 use std::io::Write;
 use std::{error, io, process, sync};
 
@@ -41,6 +42,8 @@ fn build_canvas(
 ) -> pathfinder_canvas::CanvasRenderingContext2D {
     log::info!("Creating a canvas");
     let mut canvas = new_canvas(window_size);
+    canvas.scale(pathfinder_geometry::vector::vec2f(1., -1.));
+    // canvas.transform(pathfinder_geometry::transform2d::(0., -1.));
 
     for layer in &layers.data {
         layer.geometry.render(crate::render::RenderContext {
