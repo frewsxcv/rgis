@@ -50,7 +50,7 @@ impl Layers {
     pub fn add(&mut self, geometry: geo::Geometry<f64>, metadata: Option<Metadata>) {
         let id = self
             .data
-            .get(self.data.len() - 1)
+            .last()
             .map(|layer| layer.id + 1)
             .unwrap_or(1);
         let layer = Layer::from_geometry(geometry, id, metadata);

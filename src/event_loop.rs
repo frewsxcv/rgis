@@ -260,7 +260,7 @@ fn handle_mouse_input(
                 geo_coordinate.y,
             );
             let intersecting = layers.containing_coord(geo_coordinate);
-            if intersecting.len() > 0 {
+            if !intersecting.is_empty() {
                 log::info!("A geometry was clicked: {:?}", intersecting[0].metadata);
             }
             if intersecting.len() > 1 {
