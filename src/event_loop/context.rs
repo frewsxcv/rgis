@@ -14,6 +14,7 @@ use pathfinder_renderer::gpu::renderer::Renderer;
 use std::sync;
 
 const ZOOM_FACTOR: f32 = 1.1;
+const PAN_FACTOR: f32 = 0.05;
 
 pub struct EventLoopContext {
     pub scene_proxy: SceneProxy,
@@ -89,6 +90,30 @@ impl EventLoopContext {
     pub fn zoom_out(&mut self) {
         self.scale /= ZOOM_FACTOR;
         self.build_canvas();
+        self.gl_context.window().request_redraw();
+    }
+
+    pub fn pan_up(&mut self) {
+        self.view_center =
+            self.view_center - Vector2F::new(0., self.view_box.height() * PAN_FACTOR / self.scale);
+        self.gl_context.window().request_redraw();
+    }
+
+    pub fn pan_down(&mut self) {
+        self.view_center =
+            self.view_center + Vector2F::new(0., self.view_box.height() * PAN_FACTOR / self.scale);
+        self.gl_context.window().request_redraw();
+    }
+
+    pub fn pan_left(&mut self) {
+        self.view_center =
+            self.view_center - Vector2F::new(self.view_box.width() * PAN_FACTOR / self.scale, 0.);
+        self.gl_context.window().request_redraw();
+    }
+
+    pub fn pan_right(&mut self) {
+        self.view_center =
+            self.view_center + Vector2F::new(self.view_box.width() * PAN_FACTOR / self.scale, 0.);
         self.gl_context.window().request_redraw();
     }
 }

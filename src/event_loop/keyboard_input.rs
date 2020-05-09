@@ -1,11 +1,7 @@
 use glutin::event::{ElementState, KeyboardInput, VirtualKeyCode};
 use glutin::event_loop::ControlFlow;
 
-use pathfinder_geometry::vector::Vector2F;
-
 pub use super::EventLoopContext;
-
-const PAN_FACTOR: f32 = 0.05;
 
 pub fn handle(
     ctx: &mut EventLoopContext,
@@ -22,36 +18,28 @@ pub fn handle(
             state: ElementState::Pressed,
             ..
         } => {
-            ctx.view_center =
-                ctx.view_center - Vector2F::new(0., ctx.view_box.height() * PAN_FACTOR / ctx.scale);
-            ctx.gl_context.window().request_redraw();
+            ctx.pan_up();
         }
         KeyboardInput {
             virtual_keycode: Some(VirtualKeyCode::Down),
             state: ElementState::Pressed,
             ..
         } => {
-            ctx.view_center =
-                ctx.view_center + Vector2F::new(0., ctx.view_box.height() * PAN_FACTOR / ctx.scale);
-            ctx.gl_context.window().request_redraw();
+            ctx.pan_down();
         }
         KeyboardInput {
             virtual_keycode: Some(VirtualKeyCode::Left),
             state: ElementState::Pressed,
             ..
         } => {
-            ctx.view_center =
-                ctx.view_center - Vector2F::new(ctx.view_box.width() * PAN_FACTOR / ctx.scale, 0.);
-            ctx.gl_context.window().request_redraw();
+            ctx.pan_left();
         }
         KeyboardInput {
             virtual_keycode: Some(VirtualKeyCode::Right),
             state: ElementState::Pressed,
             ..
         } => {
-            ctx.view_center =
-                ctx.view_center + Vector2F::new(ctx.view_box.width() * PAN_FACTOR / ctx.scale, 0.);
-            ctx.gl_context.window().request_redraw();
+            ctx.pan_right();
         }
         KeyboardInput {
             virtual_keycode: Some(VirtualKeyCode::Equals),
