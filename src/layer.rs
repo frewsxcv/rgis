@@ -63,13 +63,15 @@ impl Layers {
             .and_then(|layer_index| self.data.get(layer_index))
     }
 
-    pub fn add(&mut self, geometry: geo::Geometry<f64>, metadata: Option<Metadata>) {
-        let id = self
-            .data
+    fn next_layer_id(&self) -> Id {
+        self.data
             .last()
             .map(|layer| layer.id + 1)
-            .unwrap_or(1);
-        let layer = Layer::from_geometry(geometry, id, metadata);
+            .unwrap_or(1)
+    }
+
+    pub fn add(&mut self, geometry: geo::Geometry<f64>, metadata: Option<Metadata>) {
+        let layer = Layer::from_geometry(geometry, self.next_layer_id(), metadata);
         self.bounding_rect = Some(if let Some(r) = self.bounding_rect {
             bbox_merge(r, layer.bounding_rect)
         } else {
