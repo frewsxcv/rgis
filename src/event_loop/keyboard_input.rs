@@ -1,21 +1,9 @@
-use crate::layer::Layers;
-use crate::window::UserEvent;
-use glutin::dpi::{PhysicalPosition, PhysicalSize};
-use glutin::event::Event;
-use glutin::event::{
-    ElementState, KeyboardInput, ModifiersState, MouseButton, VirtualKeyCode, WindowEvent,
-};
+use glutin::event::{ElementState, KeyboardInput, VirtualKeyCode};
 use glutin::event_loop::ControlFlow;
 
-use pathfinder_geometry::rect::RectF;
-use pathfinder_geometry::transform2d::Transform2F;
-use pathfinder_geometry::vector::{vec2i, Vector2F};
-
-use pathfinder_renderer::gpu::options::DestFramebuffer;
+use pathfinder_geometry::vector::Vector2F;
 
 pub use super::EventLoopContext;
-use pathfinder_renderer::options::BuildOptions;
-use pathfinder_renderer::options::RenderTransform;
 
 const PAN_FACTOR: f32 = 0.05;
 

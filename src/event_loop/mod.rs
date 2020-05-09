@@ -2,9 +2,7 @@ use crate::layer::Layers;
 use crate::window::UserEvent;
 use glutin::dpi::{PhysicalPosition, PhysicalSize};
 use glutin::event::Event;
-use glutin::event::{
-    ElementState, KeyboardInput, ModifiersState, MouseButton, VirtualKeyCode, WindowEvent,
-};
+use glutin::event::{ModifiersState, WindowEvent};
 use glutin::event_loop::ControlFlow;
 
 use pathfinder_geometry::rect::RectF;

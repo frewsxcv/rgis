@@ -1,21 +1,8 @@
-use crate::layer::Layers;
-use crate::window::UserEvent;
-use glutin::dpi::{PhysicalPosition, PhysicalSize};
-use glutin::event::Event;
-use glutin::event::{
-    ElementState, KeyboardInput, ModifiersState, MouseButton, VirtualKeyCode, WindowEvent,
-};
-use glutin::event_loop::ControlFlow;
+use glutin::dpi::PhysicalPosition;
 
-use pathfinder_geometry::rect::RectF;
-use pathfinder_geometry::transform2d::Transform2F;
-use pathfinder_geometry::vector::{vec2i, Vector2F};
-
-use pathfinder_renderer::gpu::options::DestFramebuffer;
+use glutin::event::{ElementState, MouseButton};
 
 pub use super::EventLoopContext;
-use pathfinder_renderer::options::BuildOptions;
-use pathfinder_renderer::options::RenderTransform;
 
 pub fn handle(ctx: &mut EventLoopContext, element_state: ElementState, mouse_button: MouseButton) {
     match (mouse_button, element_state) {
