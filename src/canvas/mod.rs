@@ -13,7 +13,7 @@ pub fn build(
     log::info!("Building canvas");
     let mut canvas = new_canvas(window_size);
 
-    // Flip the y-axis to account for the cartesian → screen coordinate translation.
+    // Flip the y-axis for the cartesian → screen coordinate translation.
     canvas.scale(pathfinder_geometry::vector::vec2f(1., -1.));
 
     for layer in &layers.data {
