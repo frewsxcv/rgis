@@ -1,22 +1,15 @@
 use crate::layer::Layers;
-use crate::window::UserEvent;
-use glutin::dpi::{PhysicalPosition, PhysicalSize};
-use glutin::event::Event;
-use glutin::event::{
-    ElementState, KeyboardInput, ModifiersState, MouseButton, VirtualKeyCode, WindowEvent,
-};
-use glutin::event_loop::ControlFlow;
+
+use glutin::dpi::PhysicalPosition;
 
 use pathfinder_geometry::rect::RectF;
-use pathfinder_geometry::transform2d::Transform2F;
-use pathfinder_geometry::vector::{vec2i, Vector2F, Vector2I};
+
+use pathfinder_geometry::vector::{Vector2F, Vector2I};
 use pathfinder_gl::GLDevice;
 
 use pathfinder_renderer::concurrent::scene_proxy::SceneProxy;
-use pathfinder_renderer::gpu::options::DestFramebuffer;
+
 use pathfinder_renderer::gpu::renderer::Renderer;
-use pathfinder_renderer::options::BuildOptions;
-use pathfinder_renderer::options::RenderTransform;
 
 use std::sync;
 
