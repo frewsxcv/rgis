@@ -125,7 +125,7 @@ impl Layer {
             bounding_rect,
             geometry,
             color: crate::color::next(),
-            metadata: metadata.unwrap_or_else(|| serde_json::Map::new()),
+            metadata: metadata.unwrap_or_else(serde_json::Map::new),
             id,
         }
     }
