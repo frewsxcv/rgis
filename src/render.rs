@@ -4,7 +4,6 @@ use pathfinder_geometry::vector::vec2f;
 
 pub struct RenderContext<'a> {
     pub canvas: &'a mut CanvasRenderingContext2D,
-    pub extent: geo::Rect<f64>,
     pub color: ColorU,
     pub scale: f32,
     pub selected: bool,

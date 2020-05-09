@@ -45,7 +45,6 @@ fn build_canvas(
     for layer in &layers.data {
         layer.geometry.render(crate::render::RenderContext {
             canvas: &mut canvas,
-            extent: layers.bounding_rect.unwrap(),
             scale,
             color: layer.color,
             selected: layers.selected_layer_id == Some(layer.id),
