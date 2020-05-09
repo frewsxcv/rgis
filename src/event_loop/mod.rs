@@ -63,8 +63,12 @@ fn handle_redraw_requested(ctx: &mut EventLoopContext) {
         subpixel_aa_enabled: false,
     };
 
+    let t = ::std::time::Instant::now();
+
     ctx.scene_proxy.build_and_render(&mut ctx.renderer, options);
     ctx.gl_context.swap_buffers().unwrap();
+
+    log::debug!("Rerender time: {} ms", t.elapsed().as_millis());
 }
 
 fn handle_user_event(ctx: &mut EventLoopContext, user_event: UserEvent) {
