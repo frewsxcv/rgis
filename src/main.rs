@@ -11,7 +11,7 @@ mod layer;
 mod lla_to_ecef;
 mod window;
 
-static PROGRAM_NAME: &'static str = "rgis";
+static PROGRAM_NAME: &str = "rgis";
 
 fn rgis() -> Result<(), Box<dyn error::Error>> {
     let geojson_file_paths = cli::run()?;
