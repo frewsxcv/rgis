@@ -73,7 +73,10 @@ impl EventLoopContext {
 
     pub fn replace_scene_canvas(&mut self, canvas: pathfinder_canvas::CanvasRenderingContext2D) {
         let scene = canvas.into_canvas().into_scene();
-        log::debug!("Replacing scene canvas. Canvas bounds: {:?}", scene.bounds());
+        log::debug!(
+            "Replacing scene canvas. Canvas bounds: {:?}",
+            scene.bounds()
+        );
         self.scene_proxy.replace_scene(scene);
     }
 

@@ -73,7 +73,8 @@ fn handle_user_event(ctx: &mut EventLoopContext, user_event: UserEvent) {
             let canvas = {
                 let layers: &Layers = &ctx.layers.read().unwrap();
                 let geo_bounding_rect = layers.bounding_rect.unwrap();
-                ctx.canvas_bounding_rect = geo_bounding_rect_to_canvas_bounding_rect(geo_bounding_rect);
+                ctx.canvas_bounding_rect =
+                    geo_bounding_rect_to_canvas_bounding_rect(geo_bounding_rect);
                 ctx.scale = (ctx.window_size.x() as f32 / ctx.canvas_bounding_rect.width())
                     .min(ctx.window_size.y() as f32 / ctx.canvas_bounding_rect.height());
                 ctx.view_center = ctx.canvas_bounding_rect.origin();
