@@ -64,10 +64,7 @@ impl Layers {
     }
 
     fn next_layer_id(&self) -> Id {
-        self.data
-            .last()
-            .map(|layer| layer.id + 1)
-            .unwrap_or(1)
+        self.data.last().map(|layer| layer.id + 1).unwrap_or(1)
     }
 
     pub fn add(&mut self, geometry: geo::Geometry<f64>, metadata: Option<Metadata>) {

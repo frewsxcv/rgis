@@ -69,6 +69,25 @@ impl EventLoopContext {
             resized: false,
         }
     }
+
+    fn build_canvas(&mut self) {
+        let canvas =
+            crate::build_canvas(self.window_size, &self.layers.read().unwrap(), self.scale);
+        self.scene_proxy
+            .replace_scene(canvas.into_canvas().into_scene());
+    }
+
+    fn zoom_in(&mut self) {
+        self.scale *= ZOOM_FACTOR;
+        self.build_canvas();
+        self.gl_context.window().request_redraw();
+    }
+
+    fn zoom_out(&mut self) {
+        self.scale /= ZOOM_FACTOR;
+        self.build_canvas();
+        self.gl_context.window().request_redraw();
+    }
 }
 
 pub fn handle_event(
@@ -128,7 +147,7 @@ fn handle_user_event(ctx: &mut EventLoopContext, user_event: UserEvent) {
             ctx.scale = (ctx.window_size.x() as f32 / ctx.canvas_bounding_rect.width())
                 .min(ctx.window_size.y() as f32 / ctx.canvas_bounding_rect.height());
             ctx.view_center = ctx.canvas_bounding_rect.origin();
-            let canvas = crate::render(ctx.window_size, layers, ctx.scale);
+            let canvas = crate::build_canvas(ctx.window_size, layers, ctx.scale);
             ctx.scene_proxy
                 .replace_scene(canvas.into_canvas().into_scene());
             ctx.gl_context.window().request_redraw();
@@ -220,9 +239,7 @@ fn handle_keyboard_input(
             ..
         } => {
             if ctx.shift_pressed {
-                ctx.scale *= ZOOM_FACTOR;
-                // ctx.view_center = ctx.view_center + Vector2F::new(10., 0.);
-                ctx.gl_context.window().request_redraw();
+                ctx.zoom_in();
             }
         }
         KeyboardInput {
@@ -230,8 +247,7 @@ fn handle_keyboard_input(
             state: ElementState::Pressed,
             ..
         } => {
-            ctx.scale /= ZOOM_FACTOR;
-            ctx.gl_context.window().request_redraw();
+            ctx.zoom_out();
         }
         _ => {
             *control_flow = ControlFlow::Wait;
@@ -263,7 +279,7 @@ fn handle_mouse_input(
             );
 
             if selected_layer_changed {
-                let canvas = crate::render(ctx.window_size, &layers, ctx.scale);
+                let canvas = crate::build_canvas(ctx.window_size, &layers, ctx.scale);
                 ctx.scene_proxy
                     .replace_scene(canvas.into_canvas().into_scene());
                 ctx.gl_context.window().request_redraw();

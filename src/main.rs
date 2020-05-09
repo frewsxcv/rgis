@@ -34,7 +34,7 @@ fn rgis() -> Result<(), Box<dyn error::Error>> {
     window.start_event_loop();
 }
 
-fn render(
+fn build_canvas(
     window_size: pathfinder_geometry::vector::Vector2I,
     layers: &Layers,
     scale: f32,
