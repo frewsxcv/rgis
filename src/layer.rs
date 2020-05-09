@@ -55,18 +55,6 @@ impl Layers {
     }
 }
 
-fn geometry_bounding_rect(geometry: &geo::Geometry<f64>) -> geo::Rect<f64> {
-    match geometry {
-        geo::Geometry::LineString(line_string) => line_string.bounding_rect().unwrap(),
-        geo::Geometry::Polygon(polygon) => polygon.bounding_rect().unwrap(),
-        geo::Geometry::MultiLineString(multi_line_string) => {
-            multi_line_string.bounding_rect().unwrap()
-        }
-        geo::Geometry::MultiPolygon(multi_polygon) => multi_polygon.bounding_rect().unwrap(),
-        _ => unimplemented!(),
-    }
-}
-
 fn bbox_merge(a: geo::Rect<f64>, b: geo::Rect<f64>) -> geo::Rect<f64> {
     geo::Rect::new(
         geo::Coordinate {
@@ -99,9 +87,11 @@ impl Layer {
     }
 
     pub fn from_geometry(geometry: geo::Geometry<f64>, id: i64, metadata: Option<Metadata>) -> Self {
+        let bounding_rect = geometry.bounding_rect().expect("Could not determine bounding rect of geometry");
+
         Layer {
-            bounding_rect: geometry_bounding_rect(&geometry),
-            geometry: geometry,
+            bounding_rect,
+            geometry,
             color: crate::color::next(),
             metadata: metadata.unwrap_or_else(|| serde_json::Map::new()),
             id,
