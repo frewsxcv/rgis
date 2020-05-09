@@ -39,12 +39,20 @@ impl Layers {
     #[allow(unused)]
     pub fn selected_layer(&self) -> Option<&Layer> {
         self.selected_layer_id
-            .and_then(|layer_id| self.data.binary_search_by_key(&layer_id, |layer| layer.id).ok())
+            .and_then(|layer_id| {
+                self.data
+                    .binary_search_by_key(&layer_id, |layer| layer.id)
+                    .ok()
+            })
             .and_then(|layer_index| self.data.get(layer_index))
     }
 
     pub fn add(&mut self, geometry: geo::Geometry<f64>, metadata: Option<Metadata>) {
-        let id = self.data.get(self.data.len() - 1).map(|layer| layer.id + 1).unwrap_or(1);
+        let id = self
+            .data
+            .get(self.data.len() - 1)
+            .map(|layer| layer.id + 1)
+            .unwrap_or(1);
         let layer = Layer::from_geometry(geometry, id, metadata);
         self.bounding_rect = Some(if let Some(r) = self.bounding_rect {
             bbox_merge(r, layer.bounding_rect)
@@ -86,8 +94,14 @@ impl Layer {
             && self.geometry.contains(&geo::Point(coord))
     }
 
-    pub fn from_geometry(geometry: geo::Geometry<f64>, id: i64, metadata: Option<Metadata>) -> Self {
-        let bounding_rect = geometry.bounding_rect().expect("Could not determine bounding rect of geometry");
+    pub fn from_geometry(
+        geometry: geo::Geometry<f64>,
+        id: i64,
+        metadata: Option<Metadata>,
+    ) -> Self {
+        let bounding_rect = geometry
+            .bounding_rect()
+            .expect("Could not determine bounding rect of geometry");
 
         Layer {
             bounding_rect,
