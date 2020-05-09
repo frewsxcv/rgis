@@ -16,6 +16,9 @@ use pathfinder_renderer::gpu::options::DestFramebuffer;
 use pathfinder_renderer::options::BuildOptions;
 use pathfinder_renderer::options::RenderTransform;
 
+mod keyboard_input;
+mod mouse_input;
+
 mod context;
 pub use context::EventLoopContext;
 
@@ -106,9 +109,9 @@ fn handle_window_event(
         WindowEvent::KeyboardInput {
             input: keyboard_input,
             ..
-        } => handle_keyboard_input(ctx, keyboard_input, control_flow),
+        } => keyboard_input::handle(ctx, keyboard_input, control_flow),
         WindowEvent::CursorMoved { position, .. } => handle_cursor_moved(ctx, position),
-        WindowEvent::MouseInput { state, button, .. } => handle_mouse_input(ctx, state, button),
+        WindowEvent::MouseInput { state, button, .. } => mouse_input::handle(ctx, state, button),
         _ => {
             *control_flow = ControlFlow::Wait;
         }
@@ -119,118 +122,8 @@ fn handle_modifiers_changed(ctx: &mut EventLoopContext, modifiers: ModifiersStat
     ctx.shift_pressed = modifiers.shift();
 }
 
-const PAN_FACTOR: f32 = 0.05;
-
-fn handle_keyboard_input(
-    ctx: &mut EventLoopContext,
-    keyboard_input: KeyboardInput,
-    control_flow: &mut ControlFlow,
-) {
-    match keyboard_input {
-        KeyboardInput {
-            virtual_keycode: Some(VirtualKeyCode::Escape),
-            ..
-        } => *control_flow = ControlFlow::Exit,
-        KeyboardInput {
-            virtual_keycode: Some(VirtualKeyCode::Up),
-            state: ElementState::Pressed,
-            ..
-        } => {
-            ctx.view_center =
-                ctx.view_center - Vector2F::new(0., ctx.view_box.height() * PAN_FACTOR / ctx.scale);
-            ctx.gl_context.window().request_redraw();
-        }
-        KeyboardInput {
-            virtual_keycode: Some(VirtualKeyCode::Down),
-            state: ElementState::Pressed,
-            ..
-        } => {
-            ctx.view_center =
-                ctx.view_center + Vector2F::new(0., ctx.view_box.height() * PAN_FACTOR / ctx.scale);
-            ctx.gl_context.window().request_redraw();
-        }
-        KeyboardInput {
-            virtual_keycode: Some(VirtualKeyCode::Left),
-            state: ElementState::Pressed,
-            ..
-        } => {
-            ctx.view_center =
-                ctx.view_center - Vector2F::new(ctx.view_box.width() * PAN_FACTOR / ctx.scale, 0.);
-            ctx.gl_context.window().request_redraw();
-        }
-        KeyboardInput {
-            virtual_keycode: Some(VirtualKeyCode::Right),
-            state: ElementState::Pressed,
-            ..
-        } => {
-            ctx.view_center =
-                ctx.view_center + Vector2F::new(ctx.view_box.width() * PAN_FACTOR / ctx.scale, 0.);
-            ctx.gl_context.window().request_redraw();
-        }
-        KeyboardInput {
-            virtual_keycode: Some(VirtualKeyCode::Equals),
-            state: ElementState::Pressed,
-            ..
-        } => {
-            if ctx.shift_pressed {
-                ctx.zoom_in();
-            }
-        }
-        KeyboardInput {
-            virtual_keycode: Some(VirtualKeyCode::Minus),
-            state: ElementState::Pressed,
-            ..
-        } => {
-            ctx.zoom_out();
-        }
-        _ => {
-            *control_flow = ControlFlow::Wait;
-        }
-    }
-}
-
 fn handle_cursor_moved(ctx: &mut EventLoopContext, position: PhysicalPosition<f64>) {
     ctx.cursor_position = position;
-}
-
-fn handle_mouse_input(
-    ctx: &mut EventLoopContext,
-    element_state: ElementState,
-    mouse_button: MouseButton,
-) {
-    match (mouse_button, element_state) {
-        (MouseButton::Left, ElementState::Pressed) => {
-            let geo_coordinate = physical_position_to_geo_coordinate(ctx, ctx.cursor_position);
-            let selected_layer_changed = {
-                let mut layers = ctx.layers.write().unwrap();
-                layers.set_selected_layer_from_mouse_press(geo_coordinate)
-            };
-
-            log::info!(
-                "Mouse clicked. Screen: (x: {}, y: {}). Geo: (x: {}, y: {}).",
-                ctx.cursor_position.x,
-                ctx.cursor_position.y,
-                geo_coordinate.x,
-                geo_coordinate.y,
-            );
-
-            if selected_layer_changed {
-                ctx.build_canvas();
-                ctx.gl_context.window().request_redraw();
-            }
-        }
-        _ => {}
-    }
-}
-
-fn physical_position_to_geo_coordinate(
-    ctx: &EventLoopContext,
-    physical_position: PhysicalPosition<f64>,
-) -> geo::Coordinate<f64> {
-    geo::Coordinate {
-        x: ctx.view_center.x() as f64 + (physical_position.x / (ctx.scale as f64)),
-        y: -(ctx.view_center.y() as f64 + (physical_position.y / (ctx.scale as f64))),
-    }
 }
 
 fn geo_bounding_rect_to_canvas_bounding_rect(geo_rect: geo::Rect<f64>) -> RectF {
