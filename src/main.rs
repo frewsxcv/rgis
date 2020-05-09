@@ -7,8 +7,6 @@ mod color;
 mod event_loop;
 mod file_loader;
 mod layer;
-#[allow(dead_code)]
-mod lla_to_ecef;
 mod window;
 
 static PROGRAM_NAME: &str = "rgis";
