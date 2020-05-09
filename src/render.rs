@@ -1,6 +1,6 @@
 use geo;
 use pathfinder_canvas::{CanvasRenderingContext2D, ColorU, Path2D};
-use pathfinder_geometry::vector::vec2f;
+use pathfinder_geometry::vector::{vec2f, Vector2F};
 
 pub struct RenderContext<'a> {
     pub canvas: &'a mut CanvasRenderingContext2D,
@@ -11,17 +11,6 @@ pub struct RenderContext<'a> {
 
 pub trait Render: ::std::marker::Sync + ::std::marker::Send {
     fn render(&self, ctx: RenderContext);
-}
-
-fn coords_to_screen_coords(
-    coords: impl Iterator<Item = geo::Coordinate<f64>>,
-) -> impl Iterator<Item = [f64; 2]> {
-    coords
-        .map(move |coord| geo::Coordinate {
-            x: coord.x,
-            y: coord.y,
-        })
-        .map(|coord| [coord.x, coord.y])
 }
 
 impl Render for geo::LineString<f64> {
@@ -52,19 +41,23 @@ fn render_line_string(line_string: &geo::LineString<f64>, ctx: &mut RenderContex
 
 fn line_string_to_path(line_string: &geo::LineString<f64>) -> Path2D {
     let mut path = Path2D::new();
-    let mut coords = coords_to_screen_coords(line_string.0.iter().copied());
+    let mut coords = line_string.0.iter().copied().map(geo_coord_to_vec2f);
 
     if let Some(first_coord) = coords.next() {
-        path.move_to(vec2f(first_coord[0] as f32, first_coord[1] as f32));
+        path.move_to(first_coord);
     }
 
     for coord in coords {
-        path.line_to(vec2f(coord[0] as f32, coord[1] as f32));
+        path.line_to(coord);
     }
 
     path.close_path();
 
     path
+}
+
+fn geo_coord_to_vec2f(geo_coord: geo::Coordinate<f64>) -> Vector2F {
+    vec2f(geo_coord.x as f32, geo_coord.y as f32)
 }
 
 impl Render for geo::Polygon<f64> {
