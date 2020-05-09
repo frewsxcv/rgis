@@ -36,6 +36,22 @@ impl Layers {
             .collect()
     }
 
+    // Returns whether the selected layer changed
+    pub fn set_selected_layer_from_mouse_press(&mut self, coord: geo::Coordinate<f64>) -> bool {
+        let intersecting = self.containing_coord(coord);
+        if !intersecting.is_empty() {
+            log::info!("A geometry was clicked: {:?}", intersecting[0].metadata);
+        }
+        if intersecting.len() > 1 {
+            log::warn!("Multiple layers clicked. Choosing one randomly.");
+        }
+        let prev_selected_layer_id = self.selected_layer_id;
+
+        self.selected_layer_id = intersecting.get(0).map(|layer| layer.id);
+
+        prev_selected_layer_id != self.selected_layer_id
+    }
+
     #[allow(unused)]
     pub fn selected_layer(&self) -> Option<&Layer> {
         self.selected_layer_id

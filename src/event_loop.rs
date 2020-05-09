@@ -252,6 +252,8 @@ fn handle_mouse_input(
         (MouseButton::Left, ElementState::Pressed) => {
             let geo_coordinate = physical_position_to_geo_coordinate(ctx, ctx.cursor_position);
             let mut layers = ctx.layers.write().unwrap();
+            let selected_layer_changed = layers.set_selected_layer_from_mouse_press(geo_coordinate);
+
             log::info!(
                 "Mouse clicked. Screen: (x: {}, y: {}). Geo: (x: {}, y: {}).",
                 ctx.cursor_position.x,
@@ -259,21 +261,13 @@ fn handle_mouse_input(
                 geo_coordinate.x,
                 geo_coordinate.y,
             );
-            let intersecting = layers.containing_coord(geo_coordinate);
-            if !intersecting.is_empty() {
-                log::info!("A geometry was clicked: {:?}", intersecting[0].metadata);
-            }
-            if intersecting.len() > 1 {
-                log::warn!("Multiple layers clicked. Choosing one randomly.");
-            }
-            layers.selected_layer_id = intersecting.get(0).map(|layer| layer.id);
 
-            // Redraw because the selected layer could have changed
-
-            let canvas = crate::render(ctx.window_size, &layers, ctx.scale);
-            ctx.scene_proxy
-                .replace_scene(canvas.into_canvas().into_scene());
-            ctx.gl_context.window().request_redraw();
+            if selected_layer_changed {
+                let canvas = crate::render(ctx.window_size, &layers, ctx.scale);
+                ctx.scene_proxy
+                    .replace_scene(canvas.into_canvas().into_scene());
+                ctx.gl_context.window().request_redraw();
+            }
         }
         _ => {}
     }
