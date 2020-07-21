@@ -8,8 +8,8 @@ edition = "2018"
 [dependencies]
 colorous = "1"
 env_logger = "0.7"
-geo = "0.13"
-geojson = { version = "0.18", features = ['geo-types'] }
+geo = "0.14"
+geojson = { version = "0.19", features = ['geo-types'] }
 gl = "0.14"
 glutin = "0.24"
 log = "0.4"
@@ -22,7 +22,3 @@ pathfinder_renderer = { git = "https://github.com/servo/pathfinder.git" }
 pathfinder_resources = { git = "https://github.com/servo/pathfinder.git" }
 rayon = "1"
 serde_json = "1"
-
-[patch.crates-io]
-geo = { git = "https://github.com/georust/geo.git", branch = "master" }
-geo-types = { git = "https://github.com/georust/geo.git", branch = "master" }
