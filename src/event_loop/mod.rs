@@ -42,16 +42,17 @@ fn handle_redraw_requested(ctx: &mut EventLoopContext) {
             Vector2F::new(0., 0.),
             Vector2F::new(ctx.window_size.x() as f32, ctx.window_size.y() as f32),
         );
-        ctx.renderer
-            .replace_dest_framebuffer(DestFramebuffer::full_window(ctx.window_size));
+        *ctx.renderer.options_mut() = pathfinder_renderer::gpu::options::RendererOptions {
+            dest: DestFramebuffer::full_window(ctx.window_size),
+            background_color: Some(crate::bg_color()),
+            show_debug_ui: crate::SHOW_DEBUG_UI,
+        };
         ctx.gl_context.resize(PhysicalSize::new(
             ctx.window_size.x() as u32,
             ctx.window_size.y() as u32,
         ));
         ctx.resized = false;
     }
-
-    // ctx.view_center = ctx.view_box.origin() + ctx.view_box.size() * 0.5;
 
     ctx.scene_proxy.set_view_box(ctx.view_box);
 

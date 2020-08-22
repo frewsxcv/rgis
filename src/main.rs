@@ -11,6 +11,12 @@ mod window;
 
 static PROGRAM_NAME: &str = "rgis";
 
+static SHOW_DEBUG_UI: bool = false; // TODO: Make this a CLI flag
+
+fn bg_color() -> pathfinder_color::ColorF {
+    pathfinder_color::ColorF::white()
+}
+
 fn rgis() -> Result<(), Box<dyn error::Error>> {
     let geojson_file_paths = cli::run()?;
 

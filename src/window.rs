@@ -4,7 +4,6 @@ use glutin::dpi::PhysicalSize;
 use glutin::event_loop::EventLoop;
 use glutin::window::WindowBuilder;
 use glutin::{ContextBuilder, GlProfile, GlRequest};
-use pathfinder_color::ColorF;
 
 use pathfinder_geometry::vector::vec2i;
 use pathfinder_gl::{GLDevice, GLVersion};
@@ -55,18 +54,25 @@ impl Window {
         let gl_context = unsafe { gl_context.make_current().unwrap() };
         gl::load_with(|name| gl_context.get_proc_address(name) as *const _);
 
+        let device = GLDevice::new(GLVersion::GL3, 0);
+
+        let renderer_level = pathfinder_renderer::gpu::options::RendererLevel::default_for_device(&device);
+
+        let renderer_mode = pathfinder_renderer::gpu::options::RendererMode { level: renderer_level };
+
         // Create a Pathfinder renderer.
         let renderer = Renderer::new(
-            GLDevice::new(GLVersion::GL3, 0),
+            device,
             &EmbeddedResourceLoader,
-            DestFramebuffer::full_window(window_size),
+            renderer_mode,
             RendererOptions {
-                background_color: Some(ColorF::white()),
-                no_compute: false,
+                background_color: Some(crate::bg_color()),
+                dest: DestFramebuffer::full_window(window_size),
+                show_debug_ui: crate::SHOW_DEBUG_UI,
             },
         );
 
-        let scene_proxy = SceneProxy::new(RayonExecutor);
+        let scene_proxy = SceneProxy::new(renderer_level, RayonExecutor);
 
         Window {
             event_loop,
