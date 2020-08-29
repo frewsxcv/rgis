@@ -2,8 +2,8 @@ use std::sync;
 
 const COLORS: [colorous::Color; 10] = colorous::CATEGORY10;
 
-pub fn next() -> pathfinder_canvas::ColorU {
-    colorous_color_to_pathfinder_color(next_colorous_color())
+pub fn next() -> rgx::color::Rgba8 {
+    colorous_color_to_rgx_color(next_colorous_color())
 }
 
 fn next_colorous_color() -> colorous::Color {
@@ -15,6 +15,6 @@ fn next_color_index() -> usize {
     COUNTER.fetch_add(1, sync::atomic::Ordering::Relaxed) % COLORS.len()
 }
 
-fn colorous_color_to_pathfinder_color(c: colorous::Color) -> pathfinder_canvas::ColorU {
-    pathfinder_canvas::ColorU::new(c.r, c.g, c.b, 255)
+fn colorous_color_to_rgx_color(c: colorous::Color) -> rgx::color::Rgba8 {
+    rgx::color::Rgba8 { r: c.r, g: c.g, b: c.b, a: 255 }
 }

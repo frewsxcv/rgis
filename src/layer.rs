@@ -1,6 +1,5 @@
 use geo::bounding_rect::BoundingRect;
 use geo::contains::Contains;
-use pathfinder_canvas::ColorU;
 
 #[derive(Clone, Debug)]
 pub struct Layers {
@@ -98,7 +97,7 @@ pub type Id = i64;
 pub struct Layer {
     pub geometry: geo::Geometry<f64>,
     pub bounding_rect: geo::Rect<f64>,
-    pub color: ColorU,
+    pub color: rgx::color::Rgba8,
     pub metadata: Metadata,
     pub id: Id,
 }

@@ -1,6 +1,5 @@
 use crate::layer::Layers;
 use add_to_canvas::AddToCanvas;
-use pathfinder_canvas::{Canvas, CanvasFontContext};
 
 mod add_to_canvas;
 mod to_canvas_path;

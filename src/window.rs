@@ -5,14 +5,6 @@ use glutin::event_loop::EventLoop;
 use glutin::window::WindowBuilder;
 use glutin::{ContextBuilder, GlProfile, GlRequest};
 
-use pathfinder_geometry::vector::vec2i;
-use pathfinder_gl::{GLDevice, GLVersion};
-use pathfinder_renderer::concurrent::rayon::RayonExecutor;
-use pathfinder_renderer::concurrent::scene_proxy::SceneProxy;
-use pathfinder_renderer::gpu::options::{DestFramebuffer, RendererOptions};
-use pathfinder_renderer::gpu::renderer::Renderer;
-
-use pathfinder_resources::embedded::EmbeddedResourceLoader;
 use std::sync;
 
 pub const WINDOW_SIZE_X: i32 = 800;

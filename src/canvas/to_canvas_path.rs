@@ -1,13 +1,11 @@
 use geo::LineString;
-use pathfinder_canvas::Path2D;
-use pathfinder_geometry::vector::{vec2f, Vector2F};
 
 pub trait ToCanvasPath {
-    fn to_canvas_path(&self) -> Path2D;
+    fn to_canvas_path(&self) -> rgx::kit::shape2d::Line;
 }
 
 impl ToCanvasPath for LineString<f64> {
-    fn to_canvas_path(&self) -> Path2D {
+    fn to_canvas_path(&self) -> rgx::kit::shape2d::Line {
         let mut coords = line_string_to_canvas_coords(self);
 
         let mut path = Path2D::new();

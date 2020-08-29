@@ -5,15 +5,6 @@ use glutin::event::Event;
 use glutin::event::{ModifiersState, WindowEvent};
 use glutin::event_loop::ControlFlow;
 
-use pathfinder_geometry::rect::RectF;
-use pathfinder_geometry::transform2d::Transform2F;
-use pathfinder_geometry::vector::{vec2i, Vector2F};
-
-use pathfinder_renderer::gpu::options::DestFramebuffer;
-
-use pathfinder_renderer::options::BuildOptions;
-use pathfinder_renderer::options::RenderTransform;
-
 mod keyboard_input;
 mod mouse_input;
 

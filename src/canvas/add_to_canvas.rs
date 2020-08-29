@@ -1,14 +1,14 @@
 use super::to_canvas_path::ToCanvasPath;
 use geo;
-use pathfinder_canvas::{CanvasRenderingContext2D, ColorU};
+use rgx::kit::shape2d::Shape;
 
 pub trait AddToCanvas {
     fn add_to_canvas(&self, ctx: Context);
 }
 
-pub struct Context<'a> {
-    pub canvas: &'a mut CanvasRenderingContext2D,
-    pub color: ColorU,
+pub struct Context {
+    pub shape_batch: rgx::kit::shape2d::Batch,
+    pub color: rgx::color::Rgba8,
     pub scale: f32,
     pub selected: bool,
 }
@@ -30,7 +30,7 @@ impl AddToCanvas for geo::MultiLineString<f64> {
 fn render_line_string(line_string: &geo::LineString<f64>, ctx: &mut Context) {
     let path = line_string.to_canvas_path();
     let color = if ctx.selected {
-        ColorU::black()
+        rgx::color::Rgba8::BLACK
     } else {
         ctx.color
     };
@@ -56,7 +56,7 @@ impl AddToCanvas for geo::MultiPolygon<f64> {
 fn render_polygon(polygon: &geo::Polygon<f64>, ctx: &mut Context) {
     let path = polygon.exterior().to_canvas_path();
     let color = if ctx.selected {
-        ColorU::black()
+        rgx::color::Rgba8::BLACK
     } else {
         ctx.color
     };

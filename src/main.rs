@@ -13,8 +13,8 @@ static PROGRAM_NAME: &str = "rgis";
 
 static SHOW_DEBUG_UI: bool = false; // TODO: Make this a CLI flag
 
-fn bg_color() -> pathfinder_color::ColorF {
-    pathfinder_color::ColorF::white()
+fn bg_color() -> rgx::color::Rgba8 {
+    rgx::color::Rgba8::WHITE
 }
 
 fn rgis() -> Result<(), Box<dyn error::Error>> {
