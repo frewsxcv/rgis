@@ -13,6 +13,9 @@ static PROGRAM_NAME: &str = "rgis";
 
 static SHOW_DEBUG_UI: bool = false; // TODO: Make this a CLI flag
 
+static SOURCE_PROJECTION: &str = "EPSG:4326";
+static TARGET_PROJECTION: &str = "EPSG:3857";
+
 fn bg_color() -> pathfinder_color::ColorF {
     pathfinder_color::ColorF::white()
 }

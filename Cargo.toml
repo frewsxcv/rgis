@@ -8,7 +8,7 @@ edition = "2018"
 [dependencies]
 colorous = "1"
 env_logger = "0.7"
-geo = "0.14"
+geo = { version = "0.14", features = ['use-proj'] }
 geojson = { version = "0.19", features = ['geo-types'] }
 gl = "0.14"
 glutin = "0.24"

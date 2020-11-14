@@ -75,21 +75,22 @@ fn handle_redraw_requested(ctx: &mut EventLoopContext) {
 
 fn handle_user_event(ctx: &mut EventLoopContext, user_event: UserEvent) {
     match user_event {
-        UserEvent::LayerAdded => {
-            let canvas = {
-                let layers: &Layers = &ctx.layers.read().unwrap();
-                let geo_bounding_rect = layers.bounding_rect.unwrap();
-                ctx.canvas_bounding_rect =
-                    geo_bounding_rect_to_canvas_bounding_rect(geo_bounding_rect);
-                ctx.scale = (ctx.window_size.x() as f32 / ctx.canvas_bounding_rect.width())
-                    .min(ctx.window_size.y() as f32 / ctx.canvas_bounding_rect.height());
-                ctx.view_center = ctx.canvas_bounding_rect.origin();
-                crate::canvas::build(ctx.window_size, layers, ctx.scale)
-            };
-            ctx.replace_scene_canvas(canvas);
-            ctx.gl_context.window().request_redraw();
-        }
+        UserEvent::LayerAdded => handle_user_event_layer_added(ctx)
     }
+}
+
+fn handle_user_event_layer_added(ctx: &mut EventLoopContext) {
+    let canvas = {
+        let layers: &Layers = &ctx.layers.read().unwrap();
+        let geo_bounding_rect = layers.projected_bounding_rect.unwrap();
+        ctx.canvas_bounding_rect = geo_bounding_rect_to_canvas_bounding_rect(geo_bounding_rect);
+        ctx.scale = (ctx.window_size.x() as f32 / ctx.canvas_bounding_rect.width())
+            .min(ctx.window_size.y() as f32 / ctx.canvas_bounding_rect.height());
+        ctx.view_center = ctx.canvas_bounding_rect.origin();
+        crate::canvas::build(ctx.window_size, layers, ctx.scale)
+    };
+    ctx.replace_scene_canvas(canvas);
+    ctx.gl_context.window().request_redraw();
 }
 
 fn handle_window_event(
