@@ -563,14 +563,15 @@ dependencies = [
 
 [[package]]
 name = "geo"
-version = "0.14.2"
+version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "139007e3210dfc1d010e166e779059be5e0f31967a71f3edae97116aefb74450"
+checksum = "c1488b04daa30b25f0beb19c2110fa507484ac8c2b8cad83d548cdda857f7f7a"
 dependencies = [
  "geo-types",
  "geographiclib-rs",
  "num-traits",
  "proj",
+ "robust",
  "rstar",
 ]
 
@@ -1522,6 +1523,12 @@ dependencies = [
  "rayon",
  "serde_json",
 ]
+
+[[package]]
+name = "robust"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d1a6eb3bd241993b09a354047bfba030778b347ac4de4bc0fd80e531e7cbfac8"
 
 [[package]]
 name = "rstar"
