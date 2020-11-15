@@ -34,8 +34,8 @@ pub fn handle(ctx: &mut EventLoopContext, element_state: ElementState, mouse_but
 fn physical_position_to_geo_coordinate(
     ctx: &EventLoopContext,
     physical_position: PhysicalPosition<f64>,
-) -> geo_projected::CoordWithSrs<f64> {
-    geo_projected::CoordWithSrs {
+) -> geo_srs::CoordWithSrs<f64> {
+    geo_srs::CoordWithSrs {
         coord: geo::Coordinate {
             x: ctx.view_center.x() as f64 + (physical_position.x / (ctx.scale as f64)),
             y: -(ctx.view_center.y() as f64 + (physical_position.y / (ctx.scale as f64))),

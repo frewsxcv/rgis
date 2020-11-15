@@ -126,7 +126,7 @@ fn handle_cursor_moved(ctx: &mut EventLoopContext, position: PhysicalPosition<f6
     ctx.cursor_position = position;
 }
 
-fn geo_bounding_rect_to_canvas_bounding_rect(geo_rect: geo_projected::RectWithSrs<f64>) -> RectF {
+fn geo_bounding_rect_to_canvas_bounding_rect(geo_rect: geo_srs::RectWithSrs<f64>) -> RectF {
     // Invert the y-origin because we're translating to screen coordinates
     RectF::new(
         Vector2F::new(geo_rect.rect.min().x as f32, -geo_rect.rect.max().y as f32),

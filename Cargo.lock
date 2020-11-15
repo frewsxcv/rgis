@@ -685,7 +685,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "geo-projected"
+name = "geo-srs"
 version = "0.1.0"
 dependencies = [
  "geo",
@@ -1634,7 +1634,7 @@ dependencies = [
  "colorous",
  "env_logger 0.8.1",
  "geo",
- "geo-projected",
+ "geo-srs",
  "geojson",
  "gl",
  "glutin",
