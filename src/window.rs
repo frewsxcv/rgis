@@ -56,9 +56,12 @@ impl Window {
 
         let device = GLDevice::new(GLVersion::GL3, 0);
 
-        let renderer_level = pathfinder_renderer::gpu::options::RendererLevel::default_for_device(&device);
+        let renderer_level =
+            pathfinder_renderer::gpu::options::RendererLevel::default_for_device(&device);
 
-        let renderer_mode = pathfinder_renderer::gpu::options::RendererMode { level: renderer_level };
+        let renderer_mode = pathfinder_renderer::gpu::options::RendererMode {
+            level: renderer_level,
+        };
 
         // Create a Pathfinder renderer.
         let renderer = Renderer::new(

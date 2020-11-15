@@ -17,12 +17,15 @@ pub fn build(
     canvas.scale(pathfinder_geometry::vector::vec2f(1., -1.));
 
     for layer in &layers.data {
-        layer.projected_geometry.geometry.add_to_canvas(add_to_canvas::Context {
-            canvas: &mut canvas,
-            scale,
-            color: layer.color,
-            selected: layers.selected_layer_id == Some(layer.id),
-        })
+        layer
+            .projected_geometry
+            .geometry
+            .add_to_canvas(add_to_canvas::Context {
+                canvas: &mut canvas,
+                scale,
+                color: layer.color,
+                selected: layers.selected_layer_id == Some(layer.id),
+            })
     }
 
     canvas

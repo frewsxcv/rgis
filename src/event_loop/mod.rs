@@ -75,7 +75,7 @@ fn handle_redraw_requested(ctx: &mut EventLoopContext) {
 
 fn handle_user_event(ctx: &mut EventLoopContext, user_event: UserEvent) {
     match user_event {
-        UserEvent::LayerAdded => handle_user_event_layer_added(ctx)
+        UserEvent::LayerAdded => handle_user_event_layer_added(ctx),
     }
 }
 

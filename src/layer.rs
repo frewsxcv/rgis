@@ -38,7 +38,10 @@ impl Layers {
     }
 
     // Returns whether the selected layer changed
-    pub fn set_selected_layer_from_mouse_press(&mut self, coord: geo_projected::CoordWithSrs<f64>) -> bool {
+    pub fn set_selected_layer_from_mouse_press(
+        &mut self,
+        coord: geo_projected::CoordWithSrs<f64>,
+    ) -> bool {
         let intersecting = self.containing_coord(coord);
         if !intersecting.is_empty() {
             log::info!("A geometry was clicked: {:?}", intersecting[0].metadata);
