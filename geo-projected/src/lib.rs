@@ -55,6 +55,7 @@ impl<T: num_traits::Float> GeometryWithSrs<T> {
             geo::algorithm::proj::Proj::new_known_crs(self.srs, target_srs, None).unwrap();
 
         self.geometry
-            .map_coords_inplace(|&(x, y)| projector.convert((x, y)).unwrap().x_y())
+            .map_coords_inplace(|&(x, y)| projector.convert((x, y)).unwrap().x_y());
+        self.srs = target_srs;
     }
 }
