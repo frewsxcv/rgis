@@ -17,8 +17,8 @@ pub fn handle(ctx: &mut EventLoopContext, element_state: ElementState, mouse_but
                 "Mouse clicked. Screen: (x: {}, y: {}). Geo: (x: {}, y: {}).",
                 ctx.cursor_position.x,
                 ctx.cursor_position.y,
-                geo_coordinate.x,
-                geo_coordinate.y,
+                geo_coordinate.coord.x,
+                geo_coordinate.coord.y,
             );
 
             if selected_layer_changed {
@@ -34,9 +34,12 @@ pub fn handle(ctx: &mut EventLoopContext, element_state: ElementState, mouse_but
 fn physical_position_to_geo_coordinate(
     ctx: &EventLoopContext,
     physical_position: PhysicalPosition<f64>,
-) -> geo::Coordinate<f64> {
-    geo::Coordinate {
-        x: ctx.view_center.x() as f64 + (physical_position.x / (ctx.scale as f64)),
-        y: -(ctx.view_center.y() as f64 + (physical_position.y / (ctx.scale as f64))),
+) -> geo_projected::CoordWithSrs<f64> {
+    geo_projected::CoordWithSrs {
+        coord: geo::Coordinate {
+            x: ctx.view_center.x() as f64 + (physical_position.x / (ctx.scale as f64)),
+            y: -(ctx.view_center.y() as f64 + (physical_position.y / (ctx.scale as f64))),
+        },
+        srs: crate::TARGET_PROJECTION,
     }
 }
