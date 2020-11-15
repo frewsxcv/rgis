@@ -8,6 +8,7 @@ mod event_loop;
 mod file_loader;
 mod layer;
 mod window;
+mod ui;
 
 static PROGRAM_NAME: &str = "rgis";
 
@@ -35,6 +36,8 @@ fn rgis() -> Result<(), Box<dyn error::Error>> {
             layers.clone(),
         );
     }
+
+    ui::draw().unwrap();
 
     window.start_event_loop();
 }
