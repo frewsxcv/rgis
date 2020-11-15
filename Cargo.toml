@@ -10,6 +10,7 @@ colorous = "1"
 env_logger = "0.7"
 geo = { version = "0.14", features = ['use-proj'] }
 geojson = { version = "0.19", features = ['geo-types'] }
+geo-projected = { path = "./geo-projected" }
 gl = "0.14"
 glutin = "0.24"
 log = "0.4"

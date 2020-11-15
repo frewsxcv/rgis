@@ -575,6 +575,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "geo-projected"
+version = "0.1.0"
+dependencies = [
+ "geo",
+ "num-traits",
+ "proj",
+]
+
+[[package]]
 name = "geo-types"
 version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1498,6 +1507,7 @@ dependencies = [
  "colorous",
  "env_logger",
  "geo",
+ "geo-projected",
  "geojson",
  "gl",
  "glutin",

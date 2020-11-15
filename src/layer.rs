@@ -1,6 +1,5 @@
 use geo::bounding_rect::BoundingRect;
 use geo::contains::Contains;
-use geo::map_coords::MapCoords;
 use pathfinder_canvas::ColorU;
 
 #[derive(Clone, Debug)]
@@ -72,9 +71,9 @@ impl Layers {
     pub fn add(&mut self, geometry: geo::Geometry<f64>, metadata: Option<Metadata>) {
         let layer = Layer::from_geometry(geometry, self.next_layer_id(), metadata);
         self.projected_bounding_rect = Some(if let Some(r) = self.projected_bounding_rect {
-            bbox_merge(r, layer.projected_bounding_rect)
+            bbox_merge(r, layer.projected_bounding_rect.rect)
         } else {
-            layer.projected_bounding_rect
+            layer.projected_bounding_rect.rect
         });
         self.data.push(layer);
     }
@@ -98,9 +97,10 @@ pub type Id = i64;
 
 #[derive(Clone, Debug)]
 pub struct Layer {
-    pub geometry: geo::Geometry<f64>,
-    pub projected_geometry: ProjectedGeometry,
-    pub projected_bounding_rect: geo::Rect<f64>,
+    pub unprojected_geometry: geo_projected::GeometryWithSrs<f64>,
+    pub unprojected_bounding_rect: geo_projected::RectWithSrs<f64>,
+    pub projected_geometry: geo_projected::GeometryWithSrs<f64>,
+    pub projected_bounding_rect: geo_projected::RectWithSrs<f64>,
     pub color: ColorU,
     pub metadata: Metadata,
     pub id: Id,
@@ -111,7 +111,7 @@ impl Layer {
         // FIXME: we used to be able to check the bounding rect before we started projecting
         // self.bounding_rect.contains(&geo::Point(coord))
         //     && self.geometry.contains(&geo::Point(coord))
-        self.geometry.contains(&geo::Point(coord))
+        self.projected_geometry.geometry.contains(&geo::Point(coord))
     }
 
     pub fn from_geometry(
@@ -119,38 +119,36 @@ impl Layer {
         id: i64,
         metadata: Option<Metadata>,
     ) -> Self {
-        let projected_geometry = project_geometry(&geometry);
+        let unprojected_geometry = geo_projected::GeometryWithSrs {
+            geometry,
+            srs: crate::SOURCE_PROJECTION,
+        };
+        let unprojected_bounding_rect = geo_projected::RectWithSrs {
+            rect: unprojected_geometry
+                .geometry
+                .bounding_rect()
+                .expect("Could not determine bounding rect of geometry"),
+            srs: unprojected_geometry.srs,
+        };
 
-        let projected_bounding_rect = projected_geometry
-            .0
-            .bounding_rect()
-            .expect("Could not determine bounding rect of geometry");
+        let mut projected_geometry = unprojected_geometry.clone();
+        projected_geometry.reproject(crate::TARGET_PROJECTION);
+        let projected_bounding_rect = geo_projected::RectWithSrs {
+            rect: projected_geometry
+                .geometry
+                .bounding_rect()
+                .expect("Could not determine bounding rect of geometry"),
+            srs: projected_geometry.srs,
+        };
 
         Layer {
+            unprojected_geometry,
+            unprojected_bounding_rect,
             projected_geometry,
             projected_bounding_rect,
-            geometry,
             color: crate::color::next(),
             metadata: metadata.unwrap_or_else(serde_json::Map::new),
             id,
         }
     }
 }
-
-fn project_geometry(geometry: &geo::Geometry<f64>) -> ProjectedGeometry {
-    let projector = geo::algorithm::proj::Proj::new_known_crs(
-        &crate::SOURCE_PROJECTION,
-        &crate::TARGET_PROJECTION,
-        None,
-    )
-    .unwrap();
-
-    ProjectedGeometry(
-        geometry.map_coords(|&(x, y)| {
-            projector.convert((x, y)).unwrap().x_y()
-        })
-    )
-}
-
-#[derive(Debug, Clone)]
-pub struct ProjectedGeometry(pub geo::Geometry<f64>);

@@ -30,6 +30,7 @@ pub fn handle(ctx: &mut EventLoopContext, element_state: ElementState, mouse_but
     }
 }
 
+// Example: `PhysicalPosition { x: 10, y: 5 }` is 10 units right and 5 units down from the top left part of the window
 fn physical_position_to_geo_coordinate(
     ctx: &EventLoopContext,
     physical_position: PhysicalPosition<f64>,
