@@ -1,9 +1,9 @@
-use rgis_layers::Layers;
 use crate::window::UserEvent;
 use glutin::dpi::{PhysicalPosition, PhysicalSize};
 use glutin::event::Event;
 use glutin::event::{ModifiersState, WindowEvent};
 use glutin::event_loop::ControlFlow;
+use rgis_layers::Layers;
 
 use pathfinder_geometry::rect::RectF;
 use pathfinder_geometry::transform2d::Transform2F;

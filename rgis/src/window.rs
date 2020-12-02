@@ -1,9 +1,9 @@
 use crate::event_loop::{handle_event, EventLoopContext};
-use rgis_layers::Layers;
 use glutin::dpi::PhysicalSize;
 use glutin::event_loop::EventLoop;
 use glutin::window::WindowBuilder;
 use glutin::{ContextBuilder, GlProfile, GlRequest};
+use rgis_layers::Layers;
 
 use pathfinder_geometry::vector::vec2i;
 use pathfinder_gl::{GLDevice, GLVersion};

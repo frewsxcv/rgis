@@ -27,7 +27,7 @@ pub fn build(
                     layer.color.0,
                     layer.color.1,
                     layer.color.2,
-                    255
+                    255,
                 ),
                 selected: layers.selected_layer_id == Some(layer.id),
             })

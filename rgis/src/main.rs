@@ -32,7 +32,11 @@ fn rgis() -> Result<(), Box<dyn error::Error>> {
             layers.clone(),
             SOURCE_PROJECTION,
             TARGET_PROJECTION,
-            move || { event_loop_proxy.send_event(window::UserEvent::LayerAdded).unwrap() }
+            move || {
+                event_loop_proxy
+                    .send_event(window::UserEvent::LayerAdded)
+                    .unwrap()
+            },
         );
     }
 
