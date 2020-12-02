@@ -23,5 +23,3 @@ pathfinder_resources = { git = "https://github.com/servo/pathfinder.git" }
 rayon = "1"
 rgis-layers = { path = "../rgis-layers" }
 serde_json = "1"
-termion = "*"
-tui = "*"
