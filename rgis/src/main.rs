@@ -61,6 +61,30 @@ struct LoadGeoJsonFile {
 #[derive(Debug)]
 struct LayerLoaded;
 
+fn process_mouse_events(
+    keyboard_input: Res<Input<KeyCode>>,
+) {
+    let pressed = keyboard_input.get_just_pressed().collect::<Vec<_>>();
+    if pressed.len() > 0 {
+        println!("pressed: {:?}", pressed);
+    }
+}
+
+fn setup(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+) {
+    let texture_handle = asset_server.load("/Users/coreyf/Downloads/meow.png");
+    commands
+        .spawn(Camera2dComponents::default())
+        // .spawn(UiCameraComponents::default())
+        .spawn(SpriteComponents {
+            material: materials.add(texture_handle.into()),
+            ..Default::default()
+        });
+}
+
 fn main() {
     env_logger::init();
 
@@ -70,8 +94,10 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_resource(rgis_layers::Layers::new())
         .add_startup_system(load_layers_from_cli.system())
+        .add_startup_system(setup.system())
         .add_system(load_geojson_file_handler.system())
         .add_system(layer_loaded.system())
+        .add_system(process_mouse_events.system())
         .add_resource(ClearColor(Color::rgb(0.5, 0.5, 0.9)))
         .run();
 
