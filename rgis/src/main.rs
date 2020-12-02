@@ -1,5 +1,7 @@
 use bevy::{prelude::*, render::pass::ClearColor};
 
+mod plugins;
+
 // TODO: allow these to be controller at command line
 static SOURCE_PROJECTION: &str = "EPSG:4326";
 static TARGET_PROJECTION: &str = "EPSG:3857";
@@ -64,24 +66,6 @@ struct LayerLoaded;
 #[derive(Debug)]
 struct Camera(Entity);
 
-fn process_mouse_events(
-    keyboard_input: Res<Input<KeyCode>>,
-    camera_query: Query<(&Camera,)>,
-    mut transform_query: Query<(&mut Transform,)>,
-) {
-    let pressed = keyboard_input.get_just_pressed().collect::<Vec<_>>();
-    if pressed.len() > 0 {
-        for (camera,) in camera_query.iter() {
-            if let Ok((mut transform,)) = transform_query.get_mut(camera.0) {
-                *transform.translation.x_mut() = transform.translation.x() + 5.0;
-                println!("transform: {:?}", transform);
-            }
-        }
-
-        println!("pressed: {:?}", pressed);
-    }
-}
-
 fn setup(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -112,7 +96,7 @@ fn main() {
         .add_startup_system(setup.system())
         .add_system(load_geojson_file_handler.system())
         .add_system(layer_loaded.system())
-        .add_system(process_mouse_events.system())
+        .add_plugin(plugins::KeyboardCameraMover)
         .add_resource(ClearColor(Color::rgb(0.5, 0.5, 0.9)))
         .run();
 
