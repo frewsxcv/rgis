@@ -99,9 +99,4 @@ fn main() {
         .add_plugin(plugins::KeyboardCameraMover)
         .add_resource(ClearColor(Color::rgb(0.5, 0.5, 0.9)))
         .run();
-
-    // if let Err(e) = rgis() {
-    //     writeln!(io::stderr(), "{}: {}", PROGRAM_NAME, e).expect("could not write to stderr");
-    //     process::exit(1);
-    // }
 }
