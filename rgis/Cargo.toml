@@ -1,0 +1,27 @@
+[package]
+name = "rgis"
+version = "0.1.0"
+authors = ["Corey Farwell <coreyf@rwell.org>"]
+license = "GPL-3.0-only"
+edition = "2018"
+
+[dependencies]
+env_logger = "0.8"
+geo = { version = "0.15" }
+geojson = { version = "0.20", features = ['geo-types'] }
+geo-srs = { path = "../geo-srs" }
+gl = "0.14"
+glutin = "0.25"
+log = "0.4"
+pathfinder_canvas = { git = "https://github.com/servo/pathfinder.git" }
+pathfinder_color = { git = "https://github.com/servo/pathfinder.git" }
+pathfinder_content = { git = "https://github.com/servo/pathfinder.git" }
+pathfinder_geometry = { git = "https://github.com/servo/pathfinder.git" }
+pathfinder_gl = { git = "https://github.com/servo/pathfinder.git" }
+pathfinder_renderer = { git = "https://github.com/servo/pathfinder.git" }
+pathfinder_resources = { git = "https://github.com/servo/pathfinder.git" }
+rayon = "1"
+rgis-layers = { path = "../rgis-layers" }
+serde_json = "1"
+termion = "*"
+tui = "*"
