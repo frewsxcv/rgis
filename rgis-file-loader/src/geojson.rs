@@ -2,7 +2,6 @@ use rgis_layers::Layers;
 use std::convert::TryInto;
 use std::fs;
 use std::io;
-use std::sync;
 
 pub fn load(
     geojson_file_path: String,
