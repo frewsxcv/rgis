@@ -3,5 +3,6 @@
 members = [
     "geo-srs",
     "rgis",
+    "rgis-file-loader",
     "rgis-layers",
 ]

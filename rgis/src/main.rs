@@ -4,7 +4,6 @@ use std::{error, io, process, sync};
 mod canvas;
 mod cli;
 mod event_loop;
-mod file_loader;
 mod window;
 
 static PROGRAM_NAME: &str = "rgis";
@@ -27,10 +26,13 @@ fn rgis() -> Result<(), Box<dyn error::Error>> {
     let window = window::Window::new(layers.clone());
 
     for geojson_file_path in geojson_file_paths {
-        file_loader::load(
+        let event_loop_proxy = window.event_loop.create_proxy();
+        rgis_file_loader::load(
             geojson_file_path,
-            window.event_loop.create_proxy(),
             layers.clone(),
+            SOURCE_PROJECTION,
+            TARGET_PROJECTION,
+            move || { event_loop_proxy.send_event(window::UserEvent::LayerAdded).unwrap() }
         );
     }
 

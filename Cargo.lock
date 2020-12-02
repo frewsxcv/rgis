@@ -1646,6 +1646,18 @@ dependencies = [
  "pathfinder_renderer",
  "pathfinder_resources",
  "rayon",
+ "rgis-file-loader",
+ "rgis-layers",
+]
+
+[[package]]
+name = "rgis-file-loader"
+version = "0.1.0"
+dependencies = [
+ "geo",
+ "geojson",
+ "log",
+ "rayon",
  "rgis-layers",
  "serde_json",
 ]

@@ -1,0 +1,13 @@
+[package]
+name = "rgis-file-loader"
+version = "0.1.0"
+authors = ["Corey Farwell <coreyf@rwell.org>"]
+edition = "2018"
+
+[dependencies]
+geo = ""
+geojson = "0.20"
+log = "0.4"
+rayon = "1"
+rgis-layers = { path = "../rgis-layers" }
+serde_json = "1"
