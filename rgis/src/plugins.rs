@@ -13,15 +13,37 @@ fn process_mouse_events(
     camera_query: Query<(&crate::Camera,)>,
     mut transform_query: Query<(&mut Transform,)>,
 ) {
-    let pressed = keyboard_input.get_just_pressed().collect::<Vec<_>>();
-    if pressed.len() > 0 {
-        for (camera,) in camera_query.iter() {
-            if let Ok((mut transform,)) = transform_query.get_mut(camera.0) {
-                *transform.translation.x_mut() = transform.translation.x() + 5.0;
-                println!("transform: {:?}", transform);
-            }
+    for key in keyboard_input.get_just_pressed() {
+        match key {
+            KeyCode::Up => pan_y(5., &camera_query, &mut transform_query),
+            KeyCode::Right => pan_x(5., &camera_query, &mut transform_query),
+            KeyCode::Down => pan_y(-5., &camera_query, &mut transform_query),
+            KeyCode::Left => pan_x(-5., &camera_query, &mut transform_query),
+            _ => {},
         }
+    }
+}
 
-        println!("pressed: {:?}", pressed);
+fn pan_x(
+    amount: f32,
+    camera_query: &Query<(&crate::Camera,)>,
+    transform_query: &mut Query<(&mut Transform,)>,
+) {
+    for (camera,) in camera_query.iter() {
+        if let Ok((mut transform,)) = transform_query.get_mut(camera.0) {
+            *transform.translation.x_mut() = transform.translation.x() + amount;
+        }
+    }
+}
+
+fn pan_y(
+    amount: f32,
+    camera_query: &Query<(&crate::Camera,)>,
+    transform_query: &mut Query<(&mut Transform,)>,
+) {
+    for (camera,) in camera_query.iter() {
+        if let Ok((mut transform,)) = transform_query.get_mut(camera.0) {
+            *transform.translation.y_mut() = transform.translation.y() + amount;
+        }
     }
 }
