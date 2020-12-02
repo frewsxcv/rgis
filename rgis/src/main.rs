@@ -2,7 +2,6 @@ use std::io::Write;
 use std::{error, io, process, sync};
 
 mod canvas;
-mod cli;
 mod event_loop;
 mod window;
 
@@ -19,7 +18,7 @@ fn bg_color() -> pathfinder_color::ColorF {
 }
 
 fn rgis() -> Result<(), Box<dyn error::Error>> {
-    let geojson_file_paths = cli::run()?;
+    let geojson_file_paths = rgis_cli::run()?;
 
     let layers = sync::Arc::new(sync::RwLock::new(rgis_layers::Layers::new()));
 
