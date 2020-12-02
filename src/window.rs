@@ -1,5 +1,5 @@
 use crate::event_loop::{handle_event, EventLoopContext};
-use crate::layer::Layers;
+use rgis_layers::Layers;
 use glutin::dpi::PhysicalSize;
 use glutin::event_loop::EventLoop;
 use glutin::window::WindowBuilder;

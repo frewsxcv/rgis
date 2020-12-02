@@ -1,6 +1,6 @@
-use crate::layer::Layers;
 use add_to_canvas::AddToCanvas;
 use pathfinder_canvas::{Canvas, CanvasFontContext};
+use rgis_layers::Layers;
 
 mod add_to_canvas;
 mod to_canvas_path;
@@ -23,7 +23,12 @@ pub fn build(
             .add_to_canvas(add_to_canvas::Context {
                 canvas: &mut canvas,
                 scale,
-                color: layer.color,
+                color: pathfinder_color::ColorU::new(
+                    layer.color.0,
+                    layer.color.1,
+                    layer.color.2,
+                    255
+                ),
                 selected: layers.selected_layer_id == Some(layer.id),
             })
     }

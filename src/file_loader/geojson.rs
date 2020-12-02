@@ -1,4 +1,4 @@
-use crate::layer::Layers;
+use rgis_layers::Layers;
 use std::convert::TryInto;
 use std::fs;
 use std::io;
@@ -39,7 +39,7 @@ fn load_geojson_feature(
 fn load_geojson_geometry(
     geojson_geometry: geojson::Geometry,
     layers: sync::Arc<sync::RwLock<Layers>>,
-    metadata: Option<crate::layer::Metadata>,
+    metadata: Option<rgis_layers::Metadata>,
 ) -> usize {
     let geojson_value = geojson_geometry.value;
 
@@ -48,22 +48,22 @@ fn load_geojson_geometry(
     match geojson_value {
         g @ geojson::Value::LineString(_) => {
             let g = (g.try_into().ok() as Option<geo::LineString<f64>>).unwrap();
-            l.add(geo::Geometry::LineString(g), metadata);
+            l.add(geo::Geometry::LineString(g), metadata, crate::SOURCE_PROJECTION, crate::TARGET_PROJECTION);
             1
         }
         g @ geojson::Value::Polygon(_) => {
             let g = (g.try_into().ok() as Option<geo::Polygon<f64>>).unwrap();
-            l.add(geo::Geometry::Polygon(g), metadata);
+            l.add(geo::Geometry::Polygon(g), metadata, crate::SOURCE_PROJECTION, crate::TARGET_PROJECTION);
             1
         }
         g @ geojson::Value::MultiLineString(_) => {
             let g = (g.try_into().ok() as Option<geo::MultiLineString<f64>>).unwrap();
-            l.add(geo::Geometry::MultiLineString(g), metadata);
+            l.add(geo::Geometry::MultiLineString(g), metadata, crate::SOURCE_PROJECTION, crate::TARGET_PROJECTION);
             1
         }
         g @ geojson::Value::MultiPolygon(_) => {
             let g = (g.try_into().ok() as Option<geo::MultiPolygon<f64>>).unwrap();
-            l.add(geo::Geometry::MultiPolygon(g), metadata);
+            l.add(geo::Geometry::MultiPolygon(g), metadata, crate::SOURCE_PROJECTION, crate::TARGET_PROJECTION);
             1
         }
         geojson::Value::GeometryCollection(g) => {

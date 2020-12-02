@@ -1652,7 +1652,6 @@ checksum = "3b181ba2dcf07aaccad5448e8ead58db5b742cf85dfe035e2227f137a539a189"
 name = "rgis"
 version = "0.1.0"
 dependencies = [
- "colorous",
  "env_logger 0.8.1",
  "geo",
  "geo-srs",
@@ -1668,9 +1667,21 @@ dependencies = [
  "pathfinder_renderer",
  "pathfinder_resources",
  "rayon",
+ "rgis-layers",
  "serde_json",
  "termion",
  "tui",
+]
+
+[[package]]
+name = "rgis-layers"
+version = "0.1.0"
+dependencies = [
+ "colorous",
+ "geo",
+ "geo-srs",
+ "log",
+ "serde_json",
 ]
 
 [[package]]

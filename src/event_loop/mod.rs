@@ -1,4 +1,4 @@
-use crate::layer::Layers;
+use rgis_layers::Layers;
 use crate::window::UserEvent;
 use glutin::dpi::{PhysicalPosition, PhysicalSize};
 use glutin::event::Event;

@@ -1,4 +1,4 @@
-use crate::layer::Layers;
+use rgis_layers::Layers;
 
 use glutin::dpi::PhysicalPosition;
 

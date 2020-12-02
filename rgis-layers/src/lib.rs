@@ -1,6 +1,6 @@
 use geo::bounding_rect::BoundingRect;
 use geo::contains::Contains;
-use pathfinder_canvas::ColorU;
+use std::sync;
 
 #[derive(Clone, Debug)]
 pub struct Layers {
@@ -9,6 +9,8 @@ pub struct Layers {
     // ID of the currently selected Layer
     pub selected_layer_id: Option<i64>,
 }
+
+pub type Color = (u8, u8, u8);
 
 impl Layers {
     pub fn new() -> Layers {
@@ -71,8 +73,20 @@ impl Layers {
         self.data.last().map(|layer| layer.id + 1).unwrap_or(1)
     }
 
-    pub fn add(&mut self, geometry: geo::Geometry<f64>, metadata: Option<Metadata>) {
-        let layer = Layer::from_geometry(geometry, self.next_layer_id(), metadata);
+    pub fn add(
+        &mut self,
+        geometry: geo::Geometry<f64>,
+        metadata: Option<Metadata>,
+        source_projection: &'static str,
+        target_projection: &'static str,
+    ) {
+        let layer = Layer::from_geometry(
+            geometry,
+            self.next_layer_id(),
+            metadata,
+            source_projection,
+            target_projection,
+        );
         self.projected_bounding_rect = Some(if let Some(r) = self.projected_bounding_rect {
             r.merge(layer.projected_bounding_rect)
         } else {
@@ -91,7 +105,7 @@ pub struct Layer {
     pub unprojected_bounding_rect: geo_srs::RectWithSrs<f64>,
     pub projected_geometry: geo_srs::GeometryWithSrs<f64>,
     pub projected_bounding_rect: geo_srs::RectWithSrs<f64>,
-    pub color: ColorU,
+    pub color: Color,
     pub metadata: Metadata,
     pub id: Id,
 }
@@ -106,10 +120,12 @@ impl Layer {
         geometry: geo::Geometry<f64>,
         id: i64,
         metadata: Option<Metadata>,
+        source_projection: &'static str,
+        target_projection: &'static str,
     ) -> Self {
         let unprojected_geometry = geo_srs::GeometryWithSrs {
             geometry,
-            srs: crate::SOURCE_PROJECTION,
+            srs: source_projection,
         };
         let unprojected_bounding_rect = geo_srs::RectWithSrs {
             rect: unprojected_geometry
@@ -120,7 +136,7 @@ impl Layer {
         };
 
         let mut projected_geometry = unprojected_geometry.clone();
-        projected_geometry.reproject(crate::TARGET_PROJECTION);
+        projected_geometry.reproject(target_projection);
         let projected_bounding_rect = geo_srs::RectWithSrs {
             rect: projected_geometry
                 .geometry
@@ -134,9 +150,20 @@ impl Layer {
             unprojected_bounding_rect,
             projected_geometry,
             projected_bounding_rect,
-            color: crate::color::next(),
+            color: next_colorous_color().as_tuple(),
             metadata: metadata.unwrap_or_else(serde_json::Map::new),
             id,
         }
     }
+}
+
+const COLORS: [colorous::Color; 10] = colorous::CATEGORY10;
+
+fn next_colorous_color() -> colorous::Color {
+    COLORS[next_color_index()]
+}
+
+fn next_color_index() -> usize {
+    static COUNTER: sync::atomic::AtomicUsize = sync::atomic::AtomicUsize::new(0);
+    COUNTER.fetch_add(1, sync::atomic::Ordering::Relaxed) % COLORS.len()
 }
