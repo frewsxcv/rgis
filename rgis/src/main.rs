@@ -7,7 +7,7 @@ static TARGET_PROJECTION: &str = "EPSG:3857";
 // System
 fn load_layers_from_cli(mut events: ResMut<Events<LoadGeoJsonFile>>) {
     for geojson_file_path in rgis_cli::run().unwrap() {
-        for _ in 0..5 {
+        for _ in 0..2 {
             log::debug!(
                 "sending LoadGeoJsonFile event: {}",
                 geojson_file_path.clone()
@@ -61,11 +61,23 @@ struct LoadGeoJsonFile {
 #[derive(Debug)]
 struct LayerLoaded;
 
+#[derive(Debug)]
+struct Camera(Entity);
+
 fn process_mouse_events(
     keyboard_input: Res<Input<KeyCode>>,
+    camera_query: Query<(&Camera,)>,
+    mut transform_query: Query<(&mut Transform,)>,
 ) {
     let pressed = keyboard_input.get_just_pressed().collect::<Vec<_>>();
     if pressed.len() > 0 {
+        for (camera,) in camera_query.iter() {
+            if let Ok((mut transform,)) = transform_query.get_mut(camera.0) {
+                *transform.translation.x_mut() = transform.translation.x() + 5.0;
+                println!("transform: {:?}", transform);
+            }
+        }
+
         println!("pressed: {:?}", pressed);
     }
 }
@@ -75,11 +87,14 @@ fn setup(
     asset_server: Res<AssetServer>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    let texture_handle = asset_server.load("/Users/coreyf/Downloads/meow.png");
-    commands
+    let entity = commands
         .spawn(Camera2dComponents::default())
-        // .spawn(UiCameraComponents::default())
-        .spawn(SpriteComponents {
+        .current_entity();
+
+    commands.spawn((Camera(entity.expect("could not find entity")),));
+
+    let texture_handle = asset_server.load("/Users/coreyf/Downloads/meow.png");
+    commands.spawn(SpriteComponents {
             material: materials.add(texture_handle.into()),
             ..Default::default()
         });
