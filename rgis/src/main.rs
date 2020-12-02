@@ -1,22 +1,20 @@
 use bevy::{prelude::*, render::pass::ClearColor};
-use std::io::Write;
-use std::{error, io, process, sync};
 
-mod canvas;
-mod event_loop;
-mod window;
+// mod canvas;
+// mod event_loop;
+// mod window;
 
-static PROGRAM_NAME: &str = "rgis";
+// static PROGRAM_NAME: &str = "rgis";
 
-static SHOW_DEBUG_UI: bool = false; // TODO: Make this a CLI flag
+// static SHOW_DEBUG_UI: bool = false; // TODO: Make this a CLI flag
 
 // TODO: allow these to be controller at command line
 static SOURCE_PROJECTION: &str = "EPSG:4326";
 static TARGET_PROJECTION: &str = "EPSG:3857";
 
-fn bg_color() -> pathfinder_color::ColorF {
-    pathfinder_color::ColorF::white()
-}
+// fn bg_color() -> pathfinder_color::ColorF {
+//     pathfinder_color::ColorF::white()
+// }
 
 fn load_layers_from_cli(mut layers: ResMut<rgis_layers::Layers>) {
     let geojson_file_paths = rgis_cli::run().unwrap();
