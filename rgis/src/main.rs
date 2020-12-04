@@ -53,14 +53,16 @@ fn layer_loaded(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
-    layers: ResMut<rgis_layers::Layers>,
+    layers: Res<rgis_layers::Layers>,
     events: Res<Events<LayerLoaded>>,
     mut event_reader: Local<EventReader<LayerLoaded>>,
     mut spawned_events: ResMut<Events<LayerSpawned>>,
 ) {
     for event in event_reader.iter(&events) {
-        // TODO: find the layer we loaded instead of assuming the first
-        let layer = &layers.data[0];
+        let layer = match layers.get(event.0) {
+            Some(l) => l,
+            None => continue,
+        };
         // TODO: dont assume it is this color
         let material = materials.add(Color::rgb(0.8, 0.0, 0.0).into());
         // TODO: dont assume it's a polygon
