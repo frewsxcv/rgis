@@ -115,8 +115,7 @@ fn layer_spawned(
                 println!("Moving camera to look at new layer");
                 transform.translation =
                     Vec3::new(layer_center.x as f32, layer_center.y as f32, 0.0);
-                transform.scale =
-                    Vec3::new(scale as f32, scale as f32, 1.0);
+                transform.scale = Vec3::new(scale as f32, scale as f32, 1.0);
             }
         }
     }

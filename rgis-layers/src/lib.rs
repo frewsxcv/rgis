@@ -70,7 +70,8 @@ impl Layers {
 
     #[allow(unused)]
     pub fn selected_layer(&self) -> Option<&Layer> {
-        self.selected_layer_id.and_then(|layer_id| self.get(layer_id))
+        self.selected_layer_id
+            .and_then(|layer_id| self.get(layer_id))
     }
 
     fn next_layer_id(&self) -> LayerId {

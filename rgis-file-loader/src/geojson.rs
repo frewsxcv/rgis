@@ -24,12 +24,7 @@ pub fn load(
         geojson::GeoJson::FeatureCollection(f) => {
             let mut count = 0;
             for feature in f.features {
-                count += load_geojson_feature(
-                    feature,
-                    layers,
-                    source_projection,
-                    target_projection,
-                )
+                count += load_geojson_feature(feature, layers, source_projection, target_projection)
             }
             count
         }
