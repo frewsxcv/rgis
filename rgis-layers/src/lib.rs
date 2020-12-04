@@ -61,15 +61,16 @@ impl Layers {
         prev_selected_layer_id != self.selected_layer_id
     }
 
+    pub fn get(&self, layer_id: LayerId) -> Option<&Layer> {
+        self.data
+            .binary_search_by_key(&layer_id, |layer| layer.id)
+            .ok()
+            .and_then(|layer_index| self.data.get(layer_index))
+    }
+
     #[allow(unused)]
     pub fn selected_layer(&self) -> Option<&Layer> {
-        self.selected_layer_id
-            .and_then(|layer_id| {
-                self.data
-                    .binary_search_by_key(&layer_id, |layer| layer.id)
-                    .ok()
-            })
-            .and_then(|layer_index| self.data.get(layer_index))
+        self.selected_layer_id.and_then(|layer_id| self.get(layer_id))
     }
 
     fn next_layer_id(&self) -> LayerId {
