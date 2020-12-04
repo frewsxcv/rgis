@@ -63,8 +63,7 @@ fn zoom(
 ) {
     for (camera,) in camera_query.iter() {
         if let Ok((mut transform,)) = transform_query.get_mut(camera.0) {
-            *transform.scale.x_mut() = transform.scale.x() / amount;
-            *transform.scale.y_mut() = transform.scale.y() / amount;
+            transform.scale = transform.scale * Vec3::new(1. / amount, 1. / amount, 1.);
         }
     }
 }
