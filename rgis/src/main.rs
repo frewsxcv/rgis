@@ -69,8 +69,6 @@ fn layer_loaded(
             _ => unimplemented!(),
         };
 
-        println!("{:?}", polygon.exterior().0[0]);
-
         println!("Building sprite from geometry");
         let sprite_components = geo_lyon::convert(polygon).fill(
             material.clone(),
@@ -133,22 +131,12 @@ struct LayerSpawned(rgis_layers::LayerId);
 #[derive(Debug)]
 struct Camera(Entity);
 
-fn setup(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-) {
+fn setup(mut commands: Commands) {
     let entity = commands
         .spawn(Camera2dComponents::default())
         .current_entity();
 
     commands.spawn((Camera(entity.expect("could not find entity")),));
-
-    // let texture_handle = asset_server.load("/Users/coreyf/Downloads/meow.png");
-    // commands.spawn(SpriteComponents {
-    //         material: materials.add(texture_handle.into()),
-    //         ..Default::default()
-    //     });
 }
 
 fn main() {
