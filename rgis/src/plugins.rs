@@ -8,6 +8,9 @@ impl Plugin for KeyboardCameraMover {
     }
 }
 
+const PAN_AMOUNT: f32 = 5.; // Larger number will pan more
+const ZOOM_AMOUNT: f32 = 10. / 9.; // Larger number will zoom more
+
 fn process_mouse_events(
     keyboard_input: Res<Input<KeyCode>>,
     camera_query: Query<(&crate::Camera,)>,
@@ -15,16 +18,16 @@ fn process_mouse_events(
 ) {
     for key in keyboard_input.get_just_pressed() {
         match key {
-            KeyCode::Up => pan_y(5., &camera_query, &mut transform_query),
-            KeyCode::Right => pan_x(5., &camera_query, &mut transform_query),
-            KeyCode::Down => pan_y(-5., &camera_query, &mut transform_query),
-            KeyCode::Left => pan_x(-5., &camera_query, &mut transform_query),
-            KeyCode::Minus => zoom(0.9, &camera_query, &mut transform_query),
+            KeyCode::Up => pan_y(PAN_AMOUNT, &camera_query, &mut transform_query),
+            KeyCode::Right => pan_x(PAN_AMOUNT, &camera_query, &mut transform_query),
+            KeyCode::Down => pan_y(-PAN_AMOUNT, &camera_query, &mut transform_query),
+            KeyCode::Left => pan_x(-PAN_AMOUNT, &camera_query, &mut transform_query),
+            KeyCode::Minus => zoom(1. / ZOOM_AMOUNT, &camera_query, &mut transform_query),
             KeyCode::Equals => {
                 if keyboard_input.pressed(KeyCode::RShift)
                     || keyboard_input.pressed(KeyCode::LShift)
                 {
-                    zoom(1.1, &camera_query, &mut transform_query);
+                    zoom(ZOOM_AMOUNT, &camera_query, &mut transform_query);
                 }
             }
             _ => {}
