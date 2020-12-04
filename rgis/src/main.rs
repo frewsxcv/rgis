@@ -40,8 +40,10 @@ fn load_geojson_file_handler(
             SOURCE_PROJECTION,
             TARGET_PROJECTION,
         );
+        // TODO: don't assume layer is the last one
+        let layer = layers.data.last().unwrap();
         if count > 0 {
-            loaded_events.send(LayerLoaded);
+            loaded_events.send(LayerLoaded(layer.id));
         }
     }
 }
@@ -56,7 +58,7 @@ fn layer_loaded(
     mut event_reader: Local<EventReader<LayerLoaded>>,
     mut spawned_events: ResMut<Events<LayerSpawned>>,
 ) {
-    for _event in event_reader.iter(&events) {
+    for event in event_reader.iter(&events) {
         // TODO: find the layer we loaded instead of assuming the first
         let layer = &layers.data[0];
         // TODO: dont assume it is this color
@@ -80,7 +82,7 @@ fn layer_loaded(
         println!("Spawning geometry entity");
         commands.spawn(sprite_components);
 
-        spawned_events.send(LayerSpawned);
+        spawned_events.send(LayerSpawned(event.0));
     }
 }
 
@@ -95,16 +97,23 @@ impl Plugin for LayerSpawnedPlugin {
 // System
 fn layer_spawned(
     events: Res<Events<LayerSpawned>>,
+    layers: ResMut<rgis_layers::Layers>,
     mut event_reader: Local<EventReader<LayerSpawned>>,
     camera_query: Query<(&crate::Camera,)>,
     mut transform_query: Query<(&mut Transform,)>,
 ) {
-    for _event in event_reader.iter(&events) {
+    for event in event_reader.iter(&events) {
+        let layer = match layers.get(event.0) {
+            Some(l) => l,
+            None => continue,
+        };
+        let layer_center = layer.projected_bounding_rect.rect.center();
         // TODO: only change the transform if there were no layers previously
         for (camera,) in camera_query.iter() {
             if let Ok((mut transform,)) = transform_query.get_mut(camera.0) {
                 println!("Moving camera to look at new layer");
-                transform.translation = Vec3::new(-9724792.34677886, 4164041.502507147, 0.0);
+                transform.translation =
+                    Vec3::new(layer_center.x as f32, layer_center.y as f32, 0.0);
             }
         }
     }
@@ -116,10 +125,10 @@ struct LoadGeoJsonFile {
 }
 
 #[derive(Debug)]
-struct LayerLoaded;
+struct LayerLoaded(rgis_layers::LayerId);
 
 #[derive(Debug)]
-struct LayerSpawned;
+struct LayerSpawned(rgis_layers::LayerId);
 
 #[derive(Debug)]
 struct Camera(Entity);
