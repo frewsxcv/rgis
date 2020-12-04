@@ -61,8 +61,8 @@ fn layer_loaded(
             Some(l) => l,
             None => continue,
         };
-        // TODO: dont assume it is this color
-        let material = materials.add(Color::rgb(0.8, 0.0, 0.0).into());
+        let material =
+            materials.add(Color::rgb_u8(layer.color.0, layer.color.1, layer.color.2).into());
         // TODO: dont assume it's a polygon
         let polygon = match layer.projected_geometry.geometry {
             geo::Geometry::Polygon(ref p) => p,
