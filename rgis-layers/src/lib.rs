@@ -84,10 +84,11 @@ impl Layers {
         metadata: Option<Metadata>,
         source_projection: &'static str,
         target_projection: &'static str,
-    ) {
+    ) -> LayerId {
+        let layer_id = self.next_layer_id();
         let layer = Layer::from_geometry(
             geometry,
-            self.next_layer_id(),
+            layer_id,
             metadata,
             source_projection,
             target_projection,
@@ -98,6 +99,7 @@ impl Layers {
             layer.projected_bounding_rect
         });
         self.data.push(layer);
+        layer_id
     }
 }
 

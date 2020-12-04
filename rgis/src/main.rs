@@ -34,16 +34,14 @@ fn load_geojson_file_handler(
     } in load_event_reader.iter(&load_events)
     {
         println!("loading {}", geojson_file_path);
-        let count = rgis_file_loader::load(
+        let layer_ids = rgis_file_loader::load(
             geojson_file_path.clone(),
             &mut layers,
             SOURCE_PROJECTION,
             TARGET_PROJECTION,
         );
-        // TODO: don't assume layer is the last one
-        let layer = layers.data.last().unwrap();
-        if count > 0 {
-            loaded_events.send(LayerLoaded(layer.id));
+        for layer_id in layer_ids {
+            loaded_events.send(LayerLoaded(layer_id));
         }
     }
 }
@@ -68,7 +66,7 @@ fn layer_loaded(
         // TODO: dont assume it's a polygon
         let polygon = match layer.projected_geometry.geometry {
             geo::Geometry::Polygon(ref p) => p,
-            _ => unimplemented!(),
+            _ => continue,
         };
 
         println!("Building sprite from geometry");

@@ -8,13 +8,13 @@ pub fn load(
     layers: &mut Layers,
     source_projection: &'static str,
     target_projection: &'static str,
-) -> usize {
+) -> Vec<rgis_layers::LayerId> {
     log::info!("Opening file: {:?}", geojson_file_path);
     let geojson_file = io::BufReader::new(fs::File::open(&geojson_file_path).expect("TODO"));
     log::info!("Parsing file: {:?}", geojson_file_path);
     let geojson: geojson::GeoJson = serde_json::from_reader(geojson_file).unwrap();
     log::info!("Parsed file: {:?}", geojson_file_path);
-    let count = match geojson {
+    let layer_ids = match geojson {
         geojson::GeoJson::Geometry(g) => {
             load_geojson_geometry(g, layers, None, source_projection, target_projection)
         }
@@ -22,15 +22,15 @@ pub fn load(
             load_geojson_feature(f, layers, source_projection, target_projection)
         }
         geojson::GeoJson::FeatureCollection(f) => {
-            let mut count = 0;
+            let mut layer_ids = vec![];
             for feature in f.features {
-                count += load_geojson_feature(feature, layers, source_projection, target_projection)
+                layer_ids.extend(load_geojson_feature(feature, layers, source_projection, target_projection))
             }
-            count
+            layer_ids
         }
     };
     log::info!("Loaded file: {:?}", geojson_file_path);
-    count
+    layer_ids
 }
 
 fn load_geojson_feature(
@@ -38,7 +38,7 @@ fn load_geojson_feature(
     layers: &mut Layers,
     source_projection: &'static str,
     target_projection: &'static str,
-) -> usize {
+) -> Vec<rgis_layers::LayerId> {
     if let Some(geometry) = geojson_feature.geometry {
         load_geojson_geometry(
             geometry,
@@ -48,7 +48,7 @@ fn load_geojson_feature(
             target_projection,
         )
     } else {
-        0
+        vec![]
     }
 }
 
@@ -58,63 +58,59 @@ fn load_geojson_geometry(
     metadata: Option<rgis_layers::Metadata>,
     source_projection: &'static str,
     target_projection: &'static str,
-) -> usize {
+) -> Vec<rgis_layers::LayerId> {
     let geojson_value = geojson_geometry.value;
 
     match geojson_value {
         g @ geojson::Value::LineString(_) => {
             let g = (g.try_into().ok() as Option<geo::LineString<f64>>).unwrap();
-            layers.add(
+            vec![layers.add(
                 geo::Geometry::LineString(g),
                 metadata,
                 source_projection,
                 target_projection,
-            );
-            1
+            )]
         }
         g @ geojson::Value::Polygon(_) => {
             let g = (g.try_into().ok() as Option<geo::Polygon<f64>>).unwrap();
-            layers.add(
+            vec![layers.add(
                 geo::Geometry::Polygon(g),
                 metadata,
                 source_projection,
                 target_projection,
-            );
-            1
+            )]
         }
         g @ geojson::Value::MultiLineString(_) => {
             let g = (g.try_into().ok() as Option<geo::MultiLineString<f64>>).unwrap();
-            layers.add(
+            vec![layers.add(
                 geo::Geometry::MultiLineString(g),
                 metadata,
                 source_projection,
                 target_projection,
-            );
-            1
+            )]
         }
         g @ geojson::Value::MultiPolygon(_) => {
             let g = (g.try_into().ok() as Option<geo::MultiPolygon<f64>>).unwrap();
-            layers.add(
+            vec![layers.add(
                 geo::Geometry::MultiPolygon(g),
                 metadata,
                 source_projection,
                 target_projection,
-            );
-            1
+            )]
         }
         geojson::Value::GeometryCollection(g) => {
-            let mut count = 0;
+            let mut layer_ids = vec![];
             for geojson_geometry in g {
-                count += load_geojson_geometry(
+                layer_ids.extend(load_geojson_geometry(
                     geojson_geometry,
                     layers,
                     metadata.clone(),
                     source_projection,
                     target_projection,
-                );
+                ));
             }
-            count
+            layer_ids
         }
-        _ => 0,
+        _ => vec![],
     }
 }

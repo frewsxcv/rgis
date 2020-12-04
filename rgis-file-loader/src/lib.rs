@@ -7,6 +7,6 @@ pub fn load(
     layers: &mut Layers,
     source_projection: &'static str,
     target_projection: &'static str,
-) -> usize {
+) -> Vec<rgis_layers::LayerId> {
     geojson::load(file_path, layers, source_projection, target_projection)
 }
