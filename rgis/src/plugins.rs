@@ -19,7 +19,15 @@ fn process_mouse_events(
             KeyCode::Right => pan_x(5., &camera_query, &mut transform_query),
             KeyCode::Down => pan_y(-5., &camera_query, &mut transform_query),
             KeyCode::Left => pan_x(-5., &camera_query, &mut transform_query),
-            _ => {},
+            KeyCode::Minus => zoom(0.9, &camera_query, &mut transform_query),
+            KeyCode::Equals => {
+                if keyboard_input.pressed(KeyCode::RShift)
+                    || keyboard_input.pressed(KeyCode::LShift)
+                {
+                    zoom(1.1, &camera_query, &mut transform_query);
+                }
+            }
+            _ => {}
         }
     }
 }
@@ -44,6 +52,19 @@ fn pan_y(
     for (camera,) in camera_query.iter() {
         if let Ok((mut transform,)) = transform_query.get_mut(camera.0) {
             *transform.translation.y_mut() = transform.translation.y() + amount;
+        }
+    }
+}
+
+fn zoom(
+    amount: f32,
+    camera_query: &Query<(&crate::Camera,)>,
+    transform_query: &mut Query<(&mut Transform,)>,
+) {
+    for (camera,) in camera_query.iter() {
+        if let Ok((mut transform,)) = transform_query.get_mut(camera.0) {
+            *transform.scale.x_mut() = transform.scale.x() / amount;
+            *transform.scale.y_mut() = transform.scale.y() / amount;
         }
     }
 }
