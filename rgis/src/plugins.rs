@@ -39,7 +39,7 @@ fn pan_x(
 ) {
     for (camera,) in camera_query.iter() {
         if let Ok((mut transform,)) = transform_query.get_mut(camera.0) {
-            *transform.translation.x_mut() = transform.translation.x() + amount;
+            *transform.translation.x_mut() = transform.translation.x() + (amount * transform.scale.x());
         }
     }
 }
@@ -51,7 +51,7 @@ fn pan_y(
 ) {
     for (camera,) in camera_query.iter() {
         if let Ok((mut transform,)) = transform_query.get_mut(camera.0) {
-            *transform.translation.y_mut() = transform.translation.y() + amount;
+            *transform.translation.y_mut() = transform.translation.y() + (amount * transform.scale.x());
         }
     }
 }
