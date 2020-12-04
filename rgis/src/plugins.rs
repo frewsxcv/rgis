@@ -8,8 +8,8 @@ impl Plugin for KeyboardCameraMover {
     }
 }
 
-const PAN_AMOUNT: f32 = 5.; // Larger number will pan more
-const ZOOM_AMOUNT: f32 = 10. / 9.; // Larger number will zoom more
+const PAN_AMOUNT: f32 = 15.; // Larger number will pan more
+const ZOOM_AMOUNT: f32 = 1.3; // Larger number will zoom more
 
 fn process_mouse_events(
     keyboard_input: Res<Input<KeyCode>>,
