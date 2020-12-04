@@ -1,7 +1,7 @@
 use bevy_prototype_lyon::prelude::*;
 
 // TODO: interiors
-pub fn convert(g: &geo::Polygon<f64>) -> Path {
+pub fn convert(g: &geo_types::Polygon<f64>) -> Path {
     let mut path_builder = PathBuilder::new();
 
     let mut exterior_iter = g.exterior().0.iter();

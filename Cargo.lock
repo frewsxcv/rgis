@@ -1763,7 +1763,7 @@ name = "geo-lyon"
 version = "0.1.0"
 dependencies = [
  "bevy_prototype_lyon",
- "geo 0.16.0",
+ "geo-types",
 ]
 
 [[package]]
