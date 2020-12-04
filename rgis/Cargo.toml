@@ -7,9 +7,11 @@ edition = "2018"
 
 [dependencies]
 bevy = "0.3"
+bevy_prototype_lyon = "0.1"
 env_logger = "0.8"
 geo = { version = "0.15" }
 geojson = { version = "0.20", features = ['geo-types'] }
+geo-lyon = { path = "../geo-lyon" }
 geo-srs = { path = "../geo-srs" }
 log = "0.4"
 rgis-cli = { path = "../rgis-cli" }

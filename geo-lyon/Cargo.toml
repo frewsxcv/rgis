@@ -1,0 +1,9 @@
+[package]
+name = "geo-lyon"
+version = "0.1.0"
+authors = ["Corey Farwell <coreyf@rwell.org>"]
+edition = "2018"
+
+[dependencies]
+geo = "*"
+bevy_prototype_lyon = "*"

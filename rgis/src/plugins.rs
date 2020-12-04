@@ -44,6 +44,7 @@ fn pan_x(
         if let Ok((mut transform,)) = transform_query.get_mut(camera.0) {
             *transform.translation.x_mut() =
                 transform.translation.x() + (amount * transform.scale.x());
+            log::debug!("New transform translation: {:?}", transform.translation);
         }
     }
 }
@@ -57,6 +58,7 @@ fn pan_y(
         if let Ok((mut transform,)) = transform_query.get_mut(camera.0) {
             *transform.translation.y_mut() =
                 transform.translation.y() + (amount * transform.scale.x());
+            log::debug!("New transform translation: {:?}", transform.translation);
         }
     }
 }
@@ -69,6 +71,7 @@ fn zoom(
     for (camera,) in camera_query.iter() {
         if let Ok((mut transform,)) = transform_query.get_mut(camera.0) {
             transform.scale = transform.scale * Vec3::new(1. / amount, 1. / amount, 1.);
+            log::debug!("New transform scale: {:?}", transform.scale);
         }
     }
 }

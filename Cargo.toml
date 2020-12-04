@@ -1,6 +1,7 @@
 [workspace]
 
 members = [
+    "geo-lyon",
     "geo-srs",
     "rgis",
     "rgis-cli",
