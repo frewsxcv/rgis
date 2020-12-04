@@ -2,12 +2,15 @@ use geo::bounding_rect::BoundingRect;
 use geo::contains::Contains;
 use std::sync;
 
+#[derive(Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
+pub struct LayerId(i64);
+
 #[derive(Clone, Debug)]
 pub struct Layers {
     pub data: Vec<Layer>,
     pub projected_bounding_rect: Option<geo_srs::RectWithSrs<f64>>,
     // ID of the currently selected Layer
-    pub selected_layer_id: Option<i64>,
+    pub selected_layer_id: Option<LayerId>,
 }
 
 pub type Color = (u8, u8, u8);
@@ -69,8 +72,8 @@ impl Layers {
             .and_then(|layer_index| self.data.get(layer_index))
     }
 
-    fn next_layer_id(&self) -> Id {
-        self.data.last().map(|layer| layer.id + 1).unwrap_or(1)
+    fn next_layer_id(&self) -> LayerId {
+        LayerId(self.data.last().map(|layer| layer.id.0 + 1).unwrap_or(1))
     }
 
     pub fn add(
@@ -97,7 +100,6 @@ impl Layers {
 }
 
 pub type Metadata = serde_json::Map<String, serde_json::Value>;
-pub type Id = i64;
 
 #[derive(Clone, Debug)]
 pub struct Layer {
@@ -107,7 +109,7 @@ pub struct Layer {
     pub projected_bounding_rect: geo_srs::RectWithSrs<f64>,
     pub color: Color,
     pub metadata: Metadata,
-    pub id: Id,
+    pub id: LayerId,
 }
 
 impl Layer {
@@ -118,7 +120,7 @@ impl Layer {
 
     pub fn from_geometry(
         geometry: geo::Geometry<f64>,
-        id: i64,
+        id: LayerId,
         metadata: Option<Metadata>,
         source_projection: &'static str,
         target_projection: &'static str,
