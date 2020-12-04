@@ -106,12 +106,17 @@ fn layer_spawned(
             None => continue,
         };
         let layer_center = layer.projected_bounding_rect.rect.center();
+        // TODO: this scale math is inprecise. it should take into account
+        // .     the height of the geometry. as well as the window size.
+        let scale = layer.projected_bounding_rect.rect.width() / 1_000.;
         // TODO: only change the transform if there were no layers previously
         for (camera,) in camera_query.iter() {
             if let Ok((mut transform,)) = transform_query.get_mut(camera.0) {
                 println!("Moving camera to look at new layer");
                 transform.translation =
                     Vec3::new(layer_center.x as f32, layer_center.y as f32, 0.0);
+                transform.scale =
+                    Vec3::new(scale as f32, scale as f32, 1.0);
             }
         }
     }
