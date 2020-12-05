@@ -10,15 +10,13 @@ static TARGET_PROJECTION: &str = "EPSG:3857";
 // System
 fn load_layers_from_cli(mut events: ResMut<Events<LoadGeoJsonFile>>) {
     for geojson_file_path in rgis_cli::run().unwrap() {
-        for _ in 0..2 {
-            log::debug!(
-                "sending LoadGeoJsonFile event: {}",
-                geojson_file_path.clone()
-            );
-            events.send(LoadGeoJsonFile {
-                path: geojson_file_path.clone(),
-            });
-        }
+        log::debug!(
+            "sending LoadGeoJsonFile event: {}",
+            geojson_file_path.clone()
+        );
+        events.send(LoadGeoJsonFile {
+            path: geojson_file_path,
+        });
     }
 }
 
