@@ -55,6 +55,7 @@ fn layer_loaded(
     events: Res<Events<LayerLoaded>>,
     mut event_reader: Local<EventReader<LayerLoaded>>,
     mut spawned_events: ResMut<Events<LayerSpawned>>,
+    camera_scale: Res<plugins::CameraScale>,
 ) {
     for event in event_reader.iter(&events) {
         let layer = match layers.get(event.0) {
@@ -77,7 +78,19 @@ fn layer_loaded(
             &FillOptions::default(),
         );
 
-        println!("Spawning geometry entity");
+        log::debug!("Spawning geometry fill entity");
+        commands.spawn(sprite_components);
+
+        let material = materials.add(Color::BLACK.into());
+        let sprite_components = geo_lyon::convert(polygon).stroke(
+            material.clone(),
+            &mut meshes,
+            Vec3::new(0.0, 0.0, 0.0).into(),
+            // FIXME: line width is not being calculated correctly here
+            &StrokeOptions::default().with_line_width(1000. * camera_scale.0),
+        );
+
+        log::debug!("Spawning geometry stroke entity");
         commands.spawn(sprite_components);
 
         spawned_events.send(LayerSpawned(event.0));
@@ -96,9 +109,9 @@ impl Plugin for LayerSpawnedPlugin {
 fn layer_spawned(
     events: Res<Events<LayerSpawned>>,
     layers: ResMut<rgis_layers::Layers>,
+    mut camera_offset: ResMut<plugins::CameraOffset>,
+    mut camera_scale: ResMut<plugins::CameraScale>,
     mut event_reader: Local<EventReader<LayerSpawned>>,
-    camera_query: Query<(&crate::Camera,)>,
-    mut transform_query: Query<(&mut Transform,)>,
 ) {
     for event in event_reader.iter(&events) {
         let layer = match layers.get(event.0) {
@@ -110,14 +123,10 @@ fn layer_spawned(
         // .     the height of the geometry. as well as the window size.
         let scale = layer.projected_bounding_rect.rect.width() / 1_000.;
         // TODO: only change the transform if there were no layers previously
-        for (camera,) in camera_query.iter() {
-            if let Ok((mut transform,)) = transform_query.get_mut(camera.0) {
-                println!("Moving camera to look at new layer");
-                transform.translation =
-                    Vec3::new(layer_center.x as f32, layer_center.y as f32, 0.0);
-                transform.scale = Vec3::new(scale as f32, scale as f32, 1.0);
-            }
-        }
+        log::debug!("Moving camera to look at new layer");
+        camera_offset.x = layer_center.x as f32;
+        camera_offset.y = layer_center.y as f32;
+        camera_scale.0 = scale as f32;
     }
 }
 
@@ -156,8 +165,8 @@ fn main() {
         .add_startup_system(setup.system())
         .add_system(load_geojson_file_handler.system())
         .add_system(layer_loaded.system())
-        .add_plugin(plugins::KeyboardCameraMover)
         .add_plugin(LayerSpawnedPlugin)
+        .add_plugin(plugins::KeyboardCameraMover)
         .add_resource(ClearColor(Color::rgb(0.5, 0.5, 0.9)))
         .run();
 }
