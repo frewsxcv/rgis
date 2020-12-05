@@ -10,10 +10,7 @@ static TARGET_PROJECTION: &str = "EPSG:3857";
 // System
 fn load_layers_from_cli(mut events: ResMut<Events<LoadGeoJsonFile>>) {
     for geojson_file_path in rgis_cli::run().unwrap() {
-        log::debug!(
-            "sending LoadGeoJsonFile event: {}",
-            geojson_file_path.clone()
-        );
+        log::debug!("sending LoadGeoJsonFile event: {}", &geojson_file_path,);
         events.send(LoadGeoJsonFile {
             path: geojson_file_path,
         });
@@ -165,6 +162,6 @@ fn main() {
         .add_system(layer_loaded.system())
         .add_plugin(LayerSpawnedPlugin)
         .add_plugin(plugins::KeyboardCameraMover)
-        .add_resource(ClearColor(Color::rgb(0.5, 0.5, 0.9)))
+        .add_resource(ClearColor(Color::WHITE))
         .run();
 }
