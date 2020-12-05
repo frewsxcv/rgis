@@ -16,22 +16,31 @@ pub fn load(
     log::info!("Parsed file: {:?}", geojson_file_path);
     let layer_ids = match geojson {
         geojson::GeoJson::Geometry(g) => {
+            log::info!("Loading GeoJSON Geometry");
             load_geojson_geometry(g, layers, None, source_projection, target_projection)
         }
         geojson::GeoJson::Feature(f) => {
+            log::info!("Loading GeoJSON Feature");
             load_geojson_feature(f, layers, source_projection, target_projection)
         }
         geojson::GeoJson::FeatureCollection(f) => {
-            let mut layer_ids = vec![];
-            for feature in f.features {
-                layer_ids.extend(load_geojson_feature(
-                    feature,
-                    layers,
-                    source_projection,
-                    target_projection,
-                ))
-            }
-            layer_ids
+            let num_features = f.features.len();
+            log::info!(
+                "Loading GeoJSON FeatureCollection ({} features)",
+                num_features
+            );
+            f.features
+                .into_iter()
+                .enumerate()
+                .inspect(|(i, _)| {
+                    if i % 300 == 0 {
+                        log::info!("...Loaded {}%", *i as f32 / num_features as f32);
+                    }
+                })
+                .flat_map(|(_, feature)| {
+                    load_geojson_feature(feature, layers, source_projection, target_projection)
+                })
+                .collect()
         }
     };
     log::info!("Loaded file: {:?}", geojson_file_path);
