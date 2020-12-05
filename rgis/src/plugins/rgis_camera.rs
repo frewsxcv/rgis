@@ -1,15 +1,28 @@
 use bevy::prelude::*;
 
-pub struct KeyboardCameraMover;
+pub struct RgisCamera;
 
-impl Plugin for KeyboardCameraMover {
+impl Plugin for RgisCamera {
     fn build(&self, app: &mut AppBuilder) {
-        app.add_resource(CameraScale(1.))
+
+        app.add_startup_system(setup.system())
+            .add_resource(CameraScale(1.))
             .add_resource(CameraOffset { x: 0., y: 0. })
             .add_system(process_mouse_events.system())
             .add_system(update_camera_offset.system())
             .add_system(update_camera_scale.system());
     }
+}
+
+#[derive(Debug)]
+struct Camera(Entity);
+
+fn setup(mut commands: Commands) {
+    let entity = commands
+        .spawn(Camera2dComponents::default())
+        .current_entity();
+
+    commands.spawn((Camera(entity.expect("could not find entity")),));
 }
 
 const PAN_AMOUNT: f32 = 15.; // Larger number will pan more
@@ -48,7 +61,7 @@ fn process_mouse_events(
 
 fn update_camera_offset(
     camera_offset: ChangedRes<CameraOffset>,
-    camera_query: Query<(&crate::Camera,)>,
+    camera_query: Query<(&Camera,)>,
     mut transform_query: Query<(&mut Transform,)>,
 ) {
     log::debug!("Camera offset changed");
@@ -62,7 +75,7 @@ fn update_camera_offset(
 
 fn update_camera_scale(
     camera_scale: ChangedRes<CameraScale>,
-    camera_query: Query<(&crate::Camera,)>,
+    camera_query: Query<(&Camera,)>,
     mut transform_query: Query<(&mut Transform,)>,
 ) {
     log::debug!("Camera scale changed");

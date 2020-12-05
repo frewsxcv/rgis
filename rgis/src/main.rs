@@ -29,7 +29,6 @@ fn load_geojson_file_handler(
         path: geojson_file_path,
     } in load_event_reader.iter(&load_events)
     {
-        println!("loading {}", geojson_file_path);
         let layer_ids = rgis_file_loader::load(
             geojson_file_path.clone(),
             &mut layers,
@@ -51,7 +50,7 @@ fn layer_loaded(
     events: Res<Events<LayerLoaded>>,
     mut event_reader: Local<EventReader<LayerLoaded>>,
     mut spawned_events: ResMut<Events<LayerSpawned>>,
-    camera_scale: Res<plugins::CameraScale>,
+    camera_scale: Res<plugins::rgis_camera::CameraScale>,
 ) {
     for event in event_reader.iter(&events) {
         let layer = match layers.get(event.0) {
@@ -106,8 +105,8 @@ impl Plugin for LayerSpawnedPlugin {
 fn layer_spawned(
     events: Res<Events<LayerSpawned>>,
     layers: ResMut<rgis_layers::Layers>,
-    mut camera_offset: ResMut<plugins::CameraOffset>,
-    mut camera_scale: ResMut<plugins::CameraScale>,
+    mut camera_offset: ResMut<plugins::rgis_camera::CameraOffset>,
+    mut camera_scale: ResMut<plugins::rgis_camera::CameraScale>,
     mut event_reader: Local<EventReader<LayerSpawned>>,
 ) {
     for event in event_reader.iter(&events) {
@@ -138,17 +137,6 @@ struct LayerLoaded(rgis_layers::LayerId);
 #[derive(Debug)]
 struct LayerSpawned(rgis_layers::LayerId);
 
-#[derive(Debug)]
-struct Camera(Entity);
-
-fn setup(mut commands: Commands) {
-    let entity = commands
-        .spawn(Camera2dComponents::default())
-        .current_entity();
-
-    commands.spawn((Camera(entity.expect("could not find entity")),));
-}
-
 fn main() {
     env_logger::init();
 
@@ -159,11 +147,10 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_resource(rgis_layers::Layers::new())
         .add_startup_system(load_layers_from_cli.system())
-        .add_startup_system(setup.system())
         .add_system(load_geojson_file_handler.system())
         .add_system(layer_loaded.system())
         .add_plugin(LayerSpawnedPlugin)
-        .add_plugin(plugins::KeyboardCameraMover)
+        .add_plugin(plugins::rgis_camera::RgisCamera)
         .add_resource(ClearColor(Color::WHITE))
         .run();
 }
