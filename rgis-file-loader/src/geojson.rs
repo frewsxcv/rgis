@@ -63,36 +63,36 @@ fn load_geojson_geometry(
 
     match geojson_value {
         g @ geojson::Value::LineString(_) => {
-            let g = (g.try_into().ok() as Option<geo::LineString<f64>>).unwrap();
+            let g = (g.try_into().ok() as Option<geo_types::LineString<f64>>).unwrap();
             vec![layers.add(
-                geo::Geometry::LineString(g),
+                geo_types::Geometry::LineString(g),
                 metadata,
                 source_projection,
                 target_projection,
             )]
         }
         g @ geojson::Value::Polygon(_) => {
-            let g = (g.try_into().ok() as Option<geo::Polygon<f64>>).unwrap();
+            let g = (g.try_into().ok() as Option<geo_types::Polygon<f64>>).unwrap();
             vec![layers.add(
-                geo::Geometry::Polygon(g),
+                geo_types::Geometry::Polygon(g),
                 metadata,
                 source_projection,
                 target_projection,
             )]
         }
         g @ geojson::Value::MultiLineString(_) => {
-            let g = (g.try_into().ok() as Option<geo::MultiLineString<f64>>).unwrap();
+            let g = (g.try_into().ok() as Option<geo_types::MultiLineString<f64>>).unwrap();
             vec![layers.add(
-                geo::Geometry::MultiLineString(g),
+                geo_types::Geometry::MultiLineString(g),
                 metadata,
                 source_projection,
                 target_projection,
             )]
         }
         g @ geojson::Value::MultiPolygon(_) => {
-            let g = (g.try_into().ok() as Option<geo::MultiPolygon<f64>>).unwrap();
+            let g = (g.try_into().ok() as Option<geo_types::MultiPolygon<f64>>).unwrap();
             vec![layers.add(
-                geo::Geometry::MultiPolygon(g),
+                geo_types::Geometry::MultiPolygon(g),
                 metadata,
                 source_projection,
                 target_projection,

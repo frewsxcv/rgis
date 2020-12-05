@@ -5,5 +5,5 @@ authors = ["Corey Farwell <coreyf@rwell.org>"]
 edition = "2018"
 
 [dependencies]
-geo-types = "*"
+geo-types = "0.6"
 bevy_prototype_lyon = "*"

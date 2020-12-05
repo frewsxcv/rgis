@@ -1746,19 +1746,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "geo"
-version = "0.16.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d893ed768bba4866e3e16b756c96ed7ef23ca270eac190000fc4e40c5d733467"
-dependencies = [
- "geo-types",
- "geographiclib-rs",
- "num-traits",
- "robust",
- "rstar",
-]
-
-[[package]]
 name = "geo-lyon"
 version = "0.1.0"
 dependencies = [
@@ -1770,7 +1757,7 @@ dependencies = [
 name = "geo-srs"
 version = "0.1.0"
 dependencies = [
- "geo 0.15.0",
+ "geo",
  "num-traits",
  "proj",
 ]
@@ -3190,7 +3177,7 @@ dependencies = [
  "bevy",
  "bevy_prototype_lyon",
  "env_logger 0.8.2",
- "geo 0.15.0",
+ "geo",
  "geo-lyon",
  "geo-srs",
  "geojson",
@@ -3208,7 +3195,7 @@ version = "0.1.0"
 name = "rgis-file-loader"
 version = "0.1.0"
 dependencies = [
- "geo 0.16.0",
+ "geo-types",
  "geojson",
  "log",
  "rayon",
@@ -3221,7 +3208,7 @@ name = "rgis-layers"
 version = "0.1.0"
 dependencies = [
  "colorous",
- "geo 0.15.0",
+ "geo",
  "geo-srs",
  "log",
  "serde_json",
