@@ -34,12 +34,18 @@ fn polygon_path_builder(polygon: &geo_types::Polygon<f64>, path_builder: &mut Pa
     }
 }
 
-fn ring_path_builder(ring_line_string: &geo_types::LineString<f64>, path_builder: &mut PathBuilder) {
+fn ring_path_builder(
+    ring_line_string: &geo_types::LineString<f64>,
+    path_builder: &mut PathBuilder,
+) {
     coords_path_builder(ring_line_string.0.iter().copied(), path_builder);
     path_builder.close();
 }
 
-fn coords_path_builder(mut iter: impl Iterator<Item = geo_types::Coordinate<f64>>, path_builder: &mut PathBuilder) {
+fn coords_path_builder(
+    mut iter: impl Iterator<Item = geo_types::Coordinate<f64>>,
+    path_builder: &mut PathBuilder,
+) {
     let first = match iter.next() {
         Some(coord) => coord,
         None => return,

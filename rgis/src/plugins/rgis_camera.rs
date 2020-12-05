@@ -4,7 +4,6 @@ pub struct RgisCamera;
 
 impl Plugin for RgisCamera {
     fn build(&self, app: &mut AppBuilder) {
-
         app.add_startup_system(setup.system())
             .add_resource(CameraScale(1.))
             .add_resource(CameraOffset { x: 0., y: 0. })

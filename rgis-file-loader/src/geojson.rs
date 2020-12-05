@@ -24,7 +24,12 @@ pub fn load(
         geojson::GeoJson::FeatureCollection(f) => {
             let mut layer_ids = vec![];
             for feature in f.features {
-                layer_ids.extend(load_geojson_feature(feature, layers, source_projection, target_projection))
+                layer_ids.extend(load_geojson_feature(
+                    feature,
+                    layers,
+                    source_projection,
+                    target_projection,
+                ))
             }
             layer_ids
         }
