@@ -1,19 +1,47 @@
 use bevy_prototype_lyon::prelude::*;
 
-// TODO: interiors
-pub fn convert(g: &geo_types::Polygon<f64>) -> Path {
-    let mut path_builder = PathBuilder::new();
+pub trait ToPath {
+    fn to_path(&self) -> Path;
+}
 
-    let mut exterior_iter = g.exterior().0.iter();
+impl ToPath for geo_types::Polygon<f64> {
+    fn to_path(&self) -> Path {
+        // TODO: interiors
+        let mut path_builder = PathBuilder::new();
 
-    let first = exterior_iter.next().unwrap();
-    path_builder.move_to(point(first.x as f32, first.y as f32));
+        let mut exterior_iter = self.exterior().0.iter();
 
-    for coord in exterior_iter {
-        path_builder.line_to(point(coord.x as f32, coord.y as f32))
+        let first = exterior_iter.next().unwrap();
+        path_builder.move_to(point(first.x as f32, first.y as f32));
+
+        for coord in exterior_iter {
+            path_builder.line_to(point(coord.x as f32, coord.y as f32))
+        }
+
+        path_builder.close();
+
+        path_builder.build()
     }
+}
 
-    path_builder.close();
+impl ToPath for geo_types::MultiPolygon<f64> {
+    fn to_path(&self) -> Path {
+        // TODO: interiors
+        let mut path_builder = PathBuilder::new();
 
-    path_builder.build()
+        for polygon in &self.0 {
+            let mut exterior_iter = polygon.exterior().0.iter();
+
+            let first = exterior_iter.next().unwrap();
+            path_builder.move_to(point(first.x as f32, first.y as f32));
+
+            for coord in exterior_iter {
+                path_builder.line_to(point(coord.x as f32, coord.y as f32))
+            }
+
+            path_builder.close();
+        }
+
+        path_builder.build()
+    }
 }

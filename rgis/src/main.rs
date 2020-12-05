@@ -1,5 +1,6 @@
 use bevy::{prelude::*, render::pass::ClearColor};
 use bevy_prototype_lyon::prelude::*;
+use geo_lyon::ToPath;
 
 mod plugins;
 
@@ -60,13 +61,14 @@ fn layer_loaded(
         let material =
             materials.add(Color::rgb_u8(layer.color.0, layer.color.1, layer.color.2).into());
         // TODO: dont assume it's a polygon
-        let polygon = match layer.projected_geometry.geometry {
-            geo::Geometry::Polygon(ref p) => p,
+        let path = match layer.projected_geometry.geometry {
+            geo::Geometry::Polygon(ref g) => g.to_path(),
+            geo::Geometry::MultiPolygon(ref g) => g.to_path(),
             _ => continue,
         };
 
         println!("Building sprite from geometry");
-        let sprite_components = geo_lyon::convert(polygon).fill(
+        let sprite_components = path.fill(
             material.clone(),
             &mut meshes,
             Vec3::new(0.0, 0.0, 0.0).into(),
@@ -77,7 +79,7 @@ fn layer_loaded(
         commands.spawn(sprite_components);
 
         let material = materials.add(Color::BLACK.into());
-        let sprite_components = geo_lyon::convert(polygon).stroke(
+        let sprite_components = path.stroke(
             material.clone(),
             &mut meshes,
             Vec3::new(0.0, 0.0, 0.0).into(),
