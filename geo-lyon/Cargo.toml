@@ -7,3 +7,4 @@ edition = "2018"
 [dependencies]
 geo-types = "0.6"
 bevy_prototype_lyon = "*"
+log = "0.4"

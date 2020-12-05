@@ -18,11 +18,43 @@ impl ToPath for geo_types::MultiPolygon<f64> {
     fn to_path(&self) -> Path {
         let mut path_builder = PathBuilder::new();
 
-        for polygon in &self.0 {
-            polygon_path_builder(polygon, &mut path_builder);
-        }
+        multi_polygon_path_builder(self, &mut path_builder);
 
         path_builder.build()
+    }
+}
+
+impl ToPath for geo_types::GeometryCollection<f64> {
+    fn to_path(&self) -> Path {
+        let mut path_builder = PathBuilder::new();
+
+        geometry_collection_path_builder(self, &mut path_builder);
+
+        path_builder.build()
+    }
+}
+
+fn geometry_collection_path_builder(geometry_collection: &geo_types::GeometryCollection<f64>, path_builder: &mut PathBuilder) {
+    for geometry_collection in &geometry_collection.0 {
+        geometry_path_builder(geometry_collection, path_builder)
+    }
+}
+
+fn geometry_path_builder(geometry: &geo_types::Geometry<f64>, path_builder: &mut PathBuilder) {
+    match geometry {
+        geo_types::Geometry::Polygon(g) => polygon_path_builder(g, path_builder),
+        geo_types::Geometry::MultiPolygon(g) => multi_polygon_path_builder(g, path_builder),
+        geo_types::Geometry::GeometryCollection(g) => geometry_collection_path_builder(g, path_builder),
+        _ => {
+            log::error!("Encountered a geometry type we don’t know how to render");
+            return
+        }
+    }
+}
+
+fn multi_polygon_path_builder(multi_polygon: &geo_types::MultiPolygon<f64>, path_builder: &mut PathBuilder) {
+    for polygon in &multi_polygon.0 {
+        polygon_path_builder(polygon, path_builder);
     }
 }
 

@@ -14,6 +14,17 @@ pub fn load(
     log::info!("Parsing file: {:?}", geojson_file_path);
     let geojson: geojson::GeoJson = serde_json::from_reader(geojson_file).unwrap();
     log::info!("Parsed file: {:?}", geojson_file_path);
+    let geo_geometry_collection: geo_types::GeometryCollection<f64> = geojson::quick_collection(&geojson).unwrap();
+    log::info!("Converted to geo-types (Geometry count: {})", geo_geometry_collection.len());
+    let layer_id = layers.add(
+        geo_types::Geometry::GeometryCollection(geo_geometry_collection),
+        None,
+        source_projection,
+        target_projection,
+    );
+    log::info!("Added new layer");
+    vec![layer_id]
+    /*
     let layer_ids = match geojson {
         geojson::GeoJson::Geometry(g) => {
             log::info!("Loading GeoJSON Geometry");
@@ -45,6 +56,7 @@ pub fn load(
     };
     log::info!("Loaded file: {:?}", geojson_file_path);
     layer_ids
+    */
 }
 
 fn load_geojson_feature(

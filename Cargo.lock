@@ -1742,6 +1742,7 @@ version = "0.1.0"
 dependencies = [
  "bevy_prototype_lyon",
  "geo-types",
+ "log",
 ]
 
 [[package]]

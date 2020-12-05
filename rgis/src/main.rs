@@ -59,14 +59,19 @@ fn layer_loaded(
         };
         let material =
             materials.add(Color::rgb_u8(layer.color.0, layer.color.1, layer.color.2).into());
-        // TODO: dont assume it's a polygon
+
+        log::info!("Building Path for new layer");
         let path = match layer.projected_geometry.geometry {
             geo::Geometry::Polygon(ref g) => g.to_path(),
             geo::Geometry::MultiPolygon(ref g) => g.to_path(),
-            _ => continue,
+            geo::Geometry::GeometryCollection(ref g) => g.to_path(),
+            _ => {
+                log::error!("Encountered a Geometry type we can’t render yet");
+                continue;
+            },
         };
 
-        println!("Building sprite from geometry");
+        println!("Building Sprite from Path");
         let sprite_components = path.fill(
             material.clone(),
             &mut meshes,

@@ -8,3 +8,7 @@ members = [
     "rgis-file-loader",
     "rgis-layers",
 ]
+
+
+[profile.release]
+debug = true
