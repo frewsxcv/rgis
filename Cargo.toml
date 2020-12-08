@@ -14,3 +14,6 @@ members = [
 
 [profile.release]
 debug = true
+
+[patch.crates-io]
+geo-types = { path = '../../georust/geo/geo-types' }

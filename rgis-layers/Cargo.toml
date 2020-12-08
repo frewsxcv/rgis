@@ -11,4 +11,5 @@ colorous = "1"
 geo = "0.15"
 geo-srs = { path = "../geo-srs" }
 log = "0.4"
+time-logger = { path = "../time-logger" }
 serde_json = "1"

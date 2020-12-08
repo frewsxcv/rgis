@@ -142,7 +142,11 @@ impl Layer {
         };
 
         let mut projected_geometry = unprojected_geometry.clone();
+
+        let tl = time_logger::start("Reprojecting");
         projected_geometry.reproject(target_projection);
+        tl.finish();
+
         let projected_bounding_rect = geo_srs::RectWithSrs {
             rect: projected_geometry
                 .geometry
