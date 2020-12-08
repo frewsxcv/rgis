@@ -1,10 +1,10 @@
 [package]
-name = "geo-lyon"
+name = "geo-earcutr"
 version = "0.1.0"
 authors = ["Corey Farwell <coreyf@rwell.org>"]
 edition = "2018"
+publish = false
 
 [dependencies]
 geo-types = "0.6"
-bevy_prototype_lyon = { path = "../bevy_prototype_lyon" }
-log = "0.4"
+earcutr = { git = "https://github.com/donbright/earcutr.git" }

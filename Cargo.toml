@@ -1,6 +1,9 @@
 [workspace]
 
 members = [
+    "bevy_prototype_lyon",
+    "bevy-earcutr",
+    "geo-earcutr",
     "geo-lyon",
     "geo-srs",
     "rgis",

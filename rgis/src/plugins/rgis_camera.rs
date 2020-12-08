@@ -16,9 +16,9 @@ impl Plugin for RgisCamera {
 #[derive(Debug)]
 struct Camera(Entity);
 
-fn setup(mut commands: Commands) {
+fn setup(commands: &mut Commands) {
     let entity = commands
-        .spawn(Camera2dComponents::default())
+        .spawn(Camera2dBundle::default())
         .current_entity();
 
     commands.spawn((Camera(entity.expect("could not find entity")),));

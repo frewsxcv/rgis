@@ -5,8 +5,8 @@ authors = ["Corey Farwell <coreyf@rwell.org>"]
 edition = "2018"
 
 [dependencies]
-bevy = "0.3"
-bevy_prototype_lyon = "0.1"
+bevy = { git = "https://github.com/bevyengine/bevy.git" }
+bevy_prototype_lyon = { path = "../bevy_prototype_lyon" }
 env_logger = "0.8"
 geo = { version = "0.15" }
 geojson = { version = "0.20", features = ['geo-types'] }

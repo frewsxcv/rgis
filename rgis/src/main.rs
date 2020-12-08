@@ -43,7 +43,7 @@ fn load_geojson_file_handler(
 
 // System
 fn layer_loaded(
-    mut commands: Commands,
+    commands: &mut Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     layers: Res<rgis_layers::Layers>,
