@@ -8,3 +8,10 @@ publish = false
 [dependencies]
 geo-types = "0.6"
 earcutr = { git = "https://github.com/donbright/earcutr.git" }
+
+[dev-dependencies]
+criterion = "0.3"
+
+[[bench]]
+name = "big_polygon"
+harness = false
