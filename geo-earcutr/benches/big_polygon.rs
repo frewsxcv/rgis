@@ -13,7 +13,6 @@ fn norway_no_interiors() -> geo_types::Polygon<f64> {
 }
 
 fn norway_with_interiors() -> geo_types::Polygon<f64> {
-    let points = include!("data/norway.rs");
     geo_types::Polygon::new(
         norway_border(),
         vec![
@@ -40,7 +39,7 @@ fn criterion_benchmark(c: &mut Criterion) {
     });
 
     c.bench_function("triangulate norway (with interiors)", |b| {
-        let norway = norway_no_interiors();
+        let norway = norway_with_interiors();
         b.iter(|| triangulate(black_box(&norway)))
     });
 }
