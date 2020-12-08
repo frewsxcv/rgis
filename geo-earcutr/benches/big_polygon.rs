@@ -1,4 +1,4 @@
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use criterion::{BenchmarkId, criterion_group, criterion_main, Criterion};
 
 // Norway border
 fn norway_border() -> geo_types::LineString<f64> {
@@ -33,15 +33,15 @@ fn triangulate(polygon: &geo_types::Polygon<f64>) {
 }
 
 fn criterion_benchmark(c: &mut Criterion) {
-    c.bench_function("triangulate norway (no interiors)", |b| {
-        let norway = norway_no_interiors();
-        b.iter(|| triangulate(black_box(&norway)))
+    c.bench_with_input(BenchmarkId::new("Triangulate Norway", "no interiors"), &norway_no_interiors(), |b, norway| {
+        b.iter(|| triangulate(norway));
     });
 
-    c.bench_function("triangulate norway (with interiors)", |b| {
-        let norway = norway_with_interiors();
-        b.iter(|| triangulate(black_box(&norway)))
+    /*
+    c.bench_with_input(BenchmarkId::new("Triangulate Norway", "with interiors"), &norway_with_interiors(), |b, norway| {
+        b.iter(|| triangulate(norway));
     });
+    */
 }
 
 criterion_group!(benches, criterion_benchmark);
