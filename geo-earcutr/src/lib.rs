@@ -32,16 +32,14 @@ pub trait Triangulate {
 
 impl Triangulate for geo_types::Polygon<f64> {
     fn triangulate_raw(&self) -> (Vec<usize>, Vec<f64>) {
-        // TODO: better Vec preallocation
-        //let mut vertices = vec![0; polygon_num_coords(self) * 2];
         let mut vertices = Vec::with_capacity(polygon_num_coords(self) * 2);
         let mut interior_indices = Vec::with_capacity(self.interiors().len());
 
-        vertices.append(&mut flat_line_string_coords(self.exterior()));
+        flat_line_string_coords_2(self.exterior(), &mut vertices);
 
         for interior in self.interiors() {
             interior_indices.push(vertices.len() / 2);
-            vertices.append(&mut flat_line_string_coords(interior));
+            flat_line_string_coords_2(interior, &mut vertices);
         }
 
         (
@@ -59,13 +57,9 @@ fn polygon_num_coords(polygon: &geo_types::Polygon<f64>) -> usize {
             .sum::<usize>()
 }
 
-// TODO: should this return an ExactSizeIterator?
-// TODO: actually maybe it should take a &mut [f64] as an arg
-fn flat_line_string_coords(line_string: &geo_types::LineString<f64>) -> Vec<f64> {
-    let mut v = Vec::with_capacity(line_string.0.len() * 2);
-    for coord in line_string.0.iter() {
-        v.push(coord.x);
-        v.push(coord.y);
+fn flat_line_string_coords_2(line_string: &geo_types::LineString<f64>, vertices: &mut Vec<f64>) {
+    for coord in &line_string.0 {
+        vertices.push(coord.x);
+        vertices.push(coord.y);
     }
-    v
 }
