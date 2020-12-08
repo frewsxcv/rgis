@@ -35,12 +35,12 @@ impl Triangulate for geo_types::Polygon<f64> {
     fn triangulate_raw(&self) -> (Vec<usize>, Vec<f64>) {
         // TODO: better Vec preallocation
         let mut vertices = vec![];
-        let mut interior_indexes = Vec::with_capacity(self.interiors().len());
+        let mut interior_indices = Vec::with_capacity(self.interiors().len());
 
         vertices.append(&mut flat_line_string_coords(self.exterior()));
 
         for interior in self.interiors() {
-            interior_indexes.push(vertices.len() / 2);
+            interior_indices.push(vertices.len() / 2);
             vertices.append(&mut flat_line_string_coords(interior));
         }
 
