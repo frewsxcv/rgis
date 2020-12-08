@@ -62,37 +62,24 @@ fn layer_loaded(
             materials.add(Color::rgb_u8(layer.color.0, layer.color.1, layer.color.2).into());
 
         /////////////
-        fn triangulate_polygon(polygon: &geo::Polygon<f64>, index_base: &mut usize, indices: &mut Vec<usize>, vertices: &mut Vec<f64>) {
-            let (mut new_indices, mut new_vertices) = polygon.triangulate_raw_with_index_base(*index_base);
-            *index_base = *index_base + new_vertices.len() / 2;
-            indices.append(&mut new_indices);
-            vertices.append(&mut new_vertices);
-        }
-        use geo_earcutr::Triangulate;
-        let mut index_base = 0usize;
-        let mut vertices = vec![];
-        let mut indices = vec![];
+        // fn triangulate_polygon(polygon: &geo::Polygon<f64>, index_base: &mut usize, indices: &mut Vec<usize>, vertices: &mut Vec<f64>) {
+        //     let (mut new_indices, mut new_vertices) = polygon.triangulate_raw_with_index_base(*index_base);
+        //     *index_base = *index_base + new_vertices.len() / 2;
+        //     indices.append(&mut new_indices);
+        //     vertices.append(&mut new_vertices);
+        // }
+        let mut builder = geo_earcutr::Builder::new();
         match &layer.projected_geometry.geometry {
             geo::Geometry::GeometryCollection(geometry_collection) => {
                 for g in geometry_collection {
                     // TODO: combine meshes. each geometrycollection should be one mesh
                     match g {
                         geo::Geometry::Polygon(polygon) => {
-                            triangulate_polygon(
-                                polygon,
-                                &mut index_base,
-                                &mut indices,
-                                &mut vertices,
-                            );
+                            builder.add_geometry(polygon);
                         }
                         geo::Geometry::MultiPolygon(multi_polygon) => {
                             for polygon in &multi_polygon.0 {
-                                triangulate_polygon(
-                                    polygon,
-                                    &mut index_base,
-                                    &mut indices,
-                                    &mut vertices,
-                                );
+                                builder.add_geometry(polygon);
                             }
                         }
                         _ => (),
@@ -101,7 +88,7 @@ fn layer_loaded(
             }
             _ => (),
         };
-        let mesh = bevy_earcutr::build_mesh_from_earcutr(indices, vertices);
+        let mesh = bevy_earcutr::build_mesh_from_earcutr(builder.indices, builder.vertices);
         bevy_earcutr::spawn_mesh(mesh, material, &mut meshes, commands);
         /////////////
 
