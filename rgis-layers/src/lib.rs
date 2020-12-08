@@ -129,24 +129,6 @@ impl Layer {
         source_projection: &'static str,
         target_projection: &'static str,
     ) -> Self {
-        use geo_earcutr::Triangulate;
-        match &mut geometry {
-            geo::Geometry::GeometryCollection(geometry_collection) => {
-                let mut v = vec![];
-                for g in geometry_collection {
-                    match g {
-                        geo::Geometry::Polygon(p) => {
-                            for triangle in p.triangulate() {
-                                v.push(geo::Geometry::Triangle(triangle));
-                            }
-                        },
-                        p => v.push(p.clone()),
-                    }
-                }
-                geometry = geo::Geometry::GeometryCollection(geo::GeometryCollection(v));
-            },
-            _ => (),
-        };
         let unprojected_geometry = geo_srs::GeometryWithSrs {
             geometry,
             srs: source_projection,

@@ -3268,7 +3268,6 @@ version = "0.1.0"
 dependencies = [
  "colorous",
  "geo",
- "geo-earcutr",
  "geo-srs",
  "log",
  "serde_json",

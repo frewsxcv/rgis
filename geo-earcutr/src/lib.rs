@@ -1,9 +1,10 @@
 pub trait Triangulate {
+    fn triangulate_raw(&self) -> (Vec<usize>, Vec<f64>);
     fn triangulate(&self) -> Vec<geo_types::Triangle<f64>>;
 }
 
 impl Triangulate for geo_types::Polygon<f64> {
-    fn triangulate(&self) -> Vec<geo_types::Triangle<f64>> {
+    fn triangulate_raw(&self) -> (Vec<usize>, Vec<f64>) {
         // TODO: better Vec preallocation
         let mut vertices = vec![];
         let mut interior_indexes = Vec::with_capacity(self.interiors().len());
@@ -15,13 +16,17 @@ impl Triangulate for geo_types::Polygon<f64> {
             vertices.append(&mut flat_line_string_coords(interior));
         }
 
-        let result = earcutr::earcut(
-            &vertices, &interior_indexes, 2
-        );
+        (
+            earcutr::earcut(&vertices, &interior_indexes, 2),
+            vertices,
+        )
+    }
 
+    fn triangulate(&self) -> Vec<geo_types::Triangle<f64>> {
         let mut triangles = vec![];
+        let (indices, vertices) = self.triangulate_raw();
 
-        for index in result.chunks(3) {
+        for index in indices.chunks(3) {
             triangles.push(
                 geo_types::Triangle(
                     geo_types::Coordinate {
