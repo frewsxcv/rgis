@@ -44,7 +44,7 @@ impl Triangulate for geo_types::Polygon<f64> {
         }
 
         (
-            earcutr::earcut(&vertices, &interior_indexes, 2),
+            earcutr::earcut(&vertices, &interior_indices, 2),
             vertices,
         )
     }
