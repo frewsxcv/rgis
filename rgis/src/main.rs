@@ -63,6 +63,8 @@ fn layer_loaded(
 
         /////////////
         let mut builder = geo_earcutr::Builder::new();
+        let instant = std::time::Instant::now();
+        log::info!("Triangulating: Started...");
         match &layer.projected_geometry.geometry {
             geo::Geometry::GeometryCollection(geometry_collection) => {
                 for g in geometry_collection {
@@ -81,7 +83,13 @@ fn layer_loaded(
             }
             _ => (),
         };
+        log::info!("Triangulating: Done ({:?})", instant.elapsed());
+
+        let instant = std::time::Instant::now();
+        log::info!("Building mesh: Started...");
         let mesh = bevy_earcutr::build_mesh_from_earcutr(builder.indices, builder.vertices);
+        log::info!("Building mesh: Done ({:?})", instant.elapsed());
+
         bevy_earcutr::spawn_mesh(mesh, material, &mut meshes, commands);
         /////////////
 
