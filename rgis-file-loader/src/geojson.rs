@@ -9,20 +9,27 @@ pub fn load(
     source_projection: &'static str,
     target_projection: &'static str,
 ) -> Vec<rgis_layers::LayerId> {
-    log::info!("Opening file: {:?}", geojson_file_path);
+    let tl = time_logger::start(format!("Opening file: {:?}", geojson_file_path));
     let geojson_file = io::BufReader::new(fs::File::open(&geojson_file_path).expect("TODO"));
-    log::info!("Parsing file: {:?}", geojson_file_path);
+    tl.finish();
+
+    let tl = time_logger::start(format!("Parsing file: {:?}", geojson_file_path));
     let geojson: geojson::GeoJson = serde_json::from_reader(geojson_file).unwrap();
-    log::info!("Parsed file: {:?}", geojson_file_path);
+    tl.finish();
+
+    let tl = time_logger::start(format!("Converting to geo-types: {:?}", geojson_file_path));
     let geo_geometry_collection: geo_types::GeometryCollection<f64> = geojson::quick_collection(&geojson).unwrap();
-    log::info!("Converted to geo-types (Geometry count: {})", geo_geometry_collection.len());
+    tl.finish();
+
+    let tl = time_logger::start(format!("Adding new layer: {:?}", geojson_file_path));
     let layer_id = layers.add(
         geo_types::Geometry::GeometryCollection(geo_geometry_collection),
         None,
         source_projection,
         target_projection,
     );
-    log::info!("Added new layer");
+    tl.finish();
+
     vec![layer_id]
     /*
     let layer_ids = match geojson {

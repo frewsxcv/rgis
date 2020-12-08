@@ -1,7 +1,6 @@
 use bevy::{prelude::*, render::pass::ClearColor};
 // use bevy_prototype_lyon::prelude::*;
 // use geo_lyon::ToPath;
-use std::time;
 
 mod plugins;
 
@@ -43,25 +42,6 @@ fn load_geojson_file_handler(
     }
 }
 
-struct TimeLogger {
-    title: &'static str,
-    duration: time::Instant,
-}
-
-impl TimeLogger {
-    fn start(title: &'static str) -> Self {
-        log::info!("{}: started", title);
-        TimeLogger {
-            title: title,
-            duration: time::Instant::now(),
-        }
-    }
-
-    fn finish(self) {
-        log::info!("{}: done ({:?})", self.title, self.duration.elapsed());
-    }
-}
-
 // System
 fn layer_loaded(
     commands: &mut Commands,
@@ -84,7 +64,7 @@ fn layer_loaded(
         /////////////
         let mut builder = geo_earcutr::Builder::new();
 
-        let tl = TimeLogger::start("Triangulating");
+        let tl = time_logger::start("Triangulating");
         match &layer.projected_geometry.geometry {
             geo::Geometry::GeometryCollection(geometry_collection) => {
                 for g in geometry_collection {
@@ -105,7 +85,7 @@ fn layer_loaded(
         };
         tl.finish();
 
-        let tl = TimeLogger::start("Building mesh");
+        let tl = time_logger::start("Building mesh");
         let mesh = bevy_earcutr::build_mesh_from_earcutr(builder.indices, builder.vertices);
         tl.finish();
 

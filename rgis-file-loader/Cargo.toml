@@ -11,3 +11,4 @@ log = "0.4"
 rayon = "1"
 rgis-layers = { path = "../rgis-layers" }
 serde_json = "1"
+time-logger = { path = "../time-logger" }

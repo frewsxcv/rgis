@@ -3248,6 +3248,7 @@ dependencies = [
  "rgis-cli",
  "rgis-file-loader",
  "rgis-layers",
+ "time-logger",
 ]
 
 [[package]]
@@ -3264,6 +3265,7 @@ dependencies = [
  "rayon",
  "rgis-layers",
  "serde_json",
+ "time-logger",
 ]
 
 [[package]]
@@ -3780,6 +3782,13 @@ dependencies = [
  "libc",
  "wasi 0.10.0+wasi-snapshot-preview1",
  "winapi 0.3.9",
+]
+
+[[package]]
+name = "time-logger"
+version = "0.1.0"
+dependencies = [
+ "log",
 ]
 
 [[package]]

@@ -18,3 +18,4 @@ log = "0.4"
 rgis-cli = { path = "../rgis-cli" }
 rgis-file-loader = { path = "../rgis-file-loader" }
 rgis-layers = { path = "../rgis-layers" }
+time-logger = { path = "../time-logger" }
