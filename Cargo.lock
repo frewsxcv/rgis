@@ -3236,6 +3236,7 @@ dependencies = [
  "bevy_prototype_lyon",
  "env_logger 0.8.2",
  "geo",
+ "geo-earcutr",
  "geo-lyon",
  "geo-srs",
  "geojson",
@@ -3267,6 +3268,7 @@ version = "0.1.0"
 dependencies = [
  "colorous",
  "geo",
+ "geo-earcutr",
  "geo-srs",
  "log",
  "serde_json",

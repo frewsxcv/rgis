@@ -9,6 +9,7 @@ edition = "2018"
 [dependencies]
 colorous = "1"
 geo = "0.15"
+geo-earcutr = { path = "../geo-earcutr" }
 geo-srs = { path = "../geo-srs" }
 log = "0.4"
 serde_json = "1"

@@ -60,6 +60,7 @@ fn layer_loaded(
         let material =
             materials.add(Color::rgb_u8(layer.color.0, layer.color.1, layer.color.2).into());
 
+        // TODO render triangles
         log::info!("Building Path for new layer");
         let path = match layer.projected_geometry.geometry {
             geo::Geometry::Polygon(ref g) => g.to_path(),

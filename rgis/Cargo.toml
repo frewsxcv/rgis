@@ -10,6 +10,7 @@ bevy_prototype_lyon = { path = "../bevy_prototype_lyon" }
 env_logger = "0.8"
 geo = { version = "0.15" }
 geojson = { version = "0.20", features = ['geo-types'] }
+geo-earcutr = { path = "../geo-earcutr" }
 geo-lyon = { path = "../geo-lyon" }
 geo-srs = { path = "../geo-srs" }
 log = "0.4"

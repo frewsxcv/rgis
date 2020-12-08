@@ -1,9 +1,9 @@
 pub trait Triangulate {
-    fn traingulate(&self) -> Vec<geo_types::Triangle<f64>>;
+    fn triangulate(&self) -> Vec<geo_types::Triangle<f64>>;
 }
 
 impl Triangulate for geo_types::Polygon<f64> {
-    fn traingulate(&self) -> Vec<geo_types::Triangle<f64>> {
+    fn triangulate(&self) -> Vec<geo_types::Triangle<f64>> {
         // TODO: better Vec preallocation
         let mut vertices = vec![];
         let mut interior_indexes = Vec::with_capacity(self.interiors().len());
