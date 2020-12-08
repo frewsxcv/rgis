@@ -28,7 +28,6 @@ impl Builder {
 
 pub trait Triangulate {
     fn triangulate_raw(&self) -> (Vec<usize>, Vec<f64>);
-    // fn triangulate(&self, usize) -> Vec<geo_types::Triangle<f64>>;
 }
 
 impl Triangulate for geo_types::Polygon<f64> {
@@ -49,34 +48,6 @@ impl Triangulate for geo_types::Polygon<f64> {
             vertices,
         )
     }
-
-    /*
-    fn triangulate(&self) -> Vec<geo_types::Triangle<f64>> {
-        let mut triangles = vec![];
-        let (indices, vertices) = self.triangulate_raw();
-
-        for index in indices.chunks(3) {
-            triangles.push(
-                geo_types::Triangle(
-                    geo_types::Coordinate {
-                        x: vertices[index[0] * 2],
-                        y: vertices[index[0] * 2 + 1],
-                    },
-                    geo_types::Coordinate {
-                        x: vertices[index[1] * 2],
-                        y: vertices[index[1] * 2 + 1],
-                    },
-                    geo_types::Coordinate {
-                        x: vertices[index[2] * 2],
-                        y: vertices[index[2] * 2 + 1],
-                    },
-                )
-            );
-        }
-
-        triangles
-    }
-    */
 }
 
 // TODO: should this return an ExactSizeIterator?
