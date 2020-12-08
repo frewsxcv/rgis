@@ -11,7 +11,7 @@ impl Triangulate for geo_types::Polygon<f64> {
         vertices.append(&mut flat_line_string_coords(self.exterior()));
 
         for interior in self.interiors() {
-            interior_indexes.push(vertices.len());
+            interior_indexes.push(vertices.len() / 2);
             vertices.append(&mut flat_line_string_coords(interior));
         }
 
