@@ -1,6 +1,6 @@
 use bevy::{prelude::*, render::pass::ClearColor};
-use bevy_prototype_lyon::prelude::*;
-use geo_lyon::ToPath;
+// use bevy_prototype_lyon::prelude::*;
+// use geo_lyon::ToPath;
 
 mod plugins;
 
@@ -62,51 +62,37 @@ fn layer_loaded(
             materials.add(Color::rgb_u8(layer.color.0, layer.color.1, layer.color.2).into());
 
         /////////////
-        fn add_mesh(
-            polygon: &geo::Polygon<f64>,
-            material: Handle<ColorMaterial>,
-            meshes: &mut Assets<Mesh>,
-            commands: &mut Commands,
-        ) {
-            let (indices, vertices) = polygon.triangulate_raw();
-            println!("{:?}", (indices.len(), vertices.len()));
-            let indices = indices
-                .into_iter()
-                .map(|n| u32::try_from(n).unwrap())
-                .collect::<Vec<_>>();
-            let vertices = vertices
-                .chunks(2)
-                .map(|n| [n[0] as f32, n[1] as f32])
-                .collect::<Vec<_>>();
-            let mesh = build_mesh(indices, vertices);
-            let sprite = SpriteBundle {
-                material: material,
-                mesh: meshes.add(mesh),
-                sprite: Sprite {
-                    size: Vec2::new(1.0, 1.0),
-                    ..Default::default()
-                },
-                ..Default::default()
-            };
-            commands.spawn(sprite);
+        fn triangulate_polygon(polygon: &geo::Polygon<f64>, index_base: &mut usize, indices: &mut Vec<usize>, vertices: &mut Vec<f64>) {
+            let (mut new_indices, mut new_vertices) = polygon.triangulate_raw_with_index_base(*index_base);
+            *index_base = *index_base + new_vertices.len() / 2;
+            indices.append(&mut new_indices);
+            vertices.append(&mut new_vertices);
         }
         use geo_earcutr::Triangulate;
-        use std::convert::TryFrom;
-        let mut i = 0;
+        let mut index_base = 0usize;
+        let mut vertices = vec![];
+        let mut indices = vec![];
         match &layer.projected_geometry.geometry {
             geo::Geometry::GeometryCollection(geometry_collection) => {
                 for g in geometry_collection {
-                    println!("{}", i);
                     // TODO: combine meshes. each geometrycollection should be one mesh
                     match g {
-                        geo::Geometry::Polygon(p) => {
-                            add_mesh(p, material.clone(), &mut meshes, commands);
-                            i+=1;
+                        geo::Geometry::Polygon(polygon) => {
+                            triangulate_polygon(
+                                polygon,
+                                &mut index_base,
+                                &mut indices,
+                                &mut vertices,
+                            );
                         }
-                        geo::Geometry::MultiPolygon(p) => {
-                            for polygon in &p.0 {
-                            i+=1;
-                                add_mesh(polygon, material.clone(), &mut meshes, commands)
+                        geo::Geometry::MultiPolygon(multi_polygon) => {
+                            for polygon in &multi_polygon.0 {
+                                triangulate_polygon(
+                                    polygon,
+                                    &mut index_base,
+                                    &mut indices,
+                                    &mut vertices,
+                                );
                             }
                         }
                         _ => (),
@@ -115,6 +101,8 @@ fn layer_loaded(
             }
             _ => (),
         };
+        let mesh = bevy_earcutr::build_mesh_from_earcutr(indices, vertices);
+        bevy_earcutr::spawn_mesh(mesh, material, &mut meshes, commands);
         /////////////
 
         /*
@@ -156,23 +144,6 @@ fn layer_loaded(
 
         spawned_events.send(LayerSpawned(event.0));
     }
-}
-
-fn build_mesh(indices: Vec<u32>, vertices: Vec<[f32; 2]>) -> Mesh {
-    let num_vertices = vertices.len();
-    let mut mesh = Mesh::new(bevy::render::pipeline::PrimitiveTopology::TriangleList);
-    mesh.set_indices(Some(bevy::render::mesh::Indices::U32(indices)));
-    mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, vertices);
-
-    let mut normals = Vec::new();
-    normals.resize(num_vertices, [0.0, 0.0, 0.0]);
-    let mut uvs = Vec::new();
-    uvs.resize(num_vertices, [0.0, 0.0]);
-
-    mesh.set_attribute(Mesh::ATTRIBUTE_NORMAL, normals);
-    mesh.set_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
-
-    mesh
 }
 
 struct LayerSpawnedPlugin;

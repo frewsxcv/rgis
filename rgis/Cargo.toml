@@ -6,6 +6,7 @@ edition = "2018"
 
 [dependencies]
 bevy = { git = "https://github.com/bevyengine/bevy.git" }
+bevy-earcutr = { path = "../bevy-earcutr" }
 bevy_prototype_lyon = { path = "../bevy_prototype_lyon" }
 env_logger = "0.8"
 geo = { version = "0.15" }

@@ -290,6 +290,9 @@ dependencies = [
 [[package]]
 name = "bevy-earcutr"
 version = "0.1.0"
+dependencies = [
+ "bevy",
+]
 
 [[package]]
 name = "bevy-glsl-to-spirv"
@@ -3233,6 +3236,7 @@ name = "rgis"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy-earcutr",
  "bevy_prototype_lyon",
  "env_logger 0.8.2",
  "geo",
