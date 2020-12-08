@@ -33,7 +33,8 @@ pub trait Triangulate {
 impl Triangulate for geo_types::Polygon<f64> {
     fn triangulate_raw(&self) -> (Vec<usize>, Vec<f64>) {
         // TODO: better Vec preallocation
-        let mut vertices = vec![];
+        //let mut vertices = vec![0; polygon_num_coords(self) * 2];
+        let mut vertices = Vec::with_capacity(polygon_num_coords(self) * 2);
         let mut interior_indices = Vec::with_capacity(self.interiors().len());
 
         vertices.append(&mut flat_line_string_coords(self.exterior()));
@@ -48,6 +49,14 @@ impl Triangulate for geo_types::Polygon<f64> {
             vertices,
         )
     }
+}
+
+fn polygon_num_coords(polygon: &geo_types::Polygon<f64>) -> usize {
+    polygon.exterior().num_coords() +
+        polygon.interiors()
+            .iter()
+            .map(geo_types::LineString::num_coords)
+            .sum::<usize>()
 }
 
 // TODO: should this return an ExactSizeIterator?
