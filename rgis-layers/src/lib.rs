@@ -137,7 +137,7 @@ impl Layer {
                     match g {
                         geo::Geometry::Polygon(p) => {
                             for triangle in p.triangulate() {
-                                v.push(geo::Geometry::Polygon(triangle.to_polygon()));
+                                v.push(geo::Geometry::Triangle(triangle));
                             }
                         },
                         p => v.push(p.clone()),

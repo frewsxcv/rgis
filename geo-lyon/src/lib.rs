@@ -4,6 +4,16 @@ pub trait ToPath {
     fn to_path(&self) -> Path;
 }
 
+impl ToPath for geo_types::Triangle<f64> {
+    fn to_path(&self) -> Path {
+        let mut path_builder = PathBuilder::new();
+
+        triangle_path_builder(self, &mut path_builder);
+
+        path_builder.build()
+    }
+}
+
 impl ToPath for geo_types::Polygon<f64> {
     fn to_path(&self) -> Path {
         let mut path_builder = PathBuilder::new();
@@ -34,6 +44,13 @@ impl ToPath for geo_types::GeometryCollection<f64> {
     }
 }
 
+fn triangle_path_builder(triangle: &geo_types::Triangle<f64>, path_builder: &mut PathBuilder) {
+    path_builder.move_to(point(triangle.0.x as f32, triangle.0.y as f32));
+    path_builder.line_to(point(triangle.1.x as f32, triangle.1.y as f32));
+    path_builder.line_to(point(triangle.2.x as f32, triangle.2.y as f32));
+    path_builder.close()
+}
+
 fn geometry_collection_path_builder(geometry_collection: &geo_types::GeometryCollection<f64>, path_builder: &mut PathBuilder) {
     for geometry_collection in &geometry_collection.0 {
         geometry_path_builder(geometry_collection, path_builder)
@@ -45,6 +62,7 @@ fn geometry_path_builder(geometry: &geo_types::Geometry<f64>, path_builder: &mut
         geo_types::Geometry::Polygon(g) => polygon_path_builder(g, path_builder),
         geo_types::Geometry::MultiPolygon(g) => multi_polygon_path_builder(g, path_builder),
         geo_types::Geometry::GeometryCollection(g) => geometry_collection_path_builder(g, path_builder),
+        geo_types::Geometry::Triangle(g) => triangle_path_builder(g, path_builder),
         _ => {
             log::error!("Encountered a geometry type we don’t know how to render");
             return
