@@ -52,16 +52,15 @@ pub struct PolygonMeshBuilder {
 }
 
 impl PolygonMeshBuilder {
-    /// Use `from_earcutr_input` to generate a `Mesh` containing one polygon.
-    pub fn from_earcutr_input(earcutr_input: EarcutrInput) -> Self {
+    pub fn new() -> Self {
         PolygonMeshBuilder {
-            earcutr_inputs: vec![earcutr_input],
+            earcutr_inputs: vec![],
         }
     }
 
-    /// Use `from_earcutr_inputs` to generate a `Mesh` containing many polygons.
-    pub fn from_earcutr_inputs(earcutr_inputs: Vec<EarcutrInput>) -> Self {
-        PolygonMeshBuilder { earcutr_inputs }
+    /// Call for `add_earcutr_input` for each polygon you want to add to the mesh.
+    pub fn add_earcutr_input(&mut self, earcutr_input: EarcutrInput) {
+        self.earcutr_inputs.push(earcutr_input);
     }
 
     pub fn build(self) -> Mesh {
@@ -73,9 +72,15 @@ impl PolygonMeshBuilder {
         let mut earcutr_inputs_iter = self.earcutr_inputs.into_iter();
 
         // Earcut the first polygon
-        let first_input = earcutr_inputs_iter
-            .next()
-            .expect("PolygonMeshBuilder always has one input");
+        let first_input = match earcutr_inputs_iter.next() {
+            Some(i) => i,
+            None => {
+                return EarcutrResult {
+                    triangle_indices: vec![],
+                    vertices: vec![],
+                }
+            }
+        };
         let first_triangle_indices =
             earcutr::earcut(&first_input.vertices, &first_input.interior_indices, 2);
         let mut earcutr_result = EarcutrResult {

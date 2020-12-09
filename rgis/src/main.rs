@@ -42,6 +42,38 @@ fn load_geojson_file_handler(
     }
 }
 
+fn polygon_to_earcutr_input(polygon: &geo::Polygon<f64>) -> bevy_earcutr::EarcutrInput {
+    let mut vertices = Vec::with_capacity(polygon_num_coords(polygon) * 2);
+    let mut interior_indices = Vec::with_capacity(polygon.interiors().len());
+
+    flat_line_string_coords_2(polygon.exterior(), &mut vertices);
+
+    for interior in polygon.interiors() {
+        interior_indices.push(vertices.len() / 2);
+        flat_line_string_coords_2(interior, &mut vertices);
+    }
+
+    bevy_earcutr::EarcutrInput {
+        vertices,
+        interior_indices,
+    }
+}
+
+fn polygon_num_coords(polygon: &geo::Polygon<f64>) -> usize {
+    polygon.exterior().num_coords() +
+        polygon.interiors()
+            .iter()
+            .map(geo::LineString::num_coords)
+            .sum::<usize>()
+}
+
+fn flat_line_string_coords_2(line_string: &geo::LineString<f64>, vertices: &mut Vec<f64>) {
+    for coord in &line_string.0 {
+        vertices.push(coord.x);
+        vertices.push(coord.y);
+    }
+}
+
 // System
 fn layer_loaded(
     commands: &mut Commands,
@@ -62,19 +94,21 @@ fn layer_loaded(
             materials.add(Color::rgb_u8(layer.color.0, layer.color.1, layer.color.2).into());
 
         /////////////
-        let mut builder = geo_earcutr::Builder::new();
+        // let mut builder = geo_earcutr::Builder::new();
 
-        let tl = time_logger::start("Triangulating");
+
+        let tl = time_logger::start("Triangulating and building mesh");
+        let mut builder = bevy_earcutr::PolygonMeshBuilder::new();
         match &layer.projected_geometry.geometry {
             geo::Geometry::GeometryCollection(geometry_collection) => {
                 for g in geometry_collection {
                     match g {
                         geo::Geometry::Polygon(polygon) => {
-                            builder.add_geometry(polygon);
+                            builder.add_earcutr_input(polygon_to_earcutr_input(polygon));
                         }
                         geo::Geometry::MultiPolygon(multi_polygon) => {
                             for polygon in &multi_polygon.0 {
-                                builder.add_geometry(polygon);
+                                builder.add_earcutr_input(polygon_to_earcutr_input(polygon));
                             }
                         }
                         _ => (),
@@ -83,15 +117,7 @@ fn layer_loaded(
             }
             _ => (),
         };
-        tl.finish();
-
-        let tl = time_logger::start("Building mesh");
-        let mesh = bevy_earcutr::build_mesh_from_earcutr(
-            bevy_earcutr::EarcutrResult {
-                triangle_indices: builder.indices,
-                vertices: builder.vertices,
-            }
-        );
+        let mesh = builder.build();
         tl.finish();
 
         bevy_earcutr::spawn_mesh(mesh, material, &mut meshes, commands);
