@@ -120,7 +120,7 @@ fn layer_loaded(
         let mesh = builder.build();
         tl.finish();
 
-        bevy_earcutr::spawn_mesh(mesh, material, &mut meshes, commands);
+        spawn_mesh(mesh, material, &mut meshes, commands);
         /////////////
 
         /*
@@ -195,6 +195,24 @@ fn layer_spawned(
         camera_offset.y = layer_center.y as f32;
         camera_scale.0 = scale as f32;
     }
+}
+
+pub fn spawn_mesh(
+    mesh: Mesh,
+    material: Handle<ColorMaterial>,
+    meshes: &mut Assets<Mesh>,
+    commands: &mut Commands,
+) {
+    let sprite = SpriteBundle {
+        material: material,
+        mesh: meshes.add(mesh),
+        sprite: Sprite {
+            size: Vec2::new(1.0, 1.0),
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    commands.spawn(sprite);
 }
 
 #[derive(Debug)]

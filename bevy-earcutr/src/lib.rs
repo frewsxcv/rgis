@@ -6,24 +6,6 @@ type EarcutrVertices = Vec<f64>;
 type BevyIndices = Vec<u32>;
 type BevyVertices = Vec<[f32; 2]>;
 
-pub fn spawn_mesh(
-    mesh: Mesh,
-    material: Handle<ColorMaterial>,
-    meshes: &mut Assets<Mesh>,
-    commands: &mut Commands,
-) {
-    let sprite = SpriteBundle {
-        material: material,
-        mesh: meshes.add(mesh),
-        sprite: Sprite {
-            size: Vec2::new(1.0, 1.0),
-            ..Default::default()
-        },
-        ..Default::default()
-    };
-    commands.spawn(sprite);
-}
-
 #[derive(Debug)]
 pub struct EarcutrInput {
     pub vertices: EarcutrVertices,
@@ -119,10 +101,10 @@ pub fn build_mesh_from_earcutr(earcutr_result: EarcutrResult) -> Mesh {
     build_mesh_from_bevy(indices, vertices)
 }
 
-fn build_mesh_from_bevy(indices: BevyIndices, vertices: BevyVertices) -> Mesh {
+fn build_mesh_from_bevy(triangle_indices: BevyIndices, vertices: BevyVertices) -> Mesh {
     let num_vertices = vertices.len();
     let mut mesh = Mesh::new(bevy::render::pipeline::PrimitiveTopology::TriangleList);
-    mesh.set_indices(Some(bevy::render::mesh::Indices::U32(indices)));
+    mesh.set_indices(Some(bevy::render::mesh::Indices::U32(triangle_indices)));
     mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, vertices);
 
     let mut normals = Vec::new();
