@@ -8,3 +8,4 @@ edition = "2018"
 
 [dependencies]
 bevy = { git = "https://github.com/bevyengine/bevy.git" }
+earcutr = { git = "https://github.com/donbright/earcutr.git" }

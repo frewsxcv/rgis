@@ -86,7 +86,12 @@ fn layer_loaded(
         tl.finish();
 
         let tl = time_logger::start("Building mesh");
-        let mesh = bevy_earcutr::build_mesh_from_earcutr(builder.indices, builder.vertices);
+        let mesh = bevy_earcutr::build_mesh_from_earcutr(
+            bevy_earcutr::EarcutrResult {
+                triangle_indices: builder.indices,
+                vertices: builder.vertices,
+            }
+        );
         tl.finish();
 
         bevy_earcutr::spawn_mesh(mesh, material, &mut meshes, commands);
