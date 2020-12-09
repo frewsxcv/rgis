@@ -1,8 +1,6 @@
 [workspace]
 
 members = [
-    "bevy-earcutr",
-    "geo-earcutr",
     "geo-srs",
     "rgis",
     "rgis-cli",
@@ -16,4 +14,5 @@ members = [
 debug = true
 
 [patch.crates-io]
+bevy = { git = "https://github.com/bevyengine/bevy.git" }
 geo-types = { path = '../../georust/geo/geo-types' }
