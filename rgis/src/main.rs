@@ -111,11 +111,12 @@ fn layer_loaded(
                                 builder.add_earcutr_input(polygon_to_earcutr_input(polygon));
                             }
                         }
-                        _ => (),
+                        geo::Geometry::GeometryCollection(_) => unreachable!(),
+                        _ => log::error!("Encountered unrenderable geometry type"),
                     }
                 }
             }
-            _ => (),
+            _ => log::error!("Encountered unrenderable geometry type"),
         };
         let mesh = builder.build();
         tl.finish();
