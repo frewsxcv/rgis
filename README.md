@@ -14,4 +14,4 @@ cargo run --release <GEOJSON FILES>
 
 ## Screenshots
 
-![](https://images2.imgbox.com/03/ce/zZc5xD7y_o.png)
+![](https://i.imgur.com/cRqvmsd.png)
