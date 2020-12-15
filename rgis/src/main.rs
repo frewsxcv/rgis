@@ -2,6 +2,7 @@ use bevy::{prelude::*, render::pass::ClearColor};
 // use bevy_prototype_lyon::prelude::*;
 // use geo_lyon::ToPath;
 
+mod line_string_mesh_builder;
 mod plugins;
 
 // TODO: allow these to be controller at command line
@@ -98,17 +99,34 @@ fn layer_loaded(
 
 
         let tl = time_logger::start("Triangulating and building mesh");
-        let mut builder = bevy_earcutr::PolygonMeshBuilder::new();
+        let mut polygon_mesh_builder = bevy_earcutr::PolygonMeshBuilder::new();
+        let mut line_string_mesh_builder = line_string_mesh_builder::LineStringMeshBuilder::new();
+
+        let mut line_string_added = false;
+        let mut polygons_added = false;
+
         match &layer.projected_geometry.geometry {
             geo::Geometry::GeometryCollection(geometry_collection) => {
                 for g in geometry_collection {
                     match g {
+                        geo::Geometry::LineString(line_string) => {
+                            line_string_added = true;
+                            line_string_mesh_builder.add_line_string(line_string);
+                        }
                         geo::Geometry::Polygon(polygon) => {
-                            builder.add_earcutr_input(polygon_to_earcutr_input(polygon));
+                            polygons_added = true;
+                            polygon_mesh_builder.add_earcutr_input(polygon_to_earcutr_input(polygon));
+                        }
+                        geo::Geometry::MultiLineString(multi_line_string) => {
+                            for line_string in &multi_line_string.0 {
+                                line_string_added = true;
+                                line_string_mesh_builder.add_line_string(line_string);
+                            }
                         }
                         geo::Geometry::MultiPolygon(multi_polygon) => {
                             for polygon in &multi_polygon.0 {
-                                builder.add_earcutr_input(polygon_to_earcutr_input(polygon));
+                                polygons_added = true;
+                                polygon_mesh_builder.add_earcutr_input(polygon_to_earcutr_input(polygon));
                             }
                         }
                         geo::Geometry::GeometryCollection(_) => unreachable!(),
@@ -118,10 +136,19 @@ fn layer_loaded(
             }
             _ => log::error!("Encountered unrenderable geometry type"),
         };
-        let mesh = builder.build();
+
+        if line_string_added {
+            let line_string_mesh = line_string_mesh_builder.build();
+            spawn_mesh(line_string_mesh, material.clone(), &mut meshes, commands);
+        }
+
+        if polygons_added {
+            let polygon_mesh = polygon_mesh_builder.build();
+            spawn_mesh(polygon_mesh, material, &mut meshes, commands);
+        }
+
         tl.finish();
 
-        spawn_mesh(mesh, material, &mut meshes, commands);
         /////////////
 
         /*
