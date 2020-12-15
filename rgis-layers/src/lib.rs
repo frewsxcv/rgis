@@ -26,7 +26,7 @@ impl Layers {
 
     // coord is assumed to be projected
     pub fn containing_coord(&self, coord: geo_srs::CoordWithSrs<f64>) -> Vec<Layer> {
-        let projected_bounding_rect = match self.projected_bounding_rect {
+        let projected_bounding_rect = match &self.projected_bounding_rect {
             Some(b) => b,
             None => return vec![],
         };
@@ -37,7 +37,7 @@ impl Layers {
 
         self.data
             .iter()
-            .filter(|layer| layer.contains_coord(coord))
+            .filter(|layer| layer.contains_coord(&coord))
             .cloned()
             .collect()
     }
@@ -82,8 +82,8 @@ impl Layers {
         &mut self,
         geometry: geo::Geometry<f64>,
         metadata: Option<Metadata>,
-        source_projection: &'static str,
-        target_projection: &'static str,
+        source_projection: &str,
+        target_projection: &str,
     ) -> LayerId {
         let layer_id = self.next_layer_id();
         let layer = Layer::from_geometry(
@@ -93,10 +93,10 @@ impl Layers {
             source_projection,
             target_projection,
         );
-        self.projected_bounding_rect = Some(if let Some(r) = self.projected_bounding_rect {
-            r.merge(layer.projected_bounding_rect)
+        self.projected_bounding_rect = Some(if let Some(r) = self.projected_bounding_rect.clone() {
+            r.merge(&layer.projected_bounding_rect)
         } else {
-            layer.projected_bounding_rect
+            layer.projected_bounding_rect.clone()
         });
         self.data.push(layer);
         layer_id
@@ -117,28 +117,28 @@ pub struct Layer {
 }
 
 impl Layer {
-    pub fn contains_coord(&self, coord: geo_srs::CoordWithSrs<f64>) -> bool {
+    pub fn contains_coord(&self, coord: &geo_srs::CoordWithSrs<f64>) -> bool {
         self.projected_bounding_rect.contains(&coord)
             && self.projected_geometry.geometry.contains(&coord.coord)
     }
 
     pub fn from_geometry(
-        mut geometry: geo::Geometry<f64>,
+        geometry: geo::Geometry<f64>,
         id: LayerId,
         metadata: Option<Metadata>,
-        source_projection: &'static str,
-        target_projection: &'static str,
+        source_projection: &str,
+        target_projection: &str,
     ) -> Self {
         let unprojected_geometry = geo_srs::GeometryWithSrs {
             geometry,
-            srs: source_projection,
+            srs: source_projection.into(),
         };
         let unprojected_bounding_rect = geo_srs::RectWithSrs {
             rect: unprojected_geometry
                 .geometry
                 .bounding_rect()
                 .expect("Could not determine bounding rect of geometry"),
-            srs: unprojected_geometry.srs,
+            srs: unprojected_geometry.srs.to_owned(),
         };
 
         let mut projected_geometry = unprojected_geometry.clone();
@@ -152,7 +152,7 @@ impl Layer {
                 .geometry
                 .bounding_rect()
                 .expect("Could not determine bounding rect of geometry"),
-            srs: projected_geometry.srs,
+            srs: projected_geometry.srs.to_string(),
         };
 
         Layer {

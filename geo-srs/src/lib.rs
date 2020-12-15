@@ -1,16 +1,16 @@
 use geo::algorithm::contains::Contains;
 use geo::algorithm::map_coords::MapCoordsInplace;
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Clone)]
 pub struct CoordWithSrs<T: num_traits::Float> {
     pub coord: geo::Coordinate<T>,
-    pub srs: &'static str,
+    pub srs: String,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub struct RectWithSrs<T: num_traits::Float> {
     pub rect: geo::Rect<T>,
-    pub srs: &'static str,
+    pub srs: String,
 }
 
 impl<T: num_traits::Float> RectWithSrs<T> {
@@ -19,7 +19,7 @@ impl<T: num_traits::Float> RectWithSrs<T> {
         self.rect.contains(&coord.coord)
     }
 
-    pub fn merge(self, other: RectWithSrs<T>) -> RectWithSrs<T> {
+    pub fn merge(self, other: &RectWithSrs<T>) -> RectWithSrs<T> {
         assert_eq!(self.srs, other.srs);
         RectWithSrs {
             rect: geo::Rect::new(
@@ -40,7 +40,7 @@ impl<T: num_traits::Float> RectWithSrs<T> {
 #[derive(Debug, Clone)]
 pub struct GeometryWithSrs<T: num_traits::Float> {
     pub geometry: geo::Geometry<T>,
-    pub srs: &'static str,
+    pub srs: String,
 }
 
 impl<T: num_traits::Float> GeometryWithSrs<T> {
@@ -50,12 +50,12 @@ impl<T: num_traits::Float> GeometryWithSrs<T> {
     //     Contains::contains(&self.geometry, &coord.coord)
     // }
 
-    pub fn reproject(&mut self, target_srs: &'static str) {
+    pub fn reproject(&mut self, target_srs: &str) {
         let projector =
-            geo::algorithm::proj::Proj::new_known_crs(self.srs, target_srs, None).unwrap();
+            geo::algorithm::proj::Proj::new_known_crs(&self.srs, target_srs, None).unwrap();
 
         self.geometry
             .map_coords_inplace(|&(x, y)| projector.convert((x, y)).unwrap().x_y());
-        self.srs = target_srs;
+        self.srs = target_srs.to_owned();
     }
 }

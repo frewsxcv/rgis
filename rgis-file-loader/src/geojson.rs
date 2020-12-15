@@ -6,8 +6,8 @@ use std::io;
 pub fn load(
     geojson_file_path: String,
     layers: &mut Layers,
-    source_projection: &'static str,
-    target_projection: &'static str,
+    source_projection: &str,
+    target_projection: &str,
 ) -> Vec<rgis_layers::LayerId> {
     let tl = time_logger::start(format!("Opening file: {:?}", geojson_file_path));
     let geojson_file = io::BufReader::new(fs::File::open(&geojson_file_path).expect("TODO"));
@@ -66,14 +66,14 @@ pub fn load(
     */
 }
 
-fn load_geojson_feature(
+fn _load_geojson_feature(
     geojson_feature: geojson::Feature,
     layers: &mut Layers,
     source_projection: &'static str,
     target_projection: &'static str,
 ) -> Vec<rgis_layers::LayerId> {
     if let Some(geometry) = geojson_feature.geometry {
-        load_geojson_geometry(
+        _load_geojson_geometry(
             geometry,
             layers,
             geojson_feature.properties,
@@ -85,7 +85,7 @@ fn load_geojson_feature(
     }
 }
 
-fn load_geojson_geometry(
+fn _load_geojson_geometry(
     geojson_geometry: geojson::Geometry,
     layers: &mut Layers,
     metadata: Option<rgis_layers::Metadata>,
@@ -134,7 +134,7 @@ fn load_geojson_geometry(
         geojson::Value::GeometryCollection(g) => {
             let mut layer_ids = vec![];
             for geojson_geometry in g {
-                layer_ids.extend(load_geojson_geometry(
+                layer_ids.extend(_load_geojson_geometry(
                     geojson_geometry,
                     layers,
                     metadata.clone(),

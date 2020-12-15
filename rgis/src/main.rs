@@ -5,17 +5,15 @@ use bevy::{prelude::*, render::pass::ClearColor};
 mod line_string_mesh_builder;
 mod plugins;
 
-// TODO: allow these to be controller at command line
-static SOURCE_PROJECTION: &str = "EPSG:4326";
-// static SOURCE_PROJECTION: &str = "EPSG:2966";
-static TARGET_PROJECTION: &str = "EPSG:3857";
-
 // System
 fn load_layers_from_cli(mut events: ResMut<Events<LoadGeoJsonFile>>) {
-    for geojson_file_path in rgis_cli::run().unwrap() {
+    let cli_values = rgis_cli::run();
+    for geojson_file_path in cli_values.geojson_files {
         log::debug!("sending LoadGeoJsonFile event: {}", &geojson_file_path,);
         events.send(LoadGeoJsonFile {
             path: geojson_file_path,
+            source_srs: cli_values.source_srs.clone(),
+            target_srs: cli_values.target_srs.clone(),
         });
     }
 }
@@ -29,13 +27,15 @@ fn load_geojson_file_handler(
 ) {
     for LoadGeoJsonFile {
         path: geojson_file_path,
+        source_srs,
+        target_srs,
     } in load_event_reader.iter(&load_events)
     {
         let layer_ids = rgis_file_loader::load(
             geojson_file_path.clone(),
             &mut layers,
-            SOURCE_PROJECTION,
-            TARGET_PROJECTION,
+            source_srs,
+            target_srs,
         );
         for layer_id in layer_ids {
             loaded_events.send(LayerLoaded(layer_id));
@@ -84,7 +84,7 @@ fn layer_loaded(
     events: Res<Events<LayerLoaded>>,
     mut event_reader: Local<EventReader<LayerLoaded>>,
     mut spawned_events: ResMut<Events<LayerSpawned>>,
-    camera_scale: Res<plugins::rgis_camera::CameraScale>,
+    _camera_scale: Res<plugins::rgis_camera::CameraScale>,
 ) {
     for event in event_reader.iter(&events) {
         let layer = match layers.get(event.0) {
@@ -246,6 +246,8 @@ pub fn spawn_mesh(
 #[derive(Debug)]
 struct LoadGeoJsonFile {
     path: String,
+    source_srs: String,
+    target_srs: String,
 }
 
 #[derive(Debug)]
