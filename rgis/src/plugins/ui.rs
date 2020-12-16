@@ -7,18 +7,7 @@ pub struct PositionText;
 
 impl Plugin for RgisUi {
     fn build(&self, app: &mut AppBuilder) {
-        app.add_startup_system(setup.system())
-            .add_system(text_update_system);
-    }
-}
-
-fn text_update_system(mut query: Query<&mut Text, With<PositionText>>) {
-    for mut text in query.iter_mut() {
-        // if let Some(fps) = diagnostics.get(FrameTimeDiagnosticsPlugin::FPS) {
-        //     if let Some(average) = fps.average() {
-        //         text.value = format!("FPS: {:.2}", average);
-        //     }
-        // }
+        app.add_startup_system(setup.system());
     }
 }
 

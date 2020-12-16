@@ -1,5 +1,5 @@
-use crate::plugins::rgis_camera::Camera;
 use bevy::prelude::*;
+use rgis_camera::Camera;
 
 pub fn system(
     mut cursor_moved_event_reader: Local<EventReader<CursorMoved>>,

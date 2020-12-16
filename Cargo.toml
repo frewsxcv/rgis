@@ -3,6 +3,7 @@
 members = [
     "geo-srs",
     "rgis",
+    "rgis-camera",
     "rgis-cli",
     "rgis-file-loader",
     "rgis-layers",

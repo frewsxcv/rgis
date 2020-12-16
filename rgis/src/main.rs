@@ -85,7 +85,7 @@ fn layer_loaded(
     events: Res<Events<LayerLoaded>>,
     mut event_reader: Local<EventReader<LayerLoaded>>,
     mut spawned_events: ResMut<Events<LayerSpawned>>,
-    _camera_scale: Res<plugins::rgis_camera::CameraScale>,
+    _camera_scale: Res<rgis_camera::CameraScale>,
 ) {
     for event in event_reader.iter(&events) {
         let layer = match layers.get(event.0) {
@@ -205,8 +205,8 @@ impl Plugin for LayerSpawnedPlugin {
 fn layer_spawned(
     events: Res<Events<LayerSpawned>>,
     layers: ResMut<rgis_layers::Layers>,
-    mut camera_offset: ResMut<plugins::rgis_camera::CameraOffset>,
-    mut camera_scale: ResMut<plugins::rgis_camera::CameraScale>,
+    mut camera_offset: ResMut<rgis_camera::CameraOffset>,
+    mut camera_scale: ResMut<rgis_camera::CameraScale>,
     mut event_reader: Local<EventReader<LayerSpawned>>,
 ) {
     for event in event_reader.iter(&events) {
@@ -271,7 +271,7 @@ fn main() {
         .add_system(layer_loaded.system())
         .add_system(mouse::system.system())
         .add_plugin(LayerSpawnedPlugin)
-        .add_plugin(plugins::rgis_camera::RgisCamera)
+        .add_plugin(rgis_camera::RgisCamera)
         .add_plugin(plugins::ui::RgisUi)
         .add_resource(ClearColor(Color::WHITE))
         .run();

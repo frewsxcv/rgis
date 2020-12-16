@@ -3169,10 +3169,19 @@ dependencies = [
  "geo-srs",
  "geojson",
  "log",
+ "rgis-camera",
  "rgis-cli",
  "rgis-file-loader",
  "rgis-layers",
  "time-logger",
+]
+
+[[package]]
+name = "rgis-camera"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "log",
 ]
 
 [[package]]
