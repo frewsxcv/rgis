@@ -1,8 +1,5 @@
 use bevy::{prelude::*, render::pass::ClearColor};
-// use bevy_prototype_lyon::prelude::*;
-// use geo_lyon::ToPath;
 
-mod line_string_mesh_builder;
 mod mouse;
 mod plugins;
 
