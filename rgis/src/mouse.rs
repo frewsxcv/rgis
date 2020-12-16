@@ -7,11 +7,11 @@ pub fn system(
     windows: Res<Windows>,
     camera_query: Query<(&Camera,)>,
     transform_query: Query<(&Transform,)>,
+    mut text_query: Query<&mut Text, With<crate::plugins::ui::PositionText>>,
 ) {
     for event in cursor_moved_event_reader.iter(&cursor_moved_events) {
         for (camera,) in camera_query.iter() {
             if let Ok((transform,)) = transform_query.get(camera.0) {
-                println!("{:?}", transform);
                 let window = windows.get_primary().unwrap();
                 let size = Vec2::new(window.width() as f32, window.height() as f32);
 
@@ -21,7 +21,10 @@ pub fn system(
 
                 // apply the camera transform
                 let pos_wld = transform.compute_matrix() * p.extend(0.0).extend(1.0);
-                eprintln!("World coords: {}/{}", pos_wld.x, pos_wld.y);
+
+                for mut text in text_query.iter_mut() {
+                    text.value = format!("Longitude: {}\nLatitude: {}", pos_wld.x, pos_wld.y);
+                }
             }
         }
     }

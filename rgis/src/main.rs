@@ -272,6 +272,7 @@ fn main() {
         .add_system(mouse::system.system())
         .add_plugin(LayerSpawnedPlugin)
         .add_plugin(plugins::rgis_camera::RgisCamera)
+        .add_plugin(plugins::ui::RgisUi)
         .add_resource(ClearColor(Color::WHITE))
         .run();
 }
