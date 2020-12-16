@@ -1,0 +1,11 @@
+[package]
+name = "geo-bevy"
+version = "0.1.0"
+authors = ["Corey Farwell <coreyf@rwell.org>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+bevy = "0.3"
+geo-types = "0.6"

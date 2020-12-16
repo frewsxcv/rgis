@@ -1753,6 +1753,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "geo-bevy"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "geo-types",
+]
+
+[[package]]
 name = "geo-srs"
 version = "0.1.0"
 dependencies = [
@@ -3166,6 +3174,7 @@ dependencies = [
  "bevy-earcutr",
  "env_logger 0.8.2",
  "geo",
+ "geo-bevy",
  "geo-srs",
  "geojson",
  "log",

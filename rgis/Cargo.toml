@@ -10,6 +10,7 @@ bevy-earcutr = { git = "https://github.com/frewsxcv/bevy-earcutr" }
 env_logger = "0.8"
 geo = { version = "0.15" }
 geojson = { version = "0.20", features = ['geo-types'] }
+geo-bevy = { path = "../geo-bevy" }
 geo-srs = { path = "../geo-srs" }
 log = "0.4"
 rgis-camera = { path = "../rgis-camera" }

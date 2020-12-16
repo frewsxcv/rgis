@@ -101,7 +101,7 @@ fn layer_loaded(
 
         let tl = time_logger::start("Triangulating and building mesh");
         let mut polygon_mesh_builder = bevy_earcutr::PolygonMeshBuilder::new();
-        let mut line_string_mesh_builder = line_string_mesh_builder::LineStringMeshBuilder::new();
+        let mut line_string_mesh_builder = geo_bevy::LineStringMeshBuilder::new();
 
         let mut line_string_added = false;
         let mut polygons_added = false;
