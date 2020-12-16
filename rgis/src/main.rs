@@ -85,7 +85,6 @@ fn layer_loaded(
     events: Res<Events<LayerLoaded>>,
     mut event_reader: Local<EventReader<LayerLoaded>>,
     mut spawned_events: ResMut<Events<LayerSpawned>>,
-    _camera_scale: Res<rgis_camera::CameraScale>,
 ) {
     for event in event_reader.iter(&events) {
         let layer = match layers.get(event.0) {
@@ -94,10 +93,6 @@ fn layer_loaded(
         };
         let material =
             materials.add(Color::rgb_u8(layer.color.0, layer.color.1, layer.color.2).into());
-
-        /////////////
-        // let mut builder = geo_earcutr::Builder::new();
-
 
         let tl = time_logger::start("Triangulating and building mesh");
         let mut polygon_mesh_builder = bevy_earcutr::PolygonMeshBuilder::new();
@@ -149,45 +144,6 @@ fn layer_loaded(
         }
 
         tl.finish();
-
-        /////////////
-
-        /*
-        log::info!("Building Path for new layer");
-        let path = match layer.projected_geometry.geometry {
-            geo::Geometry::Polygon(ref g) => g.to_path(),
-            geo::Geometry::MultiPolygon(ref g) => g.to_path(),
-            geo::Geometry::GeometryCollection(ref g) => g.to_path(),
-            geo::Geometry::Triangle(ref g) => g.to_path(),
-            _ => {
-                log::error!("Encountered a Geometry type we can’t render yet");
-                continue;
-            },
-        };
-
-        println!("Building Sprite from Path");
-        let sprite_components = path.fill(
-            material.clone(),
-            &mut meshes,
-            Vec3::new(0.0, 0.0, 0.0).into(),
-            &FillOptions::default(),
-        );
-
-        log::debug!("Spawning geometry fill entity");
-        commands.spawn(sprite_components);
-
-        let material = materials.add(Color::BLACK.into());
-        let sprite_components = path.stroke(
-            material.clone(),
-            &mut meshes,
-            Vec3::new(0.0, 0.0, 0.0).into(),
-            // FIXME: line width is not being calculated correctly here
-            &StrokeOptions::default().with_line_width(1000. * camera_scale.0),
-        );
-
-        log::debug!("Spawning geometry stroke entity");
-        commands.spawn(sprite_components);
-        */
 
         spawned_events.send(LayerSpawned(event.0));
     }
