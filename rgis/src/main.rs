@@ -3,6 +3,7 @@ use bevy::{prelude::*, render::pass::ClearColor};
 // use geo_lyon::ToPath;
 
 mod line_string_mesh_builder;
+mod mouse;
 mod plugins;
 
 // System
@@ -268,6 +269,7 @@ fn main() {
         .add_startup_system(load_layers_from_cli.system())
         .add_system(load_geojson_file_handler.system())
         .add_system(layer_loaded.system())
+        .add_system(mouse::system.system())
         .add_plugin(LayerSpawnedPlugin)
         .add_plugin(plugins::rgis_camera::RgisCamera)
         .add_resource(ClearColor(Color::WHITE))

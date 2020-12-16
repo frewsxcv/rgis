@@ -1,5 +1,4 @@
 use clap::{App, Arg};
-use std::env;
 
 static DEFAULT_SOURCE_SRS: &str = "EPSG:4326";
 static DEFAULT_TARGET_SRS: &str = "EPSG:3857";

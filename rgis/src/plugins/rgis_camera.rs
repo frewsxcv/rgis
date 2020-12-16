@@ -13,8 +13,9 @@ impl Plugin for RgisCamera {
     }
 }
 
+// TODO: should this be public
 #[derive(Debug)]
-struct Camera(Entity);
+pub struct Camera(pub Entity);
 
 fn setup(commands: &mut Commands) {
     let entity = commands
