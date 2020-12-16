@@ -23,7 +23,7 @@ pub fn system(
                 let pos_wld = transform.compute_matrix() * p.extend(0.0).extend(1.0);
 
                 for mut text in text_query.iter_mut() {
-                    text.value = format!("Longitude: {}\nLatitude: {}", pos_wld.x, pos_wld.y);
+                    text.value = format!("Lng: {}\nLat: {}", pos_wld.x, pos_wld.y);
                 }
             }
         }

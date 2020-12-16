@@ -22,26 +22,41 @@ fn text_update_system(mut query: Query<&mut Text, With<PositionText>>) {
     }
 }
 
-fn setup(commands: &mut Commands, asset_server: Res<AssetServer>) {
+fn setup(
+    commands: &mut Commands,
+    asset_server: Res<AssetServer>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+) {
     commands
-        // 2d camera
         .spawn(CameraUiBundle::default())
-        // texture
-        .spawn(TextBundle {
+        .spawn(NodeBundle {
             style: Style {
-                align_self: AlignSelf::FlexEnd,
+                size: Size::new(Val::Px(150.), Val::Auto),
+                margin: Rect::all(Val::Px(10.)),
                 ..Default::default()
             },
-            text: Text {
-                value: "FPS:".to_string(),
-                font: asset_server.load("fonts/FiraSans-Bold.ttf"),
-                style: TextStyle {
-                    font_size: 30.0,
-                    color: Color::BLACK,
-                    ..Default::default()
-                },
-            },
+            material: materials.add(Color::rgba_u8(0, 0, 0, 200).into()),
             ..Default::default()
         })
-        .with(PositionText);
+        .with_children(|parent| {
+            parent
+                .spawn(TextBundle {
+                    style: Style {
+                        align_self: AlignSelf::FlexEnd,
+                        margin: Rect::all(Val::Px(10.)),
+                        ..Default::default()
+                    },
+                    text: Text {
+                        value: "Lng:\nLat:".to_string(),
+                        font: asset_server.load("fonts/RobotoMono-VariableFont_wght.ttf"),
+                        style: TextStyle {
+                            font_size: 18.0,
+                            color: Color::WHITE,
+                            ..Default::default()
+                        },
+                    },
+                    ..Default::default()
+                })
+                .with(PositionText);
+        });
 }
