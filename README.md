@@ -6,10 +6,25 @@ Geospatial data viewer written in Rust.
 
 rgis is released under [The Anti-Capitalist Software License (version 1.4)](https://anticapitalist.software/).
 
-## Usage
+## Install
+
 
 ```
-cargo run --release <GEOJSON FILES>...
+cargo install --git https://github.com/frewsxcv/rgis
+```
+
+## Usage
+
+Render GeoJSON files:
+
+```
+rgis file1.geojson file2.geojson
+```
+
+Print help information:
+
+```
+rgis --help
 ```
 
 ## Screenshots
