@@ -15,4 +15,3 @@ debug = true
 
 [patch.crates-io]
 bevy = { git = "https://github.com/bevyengine/bevy.git" }
-geo-types = { path = '../../georust/geo/geo-types' }
