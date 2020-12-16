@@ -7,7 +7,7 @@ pub fn system(
     windows: Res<Windows>,
     camera_query: Query<(&Camera,)>,
     transform_query: Query<(&Transform,)>,
-    mut text_query: Query<&mut Text, With<crate::plugins::ui::PositionText>>,
+    mut text_query: Query<&mut Text, With<rgis_ui::PositionText>>,
 ) {
     for event in cursor_moved_event_reader.iter(&cursor_moved_events) {
         for (camera,) in camera_query.iter() {

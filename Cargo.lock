@@ -3182,6 +3182,7 @@ dependencies = [
  "rgis-cli",
  "rgis-file-loader",
  "rgis-layers",
+ "rgis-ui",
  "time-logger",
 ]
 
@@ -3223,6 +3224,13 @@ dependencies = [
  "log",
  "serde_json",
  "time-logger",
+]
+
+[[package]]
+name = "rgis-ui"
+version = "0.1.0"
+dependencies = [
+ "bevy",
 ]
 
 [[package]]

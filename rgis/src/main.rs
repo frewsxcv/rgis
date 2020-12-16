@@ -1,7 +1,6 @@
 use bevy::{prelude::*, render::pass::ClearColor};
 
 mod mouse;
-mod plugins;
 
 // System
 fn load_layers_from_cli(mut events: ResMut<Events<LoadGeoJsonFile>>) {
@@ -225,7 +224,7 @@ fn main() {
         .add_system(mouse::system.system())
         .add_plugin(LayerSpawnedPlugin)
         .add_plugin(rgis_camera::RgisCamera)
-        .add_plugin(plugins::ui::RgisUi)
+        .add_plugin(rgis_ui::RgisUi)
         .add_resource(ClearColor(Color::WHITE))
         .run();
 }

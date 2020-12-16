@@ -17,4 +17,5 @@ rgis-camera = { path = "../rgis-camera" }
 rgis-cli = { path = "../rgis-cli" }
 rgis-file-loader = { path = "../rgis-file-loader" }
 rgis-layers = { path = "../rgis-layers" }
+rgis-ui = { path = "../rgis-ui" }
 time-logger = { path = "../time-logger" }
