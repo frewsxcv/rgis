@@ -1757,7 +1757,9 @@ name = "geo-bevy"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy-earcutr",
  "geo-types",
+ "log",
 ]
 
 [[package]]
@@ -3171,7 +3173,6 @@ name = "rgis"
 version = "0.1.0"
 dependencies = [
  "bevy",
- "bevy-earcutr",
  "env_logger 0.8.2",
  "geo",
  "geo-bevy",

@@ -8,4 +8,6 @@ edition = "2018"
 
 [dependencies]
 bevy = "0.3"
+bevy-earcutr = { git = "https://github.com/frewsxcv/bevy-earcutr" }
 geo-types = "0.6"
+log = "0.4"

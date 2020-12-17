@@ -1,4 +1,5 @@
 use bevy::{prelude::*, render::pass::ClearColor};
+use geo_bevy::BuildBevyMeshes;
 
 mod mouse;
 
@@ -12,39 +13,6 @@ fn load_layers_from_cli(mut events: ResMut<Events<rgis_file_loader::LoadGeoJsonF
             source_srs: cli_values.source_srs.clone(),
             target_srs: cli_values.target_srs.clone(),
         });
-    }
-}
-
-fn polygon_to_earcutr_input(polygon: &geo::Polygon<f64>) -> bevy_earcutr::EarcutrInput {
-    let mut vertices = Vec::with_capacity(polygon_num_coords(polygon) * 2);
-    let mut interior_indices = Vec::with_capacity(polygon.interiors().len());
-
-    flat_line_string_coords_2(polygon.exterior(), &mut vertices);
-
-    for interior in polygon.interiors() {
-        interior_indices.push(vertices.len() / 2);
-        flat_line_string_coords_2(interior, &mut vertices);
-    }
-
-    bevy_earcutr::EarcutrInput {
-        vertices,
-        interior_indices,
-    }
-}
-
-fn polygon_num_coords(polygon: &geo::Polygon<f64>) -> usize {
-    polygon.exterior().num_coords()
-        + polygon
-            .interiors()
-            .iter()
-            .map(geo::LineString::num_coords)
-            .sum::<usize>()
-}
-
-fn flat_line_string_coords_2(line_string: &geo::LineString<f64>, vertices: &mut Vec<f64>) {
-    for coord in &line_string.0 {
-        vertices.push(coord.x);
-        vertices.push(coord.y);
     }
 }
 
@@ -67,56 +35,13 @@ fn layer_loaded(
             materials.add(Color::rgb_u8(layer.color.0, layer.color.1, layer.color.2).into());
 
         let tl = time_logger::start("Triangulating and building mesh");
-        let mut polygon_mesh_builder = bevy_earcutr::PolygonMeshBuilder::new();
-        let mut line_string_mesh_builder = geo_bevy::LineStringMeshBuilder::new();
-
-        let mut line_string_added = false;
-        let mut polygons_added = false;
-
-        match &layer.projected_geometry.geometry {
-            geo::Geometry::GeometryCollection(geometry_collection) => {
-                for g in geometry_collection {
-                    match g {
-                        geo::Geometry::LineString(line_string) => {
-                            line_string_added = true;
-                            line_string_mesh_builder.add_line_string(line_string);
-                        }
-                        geo::Geometry::Polygon(polygon) => {
-                            polygons_added = true;
-                            polygon_mesh_builder
-                                .add_earcutr_input(polygon_to_earcutr_input(polygon));
-                        }
-                        geo::Geometry::MultiLineString(multi_line_string) => {
-                            for line_string in &multi_line_string.0 {
-                                line_string_added = true;
-                                line_string_mesh_builder.add_line_string(line_string);
-                            }
-                        }
-                        geo::Geometry::MultiPolygon(multi_polygon) => {
-                            for polygon in &multi_polygon.0 {
-                                polygons_added = true;
-                                polygon_mesh_builder
-                                    .add_earcutr_input(polygon_to_earcutr_input(polygon));
-                            }
-                        }
-                        geo::Geometry::GeometryCollection(_) => unreachable!(),
-                        _ => log::error!("Encountered unrenderable geometry type"),
-                    }
-                }
-            }
-            _ => log::error!("Encountered unrenderable geometry type"),
-        };
-
-        if line_string_added {
-            let line_string_mesh = line_string_mesh_builder.build();
-            spawn_mesh(line_string_mesh, material.clone(), &mut meshes, commands);
+        for mesh in layer
+            .projected_geometry
+            .geometry
+            .build_bevy_meshes(geo_bevy::BuildBevyMeshesContext::new())
+        {
+            spawn_mesh(mesh, material.clone(), &mut meshes, commands);
         }
-
-        if polygons_added {
-            let polygon_mesh = polygon_mesh_builder.build();
-            spawn_mesh(polygon_mesh, material, &mut meshes, commands);
-        }
-
         tl.finish();
 
         spawned_events.send(rgis_layers::LayerSpawned(event.0));

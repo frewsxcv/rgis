@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use rgis_layers::Layers;
 
 mod geojson;
 
