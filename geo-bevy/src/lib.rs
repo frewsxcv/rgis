@@ -9,7 +9,10 @@ pub struct LineStringMeshBuilder {
 impl LineStringMeshBuilder {
     pub fn new() -> Self {
         // TODO: capacity?
-        LineStringMeshBuilder { vertices: vec![], indices: vec![] }
+        LineStringMeshBuilder {
+            vertices: vec![],
+            indices: vec![],
+        }
     }
 
     /// Call for `add_earcutr_input` for each polygon you want to add to the mesh.
@@ -19,7 +22,8 @@ impl LineStringMeshBuilder {
             self.vertices.push([coord.x as f32, coord.y as f32]);
             if i != line_string.0.len() - 1 {
                 self.indices.push(u32::try_from(index_base + i).unwrap());
-                self.indices.push(u32::try_from(index_base + i + 1).unwrap());
+                self.indices
+                    .push(u32::try_from(index_base + i + 1).unwrap());
             }
         }
     }

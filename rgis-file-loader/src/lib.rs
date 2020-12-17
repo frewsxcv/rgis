@@ -23,7 +23,12 @@ pub fn load_geojson_file_handler(
         target_srs,
     } in load_event_reader.iter(&load_events)
     {
-        let layer_ids = geojson::load(geojson_file_path.clone(), &mut layers, source_srs, target_srs);
+        let layer_ids = geojson::load(
+            geojson_file_path.clone(),
+            &mut layers,
+            source_srs,
+            target_srs,
+        );
         for layer_id in layer_ids {
             loaded_events.send(rgis_layers::LayerLoaded(layer_id));
         }

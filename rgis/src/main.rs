@@ -15,7 +15,6 @@ fn load_layers_from_cli(mut events: ResMut<Events<rgis_file_loader::LoadGeoJsonF
     }
 }
 
-
 fn polygon_to_earcutr_input(polygon: &geo::Polygon<f64>) -> bevy_earcutr::EarcutrInput {
     let mut vertices = Vec::with_capacity(polygon_num_coords(polygon) * 2);
     let mut interior_indices = Vec::with_capacity(polygon.interiors().len());
@@ -34,8 +33,9 @@ fn polygon_to_earcutr_input(polygon: &geo::Polygon<f64>) -> bevy_earcutr::Earcut
 }
 
 fn polygon_num_coords(polygon: &geo::Polygon<f64>) -> usize {
-    polygon.exterior().num_coords() +
-        polygon.interiors()
+    polygon.exterior().num_coords()
+        + polygon
+            .interiors()
             .iter()
             .map(geo::LineString::num_coords)
             .sum::<usize>()
@@ -83,7 +83,8 @@ fn layer_loaded(
                         }
                         geo::Geometry::Polygon(polygon) => {
                             polygons_added = true;
-                            polygon_mesh_builder.add_earcutr_input(polygon_to_earcutr_input(polygon));
+                            polygon_mesh_builder
+                                .add_earcutr_input(polygon_to_earcutr_input(polygon));
                         }
                         geo::Geometry::MultiLineString(multi_line_string) => {
                             for line_string in &multi_line_string.0 {
@@ -94,7 +95,8 @@ fn layer_loaded(
                         geo::Geometry::MultiPolygon(multi_polygon) => {
                             for polygon in &multi_polygon.0 {
                                 polygons_added = true;
-                                polygon_mesh_builder.add_earcutr_input(polygon_to_earcutr_input(polygon));
+                                polygon_mesh_builder
+                                    .add_earcutr_input(polygon_to_earcutr_input(polygon));
                             }
                         }
                         geo::Geometry::GeometryCollection(_) => unreachable!(),

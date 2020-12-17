@@ -99,11 +99,12 @@ impl Layers {
             source_projection,
             target_projection,
         );
-        self.projected_bounding_rect = Some(if let Some(r) = self.projected_bounding_rect.clone() {
-            r.merge(&layer.projected_bounding_rect)
-        } else {
-            layer.projected_bounding_rect.clone()
-        });
+        self.projected_bounding_rect =
+            Some(if let Some(r) = self.projected_bounding_rect.clone() {
+                r.merge(&layer.projected_bounding_rect)
+            } else {
+                layer.projected_bounding_rect.clone()
+            });
         self.data.push(layer);
         layer_id
     }

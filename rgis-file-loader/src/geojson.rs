@@ -18,7 +18,8 @@ pub fn load(
     tl.finish();
 
     let tl = time_logger::start(format!("Converting to geo-types: {:?}", geojson_file_path));
-    let geo_geometry_collection: geo_types::GeometryCollection<f64> = geojson::quick_collection(&geojson).unwrap();
+    let geo_geometry_collection: geo_types::GeometryCollection<f64> =
+        geojson::quick_collection(&geojson).unwrap();
     tl.finish();
 
     let tl = time_logger::start(format!("Adding new layer: {:?}", geojson_file_path));
