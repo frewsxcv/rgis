@@ -5,6 +5,7 @@ authors = ["Corey Farwell <coreyf@rwell.org>"]
 edition = "2018"
 
 [dependencies]
+bevy = "0.3"
 geo-types = "0.6"
 geojson = "0.20"
 log = "0.4"

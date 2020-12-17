@@ -3,11 +3,11 @@ use bevy::{prelude::*, render::pass::ClearColor};
 mod mouse;
 
 // System
-fn load_layers_from_cli(mut events: ResMut<Events<LoadGeoJsonFile>>) {
+fn load_layers_from_cli(mut events: ResMut<Events<rgis_file_loader::LoadGeoJsonFile>>) {
     let cli_values = rgis_cli::run();
     for geojson_file_path in cli_values.geojson_files {
         log::debug!("sending LoadGeoJsonFile event: {}", &geojson_file_path,);
-        events.send(LoadGeoJsonFile {
+        events.send(rgis_file_loader::LoadGeoJsonFile {
             path: geojson_file_path,
             source_srs: cli_values.source_srs.clone(),
             target_srs: cli_values.target_srs.clone(),
@@ -15,30 +15,6 @@ fn load_layers_from_cli(mut events: ResMut<Events<LoadGeoJsonFile>>) {
     }
 }
 
-// System
-fn load_geojson_file_handler(
-    mut layers: ResMut<rgis_layers::Layers>,
-    load_events: Res<Events<LoadGeoJsonFile>>,
-    mut load_event_reader: Local<EventReader<LoadGeoJsonFile>>,
-    mut loaded_events: ResMut<Events<LayerLoaded>>,
-) {
-    for LoadGeoJsonFile {
-        path: geojson_file_path,
-        source_srs,
-        target_srs,
-    } in load_event_reader.iter(&load_events)
-    {
-        let layer_ids = rgis_file_loader::load(
-            geojson_file_path.clone(),
-            &mut layers,
-            source_srs,
-            target_srs,
-        );
-        for layer_id in layer_ids {
-            loaded_events.send(LayerLoaded(layer_id));
-        }
-    }
-}
 
 fn polygon_to_earcutr_input(polygon: &geo::Polygon<f64>) -> bevy_earcutr::EarcutrInput {
     let mut vertices = Vec::with_capacity(polygon_num_coords(polygon) * 2);
@@ -78,9 +54,9 @@ fn layer_loaded(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     layers: Res<rgis_layers::Layers>,
-    events: Res<Events<LayerLoaded>>,
-    mut event_reader: Local<EventReader<LayerLoaded>>,
-    mut spawned_events: ResMut<Events<LayerSpawned>>,
+    events: Res<Events<rgis_layers::LayerLoaded>>,
+    mut event_reader: Local<EventReader<rgis_layers::LayerLoaded>>,
+    mut spawned_events: ResMut<Events<rgis_layers::LayerSpawned>>,
 ) {
     for event in event_reader.iter(&events) {
         let layer = match layers.get(event.0) {
@@ -141,7 +117,7 @@ fn layer_loaded(
 
         tl.finish();
 
-        spawned_events.send(LayerSpawned(event.0));
+        spawned_events.send(rgis_layers::LayerSpawned(event.0));
     }
 }
 
@@ -155,11 +131,11 @@ impl Plugin for LayerSpawnedPlugin {
 
 // System
 fn layer_spawned(
-    events: Res<Events<LayerSpawned>>,
+    events: Res<Events<rgis_layers::LayerSpawned>>,
     layers: ResMut<rgis_layers::Layers>,
     mut camera_offset: ResMut<rgis_camera::CameraOffset>,
     mut camera_scale: ResMut<rgis_camera::CameraScale>,
-    mut event_reader: Local<EventReader<LayerSpawned>>,
+    mut event_reader: Local<EventReader<rgis_layers::LayerSpawned>>,
 ) {
     for event in event_reader.iter(&events) {
         let layer = match layers.get(event.0) {
@@ -196,30 +172,17 @@ pub fn spawn_mesh(
     commands.spawn(sprite);
 }
 
-#[derive(Debug)]
-struct LoadGeoJsonFile {
-    path: String,
-    source_srs: String,
-    target_srs: String,
-}
-
-#[derive(Debug)]
-struct LayerLoaded(rgis_layers::LayerId);
-
-#[derive(Debug)]
-struct LayerSpawned(rgis_layers::LayerId);
-
 fn main() {
     env_logger::init();
 
     App::build()
-        .add_event::<LoadGeoJsonFile>()
-        .add_event::<LayerLoaded>()
-        .add_event::<LayerSpawned>()
+        .add_event::<rgis_file_loader::LoadGeoJsonFile>()
+        .add_event::<rgis_layers::LayerLoaded>()
+        .add_event::<rgis_layers::LayerSpawned>()
         .add_plugins(DefaultPlugins)
         .add_resource(rgis_layers::Layers::new())
         .add_startup_system(load_layers_from_cli.system())
-        .add_system(load_geojson_file_handler.system())
+        .add_system(rgis_file_loader::load_geojson_file_handler.system())
         .add_system(layer_loaded.system())
         .add_system(mouse::system.system())
         .add_plugin(LayerSpawnedPlugin)

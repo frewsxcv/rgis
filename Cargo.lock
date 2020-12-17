@@ -3205,6 +3205,7 @@ dependencies = [
 name = "rgis-file-loader"
 version = "0.1.0"
 dependencies = [
+ "bevy",
  "geo-types",
  "geojson",
  "log",

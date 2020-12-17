@@ -5,6 +5,12 @@ use std::sync;
 #[derive(Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub struct LayerId(i64);
 
+#[derive(Debug)]
+pub struct LayerLoaded(pub LayerId);
+
+#[derive(Debug)]
+pub struct LayerSpawned(pub LayerId);
+
 #[derive(Clone, Debug)]
 pub struct Layers {
     pub data: Vec<Layer>,
