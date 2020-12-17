@@ -29,13 +29,51 @@ impl LineStringMeshBuilder {
     }
 
     pub fn build(self) -> Mesh {
-        build_mesh_from_vertices(self.vertices, self.indices)
+        build_mesh_from_vertices(
+            bevy::render::pipeline::PrimitiveTopology::LineList,
+            self.vertices,
+            self.indices,
+        )
     }
 }
 
-fn build_mesh_from_vertices(vertices: Vec<[f32; 2]>, indices: Vec<u32>) -> Mesh {
+struct PointMeshBuilder {
+    vertices: Vec<[f32; 2]>,
+    indices: Vec<u32>,
+}
+
+impl PointMeshBuilder {
+    fn new() -> Self {
+        // TODO: capacity?
+        PointMeshBuilder {
+            vertices: vec![],
+            indices: vec![],
+        }
+    }
+
+    /// Call for `add_earcutr_input` for each polygon you want to add to the mesh.
+    fn add_point(&mut self, point: &geo_types::Point<f64>) {
+        let index_base = self.vertices.len();
+        self.vertices.push([point.x() as f32, point.y() as f32]);
+        self.indices.push(u32::try_from(index_base).unwrap());
+    }
+
+    pub fn build(self) -> Mesh {
+        build_mesh_from_vertices(
+            bevy::render::pipeline::PrimitiveTopology::PointList,
+            self.vertices,
+            self.indices,
+        )
+    }
+}
+
+fn build_mesh_from_vertices(
+    primitive_topology: bevy::render::pipeline::PrimitiveTopology,
+    vertices: Vec<[f32; 2]>,
+    indices: Vec<u32>,
+) -> Mesh {
     let num_vertices = vertices.len();
-    let mut mesh = Mesh::new(bevy::render::pipeline::PrimitiveTopology::LineList);
+    let mut mesh = Mesh::new(primitive_topology);
     mesh.set_indices(Some(bevy::render::mesh::Indices::U32(indices)));
     mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, vertices);
 
@@ -51,6 +89,7 @@ fn build_mesh_from_vertices(vertices: Vec<[f32; 2]>, indices: Vec<u32>) -> Mesh 
 }
 
 pub struct BuildBevyMeshesContext {
+    point_mesh_builder: PointMeshBuilder,
     line_string_mesh_builder: LineStringMeshBuilder,
     polygon_mesh_builder: bevy_earcutr::PolygonMeshBuilder,
 }
@@ -58,6 +97,7 @@ pub struct BuildBevyMeshesContext {
 impl BuildBevyMeshesContext {
     pub fn new() -> Self {
         BuildBevyMeshesContext {
+            point_mesh_builder: PointMeshBuilder::new(),
             line_string_mesh_builder: LineStringMeshBuilder::new(),
             polygon_mesh_builder: bevy_earcutr::PolygonMeshBuilder::new(),
         }
@@ -72,6 +112,7 @@ pub trait BuildBevyMeshes {
 
         // TODO: do the builders handle the empty case?
 
+        meshes.push(ctx.point_mesh_builder.build());
         meshes.push(ctx.line_string_mesh_builder.build());
         meshes.push(ctx.polygon_mesh_builder.build());
 
@@ -79,6 +120,12 @@ pub trait BuildBevyMeshes {
     }
 
     fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext);
+}
+
+impl BuildBevyMeshes for geo_types::Point<f64> {
+    fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) {
+        ctx.point_mesh_builder.add_point(self);
+    }
 }
 
 impl BuildBevyMeshes for geo_types::LineString<f64> {
@@ -89,7 +136,16 @@ impl BuildBevyMeshes for geo_types::LineString<f64> {
 
 impl BuildBevyMeshes for geo_types::Polygon<f64> {
     fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) {
-        ctx.polygon_mesh_builder.add_earcutr_input(polygon_to_earcutr_input(self));
+        ctx.polygon_mesh_builder
+            .add_earcutr_input(polygon_to_earcutr_input(self));
+    }
+}
+
+impl BuildBevyMeshes for geo_types::MultiPoint<f64> {
+    fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) {
+        for point in &self.0 {
+            point.populate_mesh_builders(ctx);
+        }
     }
 }
 
@@ -112,8 +168,10 @@ impl BuildBevyMeshes for geo_types::MultiPolygon<f64> {
 impl BuildBevyMeshes for geo_types::Geometry<f64> {
     fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) {
         match self {
+            geo_types::Geometry::Point(g) => g.populate_mesh_builders(ctx),
             geo_types::Geometry::LineString(g) => g.populate_mesh_builders(ctx),
             geo_types::Geometry::Polygon(g) => g.populate_mesh_builders(ctx),
+            geo_types::Geometry::MultiPoint(g) => g.populate_mesh_builders(ctx),
             geo_types::Geometry::MultiLineString(g) => g.populate_mesh_builders(ctx),
             geo_types::Geometry::MultiPolygon(g) => g.populate_mesh_builders(ctx),
             geo_types::Geometry::GeometryCollection(g) => g.populate_mesh_builders(ctx),
