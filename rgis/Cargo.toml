@@ -5,7 +5,8 @@ authors = ["Corey Farwell <coreyf@rwell.org>"]
 edition = "2018"
 
 [dependencies]
-bevy = "0.3"
+bevy = "0.4"
+# bevy = { version = "0.4", features = ['trace' , 'trace_chrome'] }
 env_logger = "0.8"
 geo = { version = "0.15" }
 geojson = { version = "0.20", features = ['geo-types'] }

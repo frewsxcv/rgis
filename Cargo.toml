@@ -15,6 +15,3 @@ members = [
 
 [profile.release]
 debug = true
-
-[patch.crates-io]
-bevy = { git = "https://github.com/bevyengine/bevy.git" }
