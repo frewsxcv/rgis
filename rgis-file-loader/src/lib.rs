@@ -10,7 +10,7 @@ pub struct LoadGeoJsonFile {
 }
 
 // System
-pub fn load_geojson_file_handler(
+fn load_geojson_file_handler(
     layers: rgis_layers::ResLayers,
     load_events: Res<Events<LoadGeoJsonFile>>,
     mut load_event_reader: Local<EventReader<LoadGeoJsonFile>>,
@@ -31,5 +31,15 @@ pub fn load_geojson_file_handler(
         for layer_id in layer_ids {
             loaded_events.send(rgis_layers::LayerLoaded(layer_id));
         }
+    }
+}
+
+pub struct RgisFileLoaderPlugin;
+
+impl Plugin for RgisFileLoaderPlugin {
+    fn build(&self, app: &mut AppBuilder) {
+        app
+        .add_event::<LoadGeoJsonFile>()
+        .add_system(load_geojson_file_handler.system());
     }
 }

@@ -105,11 +105,10 @@ fn main() {
     env_logger::init();
 
     App::build()
-        .add_event::<rgis_file_loader::LoadGeoJsonFile>()
         .add_plugins(DefaultPlugins)
         .add_plugin(rgis_layers::RgisLayersPlugin)
+        .add_plugin(rgis_file_loader::RgisFileLoaderPlugin)
         .add_startup_system(load_layers_from_cli.system())
-        .add_system(rgis_file_loader::load_geojson_file_handler.system())
         .add_system(layer_loaded.system())
         .add_system(mouse::system.system())
         .add_plugin(LayerSpawnedPlugin)
