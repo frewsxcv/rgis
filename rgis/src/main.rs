@@ -21,12 +21,13 @@ fn layer_loaded(
     commands: &mut Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
-    layers: Res<rgis_layers::Layers>,
+    layers: rgis_layers::ResLayers,
     events: Res<Events<rgis_layers::LayerLoaded>>,
     mut event_reader: Local<EventReader<rgis_layers::LayerLoaded>>,
     mut spawned_events: ResMut<Events<rgis_layers::LayerSpawned>>,
 ) {
     for event in event_reader.iter(&events) {
+        let layers = layers.read().unwrap();
         let layer = match layers.get(event.0) {
             Some(l) => l,
             None => continue,
@@ -59,12 +60,13 @@ impl Plugin for LayerSpawnedPlugin {
 // System
 fn layer_spawned(
     events: Res<Events<rgis_layers::LayerSpawned>>,
-    layers: ResMut<rgis_layers::Layers>,
+    layers: rgis_layers::ResLayers,
     mut camera_offset: ResMut<rgis_camera::CameraOffset>,
     mut camera_scale: ResMut<rgis_camera::CameraScale>,
     mut event_reader: Local<EventReader<rgis_layers::LayerSpawned>>,
 ) {
     for event in event_reader.iter(&events) {
+        let layers = layers.read().unwrap();
         let layer = match layers.get(event.0) {
             Some(l) => l,
             None => continue,
@@ -104,10 +106,8 @@ fn main() {
 
     App::build()
         .add_event::<rgis_file_loader::LoadGeoJsonFile>()
-        .add_event::<rgis_layers::LayerLoaded>()
-        .add_event::<rgis_layers::LayerSpawned>()
         .add_plugins(DefaultPlugins)
-        .add_resource(rgis_layers::Layers::new())
+        .add_plugin(rgis_layers::RgisLayersPlugin)
         .add_startup_system(load_layers_from_cli.system())
         .add_system(rgis_file_loader::load_geojson_file_handler.system())
         .add_system(layer_loaded.system())

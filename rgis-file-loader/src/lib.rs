@@ -11,7 +11,7 @@ pub struct LoadGeoJsonFile {
 
 // System
 pub fn load_geojson_file_handler(
-    mut layers: ResMut<rgis_layers::Layers>,
+    layers: rgis_layers::ResLayers,
     load_events: Res<Events<LoadGeoJsonFile>>,
     mut load_event_reader: Local<EventReader<LoadGeoJsonFile>>,
     mut loaded_events: ResMut<Events<rgis_layers::LayerLoaded>>,
@@ -24,7 +24,7 @@ pub fn load_geojson_file_handler(
     {
         let layer_ids = geojson::load(
             geojson_file_path.clone(),
-            &mut layers,
+            &mut layers.write().unwrap(),
             source_srs,
             target_srs,
         );

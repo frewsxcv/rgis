@@ -1,3 +1,4 @@
+use bevy::prelude::*;
 use geo::bounding_rect::BoundingRect;
 use geo::contains::Contains;
 use std::sync;
@@ -183,4 +184,18 @@ fn next_colorous_color() -> colorous::Color {
 fn next_color_index() -> usize {
     static COUNTER: sync::atomic::AtomicUsize = sync::atomic::AtomicUsize::new(0);
     COUNTER.fetch_add(1, sync::atomic::Ordering::Relaxed) % COLORS.len()
+}
+
+pub type ResLayers<'a> = Res<'a, sync::Arc<sync::RwLock<Layers>>>;
+
+pub struct RgisLayersPlugin;
+
+impl Plugin for RgisLayersPlugin {
+    fn build(&self, app: &mut AppBuilder) {
+        app.add_resource(sync::Arc::new(
+            sync::RwLock::new(Layers::new()),
+        ))
+        .add_event::<LayerLoaded>()
+        .add_event::<LayerSpawned>();
+    }
 }
