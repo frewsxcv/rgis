@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy_render::prelude::*;
 use std::convert::TryFrom;
 
 struct LineStringMeshBuilder {
@@ -30,7 +30,7 @@ impl LineStringMeshBuilder {
 
     pub fn build(self) -> Mesh {
         build_mesh_from_vertices(
-            bevy::render::pipeline::PrimitiveTopology::LineList,
+            bevy_render::pipeline::PrimitiveTopology::LineList,
             self.vertices,
             self.indices,
         )
@@ -60,7 +60,7 @@ impl PointMeshBuilder {
 
     pub fn build(self) -> Mesh {
         build_mesh_from_vertices(
-            bevy::render::pipeline::PrimitiveTopology::PointList,
+            bevy_render::pipeline::PrimitiveTopology::PointList,
             self.vertices,
             self.indices,
         )
@@ -68,13 +68,13 @@ impl PointMeshBuilder {
 }
 
 fn build_mesh_from_vertices(
-    primitive_topology: bevy::render::pipeline::PrimitiveTopology,
+    primitive_topology: bevy_render::pipeline::PrimitiveTopology,
     vertices: Vec<[f32; 2]>,
     indices: Vec<u32>,
 ) -> Mesh {
     let num_vertices = vertices.len();
     let mut mesh = Mesh::new(primitive_topology);
-    mesh.set_indices(Some(bevy::render::mesh::Indices::U32(indices)));
+    mesh.set_indices(Some(bevy_render::mesh::Indices::U32(indices)));
     mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, vertices);
 
     let mut normals = Vec::new();

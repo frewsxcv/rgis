@@ -1748,8 +1748,8 @@ dependencies = [
 name = "geo-bevy"
 version = "0.1.0"
 dependencies = [
- "bevy",
  "bevy-earcutr",
+ "bevy_render",
  "geo-types",
  "log",
 ]

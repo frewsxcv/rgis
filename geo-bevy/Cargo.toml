@@ -7,7 +7,7 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bevy = "0.4"
+bevy_render = "0.4"
 bevy-earcutr = { git = "https://github.com/frewsxcv/bevy-earcutr" }
 geo-types = "0.6"
 log = "0.4"
