@@ -282,9 +282,9 @@ dependencies = [
 [[package]]
 name = "bevy-earcutr"
 version = "0.1.0"
-source = "git+https://github.com/frewsxcv/bevy-earcutr#589d5c727c54d8524beee595e9533995eb5b8335"
+source = "git+https://github.com/frewsxcv/bevy-earcutr#0911feea7d9ac1aaebc48d050ec0d3b20464f081"
 dependencies = [
- "bevy",
+ "bevy_render",
  "earcutr",
 ]
 
