@@ -56,10 +56,10 @@ impl Layers {
     ) -> bool {
         let intersecting = self.containing_coord(coord);
         if !intersecting.is_empty() {
-            log::info!("A geometry was clicked: {:?}", intersecting[0].metadata);
+            info!("A geometry was clicked: {:?}", intersecting[0].metadata);
         }
         if intersecting.len() > 1 {
-            log::warn!("Multiple layers clicked. Choosing one randomly.");
+            warn!("Multiple layers clicked. Choosing one randomly.");
         }
         let prev_selected_layer_id = self.selected_layer_id;
 

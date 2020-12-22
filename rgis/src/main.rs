@@ -7,7 +7,7 @@ mod mouse;
 fn load_layers_from_cli(mut events: ResMut<Events<rgis_file_loader::LoadGeoJsonFile>>) {
     let cli_values = rgis_cli::run();
     for geojson_file_path in cli_values.geojson_files {
-        log::debug!("sending LoadGeoJsonFile event: {}", &geojson_file_path,);
+        debug!("sending LoadGeoJsonFile event: {}", &geojson_file_path,);
         events.send(rgis_file_loader::LoadGeoJsonFile {
             path: geojson_file_path,
             source_srs: cli_values.source_srs.clone(),
@@ -76,7 +76,7 @@ fn layer_spawned(
         // .     the height of the geometry. as well as the window size.
         let scale = layer.projected_bounding_rect.rect.width() / 1_000.;
         // TODO: only change the transform if there were no layers previously
-        log::debug!("Moving camera to look at new layer");
+        debug!("Moving camera to look at new layer");
         camera_offset.x = layer_center.x as f32;
         camera_offset.y = layer_center.y as f32;
         camera_scale.0 = scale as f32;
@@ -102,8 +102,6 @@ pub fn spawn_mesh(
 }
 
 fn main() {
-    env_logger::init();
-
     App::build()
         .add_plugins(DefaultPlugins)
         .add_plugin(rgis_layers::RgisLayersPlugin)

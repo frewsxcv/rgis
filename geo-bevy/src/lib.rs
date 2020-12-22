@@ -175,7 +175,7 @@ impl BuildBevyMeshes for geo_types::Geometry<f64> {
             geo_types::Geometry::MultiLineString(g) => g.populate_mesh_builders(ctx),
             geo_types::Geometry::MultiPolygon(g) => g.populate_mesh_builders(ctx),
             geo_types::Geometry::GeometryCollection(g) => g.populate_mesh_builders(ctx),
-            _ => log::error!("Encountered unrenderable geometry type"),
+            _ => bevy_log::error!("Encountered unrenderable geometry type"),
         }
     }
 }

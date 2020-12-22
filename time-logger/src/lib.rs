@@ -8,7 +8,7 @@ pub struct TimeLogger {
 impl TimeLogger {
     pub fn start(title: impl Into<String>) -> Self {
         let title: String = title.into();
-        log::info!("{}: started", title);
+        bevy_log::info!("{}: started", title);
         TimeLogger {
             title: title,
             duration: time::Instant::now(),
@@ -16,7 +16,7 @@ impl TimeLogger {
     }
 
     pub fn finish(self) {
-        log::info!("{}: done ({:?})", self.title, self.duration.elapsed());
+        bevy_log::info!("{}: done ({:?})", self.title, self.duration.elapsed());
     }
 }
 

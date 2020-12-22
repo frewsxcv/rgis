@@ -35,16 +35,16 @@ pub fn load(
     /*
     let layer_ids = match geojson {
         geojson::GeoJson::Geometry(g) => {
-            log::info!("Loading GeoJSON Geometry");
+            info!("Loading GeoJSON Geometry");
             load_geojson_geometry(g, layers, None, source_projection, target_projection)
         }
         geojson::GeoJson::Feature(f) => {
-            log::info!("Loading GeoJSON Feature");
+            info!("Loading GeoJSON Feature");
             load_geojson_feature(f, layers, source_projection, target_projection)
         }
         geojson::GeoJson::FeatureCollection(f) => {
             let num_features = f.features.len();
-            log::info!(
+            info!(
                 "Loading GeoJSON FeatureCollection ({} features)",
                 num_features
             );
@@ -53,7 +53,7 @@ pub fn load(
                 .enumerate()
                 .inspect(|(i, _)| {
                     if i % 300 == 0 {
-                        log::info!("...Loaded {}%", *i as f32 / num_features as f32);
+                        info!("...Loaded {}%", *i as f32 / num_features as f32);
                     }
                 })
                 .flat_map(|(_, feature)| {
@@ -62,7 +62,7 @@ pub fn load(
                 .collect()
         }
     };
-    log::info!("Loaded file: {:?}", geojson_file_path);
+    info!("Loaded file: {:?}", geojson_file_path);
     layer_ids
     */
 }

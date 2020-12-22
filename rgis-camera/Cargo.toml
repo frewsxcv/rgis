@@ -9,4 +9,3 @@ publish = false
 
 [dependencies]
 bevy = "0.4"
-log = "0.4"

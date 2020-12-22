@@ -62,11 +62,11 @@ fn update_camera_offset(
     camera_query: Query<(&Camera,)>,
     mut transform_query: Query<(&mut Transform,)>,
 ) {
-    log::debug!("Camera offset changed");
+    debug!("Camera offset changed");
     for (camera,) in camera_query.iter() {
         if let Ok((mut transform,)) = transform_query.get_mut(camera.0) {
             transform.translation = Vec3::new(camera_offset.x, camera_offset.y, 0.);
-            log::debug!("New transform translation: {:?}", transform.translation);
+            debug!("New transform translation: {:?}", transform.translation);
         }
     }
 }
@@ -76,11 +76,11 @@ fn update_camera_scale(
     camera_query: Query<(&Camera,)>,
     mut transform_query: Query<(&mut Transform,)>,
 ) {
-    log::debug!("Camera scale changed");
+    debug!("Camera scale changed");
     for (camera,) in camera_query.iter() {
         if let Ok((mut transform,)) = transform_query.get_mut(camera.0) {
             transform.scale = Vec3::new(camera_scale.0, camera_scale.0, 1.);
-            log::debug!("New transform scale: {:?}", transform.scale);
+            debug!("New transform scale: {:?}", transform.scale);
         }
     }
 }

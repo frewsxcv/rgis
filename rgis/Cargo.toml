@@ -7,12 +7,10 @@ edition = "2018"
 [dependencies]
 bevy = "0.4"
 # bevy = { version = "0.4", features = ['trace' , 'trace_chrome'] }
-env_logger = "0.8"
 geo = { version = "0.15" }
 geojson = { version = "0.20", features = ['geo-types'] }
 geo-bevy = { path = "../geo-bevy" }
 geo-srs = { path = "../geo-srs" }
-log = "0.4"
 rgis-camera = { path = "../rgis-camera" }
 rgis-cli = { path = "../rgis-cli" }
 rgis-file-loader = { path = "../rgis-file-loader" }
