@@ -32,8 +32,7 @@ fn layer_loaded(
             Some(l) => l,
             None => continue,
         };
-        let material =
-            materials.add(Color::rgb_u8(layer.color.0, layer.color.1, layer.color.2).into());
+        let material = materials.add(layer.color.into());
 
         let tl = time_logger::start("Triangulating and building mesh");
         for mesh in layer

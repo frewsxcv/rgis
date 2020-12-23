@@ -20,8 +20,6 @@ pub struct Layers {
     pub selected_layer_id: Option<LayerId>,
 }
 
-pub type Color = (u8, u8, u8);
-
 impl Layers {
     pub fn new() -> Layers {
         Layers {
@@ -168,11 +166,15 @@ impl Layer {
             unprojected_bounding_rect,
             projected_geometry,
             projected_bounding_rect,
-            color: next_colorous_color().as_tuple(),
+            color: colorous_color_to_bevy_color(next_colorous_color()),
             metadata: metadata.unwrap_or_else(serde_json::Map::new),
             id,
         }
     }
+}
+
+fn colorous_color_to_bevy_color(colorous_color: colorous::Color) -> Color {
+    Color::rgb_u8(colorous_color.r, colorous_color.g, colorous_color.b)
 }
 
 const COLORS: [colorous::Color; 10] = colorous::CATEGORY10;
@@ -192,10 +194,8 @@ pub struct RgisLayersPlugin;
 
 impl Plugin for RgisLayersPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        app.add_resource(sync::Arc::new(
-            sync::RwLock::new(Layers::new()),
-        ))
-        .add_event::<LayerLoaded>()
-        .add_event::<LayerSpawned>();
+        app.add_resource(sync::Arc::new(sync::RwLock::new(Layers::new())))
+            .add_event::<LayerLoaded>()
+            .add_event::<LayerSpawned>();
     }
 }

@@ -38,8 +38,7 @@ pub struct RgisFileLoaderPlugin;
 
 impl Plugin for RgisFileLoaderPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        app
-        .add_event::<LoadGeoJsonFile>()
-        .add_system(load_geojson_file_handler.system());
+        app.add_event::<LoadGeoJsonFile>()
+            .add_system(load_geojson_file_handler.system());
     }
 }
