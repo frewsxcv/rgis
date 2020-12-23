@@ -1,19 +1,20 @@
-use bevy::prelude::*;
-use rgis_camera::Camera;
+use bevy::ecs::IntoSystem;
 
-pub fn system(
-    mut cursor_moved_event_reader: Local<EventReader<CursorMoved>>,
-    cursor_moved_events: Res<Events<CursorMoved>>,
-    windows: Res<Windows>,
-    camera_query: Query<(&Camera,)>,
-    transform_query: Query<(&Transform,)>,
-    mut text_query: Query<&mut Text, With<rgis_ui::PositionText>>,
+fn system(
+    mut cursor_moved_event_reader: bevy::ecs::Local<
+        bevy::app::EventReader<bevy::window::CursorMoved>,
+    >,
+    cursor_moved_events: bevy::ecs::Res<bevy::app::Events<bevy::window::CursorMoved>>,
+    windows: bevy::ecs::Res<bevy::window::Windows>,
+    camera_query: bevy::ecs::Query<(&rgis_camera::Camera,)>,
+    transform_query: bevy::ecs::Query<(&bevy::transform::components::Transform,)>,
+    mut text_query: bevy::ecs::Query<&mut bevy::ui::widget::Text, bevy::ecs::With<rgis_ui::PositionText>>,
 ) {
     for event in cursor_moved_event_reader.iter(&cursor_moved_events) {
         for (camera,) in camera_query.iter() {
             if let Ok((transform,)) = transform_query.get(camera.0) {
                 let window = windows.get_primary().unwrap();
-                let size = Vec2::new(window.width() as f32, window.height() as f32);
+                let size = bevy::math::Vec2::new(window.width() as f32, window.height() as f32);
 
                 // the default orthographic projection is in pixels from the center;
                 // just undo the translation
@@ -43,4 +44,12 @@ pub fn system(
         println!("left mouse just released");
     }
     */
+}
+
+pub struct Plugin;
+
+impl bevy::app::Plugin for Plugin {
+    fn build(&self, app: &mut bevy::app::AppBuilder) {
+        app.add_system(system.system());
+    }
 }

@@ -8,6 +8,7 @@ members = [
     "rgis-cli",
     "rgis-file-loader",
     "rgis-layers",
+    "rgis-mouse",
     "rgis-ui",
     "time-logger",
 ]

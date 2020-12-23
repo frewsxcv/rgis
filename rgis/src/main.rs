@@ -1,8 +1,6 @@
 use bevy::{prelude::*, render::pass::ClearColor};
 use geo_bevy::BuildBevyMeshes;
 
-mod mouse;
-
 // System
 fn load_layers_from_cli(mut events: ResMut<Events<rgis_file_loader::LoadGeoJsonFile>>) {
     let cli_values = rgis_cli::run();
@@ -107,7 +105,7 @@ fn main() {
         .add_plugin(rgis_file_loader::RgisFileLoaderPlugin)
         .add_startup_system(load_layers_from_cli.system())
         .add_system(layer_loaded.system())
-        .add_system(mouse::system.system())
+        .add_plugin(rgis_mouse::Plugin)
         .add_plugin(LayerSpawnedPlugin)
         .add_plugin(rgis_camera::RgisCamera)
         .add_plugin(rgis_ui::RgisUi)

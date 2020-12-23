@@ -3122,6 +3122,7 @@ dependencies = [
  "rgis-cli",
  "rgis-file-loader",
  "rgis-layers",
+ "rgis-mouse",
  "rgis-ui",
  "time-logger",
 ]
@@ -3162,6 +3163,15 @@ dependencies = [
  "geo-srs",
  "serde_json",
  "time-logger",
+]
+
+[[package]]
+name = "rgis-mouse"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "rgis-camera",
+ "rgis-ui",
 ]
 
 [[package]]
