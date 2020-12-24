@@ -104,7 +104,6 @@ fn main() {
         .add_plugin(bevy::input::InputPlugin::default())
         .add_plugin(bevy::window::WindowPlugin::default())
         .add_plugin(bevy::asset::AssetPlugin::default())
-        .add_plugin(bevy::scene::ScenePlugin::default())
         .add_plugin(bevy::render::RenderPlugin {
             base_render_graph_config: Some(
                 bevy::render::render_graph::base::BaseRenderGraphConfig {
