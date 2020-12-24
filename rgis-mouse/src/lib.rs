@@ -7,7 +7,7 @@ fn cursor_moved_system(
     cursor_moved_events: bevy::ecs::Res<bevy::app::Events<bevy::window::CursorMoved>>,
     windows: bevy::ecs::Res<bevy::window::Windows>,
     camera_transform_query: bevy::ecs::Query<(
-        &bevy::render::camera::Camera,
+        &rgis_camera::Camera2d,
         &bevy::transform::components::Transform,
     )>,
     mut text_query: bevy::ecs::Query<

@@ -4,6 +4,9 @@ const ZOOM_AMOUNT: f32 = 1.3; // Larger number will zoom more
 
 pub struct RgisCamera;
 
+// Component that gets added to the Camera2dBundle entity.
+pub struct Camera2d;
+
 impl Plugin for RgisCamera {
     fn build(&self, app: &mut AppBuilder) {
         app.add_startup_system(setup.system())
@@ -19,7 +22,7 @@ impl Plugin for RgisCamera {
 }
 
 fn setup(commands: &mut Commands) {
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn(Camera2dBundle::default()).with(Camera2d);
 }
 
 pub struct CameraScale(pub f32);
@@ -101,7 +104,7 @@ fn zoom_camera_system(
 
 fn update_camera_offset(
     camera_offset: ChangedRes<CameraOffset>,
-    mut camera_transform_query: Query<(&bevy::render::camera::Camera, &mut Transform)>,
+    mut camera_transform_query: Query<(&Camera2d, &mut Transform)>,
 ) {
     debug!("Camera offset changed");
     for (_camera, mut transform) in camera_transform_query.iter_mut() {
@@ -112,7 +115,7 @@ fn update_camera_offset(
 
 fn update_camera_scale(
     camera_scale: ChangedRes<CameraScale>,
-    mut camera_transform_query: Query<(&bevy::render::camera::Camera, &mut Transform)>,
+    mut camera_transform_query: Query<(&Camera2d, &mut Transform)>,
 ) {
     debug!("Camera scale changed");
     for (_camera, mut transform) in camera_transform_query.iter_mut() {
