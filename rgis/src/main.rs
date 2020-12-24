@@ -103,7 +103,15 @@ fn main() {
         .add_plugin(bevy::window::WindowPlugin::default())
         .add_plugin(bevy::asset::AssetPlugin::default())
         .add_plugin(bevy::scene::ScenePlugin::default())
-        .add_plugin(bevy::render::RenderPlugin::default())
+        .add_plugin(bevy::render::RenderPlugin {
+            base_render_graph_config: Some(
+                bevy::render::render_graph::base::BaseRenderGraphConfig {
+                    // We don’t need a 3D camera
+                    add_3d_camera: false,
+                    ..Default::default()
+                }
+            )
+        })
         .add_plugin(bevy::sprite::SpritePlugin::default())
         .add_plugin(bevy::pbr::PbrPlugin::default())
         .add_plugin(bevy::ui::UiPlugin::default())
