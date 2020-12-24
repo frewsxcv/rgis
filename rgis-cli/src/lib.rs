@@ -2,8 +2,13 @@ use clap::{App, Arg};
 
 static DEFAULT_SOURCE_SRS: &str = "EPSG:4326";
 static DEFAULT_TARGET_SRS: &str = "EPSG:3857";
+static DEFAULT_MSAA: &str = "4";
 
+type MsaaSampleCount = u32;
+
+#[derive(Clone)]
 pub struct Values {
+    pub msaa_sample_count: MsaaSampleCount,
     pub geojson_files: Vec<String>,
     pub source_srs: String,
     pub target_srs: String,
@@ -14,6 +19,20 @@ pub fn run() -> Values {
         .version("0.1.0")
         .author("Corey Farwell <coreyf@rwell.org>")
         .about("Geospatial data viewer written in Rust")
+        .arg(
+            Arg::with_name("MSAA SAMPLE COUNT")
+                .long("--msaa-sample-count")
+                .default_value(DEFAULT_MSAA)
+                .help("Multi-Sample Anti-Aliasing sample count. Setting the sample count higher will result in smoother edges, but it will also increase the cost to render those edges. The range should generally be somewhere between 1 (no multi sampling, but cheap) to 8 (crisp but expensive).")
+                .validator(|s| {
+                    if s.parse::<MsaaSampleCount>().is_ok() {
+                        Ok(())
+                    } else {
+                        Err("should be a non-zero positive integer".to_string())
+                    }
+                })
+                .takes_value(true),
+        )
         .arg(
             Arg::with_name("SOURCE SRS")
                 .long("--source-srs")
@@ -39,5 +58,14 @@ pub fn run() -> Values {
             .collect(),
         source_srs: matches.value_of("SOURCE SRS").unwrap().to_owned(),
         target_srs: matches.value_of("SOURCE SRS").unwrap().to_owned(),
+        msaa_sample_count: matches.value_of("MSAA SAMPLE COUNT").unwrap().parse().unwrap(),
+    }
+}
+
+pub struct Plugin(pub Values);
+
+impl bevy::app::Plugin for Plugin {
+    fn build(&self, app: &mut bevy::app::AppBuilder) {
+        app.add_resource(self.0.clone());
     }
 }

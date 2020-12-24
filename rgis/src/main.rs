@@ -2,19 +2,6 @@ use bevy::{prelude::*, render::pass::ClearColor};
 use geo_bevy::BuildBevyMeshes;
 
 // System
-fn load_layers_from_cli(mut events: ResMut<Events<rgis_file_loader::LoadGeoJsonFile>>) {
-    let cli_values = rgis_cli::run();
-    for geojson_file_path in cli_values.geojson_files {
-        debug!("sending LoadGeoJsonFile event: {}", &geojson_file_path,);
-        events.send(rgis_file_loader::LoadGeoJsonFile {
-            path: geojson_file_path,
-            source_srs: cli_values.source_srs.clone(),
-            target_srs: cli_values.target_srs.clone(),
-        });
-    }
-}
-
-// System
 fn layer_loaded(
     commands: &mut Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -99,11 +86,14 @@ pub fn spawn_mesh(
 }
 
 fn main() {
+    let cli_values = rgis_cli::run();
+
     App::build()
+        .add_resource(Msaa { samples: cli_values.msaa_sample_count })
         .add_plugins(DefaultPlugins)
+        .add_plugin(rgis_cli::Plugin(cli_values))
         .add_plugin(rgis_layers::RgisLayersPlugin)
         .add_plugin(rgis_file_loader::RgisFileLoaderPlugin)
-        .add_startup_system(load_layers_from_cli.system())
         .add_system(layer_loaded.system())
         .add_plugin(rgis_mouse::Plugin)
         .add_plugin(rgis_keyboard::Plugin)

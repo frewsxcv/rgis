@@ -34,11 +34,26 @@ fn load_geojson_file_handler(
     }
 }
 
+fn load_layers_from_cli(
+    cli_values: Res<rgis_cli::Values>,
+    mut events: ResMut<Events<LoadGeoJsonFile>>,
+) {
+    for geojson_file_path in &cli_values.geojson_files {
+        debug!("sending LoadGeoJsonFile event: {}", &geojson_file_path,);
+        events.send(LoadGeoJsonFile {
+            path: geojson_file_path.clone(),
+            source_srs: cli_values.source_srs.clone(),
+            target_srs: cli_values.target_srs.clone(),
+        });
+    }
+}
+
 pub struct RgisFileLoaderPlugin;
 
 impl Plugin for RgisFileLoaderPlugin {
     fn build(&self, app: &mut AppBuilder) {
         app.add_event::<LoadGeoJsonFile>()
+            .add_startup_system(load_layers_from_cli.system())
             .add_system(load_geojson_file_handler.system());
     }
 }

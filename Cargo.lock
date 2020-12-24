@@ -3139,6 +3139,7 @@ dependencies = [
 name = "rgis-cli"
 version = "0.1.0"
 dependencies = [
+ "bevy",
  "clap",
 ]
 
@@ -3149,6 +3150,7 @@ dependencies = [
  "bevy",
  "geo-types",
  "geojson",
+ "rgis-cli",
  "rgis-layers",
  "serde_json",
  "time-logger",

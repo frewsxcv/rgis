@@ -8,6 +8,7 @@ edition = "2018"
 bevy = "0.4"
 geo-types = "0.6"
 geojson = "0.20"
+rgis-cli = { path = "../rgis-cli" }
 rgis-layers = { path = "../rgis-layers" }
 serde_json = "1"
 time-logger = { path = "../time-logger" }
