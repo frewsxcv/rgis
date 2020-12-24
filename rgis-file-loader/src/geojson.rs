@@ -1,9 +1,8 @@
 use rgis_layers::Layers;
-use std::fs;
-use std::io;
+use std::{fs, io, path};
 
 pub fn load(
-    geojson_file_path: String,
+    geojson_file_path: path::PathBuf,
     layers: &mut Layers,
     source_projection: &str,
     target_projection: &str,
@@ -24,6 +23,7 @@ pub fn load(
     let tl = time_logger::start(format!("Adding new layer: {:?}", geojson_file_path));
     let layer_id = layers.add(
         geo_types::Geometry::GeometryCollection(geo_geometry_collection),
+        geojson_file_path.file_name().unwrap().to_string_lossy().into_owned(),
         None,
         source_projection,
         target_projection,

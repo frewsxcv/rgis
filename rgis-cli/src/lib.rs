@@ -1,4 +1,5 @@
 use clap::{App, Arg};
+use std::path;
 
 static DEFAULT_SOURCE_SRS: &str = "EPSG:4326";
 static DEFAULT_TARGET_SRS: &str = "EPSG:3857";
@@ -9,7 +10,7 @@ type MsaaSampleCount = u32;
 #[derive(Clone)]
 pub struct Values {
     pub msaa_sample_count: MsaaSampleCount,
-    pub geojson_files: Vec<String>,
+    pub geojson_files: Vec<path::PathBuf>,
     pub source_srs: String,
     pub target_srs: String,
 }
@@ -54,7 +55,7 @@ pub fn run() -> Values {
         geojson_files: matches
             .values_of("GEOJSON FILE")
             .unwrap()
-            .map(|s| s.to_owned())
+            .map(|s| path::PathBuf::from(s.to_owned()))
             .collect(),
         source_srs: matches.value_of("SOURCE SRS").unwrap().to_owned(),
         target_srs: matches.value_of("SOURCE SRS").unwrap().to_owned(),

@@ -86,6 +86,7 @@ impl Layers {
     pub fn add(
         &mut self,
         geometry: geo::Geometry<f64>,
+        name: String,
         metadata: Option<Metadata>,
         source_projection: &str,
         target_projection: &str,
@@ -93,6 +94,7 @@ impl Layers {
         let layer_id = self.next_layer_id();
         let layer = Layer::from_geometry(
             geometry,
+            name,
             layer_id,
             metadata,
             source_projection,
@@ -120,6 +122,7 @@ pub struct Layer {
     pub color: Color,
     pub metadata: Metadata,
     pub id: LayerId,
+    pub name: String,
 }
 
 impl Layer {
@@ -130,6 +133,7 @@ impl Layer {
 
     pub fn from_geometry(
         geometry: geo::Geometry<f64>,
+        name: String,
         id: LayerId,
         metadata: Option<Metadata>,
         source_projection: &str,
@@ -169,6 +173,7 @@ impl Layer {
             color: colorous_color_to_bevy_color(next_colorous_color()),
             metadata: metadata.unwrap_or_else(serde_json::Map::new),
             id,
+            name,
         }
     }
 }
