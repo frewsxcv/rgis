@@ -118,7 +118,6 @@ fn main() {
         .add_plugin(bevy::pbr::PbrPlugin::default())
         .add_plugin(bevy::ui::UiPlugin::default())
         .add_plugin(bevy::text::TextPlugin::default())
-        .add_plugin(bevy::gltf::GltfPlugin::default())
         .add_plugin(bevy::winit::WinitPlugin::default())
         .add_plugin(bevy::wgpu::WgpuPlugin::default())
 
