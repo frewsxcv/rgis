@@ -18,14 +18,8 @@ impl Plugin for RgisCamera {
     }
 }
 
-// TODO: should this be public
-#[derive(Debug)]
-pub struct Camera(pub Entity);
-
 fn setup(commands: &mut Commands) {
-    let entity = commands.spawn(Camera2dBundle::default()).current_entity();
-
-    commands.spawn((Camera(entity.expect("could not find entity")),));
+    commands.spawn(Camera2dBundle::default());
 }
 
 pub struct CameraScale(pub f32);
@@ -119,29 +113,23 @@ fn zoom_camera_system(
 
 fn update_camera_offset(
     camera_offset: ChangedRes<CameraOffset>,
-    camera_query: Query<(&Camera,)>,
-    mut transform_query: Query<(&mut Transform,)>,
+    mut camera_transform_query: Query<(&bevy::render::camera::Camera, &mut Transform)>,
 ) {
     debug!("Camera offset changed");
-    for (camera,) in camera_query.iter() {
-        if let Ok((mut transform,)) = transform_query.get_mut(camera.0) {
-            transform.translation = Vec3::new(camera_offset.x, camera_offset.y, 0.);
-            debug!("New transform translation: {:?}", transform.translation);
-        }
+    for (_camera, mut transform) in camera_transform_query.iter_mut() {
+        transform.translation = Vec3::new(camera_offset.x, camera_offset.y, 0.);
+        debug!("New transform translation: {:?}", transform.translation);
     }
 }
 
 fn update_camera_scale(
     camera_scale: ChangedRes<CameraScale>,
-    camera_query: Query<(&Camera,)>,
-    mut transform_query: Query<(&mut Transform,)>,
+    mut camera_transform_query: Query<(&bevy::render::camera::Camera, &mut Transform)>,
 ) {
     debug!("Camera scale changed");
-    for (camera,) in camera_query.iter() {
-        if let Ok((mut transform,)) = transform_query.get_mut(camera.0) {
-            transform.scale = Vec3::new(camera_scale.0, camera_scale.0, 1.);
-            debug!("New transform scale: {:?}", transform.scale);
-        }
+    for (_camera, mut transform) in camera_transform_query.iter_mut() {
+        transform.scale = Vec3::new(camera_scale.0, camera_scale.0, 1.);
+        debug!("New transform scale: {:?}", transform.scale);
     }
 }
 
