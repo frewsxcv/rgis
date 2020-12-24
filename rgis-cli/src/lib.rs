@@ -59,7 +59,11 @@ pub fn run() -> Values {
             .collect(),
         source_srs: matches.value_of("SOURCE SRS").unwrap().to_owned(),
         target_srs: matches.value_of("TARGET SRS").unwrap().to_owned(),
-        msaa_sample_count: matches.value_of("MSAA SAMPLE COUNT").unwrap().parse().unwrap(),
+        msaa_sample_count: matches
+            .value_of("MSAA SAMPLE COUNT")
+            .unwrap()
+            .parse()
+            .unwrap(),
     }
 }
 

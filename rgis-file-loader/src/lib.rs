@@ -40,7 +40,10 @@ fn load_layers_from_cli(
     mut events: ResMut<Events<LoadGeoJsonFile>>,
 ) {
     for geojson_file_path in &cli_values.geojson_files {
-        debug!("sending LoadGeoJsonFile event: {}", &geojson_file_path.display(),);
+        debug!(
+            "sending LoadGeoJsonFile event: {}",
+            &geojson_file_path.display(),
+        );
         events.send(LoadGeoJsonFile {
             path: geojson_file_path.clone(),
             source_srs: cli_values.source_srs.clone(),

@@ -89,7 +89,9 @@ fn main() {
     let cli_values = rgis_cli::run();
 
     App::build()
-        .add_resource(Msaa { samples: cli_values.msaa_sample_count })
+        .add_resource(Msaa {
+            samples: cli_values.msaa_sample_count,
+        })
         .add_plugins(DefaultPlugins)
         .add_plugin(rgis_cli::Plugin(cli_values))
         .add_plugin(rgis_layers::RgisLayersPlugin)

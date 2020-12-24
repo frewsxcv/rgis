@@ -39,31 +39,19 @@ pub struct PanCameraEvent {
 
 impl PanCameraEvent {
     pub fn up(amount: f32) -> Self {
-        PanCameraEvent {
-            x: 0.,
-            y: amount,
-        }
+        PanCameraEvent { x: 0., y: amount }
     }
 
     pub fn right(amount: f32) -> Self {
-        PanCameraEvent {
-            x: amount,
-            y: 0.,
-        }
+        PanCameraEvent { x: amount, y: 0. }
     }
 
     pub fn down(amount: f32) -> Self {
-        PanCameraEvent {
-            x: 0.,
-            y: -amount,
-        }
+        PanCameraEvent { x: 0., y: -amount }
     }
 
     pub fn left(amount: f32) -> Self {
-        PanCameraEvent {
-            x: -amount,
-            y: 0.,
-        }
+        PanCameraEvent { x: -amount, y: 0. }
     }
 }
 
@@ -77,18 +65,20 @@ pub struct ZoomCameraEvent {
 
 impl ZoomCameraEvent {
     pub fn zoom_in() -> Self {
-        ZoomCameraEvent { amount: ZOOM_AMOUNT }
+        ZoomCameraEvent {
+            amount: ZOOM_AMOUNT,
+        }
     }
 
     pub fn zoom_out() -> Self {
-        ZoomCameraEvent { amount: 1. / ZOOM_AMOUNT }
+        ZoomCameraEvent {
+            amount: 1. / ZOOM_AMOUNT,
+        }
     }
 }
 
 fn pan_camera_system(
-    mut pan_camera_event_reader: bevy::ecs::Local<
-        bevy::app::EventReader<PanCameraEvent>,
-    >,
+    mut pan_camera_event_reader: bevy::ecs::Local<bevy::app::EventReader<PanCameraEvent>>,
     pan_camera_events: bevy::ecs::Res<bevy::app::Events<PanCameraEvent>>,
     mut camera_offset: ResMut<CameraOffset>,
     mut camera_scale: ResMut<CameraScale>,
@@ -100,9 +90,7 @@ fn pan_camera_system(
 }
 
 fn zoom_camera_system(
-    mut zoom_camera_event_reader: bevy::ecs::Local<
-        bevy::app::EventReader<ZoomCameraEvent>,
-    >,
+    mut zoom_camera_event_reader: bevy::ecs::Local<bevy::app::EventReader<ZoomCameraEvent>>,
     zoom_camera_events: bevy::ecs::Res<bevy::app::Events<ZoomCameraEvent>>,
     mut camera_scale: ResMut<CameraScale>,
 ) {
