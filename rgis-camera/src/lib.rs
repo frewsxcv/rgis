@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+const ZOOM_AMOUNT: f32 = 1.3; // Larger number will zoom more
+
 pub struct RgisCamera;
 
 impl Plugin for RgisCamera {
@@ -76,7 +78,17 @@ pub struct ZoomCameraEvent {
     // (amount ∈ (1, ∞)) → zoom in
     // (amount ∈ [1] → no change
     // (amount ∈ (0, 1)) → zoom out
-    pub amount: f32,
+    amount: f32,
+}
+
+impl ZoomCameraEvent {
+    pub fn zoom_in() -> Self {
+        ZoomCameraEvent { amount: ZOOM_AMOUNT }
+    }
+
+    pub fn zoom_out() -> Self {
+        ZoomCameraEvent { amount: 1. / ZOOM_AMOUNT }
+    }
 }
 
 fn pan_camera_system(

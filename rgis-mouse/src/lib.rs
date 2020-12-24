@@ -58,11 +58,28 @@ fn mouse_motion_system(
     }
 }
 
+fn mouse_scroll_system(
+    mut mouse_scroll_event_reader: bevy::ecs::Local<
+        bevy::app::EventReader<bevy::input::mouse::MouseWheel>,
+    >,
+    mouse_scroll_events: bevy::ecs::Res<bevy::app::Events<bevy::input::mouse::MouseWheel>>,
+    mut zoom_camera_events: bevy::ecs::ResMut<bevy::app::Events<rgis_camera::ZoomCameraEvent>>,
+) {
+    for event in mouse_scroll_event_reader.iter(&mouse_scroll_events) {
+        if event.y > 0. {
+            zoom_camera_events.send(rgis_camera::ZoomCameraEvent::zoom_in());
+        } else if event.y < 0. {
+            zoom_camera_events.send(rgis_camera::ZoomCameraEvent::zoom_out());
+        }
+    }
+}
+
 pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut bevy::app::AppBuilder) {
         app.add_system(cursor_moved_system.system())
+            .add_system(mouse_scroll_system.system())
             .add_system(mouse_motion_system.system());
     }
 }

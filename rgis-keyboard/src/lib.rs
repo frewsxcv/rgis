@@ -1,7 +1,6 @@
 use bevy::ecs::IntoSystem;
 
 const PAN_AMOUNT: f32 = 15.; // Larger number will pan more
-const ZOOM_AMOUNT: f32 = 1.3; // Larger number will zoom more
 
 pub struct Plugin;
 
@@ -31,13 +30,13 @@ fn process_key_code_input_system(
                 pan_camera_events.send(rgis_camera::PanCameraEvent::left(PAN_AMOUNT));
             }
             bevy::input::keyboard::KeyCode::Minus => {
-                zoom_camera_events.send(rgis_camera::ZoomCameraEvent { amount: 1. / ZOOM_AMOUNT })
+                zoom_camera_events.send(rgis_camera::ZoomCameraEvent::zoom_out())
             }
             bevy::input::keyboard::KeyCode::Equals => {
                 if keyboard_input.pressed(bevy::input::keyboard::KeyCode::RShift)
                     || keyboard_input.pressed(bevy::input::keyboard::KeyCode::LShift)
                 {
-                    zoom_camera_events.send(rgis_camera::ZoomCameraEvent { amount: ZOOM_AMOUNT })
+                    zoom_camera_events.send(rgis_camera::ZoomCameraEvent::zoom_in())
                 }
             }
             _ => {}
