@@ -92,7 +92,27 @@ fn main() {
         .add_resource(Msaa {
             samples: cli_values.msaa_sample_count,
         })
-        .add_plugins(DefaultPlugins)
+
+        // Bevy plugins
+        .add_plugin(bevy::log::LogPlugin::default())
+        .add_plugin(bevy::reflect::ReflectPlugin::default())
+        .add_plugin(bevy::core::CorePlugin::default())
+        .add_plugin(bevy::transform::TransformPlugin::default())
+        .add_plugin(bevy::diagnostic::DiagnosticsPlugin::default())
+        .add_plugin(bevy::input::InputPlugin::default())
+        .add_plugin(bevy::window::WindowPlugin::default())
+        .add_plugin(bevy::asset::AssetPlugin::default())
+        .add_plugin(bevy::scene::ScenePlugin::default())
+        .add_plugin(bevy::render::RenderPlugin::default())
+        .add_plugin(bevy::sprite::SpritePlugin::default())
+        .add_plugin(bevy::pbr::PbrPlugin::default())
+        .add_plugin(bevy::ui::UiPlugin::default())
+        .add_plugin(bevy::text::TextPlugin::default())
+        .add_plugin(bevy::audio::AudioPlugin::default())
+        .add_plugin(bevy::gltf::GltfPlugin::default())
+        .add_plugin(bevy::winit::WinitPlugin::default())
+        .add_plugin(bevy::wgpu::WgpuPlugin::default())
+
         .add_plugin(rgis_cli::Plugin(cli_values))
         .add_plugin(rgis_layers::RgisLayersPlugin)
         .add_plugin(rgis_file_loader::RgisFileLoaderPlugin)
