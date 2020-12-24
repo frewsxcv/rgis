@@ -5,9 +5,12 @@ pub struct RgisCamera;
 impl Plugin for RgisCamera {
     fn build(&self, app: &mut AppBuilder) {
         app.add_startup_system(setup.system())
+            .add_event::<PanCameraEvent>()
             .add_resource(CameraScale(1.))
             .add_resource(CameraOffset { x: 0., y: 0. })
+            // TODO the system below should be a separate crate
             .add_system(process_mouse_events.system())
+            .add_system(pan_camera_system.system())
             .add_system(update_camera_offset.system())
             .add_system(update_camera_scale.system());
     }
@@ -54,6 +57,28 @@ fn process_mouse_events(
             }
             _ => {}
         }
+    }
+}
+
+#[derive(Debug)]
+pub struct PanCameraEvent {
+    // x-offset in screen coordinates
+    pub x: f32,
+    // y-offset in screen coordinates
+    pub y: f32,
+}
+
+fn pan_camera_system(
+    mut pan_camera_event_reader: bevy::ecs::Local<
+        bevy::app::EventReader<PanCameraEvent>,
+    >,
+    pan_camera_events: bevy::ecs::Res<bevy::app::Events<PanCameraEvent>>,
+    mut camera_offset: ResMut<CameraOffset>,
+    mut camera_scale: ResMut<CameraScale>,
+) {
+    for event in pan_camera_event_reader.iter(&pan_camera_events) {
+        pan_x(-event.x, &mut camera_offset, &mut camera_scale);
+        pan_y(event.y, &mut camera_offset, &mut camera_scale);
     }
 }
 
