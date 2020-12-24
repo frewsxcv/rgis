@@ -106,6 +106,7 @@ fn main() {
         .add_startup_system(load_layers_from_cli.system())
         .add_system(layer_loaded.system())
         .add_plugin(rgis_mouse::Plugin)
+        .add_plugin(rgis_keyboard::Plugin)
         .add_plugin(LayerSpawnedPlugin)
         .add_plugin(rgis_camera::RgisCamera)
         .add_plugin(rgis_ui::RgisUi)

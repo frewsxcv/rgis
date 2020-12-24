@@ -1,0 +1,10 @@
+[package]
+name = "rgis-keyboard"
+version = "0.1.0"
+authors = ["Corey Farwell <coreyf@rwell.org>"]
+edition = "2018"
+publish = false
+
+[dependencies]
+bevy = "0.4"
+rgis-camera = { path = "../rgis-camera" }

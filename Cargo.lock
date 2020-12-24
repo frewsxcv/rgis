@@ -3121,6 +3121,7 @@ dependencies = [
  "rgis-camera",
  "rgis-cli",
  "rgis-file-loader",
+ "rgis-keyboard",
  "rgis-layers",
  "rgis-mouse",
  "rgis-ui",
@@ -3151,6 +3152,14 @@ dependencies = [
  "rgis-layers",
  "serde_json",
  "time-logger",
+]
+
+[[package]]
+name = "rgis-keyboard"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "rgis-camera",
 ]
 
 [[package]]

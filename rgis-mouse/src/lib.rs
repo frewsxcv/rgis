@@ -45,7 +45,13 @@ fn mouse_motion_system(
     if mouse_button.pressed(bevy::input::mouse::MouseButton::Right) {
         for event in mouse_motion_event_reader.iter(&mouse_motion_events) {
             pan_camera_events.send(rgis_camera::PanCameraEvent {
-                x: event.delta.x,
+                // If the mouse is dragging rightward, `delta.x` will be positive. In this case, we
+                // want the map to move right, and the camera to move left. We need to negate the
+                // delta X value.
+                x: -event.delta.x,
+                // If the mouse is dragging upward, `delta.y` will be negative. In this case, we
+                // want the map to move up, and the camera to move down. We do not need to negate
+                // the delta Y value.
                 y: event.delta.y,
             });
         }
