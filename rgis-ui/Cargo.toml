@@ -7,3 +7,4 @@ publish = false
 
 [dependencies]
 bevy = "0.4"
+bevy_megaui = "0.1"

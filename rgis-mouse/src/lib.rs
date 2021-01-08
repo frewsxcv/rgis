@@ -10,10 +10,7 @@ fn cursor_moved_system(
         &rgis_camera::Camera2d,
         &bevy::transform::components::Transform,
     )>,
-    mut text_query: bevy::ecs::Query<
-        &mut bevy::ui::widget::Text,
-        bevy::ecs::With<rgis_ui::PositionText>,
-    >,
+    mut ui_state: bevy::ecs::ResMut<rgis_ui::UiState>
 ) {
     for event in cursor_moved_event_reader.iter(&cursor_moved_events) {
         for (_camera, transform) in camera_transform_query.iter() {
@@ -27,9 +24,8 @@ fn cursor_moved_system(
             // apply the camera transform
             let pos_wld = transform.compute_matrix() * p.extend(0.0).extend(1.0);
 
-            for mut text in text_query.iter_mut() {
-                text.value = format!("Lng: {}\nLat: {}", pos_wld.x, pos_wld.y);
-            }
+            ui_state.longitude = pos_wld.x;
+            ui_state.latitude = pos_wld.y;
         }
     }
 }
