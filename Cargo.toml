@@ -14,6 +14,9 @@ members = [
     "time-logger",
 ]
 
-
 [profile.release]
 debug = true
+
+[patch.crates-io]
+proj = { path = "../../georust/proj" }
+proj-sys = { path = "../../georust/proj/proj-sys" }

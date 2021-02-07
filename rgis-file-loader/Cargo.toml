@@ -5,7 +5,14 @@ authors = ["Corey Farwell <coreyf@rwell.org>"]
 edition = "2018"
 
 [dependencies]
-bevy = "0.4"
+bevy = { version = "0.4", default-features = false, features = [
+    "bevy_dynamic_plugin",
+    "bevy_gilrs",
+    "bevy_gltf",
+    "bevy_wgpu",
+    "bevy_winit",
+    "render",
+] }
 geo-types = "0.6"
 geojson = "0.20"
 rgis-cli = { path = "../rgis-cli" }

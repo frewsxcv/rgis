@@ -7,4 +7,4 @@ edition = "2018"
 [dependencies]
 geo = { version = "0.15", features = ['use-proj'] }
 num-traits = "*"
-proj = "*"
+proj = { version = "*", features = ['bundled_proj'] }

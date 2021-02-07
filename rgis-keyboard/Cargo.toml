@@ -6,5 +6,12 @@ edition = "2018"
 publish = false
 
 [dependencies]
-bevy = "0.4"
+bevy = { version = "0.4", default-features = false, features = [
+    "bevy_dynamic_plugin",
+    "bevy_gilrs",
+    "bevy_gltf",
+    "bevy_wgpu",
+    "bevy_winit",
+    "render",
+] }
 rgis-camera = { path = "../rgis-camera" }
