@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_megaui::{megaui::{self, hash}, self};
+use bevy_egui::egui;
 
 pub struct RgisUi;
 
@@ -9,13 +9,15 @@ pub struct PositionText;
 impl Plugin for RgisUi {
     fn build(&self, app: &mut AppBuilder) {
         app
-            .add_plugin(bevy_megaui::MegaUiPlugin)
+            // .add_plugin(bevy_megaui::MegaUiPlugin)
+            .add_plugin(bevy_egui::EguiPlugin)
             .add_resource(UiState {
                 latitude: 0.,
                 longitude: 0.,
                 layers: vec![],
             })
-            .add_system(ui_example.system());
+            .add_system(ui.system());
+            // .add_system(ui_example.system());
     }
 }
 
@@ -40,36 +42,17 @@ const LAYERS_WINDOW_OFFSET_Y: f32 = MOUSE_POSITION_WINDOW_OFFSET_Y + MOUSE_POSIT
 const LAYERS_WINDOW_WIDTH: f32 = WINDOW_WIDTH;
 const LAYERS_WINDOW_HEIGHT: f32 = 200.;
 
-fn ui_example(_world: &mut World, resources: &mut Resources) {
-    let mut mega_ui_context = resources.get_thread_local_mut::<bevy_megaui::MegaUiContext>().unwrap();
-    let ui_state = resources.get::<UiState>().unwrap();
+fn ui(mut egui_context: ResMut<bevy_egui::EguiContext>, ui_state: Res<UiState>) {
+    let ctx = &mut egui_context.ctx;
 
-    mega_ui_context.draw_window(
-        hash!(),
-        megaui::Vector2::new(MOUSE_POSITION_WINDOW_OFFSET_X, MOUSE_POSITION_WINDOW_OFFSET_Y),
-        megaui::Vector2::new(MOUSE_POSITION_WINDOW_WIDTH, MOUSE_POSITION_WINDOW_HEIGHT),
-        bevy_megaui::WindowParams {
-            label: String::from("Mouse position"),
-            ..Default::default()
-        },
-        |ui| {
-            ui.label(None, &format!("Lng: {}", ui_state.longitude));
-            ui.label(None, &format!("Lat: {}", ui_state.latitude));
-        },
-    );
+    egui::Window::new("Mouse position").show(ctx, |ui| {
+        ui.label(format!("Lat: {}", ui_state.latitude));
+        ui.label(format!("Lng: {}", ui_state.longitude));
+    });
 
-    mega_ui_context.draw_window(
-        hash!(),
-        megaui::Vector2::new(LAYERS_WINDOW_OFFSET_X, LAYERS_WINDOW_OFFSET_Y),
-        megaui::Vector2::new(LAYERS_WINDOW_WIDTH, LAYERS_WINDOW_HEIGHT),
-        bevy_megaui::WindowParams {
-            label: String::from("Layers"),
-            ..Default::default()
-        },
-        |ui| {
-            for layer in &ui_state.layers {
-                ui.label(None, &format!("- {}", layer));
-            }
-        },
-    );
+    egui::Window::new("Layers").show(ctx, |ui| {
+        for layer in &ui_state.layers {
+            ui.label(format!("- {}", layer));
+        }
+    });
 }

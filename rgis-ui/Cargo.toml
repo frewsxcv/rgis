@@ -14,4 +14,4 @@ bevy = { version = "0.4", default-features = false, features = [
     "bevy_winit",
     "render",
 ] }
-bevy_megaui = "0.1"
+bevy_egui = "0.1"
