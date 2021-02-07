@@ -1471,11 +1471,11 @@ dependencies = [
 
 [[package]]
 name = "geo"
-version = "0.15.0"
+version = "0.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c1488b04daa30b25f0beb19c2110fa507484ac8c2b8cad83d548cdda857f7f7a"
+checksum = "479219490dcbbf2a374908457df0b4d5b1d8eb62eb48b0ee897f9af9e7c44210"
 dependencies = [
- "geo-types 0.6.2",
+ "geo-types 0.7.0",
  "geographiclib-rs",
  "num-traits",
  "proj 0.20.5",
@@ -1490,7 +1490,7 @@ dependencies = [
  "bevy-earcutr",
  "bevy_log",
  "bevy_render",
- "geo-types 0.6.2",
+ "geo-types 0.7.0",
 ]
 
 [[package]]
@@ -1498,7 +1498,6 @@ name = "geo-srs"
 version = "0.1.0"
 dependencies = [
  "geo",
- "num-traits",
  "proj 0.21.0",
 ]
 
@@ -1510,7 +1509,6 @@ checksum = "7583925a1fdb2b450c461fe0878ba6e99a8f1332b2bc72fb1383fd25b2f13bf2"
 dependencies = [
  "approx 0.3.2",
  "num-traits",
- "rstar",
 ]
 
 [[package]]
@@ -1519,7 +1517,9 @@ version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a6b362f0f09b4ff7ad8210f806f80ab6d0d895365a6830cb504267aeccfe3f43"
 dependencies = [
+ "approx 0.4.0",
  "num-traits",
+ "rstar",
 ]
 
 [[package]]
@@ -1539,6 +1539,18 @@ checksum = "df48768ce77d725b32f692a4653d4529a24e2882c8740bcaa03a0f788c853af6"
 dependencies = [
  "geo-types 0.6.2",
  "num-traits",
+ "serde",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
+name = "geojson"
+version = "0.22.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a510a4ab1fbcc4058e030c438838ae3bc660065009d3bc3ad2a2e4658b3d0cf3"
+dependencies = [
+ "geo-types 0.7.0",
  "serde",
  "serde_json",
  "thiserror",
@@ -2625,7 +2637,7 @@ dependencies = [
  "geo",
  "geo-bevy",
  "geo-srs",
- "geojson",
+ "geojson 0.20.1",
  "rgis-camera",
  "rgis-cli",
  "rgis-file-loader",
@@ -2656,8 +2668,8 @@ name = "rgis-file-loader"
 version = "0.1.0"
 dependencies = [
  "bevy",
- "geo-types 0.6.2",
- "geojson",
+ "geo-types 0.7.0",
+ "geojson 0.22.0",
  "rgis-cli",
  "rgis-layers",
  "serde_json",

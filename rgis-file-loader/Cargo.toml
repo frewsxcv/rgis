@@ -13,8 +13,8 @@ bevy = { version = "0.4", default-features = false, features = [
     "bevy_winit",
     "render",
 ] }
-geo-types = "0.6"
-geojson = "0.20"
+geo-types = "0.7"
+geojson = { version = "0.22", features = ["geo-types"] }
 rgis-cli = { path = "../rgis-cli" }
 rgis-layers = { path = "../rgis-layers" }
 serde_json = "1"

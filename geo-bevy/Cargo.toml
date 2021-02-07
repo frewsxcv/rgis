@@ -10,4 +10,4 @@ edition = "2018"
 bevy_log = "0.4"
 bevy_render = "0.4"
 bevy-earcutr = { git = "https://github.com/frewsxcv/bevy-earcutr" }
-geo-types = "0.6"
+geo-types = "0.7"

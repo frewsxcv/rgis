@@ -2,18 +2,18 @@ use geo::algorithm::contains::Contains;
 use geo::algorithm::map_coords::MapCoordsInplace;
 
 #[derive(Debug, Clone)]
-pub struct CoordWithSrs<T: num_traits::Float> {
+pub struct CoordWithSrs<T: geo::CoordFloat> {
     pub coord: geo::Coordinate<T>,
     pub srs: String,
 }
 
 #[derive(Debug, Clone)]
-pub struct RectWithSrs<T: num_traits::Float> {
+pub struct RectWithSrs<T: geo::CoordFloat> {
     pub rect: geo::Rect<T>,
     pub srs: String,
 }
 
-impl<T: num_traits::Float> RectWithSrs<T> {
+impl<T: geo::CoordFloat> RectWithSrs<T> {
     pub fn contains(&self, coord: &CoordWithSrs<T>) -> bool {
         assert_eq!(self.srs, coord.srs);
         self.rect.contains(&coord.coord)
@@ -38,12 +38,12 @@ impl<T: num_traits::Float> RectWithSrs<T> {
 }
 
 #[derive(Debug, Clone)]
-pub struct GeometryWithSrs<T: num_traits::Float> {
+pub struct GeometryWithSrs<T: geo::CoordFloat> {
     pub geometry: geo::Geometry<T>,
     pub srs: String,
 }
 
-impl<T: num_traits::Float> GeometryWithSrs<T> {
+impl<T: geo::CoordFloat> GeometryWithSrs<T> {
     // pub fn contains(&self, coord: &CoordWithSrs<T>) -> bool {
     //     assert_eq!(self.srs, coord.srs);
     //     // self.geometry.contains(&coord.coord)
