@@ -739,9 +739,8 @@ dependencies = [
 
 [[package]]
 name = "bindgen"
-version = "0.56.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2da379dbebc0b76ef63ca68d8fc6e71c0f13e59432e0987e508c1820e6ab5239"
+version = "0.57.0"
+source = "git+https://github.com/rust-lang/rust-bindgen.git?branch=rust-union-layout-tracker#68ea89e7b5dd768f280aa9b404907273532470d8"
 dependencies = [
  "bitflags",
  "cexpr",
@@ -1478,7 +1477,6 @@ dependencies = [
  "geo-types 0.7.0",
  "geographiclib-rs",
  "num-traits",
- "proj 0.20.5",
  "robust",
  "rstar",
 ]
@@ -1498,7 +1496,7 @@ name = "geo-srs"
 version = "0.1.0"
 dependencies = [
  "geo",
- "proj 0.21.0",
+ "proj",
 ]
 
 [[package]]
@@ -2478,22 +2476,7 @@ dependencies = [
 
 [[package]]
 name = "proj"
-version = "0.20.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a29bb90b3d0b801686703a4f8b92e6651d7b700039c62ec6a51255f36cb03e0c"
-dependencies = [
- "geo-types 0.6.2",
- "libc",
- "num-traits",
- "proj-sys",
- "thiserror",
-]
-
-[[package]]
-name = "proj"
-version = "0.21.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b880e48d993b875af334d8315c00070aed37b998bfa9df03c67a2551a6a8ea23"
+version = "0.22.0"
 dependencies = [
  "geo-types 0.7.0",
  "libc",
@@ -2504,9 +2487,7 @@ dependencies = [
 
 [[package]]
 name = "proj-sys"
-version = "0.18.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5c4521fcd9b6e722f6bb65d6e81ff74fd95fdd790c6f10034cb5f32c95dd5bca"
+version = "0.19.0"
 dependencies = [
  "bindgen",
  "cmake",
@@ -3569,11 +3550,3 @@ name = "xi-unicode"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a67300977d3dc3f8034dae89778f502b6ba20b269527b3223ba59c0cf393bb8a"
-
-[[patch.unused]]
-name = "proj"
-version = "0.22.0"
-
-[[patch.unused]]
-name = "proj-sys"
-version = "0.19.0"

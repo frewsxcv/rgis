@@ -51,11 +51,9 @@ impl<T: geo::CoordFloat> GeometryWithSrs<T> {
     // }
 
     pub fn reproject(&mut self, target_srs: &str) {
-        let projector =
-            geo::algorithm::proj::Proj::new_known_crs(&self.srs, target_srs, None).unwrap();
+        let projector = proj::Proj::new_known_crs(&self.srs, target_srs, None).unwrap();
 
-        self.geometry
-            .map_coords_inplace(|&(x, y)| projector.convert((x, y)).unwrap().x_y());
+        self.geometry.map_coords_inplace(|&(x, y)| projector.convert((x, y)).unwrap());
         self.srs = target_srs.to_owned();
     }
 }
