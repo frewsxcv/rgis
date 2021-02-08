@@ -60,7 +60,12 @@ fn render_mouse_position_window(ctx: &mut egui::CtxRef, ui_state: &UiState) {
 fn render_layers_window(ctx: &mut egui::CtxRef, ui_state: &UiState) {
     egui::Window::new("Layers").show(ctx, |ui| {
         for layer in &ui_state.layers {
-            ui.label(format!("- {}", layer));
+            egui::Frame::dark_canvas(ui.style()).show(ui, |ui| {
+                ui.label(layer);
+                if ui.button("Manage").clicked {
+                    println!("Managed: {}", layer);
+                }
+            });
         }
     });
 }
