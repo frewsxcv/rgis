@@ -89,6 +89,7 @@ pub fn spawn_mesh(
 
 fn main() {
     let cli_values = rgis_cli::run();
+    let source_srs = cli_values.source_srs.clone();
     let target_srs = cli_values.target_srs.clone();
 
     App::build()
@@ -131,7 +132,7 @@ fn main() {
         .add_plugin(rgis_keyboard::Plugin)
         .add_plugin(LayerSpawnedPlugin)
         .add_plugin(rgis_camera::RgisCamera)
-        .add_plugin(rgis_ui::RgisUi { target_srs })
+        .add_plugin(rgis_ui::RgisUi { source_srs, target_srs })
         .add_resource(ClearColor(Color::WHITE))
         .run();
 }

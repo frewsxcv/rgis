@@ -15,3 +15,5 @@ bevy = { version = "0.4", default-features = false, features = [
     "render",
 ] }
 bevy_egui = "0.1"
+geo-types = "0.7"
+proj = { version = "*", features = ['bundled_proj'] }
