@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 use bevy_egui::egui;
 
+const MAX_SIDE_PANEL_WIDTH: f32 = 200.0f32;
+
 pub struct RgisUi {
     pub source_srs: String,
     pub target_srs: String,
@@ -34,12 +36,20 @@ pub struct UiState {
 }
 
 fn ui(mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>, ui_state: Res<UiState>) {
-    render_mouse_position_window(&mut bevy_egui_ctx.ctx, &ui_state);
-    render_layers_window(&mut bevy_egui_ctx.ctx, &ui_state);
+    render_side_panel(&mut bevy_egui_ctx.ctx, &ui_state);
 }
 
-fn render_mouse_position_window(ctx: &mut egui::CtxRef, ui_state: &UiState) {
-    egui::Window::new("Mouse position").show(ctx, |ui| {
+fn render_side_panel(ctx: &mut egui::CtxRef, ui_state: &UiState) {
+    egui::SidePanel::left("left-side-panel", MAX_SIDE_PANEL_WIDTH).show(ctx, |mut ui| {
+        render_mouse_position_window(&mut ui, &ui_state);
+        render_layers_window(&mut ui, &ui_state);
+    });
+}
+
+fn render_mouse_position_window(ui: &mut egui::Ui, ui_state: &UiState) {
+    ui.label("Mouse Position");
+
+    egui::Frame::dark_canvas(ui.style()).show(ui, |ui| {
         let mut unprojected = ui_state.projected_mouse_position.clone();
         unprojected.reproject(&ui_state.source_srs);
 
@@ -57,8 +67,10 @@ fn render_mouse_position_window(ctx: &mut egui::CtxRef, ui_state: &UiState) {
     });
 }
 
-fn render_layers_window(ctx: &mut egui::CtxRef, ui_state: &UiState) {
-    egui::Window::new("Layers").show(ctx, |ui| {
+fn render_layers_window(ui: &mut egui::Ui, ui_state: &UiState) {
+    ui.label("Layers");
+
+    egui::Frame::dark_canvas(ui.style()).show(ui, |ui| {
         for layer in &ui_state.layers {
             egui::Frame::dark_canvas(ui.style()).show(ui, |ui| {
                 ui.label(layer);
