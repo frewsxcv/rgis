@@ -1565,7 +1565,7 @@ dependencies = [
  "bevy-earcutr",
  "bevy_log",
  "bevy_render",
- "geo-types 0.7.0",
+ "geo",
 ]
 
 [[package]]
