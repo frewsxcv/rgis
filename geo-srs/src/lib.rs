@@ -7,6 +7,17 @@ pub struct CoordWithSrs<T: geo::CoordFloat> {
     pub srs: String,
 }
 
+impl<T: geo::CoordFloat> CoordWithSrs<T> {
+    pub fn reproject(&mut self, target_srs: &str) {
+        debug_assert!(!target_srs.is_empty());
+
+        let projector = proj::Proj::new_known_crs(&self.srs, target_srs, None).unwrap();
+
+        self.coord = projector.convert(self.coord).unwrap();
+        self.srs = target_srs.to_owned();
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct RectWithSrs<T: geo::CoordFloat> {
     pub rect: geo::Rect<T>,
@@ -51,6 +62,8 @@ impl<T: geo::CoordFloat> GeometryWithSrs<T> {
     // }
 
     pub fn reproject(&mut self, target_srs: &str) {
+        debug_assert!(!target_srs.is_empty());
+
         let projector = proj::Proj::new_known_crs(&self.srs, target_srs, None).unwrap();
 
         self.geometry.map_coords_inplace(|&(x, y)| projector.convert((x, y)).unwrap());

@@ -11,12 +11,13 @@ pub struct PositionText;
 
 impl Plugin for RgisUi {
     fn build(&self, app: &mut AppBuilder) {
-        app
-            .add_plugin(bevy_egui::EguiPlugin)
+        app.add_plugin(bevy_egui::EguiPlugin)
             .add_resource(UiState {
-                latitude: 0.,
-                longitude: 0.,
                 layers: vec![],
+                projected_mouse_position: geo_srs::CoordWithSrs {
+                    srs: self.target_srs.clone(),
+                    coord: geo_types::Coordinate { x: 0., y: 0. },
+                },
                 source_srs: self.source_srs.to_owned(),
                 target_srs: self.target_srs.to_owned(),
             })
@@ -26,8 +27,7 @@ impl Plugin for RgisUi {
 
 #[derive(Debug)]
 pub struct UiState {
-    pub latitude: f32,
-    pub longitude: f32,
+    pub projected_mouse_position: geo_srs::CoordWithSrs<f32>,
     pub layers: Vec<String>,
     pub source_srs: String,
     pub target_srs: String,
@@ -40,16 +40,19 @@ fn ui(mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>, ui_state: Res<UiState>)
 
 fn render_mouse_position_window(ctx: &mut egui::CtxRef, ui_state: &UiState) {
     egui::Window::new("Mouse position").show(ctx, |ui| {
+        let mut unprojected = ui_state.projected_mouse_position.clone();
+        unprojected.reproject(&ui_state.source_srs);
+
         ui.label(format!("Source SRS: {}", ui_state.target_srs));
         egui::Frame::dark_canvas(ui.style()).show(ui, |ui| {
-            ui.label(format!("X: {}", ui_state.latitude));
-            ui.label(format!("Y: {}", ui_state.longitude));
+            ui.label(format!("X: {}", unprojected.coord.x));
+            ui.label(format!("Y: {}", unprojected.coord.y));
         });
 
         ui.label(format!("Target SRS: {}", ui_state.target_srs));
         egui::Frame::dark_canvas(ui.style()).show(ui, |ui| {
-            ui.label(format!("X: {}", ui_state.latitude));
-            ui.label(format!("Y: {}", ui_state.longitude));
+            ui.label(format!("X: {}", ui_state.projected_mouse_position.coord.x));
+            ui.label(format!("Y: {}", ui_state.projected_mouse_position.coord.y));
         });
     });
 }

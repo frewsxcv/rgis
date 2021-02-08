@@ -24,8 +24,8 @@ fn cursor_moved_system(
             // apply the camera transform
             let pos_wld = transform.compute_matrix() * p.extend(0.0).extend(1.0);
 
-            ui_state.longitude = pos_wld.x;
-            ui_state.latitude = pos_wld.y;
+            ui_state.projected_mouse_position.coord.x = pos_wld.x;
+            ui_state.projected_mouse_position.coord.y = pos_wld.y;
         }
     }
 }

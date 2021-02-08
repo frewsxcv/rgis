@@ -2849,6 +2849,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_egui",
+ "geo-srs",
  "geo-types 0.7.0",
  "proj",
 ]
