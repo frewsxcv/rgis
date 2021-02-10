@@ -74,7 +74,7 @@ fn render_layers_window(ui: &mut egui::Ui, ui_state: &UiState) {
         for layer in &ui_state.layers {
             egui::Frame::dark_canvas(ui.style()).show(ui, |ui| {
                 ui.label(layer);
-                if ui.button("Manage").clicked {
+                if ui.button("Manage").clicked() {
                     println!("Managed: {}", layer);
                 }
             });
