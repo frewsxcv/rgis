@@ -49,18 +49,18 @@ fn render_side_panel(ctx: &mut egui::CtxRef, ui_state: &UiState) {
 fn render_mouse_position_window(ui: &mut egui::Ui, ui_state: &UiState) {
     ui.label("Mouse Position");
 
-    egui::Frame::dark_canvas(ui.style()).show(ui, |ui| {
+    egui::Frame::group(ui.style()).show(ui, |ui| {
         let mut unprojected = ui_state.projected_mouse_position.clone();
         unprojected.reproject(&ui_state.source_srs);
 
         ui.label(format!("Source SRS: {}", ui_state.target_srs));
-        egui::Frame::dark_canvas(ui.style()).show(ui, |ui| {
+        egui::Frame::group(ui.style()).show(ui, |ui| {
             ui.label(format!("X: {}", unprojected.coord.x));
             ui.label(format!("Y: {}", unprojected.coord.y));
         });
 
         ui.label(format!("Target SRS: {}", ui_state.target_srs));
-        egui::Frame::dark_canvas(ui.style()).show(ui, |ui| {
+        egui::Frame::group(ui.style()).show(ui, |ui| {
             ui.label(format!("X: {}", ui_state.projected_mouse_position.coord.x));
             ui.label(format!("Y: {}", ui_state.projected_mouse_position.coord.y));
         });
@@ -70,9 +70,9 @@ fn render_mouse_position_window(ui: &mut egui::Ui, ui_state: &UiState) {
 fn render_layers_window(ui: &mut egui::Ui, ui_state: &UiState) {
     ui.label("Layers");
 
-    egui::Frame::dark_canvas(ui.style()).show(ui, |ui| {
+    egui::Frame::group(ui.style()).show(ui, |ui| {
         for layer in &ui_state.layers {
-            egui::Frame::dark_canvas(ui.style()).show(ui, |ui| {
+            egui::Frame::group(ui.style()).show(ui, |ui| {
                 ui.label(layer);
                 if ui.button("Manage").clicked() {
                     println!("Managed: {}", layer);
