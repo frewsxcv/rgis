@@ -763,7 +763,7 @@ dependencies = [
 [[package]]
 name = "bindgen"
 version = "0.57.0"
-source = "git+https://github.com/rust-lang/rust-bindgen.git?branch=rust-union-layout-tracker#68ea89e7b5dd768f280aa9b404907273532470d8"
+source = "git+https://github.com/rust-lang/rust-bindgen.git?branch=master#b1c417882662c26398aae6c961b8a503ea8a27e7"
 dependencies = [
  "bitflags",
  "cexpr",
