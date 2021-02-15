@@ -495,7 +495,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cee6066dc393c913f3eb8873c3d3978010b1664b5947f6fa38c28be326da9735"
 dependencies = [
  "bevy_reflect",
- "glam",
+ "glam 0.11.3",
 ]
 
 [[package]]
@@ -528,7 +528,7 @@ dependencies = [
  "bevy_utils",
  "downcast-rs",
  "erased-serde",
- "glam",
+ "glam 0.11.3",
  "parking_lot",
  "serde",
  "smallvec",
@@ -763,13 +763,13 @@ dependencies = [
 [[package]]
 name = "bindgen"
 version = "0.57.0"
-source = "git+https://github.com/rust-lang/rust-bindgen.git?branch=master#b1c417882662c26398aae6c961b8a503ea8a27e7"
+source = "git+https://github.com/rust-lang/rust-bindgen.git?branch=master#e59aa9218b0e862cbaed319582bf0b692dfacde2"
 dependencies = [
  "bitflags",
  "cexpr",
  "clang-sys",
  "clap",
- "env_logger 0.8.2",
+ "env_logger 0.8.3",
  "lazy_static",
  "lazycell",
  "log",
@@ -1258,9 +1258,9 @@ dependencies = [
 
 [[package]]
 name = "env_logger"
-version = "0.8.2"
+version = "0.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f26ecb66b4bdca6c1409b40fb255eefc2bd4f6d135dab3c3124f80ffa2a9661e"
+checksum = "17392a012ea30ef05a610aa97dfb49496e71c9f676b27879922ea5bdf60d9d3f"
 dependencies = [
  "atty",
  "humantime",
@@ -1322,7 +1322,7 @@ checksum = "1d34cfa13a63ae058bfa601fe9e313bbdb3746427c1459185464ce0fcf62e1e8"
 dependencies = [
  "cfg-if 1.0.0",
  "libc",
- "redox_syscall 0.2.4",
+ "redox_syscall",
  "winapi 0.3.9",
 ]
 
@@ -1562,7 +1562,7 @@ version = "0.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "479219490dcbbf2a374908457df0b4d5b1d8eb62eb48b0ee897f9af9e7c44210"
 dependencies = [
- "geo-types 0.7.0",
+ "geo-types 0.7.1",
  "geographiclib-rs",
  "num-traits",
  "robust",
@@ -1599,9 +1599,9 @@ dependencies = [
 
 [[package]]
 name = "geo-types"
-version = "0.7.0"
+version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a6b362f0f09b4ff7ad8210f806f80ab6d0d895365a6830cb504267aeccfe3f43"
+checksum = "f53acb0efebf761179d5346ab1dc2b3657535d461bde5eaf4465ff7fee7a9a15"
 dependencies = [
  "approx 0.4.0",
  "num-traits",
@@ -1636,7 +1636,7 @@ version = "0.22.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a510a4ab1fbcc4058e030c438838ae3bc660065009d3bc3ad2a2e4658b3d0cf3"
 dependencies = [
- "geo-types 0.7.0",
+ "geo-types 0.7.1",
  "serde",
  "serde_json",
  "thiserror",
@@ -1856,6 +1856,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "glam"
+version = "0.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2ad8819b352632f676098176a51e11e324e8cee4c2518dd67e58c36b848438e6"
+dependencies = [
+ "version_check",
+]
+
+[[package]]
 name = "glob"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1955,11 +1964,11 @@ checksum = "644f9158b2f133fd50f5fb3242878846d9eb792e445c893805ff0e3824006e35"
 
 [[package]]
 name = "hexasphere"
-version = "3.1.0"
+version = "3.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b81ef4574a098bd48fad1a5cd7c4e6e908ac9a90d85338cef224be96f3059355"
+checksum = "cd045b4b2fcd330e6e17bb0fc5e91a96c1511c0802ae6e45b4f80463c55c4a8b"
 dependencies = [
- "glam",
+ "glam 0.12.0",
  "lazy_static",
 ]
 
@@ -2559,14 +2568,14 @@ dependencies = [
 
 [[package]]
 name = "parking_lot_core"
-version = "0.8.2"
+version = "0.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9ccb628cad4f84851442432c60ad8e1f607e29752d0bf072cbd0baf28aa34272"
+checksum = "fa7a782938e745763fe6907fc6ba86946d72f49fe7e21de074e08128a99fb018"
 dependencies = [
  "cfg-if 1.0.0",
  "instant",
  "libc",
- "redox_syscall 0.1.57",
+ "redox_syscall",
  "smallvec",
  "winapi 0.3.9",
 ]
@@ -2647,7 +2656,7 @@ dependencies = [
 name = "proj"
 version = "0.22.0"
 dependencies = [
- "geo-types 0.7.0",
+ "geo-types 0.7.1",
  "libc",
  "num-traits",
  "proj-sys",
@@ -2667,9 +2676,9 @@ dependencies = [
 
 [[package]]
 name = "quote"
-version = "1.0.8"
+version = "1.0.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "991431c3519a3f36861882da93630ce66b52918dcf1b8e2fd66b397fc96f28df"
+checksum = "c3d0b9745dc2debf507c8422de05d7226cc1f0644216dfdfead988f9b1ab32a7"
 dependencies = [
  "proc-macro2",
 ]
@@ -2738,15 +2747,9 @@ checksum = "e509b8eba9ca1884760ad1e2161cece724d4fd2b4cb47ddc01706920c6500cd7"
 
 [[package]]
 name = "redox_syscall"
-version = "0.1.57"
+version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "41cc0f7e4d5d4544e8861606a285bb08d3e70712ccc7d2b84d7c0ccfaf4b05ce"
-
-[[package]]
-name = "redox_syscall"
-version = "0.2.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "05ec8ca9416c5ea37062b502703cd7fcb207736bc294f6e0cf367ac6fc234570"
+checksum = "94341e4e44e24f6b591b59e47a8a027df12e008d73fd5672dbea9cc22f4507d9"
 dependencies = [
  "bitflags",
 ]
@@ -2818,7 +2821,7 @@ name = "rgis-file-loader"
 version = "0.1.0"
 dependencies = [
  "bevy",
- "geo-types 0.7.0",
+ "geo-types 0.7.1",
  "geojson 0.22.0",
  "rgis-cli",
  "rgis-layers",
@@ -2862,7 +2865,7 @@ dependencies = [
  "bevy",
  "bevy_egui",
  "geo-srs",
- "geo-types 0.7.0",
+ "geo-types 0.7.1",
  "proj",
 ]
 
