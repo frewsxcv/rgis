@@ -166,17 +166,37 @@ impl BuildBevyMeshes for geo::MultiPolygon<f64> {
     }
 }
 
+impl BuildBevyMeshes for geo::Line<f64> {
+    fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) {
+        unimplemented!()
+    }
+}
+
+impl BuildBevyMeshes for geo::Triangle<f64> {
+    fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) {
+        unimplemented!()
+    }
+}
+
+impl BuildBevyMeshes for geo::Rect<f64> {
+    fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) {
+        unimplemented!()
+    }
+}
+
 impl BuildBevyMeshes for geo::Geometry<f64> {
     fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) {
         match self {
             geo::Geometry::Point(g) => g.populate_mesh_builders(ctx),
+            geo::Geometry::Line(g) => g.populate_mesh_builders(ctx),
             geo::Geometry::LineString(g) => g.populate_mesh_builders(ctx),
             geo::Geometry::Polygon(g) => g.populate_mesh_builders(ctx),
             geo::Geometry::MultiPoint(g) => g.populate_mesh_builders(ctx),
             geo::Geometry::MultiLineString(g) => g.populate_mesh_builders(ctx),
             geo::Geometry::MultiPolygon(g) => g.populate_mesh_builders(ctx),
             geo::Geometry::GeometryCollection(g) => g.populate_mesh_builders(ctx),
-            _ => bevy_log::error!("Encountered unrenderable geometry type"),
+            geo::Geometry::Triangle(g) => g.populate_mesh_builders(ctx),
+            geo::Geometry::Rect(g) => g.populate_mesh_builders(ctx),
         }
     }
 }

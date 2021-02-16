@@ -763,7 +763,7 @@ dependencies = [
 [[package]]
 name = "bindgen"
 version = "0.57.0"
-source = "git+https://github.com/rust-lang/rust-bindgen.git?branch=master#e59aa9218b0e862cbaed319582bf0b692dfacde2"
+source = "git+https://github.com/rust-lang/rust-bindgen.git#e59aa9218b0e862cbaed319582bf0b692dfacde2"
 dependencies = [
  "bitflags",
  "cexpr",
@@ -1571,7 +1571,7 @@ dependencies = [
 
 [[package]]
 name = "geo-bevy"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = [
  "bevy-earcutr",
  "bevy_log",
