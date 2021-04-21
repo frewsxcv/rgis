@@ -1,4 +1,4 @@
-use bevy::ecs::IntoSystem;
+use bevy::ecs::system::{IntoSystem, Res, ResMut};
 
 const PAN_AMOUNT: f32 = 15.; // Larger number will pan more
 
@@ -11,9 +11,9 @@ impl bevy::app::Plugin for Plugin {
 }
 
 fn process_key_code_input_system(
-    keyboard_input: bevy::ecs::Res<bevy::input::Input<bevy::input::keyboard::KeyCode>>,
-    mut pan_camera_events: bevy::ecs::ResMut<bevy::app::Events<rgis_camera::PanCameraEvent>>,
-    mut zoom_camera_events: bevy::ecs::ResMut<bevy::app::Events<rgis_camera::ZoomCameraEvent>>,
+    keyboard_input: Res<bevy::input::Input<bevy::input::keyboard::KeyCode>>,
+    mut pan_camera_events: ResMut<bevy::app::Events<rgis_camera::PanCameraEvent>>,
+    mut zoom_camera_events: ResMut<bevy::app::Events<rgis_camera::ZoomCameraEvent>>,
 ) {
     for key in keyboard_input.get_just_pressed() {
         match key {

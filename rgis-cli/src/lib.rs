@@ -71,6 +71,6 @@ pub struct Plugin(pub Values);
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut bevy::app::AppBuilder) {
-        app.add_resource(self.0.clone());
+        app.insert_resource(self.0.clone());
     }
 }

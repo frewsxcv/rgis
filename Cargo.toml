@@ -17,5 +17,5 @@ members = [
 debug = true
 
 [patch.crates-io]
-proj = { path = "../../georust/proj" }
-proj-sys = { path = "../../georust/proj/proj-sys" }
+proj = { git = "https://github.com/georust/proj" }
+proj-sys = { git = "https://github.com/georust/proj" }

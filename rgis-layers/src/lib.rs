@@ -199,7 +199,7 @@ pub struct RgisLayersPlugin;
 
 impl Plugin for RgisLayersPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        app.add_resource(sync::Arc::new(sync::RwLock::new(Layers::new())))
+        app.insert_resource(sync::Arc::new(sync::RwLock::new(Layers::new())))
             .add_event::<LayerLoaded>()
             .add_event::<LayerSpawned>();
     }
