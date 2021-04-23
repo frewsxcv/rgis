@@ -1,18 +1,15 @@
-use bevy::ecs::IntoSystem;
+use bevy::ecs::system::{IntoSystem, Query, Res, ResMut};
 
 fn cursor_moved_system(
-    mut cursor_moved_event_reader: bevy::ecs::Local<
-        bevy::app::EventReader<bevy::window::CursorMoved>,
-    >,
-    cursor_moved_events: bevy::ecs::Res<bevy::app::Events<bevy::window::CursorMoved>>,
-    windows: bevy::ecs::Res<bevy::window::Windows>,
-    camera_transform_query: bevy::ecs::Query<(
+    mut cursor_moved_event_reader: bevy::app::EventReader<bevy::window::CursorMoved>,
+    windows: Res<bevy::window::Windows>,
+    camera_transform_query: Query<(
         &rgis_camera::Camera2d,
         &bevy::transform::components::Transform,
     )>,
-    mut ui_state: bevy::ecs::ResMut<rgis_ui::UiState>
+    mut ui_state: ResMut<rgis_ui::UiState>,
 ) {
-    for event in cursor_moved_event_reader.iter(&cursor_moved_events) {
+    for event in cursor_moved_event_reader.iter() {
         for (_camera, transform) in camera_transform_query.iter() {
             let window = windows.get_primary().unwrap();
             let size = bevy::math::Vec2::new(window.width() as f32, window.height() as f32);
@@ -31,15 +28,12 @@ fn cursor_moved_system(
 }
 
 fn mouse_motion_system(
-    mut mouse_motion_event_reader: bevy::ecs::Local<
-        bevy::app::EventReader<bevy::input::mouse::MouseMotion>,
-    >,
-    mouse_motion_events: bevy::ecs::Res<bevy::app::Events<bevy::input::mouse::MouseMotion>>,
-    mouse_button: bevy::ecs::Res<bevy::input::Input<bevy::input::mouse::MouseButton>>,
-    mut pan_camera_events: bevy::ecs::ResMut<bevy::app::Events<rgis_camera::PanCameraEvent>>,
+    mut mouse_motion_event_reader: bevy::app::EventReader<bevy::input::mouse::MouseMotion>,
+    mouse_button: Res<bevy::input::Input<bevy::input::mouse::MouseButton>>,
+    mut pan_camera_events: ResMut<bevy::app::Events<rgis_camera::PanCameraEvent>>,
 ) {
     if mouse_button.pressed(bevy::input::mouse::MouseButton::Right) {
-        for event in mouse_motion_event_reader.iter(&mouse_motion_events) {
+        for event in mouse_motion_event_reader.iter() {
             pan_camera_events.send(rgis_camera::PanCameraEvent {
                 // If the mouse is dragging rightward, `delta.x` will be positive. In this case, we
                 // want the map to move right, and the camera to move left. We need to negate the
@@ -55,13 +49,10 @@ fn mouse_motion_system(
 }
 
 fn mouse_scroll_system(
-    mut mouse_scroll_event_reader: bevy::ecs::Local<
-        bevy::app::EventReader<bevy::input::mouse::MouseWheel>,
-    >,
-    mouse_scroll_events: bevy::ecs::Res<bevy::app::Events<bevy::input::mouse::MouseWheel>>,
-    mut zoom_camera_events: bevy::ecs::ResMut<bevy::app::Events<rgis_camera::ZoomCameraEvent>>,
+    mut mouse_scroll_event_reader: bevy::app::EventReader<bevy::input::mouse::MouseWheel>,
+    mut zoom_camera_events: ResMut<bevy::app::Events<rgis_camera::ZoomCameraEvent>>,
 ) {
-    for event in mouse_scroll_event_reader.iter(&mouse_scroll_events) {
+    for event in mouse_scroll_event_reader.iter() {
         if event.y > 0. {
             zoom_camera_events.send(rgis_camera::ZoomCameraEvent::zoom_in());
         } else if event.y < 0. {

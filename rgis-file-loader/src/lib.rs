@@ -1,3 +1,4 @@
+use bevy::app::Events;
 use bevy::prelude::*;
 use std::path;
 
@@ -13,15 +14,14 @@ pub struct LoadGeoJsonFile {
 // System
 fn load_geojson_file_handler(
     layers: rgis_layers::ResLayers,
-    load_events: Res<Events<LoadGeoJsonFile>>,
-    mut load_event_reader: Local<EventReader<LoadGeoJsonFile>>,
+    mut load_event_reader: EventReader<LoadGeoJsonFile>,
     mut loaded_events: ResMut<Events<rgis_layers::LayerLoaded>>,
 ) {
     for LoadGeoJsonFile {
         path: geojson_file_path,
         source_srs,
         target_srs,
-    } in load_event_reader.iter(&load_events)
+    } in load_event_reader.iter()
     {
         let layer_ids = geojson::load(
             geojson_file_path.clone(),

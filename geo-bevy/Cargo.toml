@@ -6,7 +6,7 @@ edition = "2018"
 publish = false
 
 [dependencies]
-bevy_log = "0.4"
-bevy_render = "0.4"
-bevy-earcutr = "0.1"
+bevy_log = "0.5"
+bevy_render = "0.5"
+bevy-earcutr = "0.2"
 geo = "0.17"

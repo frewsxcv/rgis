@@ -14,7 +14,7 @@ pub struct PositionText;
 impl Plugin for RgisUi {
     fn build(&self, app: &mut AppBuilder) {
         app.add_plugin(bevy_egui::EguiPlugin)
-            .add_resource(UiState {
+            .insert_resource(UiState {
                 layers: vec![],
                 projected_mouse_position: geo_srs::CoordWithSrs {
                     srs: self.target_srs.clone(),
@@ -35,11 +35,11 @@ pub struct UiState {
     pub target_srs: String,
 }
 
-fn ui(mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>, ui_state: Res<UiState>) {
-    render_side_panel(&mut bevy_egui_ctx.ctx, &ui_state);
+fn ui(bevy_egui_ctx: ResMut<bevy_egui::EguiContext>, ui_state: Res<UiState>) {
+    render_side_panel(bevy_egui_ctx.ctx(), &ui_state);
 }
 
-fn render_side_panel(ctx: &mut egui::CtxRef, ui_state: &UiState) {
+fn render_side_panel(ctx: &egui::CtxRef, ui_state: &UiState) {
     egui::SidePanel::left("left-side-panel", MAX_SIDE_PANEL_WIDTH).show(ctx, |mut ui| {
         render_mouse_position_window(&mut ui, &ui_state);
         render_layers_window(&mut ui, &ui_state);

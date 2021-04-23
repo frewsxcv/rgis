@@ -1,18 +1,17 @@
-use bevy::{prelude::*, render::pass::ClearColor};
+use bevy::{app::Events, prelude::*, render::pass::ClearColor};
 use geo_bevy::BuildBevyMeshes;
 
 // System
 fn layer_loaded(
-    commands: &mut Commands,
+    mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     layers: rgis_layers::ResLayers,
-    events: Res<Events<rgis_layers::LayerLoaded>>,
     mut ui_state: ResMut<rgis_ui::UiState>,
-    mut event_reader: Local<EventReader<rgis_layers::LayerLoaded>>,
+    mut event_reader: EventReader<rgis_layers::LayerLoaded>,
     mut spawned_events: ResMut<Events<rgis_layers::LayerSpawned>>,
 ) {
-    for event in event_reader.iter(&events) {
+    for event in event_reader.iter() {
         let layers = layers.read().unwrap();
         let layer = match layers.get(event.0) {
             Some(l) => l,
@@ -27,7 +26,7 @@ fn layer_loaded(
             .geometry
             .build_bevy_meshes(geo_bevy::BuildBevyMeshesContext::new())
         {
-            spawn_mesh(mesh, material.clone(), &mut meshes, commands);
+            spawn_mesh(mesh, material.clone(), &mut meshes, &mut commands);
         }
         tl.finish();
 
@@ -45,13 +44,12 @@ impl Plugin for LayerSpawnedPlugin {
 
 // System
 fn layer_spawned(
-    events: Res<Events<rgis_layers::LayerSpawned>>,
     layers: rgis_layers::ResLayers,
     mut camera_offset: ResMut<rgis_camera::CameraOffset>,
     mut camera_scale: ResMut<rgis_camera::CameraScale>,
-    mut event_reader: Local<EventReader<rgis_layers::LayerSpawned>>,
+    mut event_reader: EventReader<rgis_layers::LayerSpawned>,
 ) {
-    for event in event_reader.iter(&events) {
+    for event in event_reader.iter() {
         let layers = layers.read().unwrap();
         let layer = match layers.get(event.0) {
             Some(l) => l,
@@ -84,7 +82,7 @@ pub fn spawn_mesh(
         },
         ..Default::default()
     };
-    commands.spawn(sprite);
+    commands.spawn().insert_bundle(sprite);
 }
 
 fn main() {
@@ -93,13 +91,11 @@ fn main() {
     let target_srs = cli_values.target_srs.clone();
 
     App::build()
-        .add_resource(Msaa {
+        .insert_resource(Msaa {
             samples: cli_values.msaa_sample_count,
         })
-
         // Bevy plugins
         .add_plugin(bevy::log::LogPlugin::default())
-        .add_plugin(bevy::reflect::ReflectPlugin::default())
         .add_plugin(bevy::core::CorePlugin::default())
         .add_plugin(bevy::transform::TransformPlugin::default())
         // .add_plugin(bevy::diagnostic::DiagnosticsPlugin::default())
@@ -114,8 +110,8 @@ fn main() {
                     // We don’t need a 3D camera
                     add_3d_camera: false,
                     ..Default::default()
-                }
-            )
+                },
+            ),
         })
         .add_plugin(bevy::sprite::SpritePlugin::default())
         .add_plugin(bevy::pbr::PbrPlugin::default())
@@ -123,7 +119,6 @@ fn main() {
         .add_plugin(bevy::text::TextPlugin::default())
         .add_plugin(bevy::winit::WinitPlugin::default())
         .add_plugin(bevy::wgpu::WgpuPlugin::default())
-
         .add_plugin(rgis_cli::Plugin(cli_values))
         .add_plugin(rgis_layers::RgisLayersPlugin)
         .add_plugin(rgis_file_loader::RgisFileLoaderPlugin)
@@ -132,7 +127,10 @@ fn main() {
         .add_plugin(rgis_keyboard::Plugin)
         .add_plugin(LayerSpawnedPlugin)
         .add_plugin(rgis_camera::RgisCamera)
-        .add_plugin(rgis_ui::RgisUi { source_srs, target_srs })
-        .add_resource(ClearColor(Color::WHITE))
+        .add_plugin(rgis_ui::RgisUi {
+            source_srs,
+            target_srs,
+        })
+        .insert_resource(ClearColor(Color::WHITE))
         .run();
 }

@@ -12,8 +12,8 @@ impl Plugin for RgisCamera {
         app.add_startup_system(setup.system())
             .add_event::<PanCameraEvent>()
             .add_event::<ZoomCameraEvent>()
-            .add_resource(CameraScale(1.))
-            .add_resource(CameraOffset { x: 0., y: 0. })
+            .insert_resource(CameraScale(1.))
+            .insert_resource(CameraOffset { x: 0., y: 0. })
             .add_system(pan_camera_system.system())
             .add_system(zoom_camera_system.system())
             .add_system(update_camera_offset.system())
@@ -21,8 +21,11 @@ impl Plugin for RgisCamera {
     }
 }
 
-fn setup(commands: &mut Commands) {
-    commands.spawn(Camera2dBundle::default()).with(Camera2d);
+fn setup(mut commands: Commands) {
+    commands
+        .spawn()
+        .insert_bundle(OrthographicCameraBundle::new_2d())
+        .insert(Camera2d);
 }
 
 pub struct CameraScale(pub f32);
@@ -81,31 +84,32 @@ impl ZoomCameraEvent {
 }
 
 fn pan_camera_system(
-    mut pan_camera_event_reader: bevy::ecs::Local<bevy::app::EventReader<PanCameraEvent>>,
-    pan_camera_events: bevy::ecs::Res<bevy::app::Events<PanCameraEvent>>,
+    mut pan_camera_event_reader: bevy::app::EventReader<PanCameraEvent>,
     mut camera_offset: ResMut<CameraOffset>,
     mut camera_scale: ResMut<CameraScale>,
 ) {
-    for event in pan_camera_event_reader.iter(&pan_camera_events) {
+    for event in pan_camera_event_reader.iter() {
         pan_x(event.x, &mut camera_offset, &mut camera_scale);
         pan_y(event.y, &mut camera_offset, &mut camera_scale);
     }
 }
 
 fn zoom_camera_system(
-    mut zoom_camera_event_reader: bevy::ecs::Local<bevy::app::EventReader<ZoomCameraEvent>>,
-    zoom_camera_events: bevy::ecs::Res<bevy::app::Events<ZoomCameraEvent>>,
+    mut zoom_camera_event_reader: bevy::app::EventReader<ZoomCameraEvent>,
     mut camera_scale: ResMut<CameraScale>,
 ) {
-    for event in zoom_camera_event_reader.iter(&zoom_camera_events) {
+    for event in zoom_camera_event_reader.iter() {
         zoom(event.amount, &mut camera_scale)
     }
 }
 
 fn update_camera_offset(
-    camera_offset: ChangedRes<CameraOffset>,
+    camera_offset: Res<CameraOffset>,
     mut camera_transform_query: Query<(&Camera2d, &mut Transform)>,
 ) {
+    if !camera_offset.is_changed() {
+        return;
+    }
     debug!("Camera offset changed");
     for (_camera, mut transform) in camera_transform_query.iter_mut() {
         transform.translation = Vec3::new(camera_offset.x, camera_offset.y, 0.);
@@ -114,9 +118,12 @@ fn update_camera_offset(
 }
 
 fn update_camera_scale(
-    camera_scale: ChangedRes<CameraScale>,
+    camera_scale: Res<CameraScale>,
     mut camera_transform_query: Query<(&Camera2d, &mut Transform)>,
 ) {
+    if !camera_scale.is_changed() {
+        return;
+    }
     debug!("Camera scale changed");
     for (_camera, mut transform) in camera_transform_query.iter_mut() {
         transform.scale = Vec3::new(camera_scale.0, camera_scale.0, 1.);
