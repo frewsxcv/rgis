@@ -29,6 +29,4 @@ rgis --help
 
 ## Screenshots
 
-![](https://i.imgur.com/t0ybDWq.png)
-
-![](https://i.imgur.com/cRqvmsd.png)
+<img width="1392" alt="Screen Shot 2021-06-13 at 9 56 42 PM" src="https://user-images.githubusercontent.com/416575/121830120-50ee0600-cc92-11eb-8e0c-3a26fbdbec75.png">
