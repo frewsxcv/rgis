@@ -9,4 +9,4 @@ publish = false
 bevy_log = "0.5"
 bevy_render = "0.5"
 bevy-earcutr = "0.2"
-geo = "0.17"
+geo = "0.18"
