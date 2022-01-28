@@ -198,7 +198,7 @@ pub type ResLayers<'a> = Res<'a, sync::Arc<sync::RwLock<Layers>>>;
 pub struct RgisLayersPlugin;
 
 impl Plugin for RgisLayersPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         app.insert_resource(sync::Arc::new(sync::RwLock::new(Layers::new())))
             .add_event::<LayerLoaded>()
             .add_event::<LayerSpawned>();

@@ -5,10 +5,11 @@ const ZOOM_AMOUNT: f32 = 1.3; // Larger number will zoom more
 pub struct RgisCamera;
 
 // Component that gets added to the Camera2dBundle entity.
+#[derive(Component)]
 pub struct Camera2d;
 
 impl Plugin for RgisCamera {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         app.add_startup_system(setup.system())
             .add_event::<PanCameraEvent>()
             .add_event::<ZoomCameraEvent>()

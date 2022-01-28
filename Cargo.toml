@@ -12,6 +12,7 @@ members = [
     "rgis-ui",
     "time-logger",
 ]
+resolver = "2"
 
 [profile.release]
 debug = true

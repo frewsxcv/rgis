@@ -5,7 +5,7 @@ const PAN_AMOUNT: f32 = 15.; // Larger number will pan more
 pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
-    fn build(&self, app: &mut bevy::app::AppBuilder) {
+    fn build(&self, app: &mut bevy::app::App) {
         app.add_system(process_key_code_input_system.system());
     }
 }

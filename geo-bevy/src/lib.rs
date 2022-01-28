@@ -30,8 +30,9 @@ impl LineStringMeshBuilder {
     }
 
     pub fn build(self) -> Mesh {
+        println!("{:?} {:?}", self.vertices, self.indices);
         build_mesh_from_vertices(
-            bevy_render::pipeline::PrimitiveTopology::LineList,
+            bevy_render::render_resource::PrimitiveTopology::LineList,
             self.vertices,
             self.indices,
         )
@@ -61,7 +62,7 @@ impl PointMeshBuilder {
 
     pub fn build(self) -> Mesh {
         build_mesh_from_vertices(
-            bevy_render::pipeline::PrimitiveTopology::PointList,
+            bevy_render::render_resource::PrimitiveTopology::PointList,
             self.vertices,
             self.indices,
         )
@@ -69,7 +70,7 @@ impl PointMeshBuilder {
 }
 
 fn build_mesh_from_vertices(
-    primitive_topology: bevy_render::pipeline::PrimitiveTopology,
+    primitive_topology: bevy_render::render_resource::PrimitiveTopology,
     vertices: Vec<[f32; 2]>,
     indices: Vec<u32>,
 ) -> Mesh {

@@ -6,15 +6,14 @@ edition = "2018"
 publish = false
 
 [dependencies]
-bevy = { version = "0.5", default-features = false, features = [
+bevy = { version = "0.6", default-features = false, features = [
     "bevy_dynamic_plugin",
     "bevy_gilrs",
     "bevy_gltf",
-    "bevy_wgpu",
     "bevy_winit",
     "render",
 ] }
-bevy_egui = "0.4"
+bevy_egui = "0.10"
 geo-srs = { path = "../geo-srs" }
 geo-types = "0.7"
 proj = { version = "*", features = ['bundled_proj'] }

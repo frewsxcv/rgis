@@ -8,11 +8,10 @@ publish = false
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bevy = { version = "0.5", default-features = false, features = [
+bevy = { version = "0.6", default-features = false, features = [
     "bevy_dynamic_plugin",
     "bevy_gilrs",
     "bevy_gltf",
-    "bevy_wgpu",
     "bevy_winit",
     "render",
 ] }
