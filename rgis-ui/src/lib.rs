@@ -12,7 +12,7 @@ pub struct RgisUi {
 pub struct PositionText;
 
 impl Plugin for RgisUi {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         app.add_plugin(bevy_egui::EguiPlugin)
             .insert_resource(UiState {
                 layers: vec![],
@@ -40,7 +40,7 @@ fn ui(bevy_egui_ctx: ResMut<bevy_egui::EguiContext>, ui_state: Res<UiState>) {
 }
 
 fn render_side_panel(ctx: &egui::CtxRef, ui_state: &UiState) {
-    egui::SidePanel::left("left-side-panel", MAX_SIDE_PANEL_WIDTH).show(ctx, |mut ui| {
+    egui::SidePanel::left("left-side-panel").max_width(MAX_SIDE_PANEL_WIDTH).show(ctx, |mut ui| {
         render_mouse_position_window(&mut ui, &ui_state);
         render_layers_window(&mut ui, &ui_state);
     });

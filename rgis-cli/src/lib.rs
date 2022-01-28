@@ -70,7 +70,7 @@ pub fn run() -> Values {
 pub struct Plugin(pub Values);
 
 impl bevy::app::Plugin for Plugin {
-    fn build(&self, app: &mut bevy::app::AppBuilder) {
+    fn build(&self, app: &mut bevy::app::App) {
         app.insert_resource(self.0.clone());
     }
 }

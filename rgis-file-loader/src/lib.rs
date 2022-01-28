@@ -55,7 +55,7 @@ fn load_layers_from_cli(
 pub struct RgisFileLoaderPlugin;
 
 impl Plugin for RgisFileLoaderPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         app.add_event::<LoadGeoJsonFile>()
             .add_startup_system(load_layers_from_cli.system())
             .add_system(load_geojson_file_handler.system());

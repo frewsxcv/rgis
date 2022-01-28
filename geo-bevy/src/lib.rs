@@ -2,8 +2,10 @@ use bevy_render::prelude::*;
 use geo::algorithm::coords_iter::CoordsIter;
 use std::convert::TryFrom;
 
+type Vertex = [f32; 3]; // [x, y, z]
+
 struct LineStringMeshBuilder {
-    vertices: Vec<[f32; 2]>,
+    vertices: Vec<Vertex>,
     indices: Vec<u32>,
 }
 
@@ -20,7 +22,7 @@ impl LineStringMeshBuilder {
     fn add_line_string(&mut self, line_string: &geo::LineString<f64>) {
         let index_base = self.vertices.len();
         for (i, coord) in line_string.0.iter().enumerate() {
-            self.vertices.push([coord.x as f32, coord.y as f32]);
+            self.vertices.push([coord.x as f32, coord.y as f32, 0.0]);
             if i != line_string.0.len() - 1 {
                 self.indices.push(u32::try_from(index_base + i).unwrap());
                 self.indices
@@ -31,7 +33,7 @@ impl LineStringMeshBuilder {
 
     pub fn build(self) -> Mesh {
         build_mesh_from_vertices(
-            bevy_render::pipeline::PrimitiveTopology::LineList,
+            bevy_render::render_resource::PrimitiveTopology::LineList,
             self.vertices,
             self.indices,
         )
@@ -39,7 +41,7 @@ impl LineStringMeshBuilder {
 }
 
 struct PointMeshBuilder {
-    vertices: Vec<[f32; 2]>,
+    vertices: Vec<Vertex>,
     indices: Vec<u32>,
 }
 
@@ -55,13 +57,13 @@ impl PointMeshBuilder {
     /// Call for `add_earcutr_input` for each polygon you want to add to the mesh.
     fn add_point(&mut self, point: &geo::Point<f64>) {
         let index_base = self.vertices.len();
-        self.vertices.push([point.x() as f32, point.y() as f32]);
+        self.vertices.push([point.x() as f32, point.y() as f32, 0.0]);
         self.indices.push(u32::try_from(index_base).unwrap());
     }
 
     pub fn build(self) -> Mesh {
         build_mesh_from_vertices(
-            bevy_render::pipeline::PrimitiveTopology::PointList,
+            bevy_render::render_resource::PrimitiveTopology::PointList,
             self.vertices,
             self.indices,
         )
@@ -69,8 +71,8 @@ impl PointMeshBuilder {
 }
 
 fn build_mesh_from_vertices(
-    primitive_topology: bevy_render::pipeline::PrimitiveTopology,
-    vertices: Vec<[f32; 2]>,
+    primitive_topology: bevy_render::render_resource::PrimitiveTopology,
+    vertices: Vec<Vertex>,
     indices: Vec<u32>,
 ) -> Mesh {
     let num_vertices = vertices.len();
@@ -167,19 +169,19 @@ impl BuildBevyMeshes for geo::MultiPolygon<f64> {
 }
 
 impl BuildBevyMeshes for geo::Line<f64> {
-    fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) {
+    fn populate_mesh_builders(&self, _ctx: &mut BuildBevyMeshesContext) {
         unimplemented!()
     }
 }
 
 impl BuildBevyMeshes for geo::Triangle<f64> {
-    fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) {
+    fn populate_mesh_builders(&self, _ctx: &mut BuildBevyMeshesContext) {
         unimplemented!()
     }
 }
 
 impl BuildBevyMeshes for geo::Rect<f64> {
-    fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) {
+    fn populate_mesh_builders(&self, _ctx: &mut BuildBevyMeshesContext) {
         unimplemented!()
     }
 }

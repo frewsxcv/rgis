@@ -64,7 +64,7 @@ fn mouse_scroll_system(
 pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
-    fn build(&self, app: &mut bevy::app::AppBuilder) {
+    fn build(&self, app: &mut bevy::app::App) {
         app.add_system(cursor_moved_system.system())
             .add_system(mouse_scroll_system.system())
             .add_system(mouse_motion_system.system());

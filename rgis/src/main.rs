@@ -1,4 +1,4 @@
-use bevy::{app::Events, prelude::*, render::pass::ClearColor};
+use bevy::{app::Events, prelude::*, core_pipeline::ClearColor};
 use geo_bevy::BuildBevyMeshes;
 
 // System
@@ -37,7 +37,7 @@ fn layer_loaded(
 struct LayerSpawnedPlugin;
 
 impl Plugin for LayerSpawnedPlugin {
-    fn build(&self, app: &mut AppBuilder) {
+    fn build(&self, app: &mut App) {
         app.add_system(layer_spawned.system());
     }
 }
@@ -73,16 +73,12 @@ pub fn spawn_mesh(
     meshes: &mut Assets<Mesh>,
     commands: &mut Commands,
 ) {
-    let sprite = SpriteBundle {
+    let mmb = bevy::sprite::MaterialMesh2dBundle {
         material: material,
-        mesh: meshes.add(mesh),
-        sprite: Sprite {
-            size: Vec2::new(1.0, 1.0),
-            ..Default::default()
-        },
+        mesh: bevy::sprite::Mesh2dHandle(meshes.add(mesh)),
         ..Default::default()
     };
-    commands.spawn().insert_bundle(sprite);
+    commands.spawn_bundle(mmb);
 }
 
 fn main() {
@@ -90,35 +86,37 @@ fn main() {
     let source_srs = cli_values.source_srs.clone();
     let target_srs = cli_values.target_srs.clone();
 
-    App::build()
+    App::new()
         .insert_resource(Msaa {
             samples: cli_values.msaa_sample_count,
         })
+        .add_plugins(DefaultPlugins)
         // Bevy plugins
-        .add_plugin(bevy::log::LogPlugin::default())
-        .add_plugin(bevy::core::CorePlugin::default())
-        .add_plugin(bevy::transform::TransformPlugin::default())
+        // .add_plugin(bevy::log::LogPlugin::default())
+        // .add_plugin(bevy::core::CorePlugin::default())
+        // .add_plugin(bevy::transform::TransformPlugin::default())
+
         // .add_plugin(bevy::diagnostic::DiagnosticsPlugin::default())
         // .add_plugin(bevy::diagnostic::PrintDiagnosticsPlugin::default())
         // .add_plugin(bevy::diagnostic::FrameTimeDiagnosticsPlugin::default())
-        .add_plugin(bevy::input::InputPlugin::default())
-        .add_plugin(bevy::window::WindowPlugin::default())
-        .add_plugin(bevy::asset::AssetPlugin::default())
-        .add_plugin(bevy::render::RenderPlugin {
-            base_render_graph_config: Some(
-                bevy::render::render_graph::base::BaseRenderGraphConfig {
-                    // We don’t need a 3D camera
-                    add_3d_camera: false,
-                    ..Default::default()
-                },
-            ),
-        })
-        .add_plugin(bevy::sprite::SpritePlugin::default())
-        .add_plugin(bevy::pbr::PbrPlugin::default())
-        .add_plugin(bevy::ui::UiPlugin::default())
-        .add_plugin(bevy::text::TextPlugin::default())
-        .add_plugin(bevy::winit::WinitPlugin::default())
-        .add_plugin(bevy::wgpu::WgpuPlugin::default())
+
+        // .add_plugin(bevy::input::InputPlugin::default())
+        // .add_plugin(bevy::window::WindowPlugin::default())
+        // .add_plugin(bevy::asset::AssetPlugin::default())
+        // .add_plugin(bevy::render::RenderPlugin::default())
+        //     base_render_graph_config: Some(
+        //         bevy::render::render_graph::base::BaseRenderGraphConfig {
+        //             // We don’t need a 3D camera
+        //             add_3d_camera: false,
+        //             ..Default::default()
+        //         },
+        //     ),
+        // })
+        // .add_plugin(bevy::sprite::SpritePlugin::default())
+        // .add_plugin(bevy::pbr::PbrPlugin::default())
+        // .add_plugin(bevy::ui::UiPlugin::default())
+        // .add_plugin(bevy::text::TextPlugin::default())
+        // .add_plugin(bevy::winit::WinitPlugin::default())
         .add_plugin(rgis_cli::Plugin(cli_values))
         .add_plugin(rgis_layers::RgisLayersPlugin)
         .add_plugin(rgis_file_loader::RgisFileLoaderPlugin)

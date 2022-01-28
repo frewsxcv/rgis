@@ -2,7 +2,7 @@
 name = "geo-srs"
 version = "0.1.0"
 authors = ["Corey Farwell <coreyf@rwell.org>"]
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 geo = { version = "0.18" }
