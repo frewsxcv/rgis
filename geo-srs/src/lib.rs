@@ -72,15 +72,24 @@ impl<T: geo::CoordFloat> GeometryWithSrs<T> {
 /// # Examples
 ///
 /// ```
+/// use geo;
+/// use geo_srs::Transform;
+///
+/// let point: geo::Point<f32> = geo::point!(x: -36.508, y: -54.2815);
+///
+/// assert_eq!(
+///     point.transform("EPSG:4326", "EPSG:3857").unwrap(),
+///     geo::point!(x: -4064052.0, y: -7223650.5)
+/// );
 /// ```
-trait Transform<T> {
+pub trait Transform<T> {
     type Output;
 
     fn transform(&self, source_srs: &str, target: &str) -> Result<Self::Output, TransformError>;
 }
 
 #[derive(Debug)]
-enum TransformError {
+pub enum TransformError {
     UnknownCrs,
     ProjError(Box<dyn Error + Send + Sync>),
 }
