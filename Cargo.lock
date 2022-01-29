@@ -2376,7 +2376,8 @@ checksum = "9145ac0af1d93c638c98c40cf7d25665f427b2a44ad0a99b1dccf3e2f25bb987"
 [[package]]
 name = "proj"
 version = "0.24.0"
-source = "git+https://github.com/georust/proj#787df36f09ee5ac386dfa2ad83c111690b55e994"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7ded5efe79ae2de374542b45c39713d8e16a706b78be5eadd8ad844e6b4f6515"
 dependencies = [
  "geo-types 0.7.2",
  "libc",
@@ -2388,7 +2389,8 @@ dependencies = [
 [[package]]
 name = "proj-sys"
 version = "0.21.0"
-source = "git+https://github.com/georust/proj#787df36f09ee5ac386dfa2ad83c111690b55e994"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a8b06050682cec26bdd087fce62c25a78f22be86d2279ac15c52ce6a4e146d8f"
 dependencies = [
  "bindgen",
  "cmake",

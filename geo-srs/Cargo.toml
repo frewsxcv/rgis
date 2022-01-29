@@ -6,4 +6,4 @@ edition = "2021"
 
 [dependencies]
 geo = { version = "0.18" }
-proj = { version = "*", features = ['bundled_proj'] }
+proj = { version = "0.24" }
