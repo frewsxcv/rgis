@@ -5,5 +5,4 @@ authors = ["Corey Farwell <coreyf@rwell.org>"]
 edition = "2021"
 
 [dependencies]
-geo = { version = "0.18" }
-proj = { version = "0.24" }
+geo = { version = "0.18", features = ["use-proj"] }

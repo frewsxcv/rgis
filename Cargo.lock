@@ -1451,13 +1451,13 @@ dependencies = [
 [[package]]
 name = "geo"
 version = "0.18.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "02bf7fb342abefefb0abbb8d033f37233e6f857a1a970805d15f96560834d699"
+source = "git+https://github.com/georust/geo.git?branch=frewsxcv-transform#48048ea13f0bba7987a0f50ae57a5b68da2b3729"
 dependencies = [
  "geo-types 0.7.2",
  "geographiclib-rs",
  "log",
  "num-traits",
+ "proj",
  "robust",
  "rstar",
 ]
@@ -1477,7 +1477,6 @@ name = "geo-srs"
 version = "0.1.0"
 dependencies = [
  "geo",
- "proj",
 ]
 
 [[package]]
@@ -1493,8 +1492,7 @@ dependencies = [
 [[package]]
 name = "geo-types"
 version = "0.7.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d8bd2e95dd9f5c8ff74159ed9205ad7fd239a9569173a550863976421b45d2bb"
+source = "git+https://github.com/georust/geo.git?branch=frewsxcv-transform#48048ea13f0bba7987a0f50ae57a5b68da2b3729"
 dependencies = [
  "approx 0.4.0",
  "num-traits",
@@ -2375,9 +2373,9 @@ checksum = "9145ac0af1d93c638c98c40cf7d25665f427b2a44ad0a99b1dccf3e2f25bb987"
 
 [[package]]
 name = "proj"
-version = "0.24.0"
+version = "0.23.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7ded5efe79ae2de374542b45c39713d8e16a706b78be5eadd8ad844e6b4f6515"
+checksum = "47d8ef550d4af07a645fdb701e87e8a1fa37b08d6c77de343e7f834d51808431"
 dependencies = [
  "geo-types 0.7.2",
  "libc",
@@ -2388,9 +2386,9 @@ dependencies = [
 
 [[package]]
 name = "proj-sys"
-version = "0.21.0"
+version = "0.20.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a8b06050682cec26bdd087fce62c25a78f22be86d2279ac15c52ce6a4e146d8f"
+checksum = "f087fd505c64cf1c491e6f64dae430f86b34cf2d1ee5c6869cdb020422d50078"
 dependencies = [
  "bindgen",
  "cmake",
@@ -2594,7 +2592,6 @@ dependencies = [
  "bevy_egui",
  "geo-srs",
  "geo-types 0.7.2",
- "proj",
 ]
 
 [[package]]

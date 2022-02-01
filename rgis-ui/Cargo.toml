@@ -16,4 +16,3 @@ bevy = { version = "0.6", default-features = false, features = [
 bevy_egui = "0.10"
 geo-srs = { path = "../geo-srs" }
 geo-types = "0.7"
-proj = { version = "0.24" }
