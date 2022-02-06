@@ -8,7 +8,10 @@ pub struct CoordWithSrs<T: geo::CoordFloat> {
 
 impl<T: geo::CoordFloat> CoordWithSrs<T> {
     pub fn reproject(&mut self, target_srs: &str) {
-        self.coord = geo::Point(self.coord).transform_crs_to_crs(&self.srs, target_srs).unwrap().0;
+        self.coord = geo::Point(self.coord)
+            .transform_crs_to_crs(&self.srs, target_srs)
+            .unwrap()
+            .0;
         self.srs = target_srs.to_owned();
     }
 }
@@ -57,7 +60,10 @@ impl<T: geo::CoordFloat> GeometryWithSrs<T> {
     // }
 
     pub fn reproject(&mut self, target_srs: &str) {
-        self.geometry = self.geometry.transform_crs_to_crs(&self.srs, target_srs).unwrap();
+        self.geometry = self
+            .geometry
+            .transform_crs_to_crs(&self.srs, target_srs)
+            .unwrap();
         self.srs = target_srs.to_owned();
     }
 }

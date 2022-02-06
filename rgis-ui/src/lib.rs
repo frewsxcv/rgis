@@ -43,7 +43,7 @@ fn ui(
     render_side_panel(bevy_egui_ctx.ctx(), &mut ui_state, &rgis_layers_resource);
 
     if ui_state.layer_window_visible {
-        egui::Window::new("Layer")
+        egui::Window::new("Manage Layer")
             .open(&mut ui_state.layer_window_visible)
             .show(bevy_egui_ctx.ctx(), |ui| {
                 ui.label("Hello World!");
@@ -64,10 +64,7 @@ fn render_side_panel(
         });
 }
 
-fn render_mouse_position_window(
-    ui: &mut egui::Ui,
-    ui_state: &UiState,
-) {
+fn render_mouse_position_window(ui: &mut egui::Ui, ui_state: &UiState) {
     ui.collapsing("Mouse Position", |ui| {
         let mut unprojected = ui_state.projected_mouse_position.clone();
         unprojected.reproject(&ui_state.source_srs);
@@ -102,7 +99,7 @@ fn render_layers_window(
         for layer in &rgis_layers_resource.data {
             egui::Frame::group(ui.style()).show(ui, |ui| {
                 ui.label(layer.name.to_string());
-                if ui.button("Manage Layer").clicked() {
+                if ui.button("Manage").clicked() {
                     ui_state.layer_window_visible = true;
                 }
             });

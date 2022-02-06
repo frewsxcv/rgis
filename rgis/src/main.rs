@@ -1,4 +1,4 @@
-use bevy::{app::Events, prelude::*, core_pipeline::ClearColor};
+use bevy::{app::Events, core_pipeline::ClearColor, prelude::*};
 use geo_bevy::BuildBevyMeshes;
 
 // System
@@ -93,11 +93,9 @@ fn main() {
         // .add_plugin(bevy::log::LogPlugin::default())
         // .add_plugin(bevy::core::CorePlugin::default())
         // .add_plugin(bevy::transform::TransformPlugin::default())
-
         // .add_plugin(bevy::diagnostic::DiagnosticsPlugin::default())
         // .add_plugin(bevy::diagnostic::PrintDiagnosticsPlugin::default())
         // .add_plugin(bevy::diagnostic::FrameTimeDiagnosticsPlugin::default())
-
         // .add_plugin(bevy::input::InputPlugin::default())
         // .add_plugin(bevy::window::WindowPlugin::default())
         // .add_plugin(bevy::asset::AssetPlugin::default())
