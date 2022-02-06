@@ -22,6 +22,7 @@ impl Plugin for RgisUi {
                 },
                 source_srs: self.source_srs.to_owned(),
                 target_srs: self.target_srs.to_owned(),
+                layer_window_visible: false,
             })
             .add_system(ui.system());
     }
@@ -33,13 +34,20 @@ pub struct UiState {
     pub layers: Vec<String>,
     pub source_srs: String,
     pub target_srs: String,
+    pub layer_window_visible: bool,
 }
 
-fn ui(bevy_egui_ctx: ResMut<bevy_egui::EguiContext>, ui_state: Res<UiState>) {
-    render_side_panel(bevy_egui_ctx.ctx(), &ui_state);
+fn ui(bevy_egui_ctx: ResMut<bevy_egui::EguiContext>, mut ui_state: ResMut<UiState>) {
+    render_side_panel(bevy_egui_ctx.ctx(), &mut ui_state);
+
+    if ui_state.layer_window_visible {
+        egui::Window::new("Layer").open(&mut ui_state.layer_window_visible).show(bevy_egui_ctx.ctx(), |ui| {
+            ui.label("Hello World!");
+        });
+    }
 }
 
-fn render_side_panel(ctx: &egui::CtxRef, ui_state: &UiState) {
+fn render_side_panel(ctx: &egui::CtxRef, ui_state: &mut UiState) {
     egui::SidePanel::left("left-side-panel").max_width(MAX_SIDE_PANEL_WIDTH).show(ctx, |ui| {
         render_mouse_position_window(ui, ui_state);
         render_layers_window(ui, ui_state);
@@ -47,9 +55,7 @@ fn render_side_panel(ctx: &egui::CtxRef, ui_state: &UiState) {
 }
 
 fn render_mouse_position_window(ui: &mut egui::Ui, ui_state: &UiState) {
-    ui.label("Mouse Position");
-
-    egui::Frame::group(ui.style()).show(ui, |ui| {
+    ui.collapsing("Mouse Position", |ui| {
         let mut unprojected = ui_state.projected_mouse_position.clone();
         unprojected.reproject(&ui_state.source_srs);
 
@@ -67,15 +73,13 @@ fn render_mouse_position_window(ui: &mut egui::Ui, ui_state: &UiState) {
     });
 }
 
-fn render_layers_window(ui: &mut egui::Ui, ui_state: &UiState) {
-    ui.label("Layers");
-
-    egui::Frame::group(ui.style()).show(ui, |ui| {
+fn render_layers_window(ui: &mut egui::Ui, ui_state: &mut UiState) {
+    ui.collapsing("Layers", |ui| {
         for layer in &ui_state.layers {
             egui::Frame::group(ui.style()).show(ui, |ui| {
                 ui.label(layer);
                 if ui.button("Manage").clicked() {
-                    println!("Managed: {}", layer);
+                    ui_state.layer_window_visible = true;
                 }
             });
         }
