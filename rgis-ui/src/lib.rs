@@ -22,6 +22,7 @@ impl Plugin for RgisUi {
                 source_srs: self.source_srs.to_owned(),
                 target_srs: self.target_srs.to_owned(),
                 layer_window_visible: false,
+                managing_layer: None,
             })
             .add_system(ui.system());
     }
@@ -32,7 +33,10 @@ pub struct UiState {
     pub projected_mouse_position: geo_srs::CoordWithSrs<f32>,
     pub source_srs: String,
     pub target_srs: String,
+    /// If the layer window is visible.
     pub layer_window_visible: bool,
+    /// Which layer is the user currently managing.
+    pub managing_layer: Option<rgis_layers::LayerId>,
 }
 
 fn ui(
@@ -42,12 +46,21 @@ fn ui(
 ) {
     render_side_panel(bevy_egui_ctx.ctx(), &mut ui_state, &rgis_layers_resource);
 
-    if ui_state.layer_window_visible {
-        egui::Window::new("Manage Layer")
-            .open(&mut ui_state.layer_window_visible)
-            .show(bevy_egui_ctx.ctx(), |ui| {
-                ui.label("Hello World!");
-            });
+    match (ui_state.layer_window_visible, ui_state.managing_layer) {
+        (true, Some(layer_id)) => {
+            let layers = rgis_layers_resource.read().unwrap(); // TODO: remove unwrap
+            let layer = layers.get(layer_id).unwrap(); // TOOD: remove unwrap
+            egui::Window::new("Manage Layer")
+                .open(&mut ui_state.layer_window_visible)
+                .show(bevy_egui_ctx.ctx(), |ui| {
+                    egui::Grid::new("FIXME").show(ui, |ui| {
+                        ui.label("Name");
+                        ui.label(layer.name.clone());
+                        ui.end_row();
+                    });
+                });
+        }
+        _ => (),
     }
 }
 
@@ -101,6 +114,7 @@ fn render_layers_window(
                 ui.label(layer.name.to_string());
                 if ui.button("Manage").clicked() {
                     ui_state.layer_window_visible = true;
+                    ui_state.managing_layer = Some(layer.id);
                 }
             });
         }
