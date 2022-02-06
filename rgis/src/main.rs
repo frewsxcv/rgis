@@ -7,7 +7,6 @@ fn layer_loaded(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     layers: rgis_layers::ResLayers,
-    mut ui_state: ResMut<rgis_ui::UiState>,
     mut event_reader: EventReader<rgis_layers::LayerLoaded>,
     mut spawned_events: ResMut<Events<rgis_layers::LayerSpawned>>,
 ) {
@@ -17,7 +16,6 @@ fn layer_loaded(
             Some(l) => l,
             None => continue,
         };
-        ui_state.layers.push(layer.name.clone());
         let material = materials.add(layer.color.into());
 
         let tl = time_logger::start(&format!("Triangulating and building {} mesh", layer.name));

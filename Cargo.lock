@@ -2592,6 +2592,7 @@ dependencies = [
  "bevy_egui",
  "geo-srs",
  "geo-types 0.7.2",
+ "rgis-layers",
 ]
 
 [[package]]

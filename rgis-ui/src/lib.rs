@@ -15,7 +15,6 @@ impl Plugin for RgisUi {
     fn build(&self, app: &mut App) {
         app.add_plugin(bevy_egui::EguiPlugin)
             .insert_resource(UiState {
-                layers: vec![],
                 projected_mouse_position: geo_srs::CoordWithSrs {
                     srs: self.target_srs.clone(),
                     coord: geo_types::Coordinate { x: 0., y: 0. },
@@ -31,30 +30,44 @@ impl Plugin for RgisUi {
 #[derive(Debug)]
 pub struct UiState {
     pub projected_mouse_position: geo_srs::CoordWithSrs<f32>,
-    pub layers: Vec<String>,
     pub source_srs: String,
     pub target_srs: String,
     pub layer_window_visible: bool,
 }
 
-fn ui(bevy_egui_ctx: ResMut<bevy_egui::EguiContext>, mut ui_state: ResMut<UiState>) {
-    render_side_panel(bevy_egui_ctx.ctx(), &mut ui_state);
+fn ui(
+    bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
+    mut ui_state: ResMut<UiState>,
+    rgis_layers_resource: Res<rgis_layers::RgisLayersResource>,
+) {
+    render_side_panel(bevy_egui_ctx.ctx(), &mut ui_state, &rgis_layers_resource);
 
     if ui_state.layer_window_visible {
-        egui::Window::new("Layer").open(&mut ui_state.layer_window_visible).show(bevy_egui_ctx.ctx(), |ui| {
-            ui.label("Hello World!");
-        });
+        egui::Window::new("Layer")
+            .open(&mut ui_state.layer_window_visible)
+            .show(bevy_egui_ctx.ctx(), |ui| {
+                ui.label("Hello World!");
+            });
     }
 }
 
-fn render_side_panel(ctx: &egui::CtxRef, ui_state: &mut UiState) {
-    egui::SidePanel::left("left-side-panel").max_width(MAX_SIDE_PANEL_WIDTH).show(ctx, |ui| {
-        render_mouse_position_window(ui, ui_state);
-        render_layers_window(ui, ui_state);
-    });
+fn render_side_panel(
+    ctx: &egui::CtxRef,
+    ui_state: &mut UiState,
+    rgis_layers_resource: &rgis_layers::RgisLayersResource,
+) {
+    egui::SidePanel::left("left-side-panel")
+        .max_width(MAX_SIDE_PANEL_WIDTH)
+        .show(ctx, |ui| {
+            render_mouse_position_window(ui, ui_state);
+            render_layers_window(ui, ui_state, rgis_layers_resource);
+        });
 }
 
-fn render_mouse_position_window(ui: &mut egui::Ui, ui_state: &UiState) {
+fn render_mouse_position_window(
+    ui: &mut egui::Ui,
+    ui_state: &UiState,
+) {
     ui.collapsing("Mouse Position", |ui| {
         let mut unprojected = ui_state.projected_mouse_position.clone();
         unprojected.reproject(&ui_state.source_srs);
@@ -73,12 +86,23 @@ fn render_mouse_position_window(ui: &mut egui::Ui, ui_state: &UiState) {
     });
 }
 
-fn render_layers_window(ui: &mut egui::Ui, ui_state: &mut UiState) {
+fn render_layers_window(
+    ui: &mut egui::Ui,
+    ui_state: &mut UiState,
+    rgis_layers_resource: &rgis_layers::RgisLayersResource,
+) {
     ui.collapsing("Layers", |ui| {
-        for layer in &ui_state.layers {
+        let rgis_layers_resource = match rgis_layers_resource.read() {
+            Ok(r) => r,
+            Err(_) => {
+                // TODO log failure
+                return;
+            }
+        };
+        for layer in &rgis_layers_resource.data {
             egui::Frame::group(ui.style()).show(ui, |ui| {
-                ui.label(layer);
-                if ui.button("Manage").clicked() {
+                ui.label(layer.name.to_string());
+                if ui.button("Manage Layer").clicked() {
                     ui_state.layer_window_visible = true;
                 }
             });
