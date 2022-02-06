@@ -18,5 +18,5 @@ resolver = "2"
 debug = true
 
 [patch.crates-io]
-geo = { git = "https://github.com/georust/geo.git", branch = "frewsxcv-transform" }
-geo-types = { git = "https://github.com/georust/geo.git", branch = "frewsxcv-transform" }
+geo = { git = "https://github.com/georust/geo.git", branch = "master" }
+geo-types = { git = "https://github.com/georust/geo.git", branch = "master" }
