@@ -87,7 +87,7 @@ impl ZoomCameraEvent {
 fn pan_camera_system(
     mut pan_camera_event_reader: bevy::app::EventReader<PanCameraEvent>,
     mut camera_offset: ResMut<CameraOffset>,
-    mut camera_scale: ResMut<CameraScale>,
+    camera_scale: ResMut<CameraScale>,
 ) {
     for event in pan_camera_event_reader.iter() {
         pan_x(event.x, &mut camera_offset, &camera_scale);
