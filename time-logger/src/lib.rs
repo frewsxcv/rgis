@@ -10,7 +10,7 @@ impl TimeLogger {
         let title: String = title.into();
         bevy_log::info!("{}: started", title);
         TimeLogger {
-            title: title,
+            title,
             duration: time::Instant::now(),
         }
     }

@@ -90,8 +90,8 @@ fn pan_camera_system(
     mut camera_scale: ResMut<CameraScale>,
 ) {
     for event in pan_camera_event_reader.iter() {
-        pan_x(event.x, &mut camera_offset, &mut camera_scale);
-        pan_y(event.y, &mut camera_offset, &mut camera_scale);
+        pan_x(event.x, &mut camera_offset, &camera_scale);
+        pan_y(event.y, &mut camera_offset, &camera_scale);
     }
 }
 

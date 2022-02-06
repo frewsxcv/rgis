@@ -57,7 +57,8 @@ impl PointMeshBuilder {
     /// Call for `add_earcutr_input` for each polygon you want to add to the mesh.
     fn add_point(&mut self, point: &geo::Point<f64>) {
         let index_base = self.vertices.len();
-        self.vertices.push([point.x() as f32, point.y() as f32, 0.0]);
+        self.vertices
+            .push([point.x() as f32, point.y() as f32, 0.0]);
         self.indices.push(u32::try_from(index_base).unwrap());
     }
 
@@ -104,6 +105,12 @@ impl BuildBevyMeshesContext {
             line_string_mesh_builder: LineStringMeshBuilder::new(),
             polygon_mesh_builder: bevy_earcutr::PolygonMeshBuilder::new(),
         }
+    }
+}
+
+impl Default for BuildBevyMeshesContext {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

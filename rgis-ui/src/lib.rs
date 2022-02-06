@@ -40,9 +40,9 @@ fn ui(bevy_egui_ctx: ResMut<bevy_egui::EguiContext>, ui_state: Res<UiState>) {
 }
 
 fn render_side_panel(ctx: &egui::CtxRef, ui_state: &UiState) {
-    egui::SidePanel::left("left-side-panel").max_width(MAX_SIDE_PANEL_WIDTH).show(ctx, |mut ui| {
-        render_mouse_position_window(&mut ui, &ui_state);
-        render_layers_window(&mut ui, &ui_state);
+    egui::SidePanel::left("left-side-panel").max_width(MAX_SIDE_PANEL_WIDTH).show(ctx, |ui| {
+        render_mouse_position_window(ui, ui_state);
+        render_layers_window(ui, ui_state);
     });
 }
 

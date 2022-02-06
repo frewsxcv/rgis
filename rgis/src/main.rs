@@ -74,7 +74,7 @@ pub fn spawn_mesh(
     commands: &mut Commands,
 ) {
     let mmb = bevy::sprite::MaterialMesh2dBundle {
-        material: material,
+        material,
         mesh: bevy::sprite::Mesh2dHandle(meshes.add(mesh)),
         ..Default::default()
     };
