@@ -53,11 +53,14 @@ fn ui(
             egui::Window::new("Manage Layer")
                 .open(&mut ui_state.layer_window_visible)
                 .show(bevy_egui_ctx.ctx(), |ui| {
-                    egui::Grid::new("FIXME").num_columns(2).striped(true).show(ui, |ui| {
-                        ui.label("Name");
-                        ui.label(layer.name.clone());
-                        ui.end_row();
-                    });
+                    egui::Grid::new("FIXME")
+                        .num_columns(2)
+                        .striped(true)
+                        .show(ui, |ui| {
+                            ui.label("Name");
+                            ui.label(layer.name.clone());
+                            ui.end_row();
+                        });
                 });
         }
         _ => (),
@@ -111,11 +114,12 @@ fn render_layers_window(
         };
         for layer in &rgis_layers_resource.data {
             egui::Frame::group(ui.style()).show(ui, |ui| {
-                ui.label(layer.name.to_string());
-                if ui.button("✏ Manage").clicked() {
-                    ui_state.layer_window_visible = true;
-                    ui_state.managing_layer = Some(layer.id);
-                }
+                ui.collapsing(layer.name.to_string(), |ui| {
+                    if ui.button("✏ Manage").clicked() {
+                        ui_state.layer_window_visible = true;
+                        ui_state.managing_layer = Some(layer.id);
+                    }
+                });
             });
         }
     });
