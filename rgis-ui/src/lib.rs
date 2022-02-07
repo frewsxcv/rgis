@@ -53,7 +53,7 @@ fn ui(
             egui::Window::new("Manage Layer")
                 .open(&mut ui_state.layer_window_visible)
                 .show(bevy_egui_ctx.ctx(), |ui| {
-                    egui::Grid::new("FIXME").show(ui, |ui| {
+                    egui::Grid::new("FIXME").num_columns(2).striped(true).show(ui, |ui| {
                         ui.label("Name");
                         ui.label(layer.name.clone());
                         ui.end_row();
@@ -78,7 +78,7 @@ fn render_side_panel(
 }
 
 fn render_mouse_position_window(ui: &mut egui::Ui, ui_state: &UiState) {
-    ui.collapsing("Mouse Position", |ui| {
+    ui.collapsing("🖱 Mouse Position", |ui| {
         let mut unprojected = ui_state.projected_mouse_position.clone();
         unprojected.reproject(&ui_state.source_srs);
 
@@ -101,7 +101,7 @@ fn render_layers_window(
     ui_state: &mut UiState,
     rgis_layers_resource: &rgis_layers::RgisLayersResource,
 ) {
-    ui.collapsing("Layers", |ui| {
+    ui.collapsing("🗺 Layers", |ui| {
         let rgis_layers_resource = match rgis_layers_resource.read() {
             Ok(r) => r,
             Err(_) => {
@@ -112,7 +112,7 @@ fn render_layers_window(
         for layer in &rgis_layers_resource.data {
             egui::Frame::group(ui.style()).show(ui, |ui| {
                 ui.label(layer.name.to_string());
-                if ui.button("Manage").clicked() {
+                if ui.button("✏ Manage").clicked() {
                     ui_state.layer_window_visible = true;
                     ui_state.managing_layer = Some(layer.id);
                 }
