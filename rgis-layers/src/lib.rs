@@ -12,6 +12,9 @@ pub struct LayerLoaded(pub LayerId);
 #[derive(Debug)]
 pub struct LayerSpawned(pub LayerId);
 
+#[derive(Debug)]
+pub struct ToggleLayerVisibility(pub LayerId);
+
 #[derive(Clone, Debug)]
 pub struct Layers {
     pub data: Vec<Layer>,
@@ -73,6 +76,13 @@ impl Layers {
             .and_then(|layer_index| self.data.get(layer_index))
     }
 
+    pub fn get_mut(&mut self, layer_id: LayerId) -> Option<&mut Layer> {
+        self.data
+            .binary_search_by_key(&layer_id, |layer| layer.id)
+            .ok()
+            .and_then(|layer_index| self.data.get_mut(layer_index))
+    }
+
     #[allow(unused)]
     pub fn selected_layer(&self) -> Option<&Layer> {
         self.selected_layer_id
@@ -123,6 +133,7 @@ pub struct Layer {
     pub metadata: Metadata,
     pub id: LayerId,
     pub name: String,
+    pub visible: bool,
 }
 
 impl Layer {
@@ -174,6 +185,7 @@ impl Layer {
             metadata: metadata.unwrap_or_else(serde_json::Map::new),
             id,
             name,
+            visible: true,
         }
     }
 }
@@ -203,10 +215,25 @@ fn create_rgis_layers_resource() -> RgisLayersResource {
     sync::Arc::new(sync::RwLock::new(Layers::new()))
 }
 
+fn read_events(
+    mut toggle_layer_visibility_event_reader: bevy::app::EventReader<ToggleLayerVisibility>,
+    rgis_layers_resource: ResMut<RgisLayersResource>,
+    mut events: ResMut<bevy::app::Events<LayerLoaded>>,
+) {
+    for event in toggle_layer_visibility_event_reader.iter() {
+        let mut layers = rgis_layers_resource.write().unwrap();
+        let layer = layers.get_mut(event.0).unwrap();
+        layer.visible = !layer.visible;
+        events.send(LayerLoaded(event.0));
+    }
+}
+
 impl Plugin for RgisLayersPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(create_rgis_layers_resource())
+            .add_system(read_events)
             .add_event::<LayerLoaded>()
-            .add_event::<LayerSpawned>();
+            .add_event::<LayerSpawned>()
+            .add_event::<ToggleLayerVisibility>();
     }
 }

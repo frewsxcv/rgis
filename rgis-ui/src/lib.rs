@@ -43,8 +43,9 @@ fn ui(
     bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
     mut ui_state: ResMut<UiState>,
     rgis_layers_resource: Res<rgis_layers::RgisLayersResource>,
+    mut events: ResMut<bevy::app::Events<rgis_layers::ToggleLayerVisibility>>,
 ) {
-    render_side_panel(bevy_egui_ctx.ctx(), &mut ui_state, &rgis_layers_resource);
+    render_side_panel(bevy_egui_ctx.ctx(), &mut ui_state, &rgis_layers_resource, &mut events);
 
     match (ui_state.layer_window_visible, ui_state.managing_layer) {
         (true, Some(layer_id)) => {
@@ -71,12 +72,13 @@ fn render_side_panel(
     ctx: &egui::CtxRef,
     ui_state: &mut UiState,
     rgis_layers_resource: &rgis_layers::RgisLayersResource,
+    events: &mut bevy::app::Events<rgis_layers::ToggleLayerVisibility>,
 ) {
     egui::SidePanel::left("left-side-panel")
         .max_width(MAX_SIDE_PANEL_WIDTH)
         .show(ctx, |ui| {
             render_mouse_position_window(ui, ui_state);
-            render_layers_window(ui, ui_state, rgis_layers_resource);
+            render_layers_window(ui, ui_state, rgis_layers_resource, events);
         });
 }
 
@@ -103,6 +105,7 @@ fn render_layers_window(
     ui: &mut egui::Ui,
     ui_state: &mut UiState,
     rgis_layers_resource: &rgis_layers::RgisLayersResource,
+    events: &mut bevy::app::Events<rgis_layers::ToggleLayerVisibility>,
 ) {
     ui.collapsing("🗺 Layers", |ui| {
         let rgis_layers_resource = match rgis_layers_resource.read() {
@@ -118,6 +121,11 @@ fn render_layers_window(
                     if ui.button("✏ Manage").clicked() {
                         ui_state.layer_window_visible = true;
                         ui_state.managing_layer = Some(layer.id);
+                    }
+
+                    if ui.button("👁 Toggle").clicked() {
+                        // TODO: remove old material, or add new material (see main.rs)
+                        events.send(rgis_layers::ToggleLayerVisibility(layer.id))
                     }
                 });
             });

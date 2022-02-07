@@ -16,6 +16,12 @@ fn layer_loaded(
             Some(l) => l,
             None => continue,
         };
+
+        if !layer.visible {
+            continue;
+        }
+
+        // TODO: store the result of `add` here, so it can be removed later
         let material = materials.add(layer.color.into());
 
         let tl = time_logger::start(&format!("Triangulating and building {} mesh", layer.name));
