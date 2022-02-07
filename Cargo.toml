@@ -9,6 +9,7 @@ members = [
     "rgis-keyboard",
     "rgis-layers",
     "rgis-mouse",
+    "rgis-renderer",
     "rgis-ui",
     "time-logger",
 ]
