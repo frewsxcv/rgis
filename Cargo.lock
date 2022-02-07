@@ -2547,6 +2547,7 @@ name = "rgis-file-loader"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "futures-lite",
  "geo-types 0.7.2",
  "geojson 0.22.2",
  "rgis-cli",
