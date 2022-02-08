@@ -44,7 +44,7 @@ fn ui(
     mut ui_state: ResMut<UiState>,
     rgis_layers_resource: Res<rgis_layers::RgisLayersResource>,
     mut toggle_events: ResMut<bevy::app::Events<rgis_layers::ToggleLayerVisibility>>,
-    mut remove_events: ResMut<bevy::app::Events<rgis_renderer::RemoveMaterialEvent>>,
+    mut remove_events: ResMut<bevy::app::Events<rgis_renderer::ToggleMaterialEvent>>,
 ) {
     render_side_panel(
         bevy_egui_ctx.ctx(),
@@ -80,7 +80,7 @@ fn render_side_panel(
     ui_state: &mut UiState,
     rgis_layers_resource: &rgis_layers::RgisLayersResource,
     toggle_events: &mut bevy::app::Events<rgis_layers::ToggleLayerVisibility>,
-    remove_events: &mut bevy::app::Events<rgis_renderer::RemoveMaterialEvent>,
+    remove_events: &mut bevy::app::Events<rgis_renderer::ToggleMaterialEvent>,
 ) {
     egui::SidePanel::left("left-side-panel")
         .max_width(MAX_SIDE_PANEL_WIDTH)
@@ -120,7 +120,7 @@ fn render_layers_window(
     ui_state: &mut UiState,
     rgis_layers_resource: &rgis_layers::RgisLayersResource,
     toggle_events: &mut bevy::app::Events<rgis_layers::ToggleLayerVisibility>,
-    remove_events: &mut bevy::app::Events<rgis_renderer::RemoveMaterialEvent>,
+    toggle_material_events: &mut bevy::app::Events<rgis_renderer::ToggleMaterialEvent>,
 ) {
     ui.collapsing("🗺 Layers", |ui| {
         let rgis_layers_resource = match rgis_layers_resource.read() {
@@ -141,12 +141,12 @@ fn render_layers_window(
                     if layer.visible {
                         if ui.button("👁 Hide").clicked() {
                             toggle_events.send(rgis_layers::ToggleLayerVisibility(layer.id));
-                            remove_events.send(rgis_renderer::RemoveMaterialEvent(layer.id));
+                            toggle_material_events.send(rgis_renderer::ToggleMaterialEvent::Hide(layer.id));
                         }
                     } else {
                         if ui.button("👁 Show").clicked() {
                             toggle_events.send(rgis_layers::ToggleLayerVisibility(layer.id));
-                            remove_events.send(rgis_renderer::RemoveMaterialEvent(layer.id));
+                            toggle_material_events.send(rgis_renderer::ToggleMaterialEvent::Show(layer.id));
                         }
                     }
                 });

@@ -10,9 +10,6 @@ pub struct LayerId(i64);
 pub struct LayerLoaded(pub LayerId);
 
 #[derive(Debug)]
-pub struct LayerSpawned(pub LayerId);
-
-#[derive(Debug)]
 pub struct ToggleLayerVisibility(pub LayerId);
 
 #[derive(Clone, Debug)]
@@ -218,7 +215,6 @@ fn create_rgis_layers_resource() -> RgisLayersResource {
 fn read_events(
     mut toggle_layer_visibility_event_reader: bevy::app::EventReader<ToggleLayerVisibility>,
     rgis_layers_resource: ResMut<RgisLayersResource>,
-    mut events: ResMut<bevy::app::Events<LayerLoaded>>,
 ) {
     for event in toggle_layer_visibility_event_reader.iter() {
         let mut layers = rgis_layers_resource.write().unwrap();
@@ -232,7 +228,6 @@ impl Plugin for RgisLayersPlugin {
         app.insert_resource(create_rgis_layers_resource())
             .add_system(read_events)
             .add_event::<LayerLoaded>()
-            .add_event::<LayerSpawned>()
             .add_event::<ToggleLayerVisibility>();
     }
 }

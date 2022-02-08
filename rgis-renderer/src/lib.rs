@@ -5,6 +5,8 @@ use std::collections;
 #[derive(Default)]
 struct EntityStore(collections::HashMap<rgis_layers::LayerId, bevy::ecs::entity::Entity>);
 
+struct CenterCameraEvent(rgis_layers::LayerId);
+
 // System
 fn layer_loaded(
     mut commands: Commands,
@@ -12,7 +14,7 @@ fn layer_loaded(
     mut materials: ResMut<Assets<ColorMaterial>>,
     layers: rgis_layers::ResLayers,
     mut event_reader: EventReader<rgis_layers::LayerLoaded>,
-    mut spawned_events: ResMut<Events<rgis_layers::LayerSpawned>>,
+    mut center_camera_events: ResMut<Events<CenterCameraEvent>>,
     mut entity_store: ResMut<EntityStore>,
 ) {
     for event in event_reader.iter() {
@@ -26,26 +28,8 @@ fn layer_loaded(
             continue;
         }
 
-        let material = materials.add(layer.color.into());
-
-        let tl = time_logger::start(&format!("Triangulating and building {} mesh", layer.name));
-        for mesh in layer
-            .projected_geometry
-            .geometry
-            .build_bevy_meshes(geo_bevy::BuildBevyMeshesContext::new())
-        {
-            spawn_mesh(
-                mesh,
-                material.clone(),
-                &mut meshes,
-                &mut commands,
-                &mut entity_store,
-                layer.id,
-            );
-        }
-        tl.finish();
-
-        spawned_events.send(rgis_layers::LayerSpawned(event.0));
+        spawn_geometry_mesh(&mut materials, &layer, &mut commands, &mut meshes, &mut entity_store);
+        center_camera_events.send(CenterCameraEvent(layer.id));
     }
 }
 
@@ -53,21 +37,47 @@ pub struct RgisRendererPlugin;
 
 impl Plugin for RgisRendererPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(layer_spawned)
+        app.add_system(center_camera)
             .add_system(layer_loaded)
-            .add_system(remove_material_event)
-            .add_event::<AddMaterialEvent>()
-            .add_event::<RemoveMaterialEvent>()
+            .add_system(toggle_material_event)
+            .add_event::<ToggleMaterialEvent>()
+            .add_event::<CenterCameraEvent>()
             .insert_resource(EntityStore::default());
     }
 }
 
-// System
-fn layer_spawned(
+fn spawn_geometry_mesh(
+    materials: &mut Assets<ColorMaterial>,
+    layer: &rgis_layers::Layer,
+    commands: &mut Commands,
+    meshes: &mut Assets<Mesh>,
+    entity_store: &mut EntityStore,
+) {
+    let material = materials.add(layer.color.into());
+
+    let tl = time_logger::start(&format!("Triangulating and building {} mesh", layer.name));
+    for mesh in layer
+        .projected_geometry
+        .geometry
+        .build_bevy_meshes(geo_bevy::BuildBevyMeshesContext::new())
+    {
+        spawn_mesh(
+            mesh,
+            material.clone(),
+            meshes,
+            commands,
+            entity_store,
+            layer.id,
+        );
+    }
+    tl.finish();
+}
+
+fn center_camera(
     layers: rgis_layers::ResLayers,
     mut camera_offset: ResMut<rgis_camera::CameraOffset>,
     mut camera_scale: ResMut<rgis_camera::CameraScale>,
-    mut event_reader: EventReader<rgis_layers::LayerSpawned>,
+    mut event_reader: EventReader<CenterCameraEvent>,
 ) {
     for event in event_reader.iter() {
         let layers = layers.read().unwrap();
@@ -87,31 +97,53 @@ fn layer_spawned(
     }
 }
 
-fn remove_material_event(
+fn toggle_material_event(
     layers: rgis_layers::ResLayers,
-    mut event_reader: EventReader<RemoveMaterialEvent>,
+    mut event_reader: EventReader<ToggleMaterialEvent>,
     mut entity_store: ResMut<EntityStore>,
     mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     for event in event_reader.iter() {
-        let layers = layers.read().unwrap();
-        let layer = match layers.get(event.0) {
-            Some(l) => l,
-            None => continue,
-        };
+        match event {
+            ToggleMaterialEvent::Show(layer_id) => {
+                let layers = layers.read().unwrap();
+                let layer = match layers.get(*layer_id) {
+                    Some(l) => l,
+                    None => continue,
+                };
 
-        let entity = match entity_store.0.remove(&layer.id) {
-            Some(h) => h,
-            None => continue,
-        };
-        let mut entity_commands = commands.entity(entity);
-        entity_commands.despawn();
+                spawn_geometry_mesh(
+                    &mut materials,
+                    layer,
+                    &mut commands,
+                    &mut meshes,
+                    &mut entity_store,
+                );
+            }
+            ToggleMaterialEvent::Hide(layer_id) => {
+                let layers = layers.read().unwrap();
+                let layer = match layers.get(*layer_id) {
+                    Some(l) => l,
+                    None => continue,
+                };
+
+                let entity = match entity_store.0.remove(&layer.id) {
+                    Some(h) => h,
+                    None => continue,
+                };
+                let mut entity_commands = commands.entity(entity);
+                entity_commands.despawn();
+            }
+        }
     }
 }
 
-pub struct RemoveMaterialEvent(pub rgis_layers::LayerId);
-
-pub struct AddMaterialEvent(pub rgis_layers::LayerId);
+pub enum ToggleMaterialEvent {
+    Show(rgis_layers::LayerId),
+    Hide(rgis_layers::LayerId),
+}
 
 fn spawn_mesh(
     mesh: Mesh,
