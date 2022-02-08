@@ -3,7 +3,7 @@ use geo_bevy::BuildBevyMeshes;
 use std::collections;
 
 #[derive(Default)]
-struct EntityStore(collections::HashMap<rgis_layers::LayerId, bevy::ecs::entity::Entity>);
+struct EntityStore(collections::HashMap<rgis_layers::LayerId, Vec<bevy::ecs::entity::Entity>>);
 
 struct CenterCameraEvent(rgis_layers::LayerId);
 
@@ -129,12 +129,14 @@ fn toggle_material_event(
                     None => continue,
                 };
 
-                let entity = match entity_store.0.remove(&layer.id) {
+                let entities = match entity_store.0.remove(&layer.id) {
                     Some(h) => h,
                     None => continue,
                 };
-                let mut entity_commands = commands.entity(entity);
-                entity_commands.despawn();
+                for entity in entities {
+                    let mut entity_commands = commands.entity(entity);
+                    entity_commands.despawn();
+                }
             }
         }
     }
@@ -159,5 +161,5 @@ fn spawn_mesh(
         ..Default::default()
     };
     let entity_commands = commands.spawn_bundle(mmb);
-    entity_store.0.insert(layer_id, entity_commands.id());
+    entity_store.0.entry(layer_id).or_default().push(entity_commands.id());
 }
