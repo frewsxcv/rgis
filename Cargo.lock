@@ -2606,6 +2606,7 @@ dependencies = [
  "geo-srs",
  "geo-types 0.7.2",
  "rgis-layers",
+ "rgis-renderer",
 ]
 
 [[package]]

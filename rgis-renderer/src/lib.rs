@@ -1,5 +1,9 @@
 use bevy::{app::Events, prelude::*};
 use geo_bevy::BuildBevyMeshes;
+use std::collections;
+
+#[derive(Default)]
+struct EntityStore(collections::HashMap<rgis_layers::LayerId, bevy::ecs::entity::Entity>);
 
 // System
 fn layer_loaded(
@@ -9,6 +13,7 @@ fn layer_loaded(
     layers: rgis_layers::ResLayers,
     mut event_reader: EventReader<rgis_layers::LayerLoaded>,
     mut spawned_events: ResMut<Events<rgis_layers::LayerSpawned>>,
+    mut entity_store: ResMut<EntityStore>,
 ) {
     for event in event_reader.iter() {
         let layers = layers.read().unwrap();
@@ -21,7 +26,6 @@ fn layer_loaded(
             continue;
         }
 
-        // TODO: store the result of `add` here, so it can be removed later
         let material = materials.add(layer.color.into());
 
         let tl = time_logger::start(&format!("Triangulating and building {} mesh", layer.name));
@@ -30,7 +34,14 @@ fn layer_loaded(
             .geometry
             .build_bevy_meshes(geo_bevy::BuildBevyMeshesContext::new())
         {
-            spawn_mesh(mesh, material.clone(), &mut meshes, &mut commands);
+            spawn_mesh(
+                mesh,
+                material.clone(),
+                &mut meshes,
+                &mut commands,
+                &mut entity_store,
+                layer.id,
+            );
         }
         tl.finish();
 
@@ -43,7 +54,11 @@ pub struct RgisRendererPlugin;
 impl Plugin for RgisRendererPlugin {
     fn build(&self, app: &mut App) {
         app.add_system(layer_spawned)
-            .add_system(layer_loaded);
+            .add_system(layer_loaded)
+            .add_system(remove_material_event)
+            .add_event::<AddMaterialEvent>()
+            .add_event::<RemoveMaterialEvent>()
+            .insert_resource(EntityStore::default());
     }
 }
 
@@ -72,16 +87,45 @@ fn layer_spawned(
     }
 }
 
-pub fn spawn_mesh(
+fn remove_material_event(
+    layers: rgis_layers::ResLayers,
+    mut event_reader: EventReader<RemoveMaterialEvent>,
+    mut entity_store: ResMut<EntityStore>,
+    mut commands: Commands,
+) {
+    for event in event_reader.iter() {
+        let layers = layers.read().unwrap();
+        let layer = match layers.get(event.0) {
+            Some(l) => l,
+            None => continue,
+        };
+
+        let entity = match entity_store.0.remove(&layer.id) {
+            Some(h) => h,
+            None => continue,
+        };
+        let mut entity_commands = commands.entity(entity);
+        entity_commands.despawn();
+    }
+}
+
+pub struct RemoveMaterialEvent(pub rgis_layers::LayerId);
+
+pub struct AddMaterialEvent(pub rgis_layers::LayerId);
+
+fn spawn_mesh(
     mesh: Mesh,
     material: Handle<ColorMaterial>,
     meshes: &mut Assets<Mesh>,
     commands: &mut Commands,
+    entity_store: &mut EntityStore,
+    layer_id: rgis_layers::LayerId,
 ) {
     let mmb = bevy::sprite::MaterialMesh2dBundle {
         material,
         mesh: bevy::sprite::Mesh2dHandle(meshes.add(mesh)),
         ..Default::default()
     };
-    commands.spawn_bundle(mmb);
+    let entity_commands = commands.spawn_bundle(mmb);
+    entity_store.0.insert(layer_id, entity_commands.id());
 }

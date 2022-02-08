@@ -3,7 +3,7 @@ use geo::bounding_rect::BoundingRect;
 use geo::contains::Contains;
 use std::sync;
 
-#[derive(Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
+#[derive(Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Hash)]
 pub struct LayerId(i64);
 
 #[derive(Debug)]
@@ -224,7 +224,6 @@ fn read_events(
         let mut layers = rgis_layers_resource.write().unwrap();
         let layer = layers.get_mut(event.0).unwrap();
         layer.visible = !layer.visible;
-        events.send(LayerLoaded(event.0));
     }
 }
 

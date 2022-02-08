@@ -43,9 +43,16 @@ fn ui(
     bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
     mut ui_state: ResMut<UiState>,
     rgis_layers_resource: Res<rgis_layers::RgisLayersResource>,
-    mut events: ResMut<bevy::app::Events<rgis_layers::ToggleLayerVisibility>>,
+    mut toggle_events: ResMut<bevy::app::Events<rgis_layers::ToggleLayerVisibility>>,
+    mut remove_events: ResMut<bevy::app::Events<rgis_renderer::RemoveMaterialEvent>>,
 ) {
-    render_side_panel(bevy_egui_ctx.ctx(), &mut ui_state, &rgis_layers_resource, &mut events);
+    render_side_panel(
+        bevy_egui_ctx.ctx(),
+        &mut ui_state,
+        &rgis_layers_resource,
+        &mut toggle_events,
+        &mut remove_events,
+    );
 
     match (ui_state.layer_window_visible, ui_state.managing_layer) {
         (true, Some(layer_id)) => {
@@ -72,13 +79,20 @@ fn render_side_panel(
     ctx: &egui::CtxRef,
     ui_state: &mut UiState,
     rgis_layers_resource: &rgis_layers::RgisLayersResource,
-    events: &mut bevy::app::Events<rgis_layers::ToggleLayerVisibility>,
+    toggle_events: &mut bevy::app::Events<rgis_layers::ToggleLayerVisibility>,
+    remove_events: &mut bevy::app::Events<rgis_renderer::RemoveMaterialEvent>,
 ) {
     egui::SidePanel::left("left-side-panel")
         .max_width(MAX_SIDE_PANEL_WIDTH)
         .show(ctx, |ui| {
             render_mouse_position_window(ui, ui_state);
-            render_layers_window(ui, ui_state, rgis_layers_resource, events);
+            render_layers_window(
+                ui,
+                ui_state,
+                rgis_layers_resource,
+                toggle_events,
+                remove_events,
+            );
         });
 }
 
@@ -105,7 +119,8 @@ fn render_layers_window(
     ui: &mut egui::Ui,
     ui_state: &mut UiState,
     rgis_layers_resource: &rgis_layers::RgisLayersResource,
-    events: &mut bevy::app::Events<rgis_layers::ToggleLayerVisibility>,
+    toggle_events: &mut bevy::app::Events<rgis_layers::ToggleLayerVisibility>,
+    remove_events: &mut bevy::app::Events<rgis_renderer::RemoveMaterialEvent>,
 ) {
     ui.collapsing("🗺 Layers", |ui| {
         let rgis_layers_resource = match rgis_layers_resource.read() {
@@ -123,9 +138,16 @@ fn render_layers_window(
                         ui_state.managing_layer = Some(layer.id);
                     }
 
-                    if ui.button("👁 Toggle").clicked() {
-                        // TODO: remove old material, or add new material (see main.rs)
-                        events.send(rgis_layers::ToggleLayerVisibility(layer.id))
+                    if layer.visible {
+                        if ui.button("👁 Hide").clicked() {
+                            toggle_events.send(rgis_layers::ToggleLayerVisibility(layer.id));
+                            remove_events.send(rgis_renderer::RemoveMaterialEvent(layer.id));
+                        }
+                    } else {
+                        if ui.button("👁 Show").clicked() {
+                            toggle_events.send(rgis_layers::ToggleLayerVisibility(layer.id));
+                            remove_events.send(rgis_renderer::RemoveMaterialEvent(layer.id));
+                        }
                     }
                 });
             });
