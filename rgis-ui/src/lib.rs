@@ -101,13 +101,13 @@ fn render_mouse_position_window(ui: &mut egui::Ui, ui_state: &UiState) {
         let mut unprojected = ui_state.projected_mouse_position.clone();
         unprojected.reproject(&ui_state.source_srs);
 
-        ui.label(format!("Source SRS: {}", ui_state.source_srs));
+        ui.label(format!("Source CRS: {}", ui_state.source_srs));
         egui::Frame::group(ui.style()).show(ui, |ui| {
             ui.label(format!("X: {}", unprojected.coord.x));
             ui.label(format!("Y: {}", unprojected.coord.y));
         });
 
-        ui.label(format!("Target SRS: {}", ui_state.target_srs));
+        ui.label(format!("Target CRS: {}", ui_state.target_srs));
         egui::Frame::group(ui.style()).show(ui, |ui| {
             ui.label(format!("X: {}", ui_state.projected_mouse_position.coord.x));
             ui.label(format!("Y: {}", ui_state.projected_mouse_position.coord.y));
