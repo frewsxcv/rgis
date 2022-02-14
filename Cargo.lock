@@ -335,16 +335,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bevy_dynamic_plugin"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c000df4f704553e57defa89f955520685b5b41d93a41d4f001e899058d4e37ed"
-dependencies = [
- "bevy_app",
- "libloading",
-]
-
-[[package]]
 name = "bevy_ecs"
 version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -452,7 +442,6 @@ dependencies = [
  "bevy_core_pipeline",
  "bevy_derive",
  "bevy_diagnostic",
- "bevy_dynamic_plugin",
  "bevy_ecs",
  "bevy_gilrs",
  "bevy_gltf",

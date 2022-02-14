@@ -6,7 +6,7 @@ edition = "2021"
 
 [dependencies]
 bevy = { version = "0.6", default-features = false, features = [
-    "bevy_dynamic_plugin",
+    # "bevy_dynamic_plugin",
     "bevy_gilrs",
     "bevy_gltf",
     "bevy_winit",
