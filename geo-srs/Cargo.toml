@@ -4,5 +4,8 @@ version = "0.1.0"
 authors = ["Corey Farwell <coreyf@rwell.org>"]
 edition = "2021"
 
-[dependencies]
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 geo = { version = "0.18", features = ["use-proj"] }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+geo = { version = "0.18", features = [] }

@@ -2362,9 +2362,9 @@ checksum = "9145ac0af1d93c638c98c40cf7d25665f427b2a44ad0a99b1dccf3e2f25bb987"
 
 [[package]]
 name = "proj"
-version = "0.25.0"
+version = "0.25.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "28c0b4914d4e1a2fc22466e0afbaa81e41f1198e7b028442b225a670dc9dd8f1"
+checksum = "59de811aec9672fac846ef84b944d0a4639c2ba9a5f097fd713bd16a27f494be"
 dependencies = [
  "geo-types 0.7.2",
  "libc",
@@ -2536,8 +2536,8 @@ dependencies = [
 name = "rgis-file-loader"
 version = "0.1.0"
 dependencies = [
+ "async-channel",
  "bevy",
- "futures-lite",
  "geo-types 0.7.2",
  "geojson 0.22.2",
  "rgis-cli",

@@ -48,15 +48,16 @@ pub fn run() -> Values {
                 .help("Reproject to this SRS")
                 .takes_value(true),
         )
-        .arg(Arg::with_name("GEOJSON FILE").multiple(true).required(true))
+        .arg(Arg::with_name("GEOJSON FILE").multiple(true))
         .get_matches();
 
     Values {
-        geojson_files: matches
-            .values_of("GEOJSON FILE")
-            .unwrap()
-            .map(|s| path::PathBuf::from(s.to_owned()))
-            .collect(),
+        // geojson_files: matches
+        //     .values_of("GEOJSON FILE")
+        //     .unwrap()
+        //     .map(|s| path::PathBuf::from(s.to_owned()))
+        //     .collect(),
+        geojson_files: vec![],
         source_srs: matches.value_of("SOURCE SRS").unwrap().to_owned(),
         target_srs: matches.value_of("TARGET SRS").unwrap().to_owned(),
         msaa_sample_count: matches

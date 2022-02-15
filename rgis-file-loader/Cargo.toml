@@ -5,6 +5,7 @@ authors = ["Corey Farwell <coreyf@rwell.org>"]
 edition = "2021"
 
 [dependencies]
+async-channel = "1"
 bevy = { version = "0.6", default-features = false, features = [
     # "bevy_dynamic_plugin",
     "bevy_gilrs",
@@ -12,7 +13,6 @@ bevy = { version = "0.6", default-features = false, features = [
     "bevy_winit",
     "render",
 ] }
-futures-lite = "1"
 geo-types = "0.7"
 geojson = { version = "0.22", features = ["geo-types"] }
 rgis-cli = { path = "../rgis-cli" }
