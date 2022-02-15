@@ -1440,7 +1440,7 @@ dependencies = [
 [[package]]
 name = "geo"
 version = "0.18.0"
-source = "git+https://github.com/georust/geo.git?branch=master#73af924214f752ee8a2f68decc6b8d34d9cbf77a"
+source = "git+https://github.com/georust/geo.git?branch=mkirk/transform-redux#bef5a816d7756bfadfcfffbfa39dda71d186f318"
 dependencies = [
  "geo-types 0.7.2",
  "geographiclib-rs",
@@ -1481,7 +1481,7 @@ dependencies = [
 [[package]]
 name = "geo-types"
 version = "0.7.2"
-source = "git+https://github.com/georust/geo.git?branch=master#73af924214f752ee8a2f68decc6b8d34d9cbf77a"
+source = "git+https://github.com/georust/geo.git?branch=mkirk/transform-redux#bef5a816d7756bfadfcfffbfa39dda71d186f318"
 dependencies = [
  "approx 0.4.0",
  "num-traits",
@@ -2363,8 +2363,7 @@ checksum = "9145ac0af1d93c638c98c40cf7d25665f427b2a44ad0a99b1dccf3e2f25bb987"
 [[package]]
 name = "proj"
 version = "0.25.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "59de811aec9672fac846ef84b944d0a4639c2ba9a5f097fd713bd16a27f494be"
+source = "git+https://github.com/georust/proj?branch=mkirk/transform#24158a05e036a1f4f23415bd265626eab8d26412"
 dependencies = [
  "geo-types 0.7.2",
  "libc",
@@ -2376,8 +2375,7 @@ dependencies = [
 [[package]]
 name = "proj-sys"
 version = "0.22.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "56e99bdef390764af925545b4328a12540494f658bad2653b051dfe8838f3e2e"
+source = "git+https://github.com/georust/proj?branch=mkirk/transform#24158a05e036a1f4f23415bd265626eab8d26412"
 dependencies = [
  "bindgen",
  "cmake",

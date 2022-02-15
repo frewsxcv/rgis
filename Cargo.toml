@@ -19,5 +19,11 @@ resolver = "2"
 debug = true
 
 [patch.crates-io]
-geo = { git = "https://github.com/georust/geo.git", branch = "master" }
-geo-types = { git = "https://github.com/georust/geo.git", branch = "master" }
+# geo = { git = "https://github.com/georust/geo.git", branch = "master" }
+# geo = { path = "../geo/geo" }
+geo = { git = "https://github.com/georust/geo.git", branch = "mkirk/transform-redux" }
+# geo-types = { git = "https://github.com/georust/geo.git", branch = "master" }
+# geo-types = { path = "../geo/geo-types" }
+geo-types = { git = "https://github.com/georust/geo.git", branch = "mkirk/transform-redux" }
+# proj = { path = "../proj" }
+proj = { git = "https://github.com/georust/proj", branch = "mkirk/transform" }
