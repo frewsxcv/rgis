@@ -28,7 +28,13 @@ fn layer_loaded(
             continue;
         }
 
-        spawn_geometry_mesh(&mut materials, &layer, &mut commands, &mut meshes, &mut entity_store);
+        spawn_geometry_mesh(
+            &mut materials,
+            &layer,
+            &mut commands,
+            &mut meshes,
+            &mut entity_store,
+        );
         center_camera_events.send(CenterCameraEvent(layer.id));
     }
 }
@@ -161,5 +167,9 @@ fn spawn_mesh(
         ..Default::default()
     };
     let entity_commands = commands.spawn_bundle(mmb);
-    entity_store.0.entry(layer_id).or_default().push(entity_commands.id());
+    entity_store
+        .0
+        .entry(layer_id)
+        .or_default()
+        .push(entity_commands.id());
 }

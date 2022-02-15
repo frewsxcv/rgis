@@ -141,12 +141,14 @@ fn render_layers_window(
                     if layer.visible {
                         if ui.button("👁 Hide").clicked() {
                             toggle_events.send(rgis_layers::ToggleLayerVisibility(layer.id));
-                            toggle_material_events.send(rgis_renderer::ToggleMaterialEvent::Hide(layer.id));
+                            toggle_material_events
+                                .send(rgis_renderer::ToggleMaterialEvent::Hide(layer.id));
                         }
                     } else {
                         if ui.button("👁 Show").clicked() {
                             toggle_events.send(rgis_layers::ToggleLayerVisibility(layer.id));
-                            toggle_material_events.send(rgis_renderer::ToggleMaterialEvent::Show(layer.id));
+                            toggle_material_events
+                                .send(rgis_renderer::ToggleMaterialEvent::Show(layer.id));
                         }
                     }
                 });
