@@ -19,6 +19,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: Install wasm Rust target
+      run: rustup target add wasm32-unknown-unknown
+      if: ${{ matrix.target == 'wasm32-unknown-unknown' }}
     - name: Install Dependencies
       run: |
         export DEBIAN_FRONTEND=noninteractive
