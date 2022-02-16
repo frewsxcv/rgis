@@ -1,0 +1,34 @@
+name: Rust
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        target: [wasm32-unknown-unknown, x86_64-unknown-linux-gnu]
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install wasm Rust target
+      run: rustup target add wasm32-unknown-unknown
+      if: ${{ matrix.target == 'wasm32-unknown-unknown' }}
+    - name: Install Dependencies
+      run: |
+        export DEBIAN_FRONTEND=noninteractive
+        sudo apt-get clean && sudo apt-get update
+        sudo apt-get install -y pkg-config libudev-dev libxcb-shape0-dev libxcb-xfixes0-dev libxcb1-dev 
+    - name: Build
+      run: cargo build --target ${{ matrix.target }} --verbose
+    - name: Run tests
+      run: cargo test --target ${{ matrix.target }} --verbose
+      if: ${{ matrix.target != 'wasm32-unknown-unknown' }}
