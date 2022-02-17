@@ -1,6 +1,6 @@
 #!/bin/sh -ex
 
-git branch -D gh-pages
+git branch -D gh-pages || true
 git checkout -b gh-pages
 rm -rf www/dist/
 wasm-pack build
