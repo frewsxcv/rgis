@@ -36,7 +36,7 @@ fn load_geojson_file_handler(
         let sender: LoadedGeoJsonFileSender = sender.clone();
         thread_pool
             .spawn(async move {
-                let spawned_layers = SpawnedLayers(geojson::load(
+                let spawned_layers = SpawnedLayers(geojson::load_from_path(
                     geojson_file_path,
                     &mut layers.write().unwrap(),
                     &source_srs,
@@ -63,16 +63,28 @@ fn load_layers_from_cli(
     cli_values: Res<rgis_cli::Values>,
     mut events: ResMut<Events<LoadGeoJsonFile>>,
 ) {
-    for geojson_file_path in &cli_values.geojson_files {
-        debug!(
-            "sending LoadGeoJsonFile event: {}",
-            &geojson_file_path.display(),
-        );
+    #[cfg(target_arch = "wasm32")]
+    {
         events.send(LoadGeoJsonFile {
-            path: geojson_file_path.clone(),
-            source_srs: cli_values.source_srs.clone(),
-            target_srs: cli_values.target_srs.clone(),
+            path: "foo".into(),
+            source_srs: "EPSG:4326".into(),
+            target_srs: "EPSG:4326".into(),
         });
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        for geojson_file_path in &cli_values.geojson_files {
+            debug!(
+                "sending LoadGeoJsonFile event: {}",
+                &geojson_file_path.display(),
+            );
+            events.send(LoadGeoJsonFile {
+                path: geojson_file_path.clone(),
+                source_srs: cli_values.source_srs.clone(),
+                target_srs: cli_values.target_srs.clone(),
+            });
+        }
     }
 }
 
