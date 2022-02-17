@@ -32,11 +32,13 @@ jobs:
     - uses: actions/checkout@v2
     - name: Install wasm Rust target
       run: rustup target add wasm32-unknown-unknown
-    - name: Install Dependencies
+    - name: Install system dependencies
       run: |
         export DEBIAN_FRONTEND=noninteractive
         sudo apt-get clean && sudo apt-get update
         sudo apt-get install -y pkg-config libudev-dev libxcb-shape0-dev libxcb-xfixes0-dev libxcb1-dev 
+    - name: Install node dependencies
+      run: (cd www && npm install)
     - name: Build and publish
       run: ./.github/publish.sh
 

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -ex
 
 git branch -D gh-pages
 git checkout -b gh-pages
