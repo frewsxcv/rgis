@@ -10,25 +10,33 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
-    strategy:
-      matrix:
-        target: [wasm32-unknown-unknown, x86_64-unknown-linux-gnu]
-
+  x86-64-linux-build-and-test:
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
-    - name: Install wasm Rust target
-      run: rustup target add wasm32-unknown-unknown
-      if: ${{ matrix.target == 'wasm32-unknown-unknown' }}
     - name: Install Dependencies
       run: |
         export DEBIAN_FRONTEND=noninteractive
         sudo apt-get clean && sudo apt-get update
         sudo apt-get install -y pkg-config libudev-dev libxcb-shape0-dev libxcb-xfixes0-dev libxcb1-dev 
     - name: Build
-      run: cargo build --target ${{ matrix.target }} --verbose
+      run: cargo build --target x86_64-unknown-linux-gnu --verbose
     - name: Run tests
-      run: cargo test --target ${{ matrix.target }} --verbose
-      if: ${{ matrix.target != 'wasm32-unknown-unknown' }}
+      run: cargo test --target x86_64-unknown-linux-gnu --verbose
+
+  wasm32-build-and-serve:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install wasm Rust target
+      run: rustup target add wasm32-unknown-unknown
+    - name: Install Dependencies
+      run: |
+        export DEBIAN_FRONTEND=noninteractive
+        sudo apt-get clean && sudo apt-get update
+        sudo apt-get install -y pkg-config libudev-dev libxcb-shape0-dev libxcb-xfixes0-dev libxcb1-dev 
+    - name: Build
+      run: cargo build --target wasm32-unknown-unknown --verbose
+
