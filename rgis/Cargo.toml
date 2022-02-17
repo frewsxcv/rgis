@@ -4,6 +4,10 @@ version = "0.1.0"
 authors = ["Corey Farwell <coreyf@rwell.org>"]
 edition = "2021"
 
+[lib]
+crate-type = ["cdylib", "rlib"]
+path = "lib.rs"
+
 [dependencies]
 bevy = { version = "0.6", default-features = false, features = [
     # "bevy_dynamic_plugin",
@@ -26,3 +30,6 @@ rgis-mouse = { path = "../rgis-mouse" }
 rgis-renderer = { path = "../rgis-renderer" }
 rgis-ui = { path = "../rgis-ui" }
 time-logger = { path = "../time-logger" }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen = { version = "0.2" }
