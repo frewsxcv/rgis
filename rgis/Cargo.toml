@@ -33,3 +33,7 @@ time-logger = { path = "../time-logger" }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen = { version = "0.2" }
+
+# wasm-opt results in a segfault on Linux in CI
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = false
