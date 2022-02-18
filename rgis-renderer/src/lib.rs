@@ -5,7 +5,7 @@ use std::collections;
 #[derive(Default)]
 struct EntityStore(collections::HashMap<rgis_layers::LayerId, Vec<bevy::ecs::entity::Entity>>);
 
-struct CenterCameraEvent(rgis_layers::LayerId);
+pub struct CenterCameraEvent(pub rgis_layers::LayerId);
 
 // System
 fn layer_loaded(
@@ -95,7 +95,6 @@ fn center_camera(
         // TODO: this scale math is inprecise. it should take into account
         // .     the height of the geometry. as well as the window size.
         let scale = layer.projected_bounding_rect.rect.width() / 1_000.;
-        // TODO: only change the transform if there were no layers previously
         debug!("Moving camera to look at new layer");
         camera_offset.x = layer_center.x as f32;
         camera_offset.y = layer_center.y as f32;

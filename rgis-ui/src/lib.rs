@@ -45,6 +45,7 @@ fn ui(
     rgis_layers_resource: Res<rgis_layers::RgisLayersResource>,
     mut toggle_events: ResMut<bevy::app::Events<rgis_layers::ToggleLayerVisibility>>,
     mut remove_events: ResMut<bevy::app::Events<rgis_renderer::ToggleMaterialEvent>>,
+    mut center_layer_events: ResMut<bevy::app::Events<rgis_renderer::CenterCameraEvent>>,
 ) {
     render_side_panel(
         bevy_egui_ctx.ctx(),
@@ -52,6 +53,7 @@ fn ui(
         &rgis_layers_resource,
         &mut toggle_events,
         &mut remove_events,
+        &mut center_layer_events,
     );
 
     match (ui_state.layer_window_visible, ui_state.managing_layer) {
@@ -81,6 +83,7 @@ fn render_side_panel(
     rgis_layers_resource: &rgis_layers::RgisLayersResource,
     toggle_events: &mut bevy::app::Events<rgis_layers::ToggleLayerVisibility>,
     remove_events: &mut bevy::app::Events<rgis_renderer::ToggleMaterialEvent>,
+    center_layer_events: &mut bevy::app::Events<rgis_renderer::CenterCameraEvent>,
 ) {
     egui::SidePanel::left("left-side-panel")
         .max_width(MAX_SIDE_PANEL_WIDTH)
@@ -92,6 +95,7 @@ fn render_side_panel(
                 rgis_layers_resource,
                 toggle_events,
                 remove_events,
+                center_layer_events,
             );
         });
 }
@@ -121,6 +125,7 @@ fn render_layers_window(
     rgis_layers_resource: &rgis_layers::RgisLayersResource,
     toggle_events: &mut bevy::app::Events<rgis_layers::ToggleLayerVisibility>,
     toggle_material_events: &mut bevy::app::Events<rgis_renderer::ToggleMaterialEvent>,
+    center_layer_events: &mut bevy::app::Events<rgis_renderer::CenterCameraEvent>,
 ) {
     ui.collapsing("🗺 Layers", |ui| {
         let rgis_layers_resource = match rgis_layers_resource.read() {
@@ -150,6 +155,10 @@ fn render_layers_window(
                             toggle_material_events
                                 .send(rgis_renderer::ToggleMaterialEvent::Show(layer.id));
                         }
+                    }
+
+                    if ui.button("🔎 Zoom to extent").clicked() {
+                        center_layer_events.send(rgis_renderer::CenterCameraEvent(layer.id))
                     }
                 });
             });
