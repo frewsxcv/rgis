@@ -1,7 +1,7 @@
 use rgis_layers::Layers;
 use std::{fs, io, path};
 
-#[cfg(target = "wasm32")]
+#[cfg(target_arch = "wasm32")]
 pub fn load_from_path(
     geojson_file_path: path::PathBuf,
     layers: &mut Layers,
@@ -18,7 +18,7 @@ pub fn load_from_path(
 }
 
 
-#[cfg(not(target = "wasm32"))]
+#[cfg(not(target_arch = "wasm32"))]
 pub fn load_from_path(
     geojson_file_path: path::PathBuf,
     layers: &mut Layers,
