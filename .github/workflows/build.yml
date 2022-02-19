@@ -60,4 +60,10 @@ jobs:
       run: (cd www && npm install)
     - name: Build and publish
       run: ./.github/publish.sh
-
+    - name: Deploy to GitHub Pages
+      uses: JamesIves/github-pages-deploy-action@releases/v3
+      with:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        BRANCH: gh-pages
+        FOLDER: www/dist/
+        SINGLE_COMMIT: true
