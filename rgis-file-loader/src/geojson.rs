@@ -13,10 +13,9 @@ pub fn load_from_path(
         String::from("test data us-states"),
         layers,
         source_projection,
-        target_projection
+        target_projection,
     )
 }
-
 
 #[cfg(not(target_arch = "wasm32"))]
 pub fn load_from_path(
@@ -29,19 +28,18 @@ pub fn load_from_path(
     let reader = io::BufReader::new(fs::File::open(&geojson_file_path).expect("TODO"));
     tl.finish();
 
-    let file_name =
-        geojson_file_path
-            .file_name()
-            .unwrap()
-            .to_string_lossy()
-            .into_owned();
+    let file_name = geojson_file_path
+        .file_name()
+        .unwrap()
+        .to_string_lossy()
+        .into_owned();
 
     load_from_reader(
         reader,
         file_name,
         layers,
         source_projection,
-        target_projection
+        target_projection,
     )
 }
 

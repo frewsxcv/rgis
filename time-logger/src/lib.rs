@@ -26,7 +26,7 @@ impl TimeLogger {
 
         TimeLogger {
             title,
-            duration: new_instant()
+            duration: new_instant(),
         }
     }
 
