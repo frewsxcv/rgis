@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    "bevy-web-resizing",
     "geo-bevy",
     "geo-srs",
     "rgis",

@@ -8,8 +8,9 @@ pub fn run() {
     let source_srs = cli_values.source_srs.clone();
     let target_srs = cli_values.target_srs.clone();
 
-    App::new()
-        .insert_resource(Msaa {
+    let mut app = App::new();
+
+    app.insert_resource(Msaa {
             samples: cli_values.msaa_sample_count,
         })
         .add_plugins(DefaultPlugins)
@@ -48,6 +49,12 @@ pub fn run() {
             source_srs,
             target_srs,
         })
-        .insert_resource(ClearColor(Color::WHITE))
-        .run();
+        .insert_resource(ClearColor(Color::WHITE));
+
+    #[cfg(target_arch = "wasm32")]
+    {
+        app.add_system(bevy_web_resizing::web_resize_system);
+    }
+
+    app.run();
 }
