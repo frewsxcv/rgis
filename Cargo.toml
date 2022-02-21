@@ -19,6 +19,3 @@ resolver = "2"
 [profile.release]
 debug = true
 
-[patch.crates-io]
-geo = { git = "https://github.com/georust/geo.git", branch = "master" }
-geo-types = { git = "https://github.com/georust/geo.git", branch = "master" }

@@ -14,7 +14,7 @@ bevy = { version = "0.6", default-features = false, features = [
     "render",
 ] }
 colorous = "1"
-geo = "0.18"
+geo = "0.19"
 geo-srs = { path = "../geo-srs" }
 time-logger = { path = "../time-logger" }
 serde_json = "1"
