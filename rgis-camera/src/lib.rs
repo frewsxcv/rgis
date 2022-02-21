@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-const ZOOM_AMOUNT: f32 = 1.3; // Larger number will zoom more
+const ZOOM_AMOUNT: f32 = 1.15; // Larger number will zoom more
 
 pub struct RgisCamera;
 
