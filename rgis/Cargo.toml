@@ -31,8 +31,8 @@ rgis-ui = { path = "../rgis-ui" }
 time-logger = { path = "../time-logger" }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-bevy-web-resizing = { path = "../bevy-web-resizing" }
-wasm-bindgen = { version = "0.2" }
+bevy-web-resizer = "0.1"
+wasm-bindgen = "0.2"
 
 # wasm-opt results in a segfault on Linux in CI
 [package.metadata.wasm-pack.profile.release]

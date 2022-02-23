@@ -257,8 +257,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "bevy-web-resizing"
+name = "bevy-web-resizer"
 version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3f2916ee518661edab9fc5955665120a91853637c01e14933f6007751dbe6e68"
 dependencies = [
  "bevy",
  "crossbeam-channel",
@@ -2943,7 +2945,7 @@ name = "rgis"
 version = "0.1.0"
 dependencies = [
  "bevy",
- "bevy-web-resizing",
+ "bevy-web-resizer",
  "geo",
  "geo-bevy",
  "geo-srs",

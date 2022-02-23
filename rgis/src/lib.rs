@@ -53,7 +53,7 @@ pub fn run() {
 
     #[cfg(target_arch = "wasm32")]
     {
-        app.add_system(bevy_web_resizing::web_resize_system);
+        app.add_system(bevy_web_resizer::web_resize_system);
     }
 
     app.run();
