@@ -40,7 +40,7 @@ pub struct UiState {
 }
 
 fn ui(
-    bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
+    mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
     mut ui_state: ResMut<UiState>,
     rgis_layers_resource: Res<rgis_layers::RgisLayersResource>,
     mut toggle_events: ResMut<bevy::app::Events<rgis_layers::ToggleLayerVisibility>>,
@@ -48,7 +48,7 @@ fn ui(
     mut center_layer_events: ResMut<bevy::app::Events<rgis_renderer::CenterCameraEvent>>,
 ) {
     render_side_panel(
-        bevy_egui_ctx.ctx(),
+        bevy_egui_ctx.ctx_mut(),
         &mut ui_state,
         &rgis_layers_resource,
         &mut toggle_events,
@@ -62,7 +62,7 @@ fn ui(
             let layer = layers.get(layer_id).unwrap(); // TOOD: remove unwrap
             egui::Window::new("Manage Layer")
                 .open(&mut ui_state.layer_window_visible)
-                .show(bevy_egui_ctx.ctx(), |ui| {
+                .show(bevy_egui_ctx.ctx_mut(), |ui| {
                     egui::Grid::new("FIXME")
                         .num_columns(2)
                         .striped(true)

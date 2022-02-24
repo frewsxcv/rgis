@@ -13,7 +13,7 @@ bevy = { version = "0.6", default-features = false, features = [
     "bevy_winit",
     "render",
 ] }
-bevy_egui = "0.10"
+bevy_egui = "0.11"
 geo-srs = { path = "../geo-srs" }
 geo-types = "0.7"
 rgis-layers = { path = "../rgis-layers" }
