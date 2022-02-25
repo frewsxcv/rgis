@@ -47,6 +47,21 @@ fn ui(
     mut remove_events: ResMut<bevy::app::Events<rgis_renderer::ToggleMaterialEvent>>,
     mut center_layer_events: ResMut<bevy::app::Events<rgis_renderer::CenterCameraEvent>>,
 ) {
+    egui::TopBottomPanel::top("top_panel").show(bevy_egui_ctx.ctx_mut(), |ui| {
+        ui.horizontal(|ui| {
+            ui.label("rgis");
+            ui.menu_button("File", |ui| {
+            });
+            ui.menu_button("View", |ui| {
+            });
+            ui.menu_button("Help", |ui| {
+                if ui.button("Source").clicked() {
+                    // …
+                }
+            });
+        });
+     });
+
     render_side_panel(
         bevy_egui_ctx.ctx_mut(),
         &mut ui_state,
