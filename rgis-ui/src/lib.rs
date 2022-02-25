@@ -47,6 +47,7 @@ fn ui(
     mut toggle_events: ResMut<bevy::app::Events<rgis_layers::ToggleLayerVisibility>>,
     mut toggle_material_events: ResMut<bevy::app::Events<rgis_renderer::ToggleMaterialEvent>>,
     mut center_layer_events: ResMut<bevy::app::Events<rgis_renderer::CenterCameraEvent>>,
+    mut load_geo_json_file_events: ResMut<bevy::app::Events<rgis_events::LoadGeoJsonFileEvent>>,
     thread_pool: Res<bevy::tasks::AsyncComputeTaskPool>,
 ) {
     top_panel::TopPanel {
@@ -62,6 +63,7 @@ fn ui(
         toggle_material_events: &mut toggle_material_events,
         center_layer_events: &mut center_layer_events,
         thread_pool: &thread_pool,
+        load_geo_json_file_events: &mut load_geo_json_file_events,
     }
     .render();
 

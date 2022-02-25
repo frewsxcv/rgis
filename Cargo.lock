@@ -3134,6 +3134,7 @@ dependencies = [
  "geojson 0.20.1",
  "rgis-camera",
  "rgis-cli",
+ "rgis-events",
  "rgis-file-loader",
  "rgis-keyboard",
  "rgis-layers",
@@ -3160,6 +3161,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "rgis-events"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+]
+
+[[package]]
 name = "rgis-file-loader"
 version = "0.1.0"
 dependencies = [
@@ -3168,6 +3176,7 @@ dependencies = [
  "geo-types 0.7.3",
  "geojson 0.22.2",
  "rgis-cli",
+ "rgis-events",
  "rgis-layers",
  "serde_json",
  "time-logger",
@@ -3222,6 +3231,7 @@ dependencies = [
  "geo-srs",
  "geo-types 0.7.3",
  "rfd",
+ "rgis-events",
  "rgis-layers",
  "rgis-renderer",
  "webbrowser 0.6.0",

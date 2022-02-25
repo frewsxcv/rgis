@@ -9,7 +9,7 @@ impl<'a> TopPanel<'a> {
         egui::TopBottomPanel::top("top_panel").show(self.bevy_egui_ctx.ctx_mut(), |ui| {
             ui.horizontal(|ui| {
                 ui.label("rgis");
-                ui.menu_button("File", |ui| {
+                ui.menu_button("File", |_ui| {
                 });
                 ui.menu_button("View", |_ui| {
                 });

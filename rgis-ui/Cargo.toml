@@ -19,4 +19,5 @@ geo-types = "0.7"
 rfd = "0.8"
 rgis-layers = { path = "../rgis-layers" }
 rgis-renderer = { path = "../rgis-renderer" }
+rgis-events = { path = "../rgis-events" }
 webbrowser = "0.6"

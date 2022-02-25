@@ -29,6 +29,7 @@ rgis-mouse = { path = "../rgis-mouse" }
 rgis-renderer = { path = "../rgis-renderer" }
 rgis-ui = { path = "../rgis-ui" }
 time-logger = { path = "../time-logger" }
+rgis-events = { path = "../rgis-events" }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 bevy-web-resizer = "0.1"

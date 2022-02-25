@@ -45,6 +45,7 @@ pub fn run() {
     .add_plugin(rgis_mouse::Plugin)
     .add_plugin(rgis_keyboard::Plugin)
     .add_plugin(rgis_camera::RgisCamera)
+    .add_plugin(rgis_events::RgisEventsPlugin)
     .add_plugin(rgis_ui::RgisUi {
         source_srs,
         target_srs,
