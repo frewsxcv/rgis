@@ -1,9 +1,8 @@
 use bevy::prelude::*;
 use bevy_egui::egui;
 
+mod side_panel;
 mod top_panel;
-
-const MAX_SIDE_PANEL_WIDTH: f32 = 200.0f32;
 
 pub struct RgisUi {
     pub source_srs: String,
@@ -46,7 +45,7 @@ fn ui(
     mut ui_state: ResMut<UiState>,
     rgis_layers_resource: Res<rgis_layers::RgisLayersResource>,
     mut toggle_events: ResMut<bevy::app::Events<rgis_layers::ToggleLayerVisibility>>,
-    mut remove_events: ResMut<bevy::app::Events<rgis_renderer::ToggleMaterialEvent>>,
+    mut toggle_material_events: ResMut<bevy::app::Events<rgis_renderer::ToggleMaterialEvent>>,
     mut center_layer_events: ResMut<bevy::app::Events<rgis_renderer::CenterCameraEvent>>,
     thread_pool: Res<bevy::tasks::AsyncComputeTaskPool>,
 ) {
@@ -55,14 +54,14 @@ fn ui(
         thread_pool: &thread_pool,
     }.render();
 
-    render_side_panel(
-        bevy_egui_ctx.ctx_mut(),
-        &mut ui_state,
-        &rgis_layers_resource,
-        &mut toggle_events,
-        &mut remove_events,
-        &mut center_layer_events,
-    );
+    side_panel::SidePanel {
+        egui_ctx: bevy_egui_ctx.ctx_mut(),
+        ui_state: &mut ui_state,
+        rgis_layers_resource: &rgis_layers_resource,
+        toggle_events: &mut toggle_events,
+        toggle_material_events: &mut toggle_material_events,
+        center_layer_events: &mut center_layer_events,
+    }.render();
 
     match (ui_state.layer_window_visible, ui_state.managing_layer) {
         (true, Some(layer_id)) => {
@@ -83,93 +82,4 @@ fn ui(
         }
         _ => (),
     }
-}
-
-fn render_side_panel(
-    ctx: &egui::CtxRef,
-    ui_state: &mut UiState,
-    rgis_layers_resource: &rgis_layers::RgisLayersResource,
-    toggle_events: &mut bevy::app::Events<rgis_layers::ToggleLayerVisibility>,
-    remove_events: &mut bevy::app::Events<rgis_renderer::ToggleMaterialEvent>,
-    center_layer_events: &mut bevy::app::Events<rgis_renderer::CenterCameraEvent>,
-) {
-    egui::SidePanel::left("left-side-panel")
-        .max_width(MAX_SIDE_PANEL_WIDTH)
-        .show(ctx, |ui| {
-            render_mouse_position_window(ui, ui_state);
-            render_layers_window(
-                ui,
-                ui_state,
-                rgis_layers_resource,
-                toggle_events,
-                remove_events,
-                center_layer_events,
-            );
-        });
-}
-
-fn render_mouse_position_window(ui: &mut egui::Ui, ui_state: &UiState) {
-    ui.collapsing("🖱 Mouse Position", |ui| {
-        let mut unprojected = ui_state.projected_mouse_position.clone();
-        unprojected.reproject(&ui_state.source_srs);
-
-        ui.label(format!("Source CRS: {}", ui_state.source_srs));
-        egui::Frame::group(ui.style()).show(ui, |ui| {
-            ui.label(format!("X: {}", unprojected.coord.x));
-            ui.label(format!("Y: {}", unprojected.coord.y));
-        });
-
-        ui.label(format!("Target CRS: {}", ui_state.target_srs));
-        egui::Frame::group(ui.style()).show(ui, |ui| {
-            ui.label(format!("X: {}", ui_state.projected_mouse_position.coord.x));
-            ui.label(format!("Y: {}", ui_state.projected_mouse_position.coord.y));
-        });
-    });
-}
-
-fn render_layers_window(
-    ui: &mut egui::Ui,
-    ui_state: &mut UiState,
-    rgis_layers_resource: &rgis_layers::RgisLayersResource,
-    toggle_events: &mut bevy::app::Events<rgis_layers::ToggleLayerVisibility>,
-    toggle_material_events: &mut bevy::app::Events<rgis_renderer::ToggleMaterialEvent>,
-    center_layer_events: &mut bevy::app::Events<rgis_renderer::CenterCameraEvent>,
-) {
-    ui.collapsing("🗺 Layers", |ui| {
-        let rgis_layers_resource = match rgis_layers_resource.read() {
-            Ok(r) => r,
-            Err(_) => {
-                // TODO log failure
-                return;
-            }
-        };
-        for layer in &rgis_layers_resource.data {
-            egui::Frame::group(ui.style()).show(ui, |ui| {
-                ui.collapsing(layer.name.to_string(), |ui| {
-                    if ui.button("✏ Manage").clicked() {
-                        ui_state.layer_window_visible = true;
-                        ui_state.managing_layer = Some(layer.id);
-                    }
-
-                    if layer.visible {
-                        if ui.button("👁 Hide").clicked() {
-                            toggle_events.send(rgis_layers::ToggleLayerVisibility(layer.id));
-                            toggle_material_events
-                                .send(rgis_renderer::ToggleMaterialEvent::Hide(layer.id));
-                        }
-                    } else {
-                        if ui.button("👁 Show").clicked() {
-                            toggle_events.send(rgis_layers::ToggleLayerVisibility(layer.id));
-                            toggle_material_events
-                                .send(rgis_renderer::ToggleMaterialEvent::Show(layer.id));
-                        }
-                    }
-
-                    if ui.button("🔎 Zoom to extent").clicked() {
-                        center_layer_events.send(rgis_renderer::CenterCameraEvent(layer.id))
-                    }
-                });
-            });
-        }
-    });
 }
