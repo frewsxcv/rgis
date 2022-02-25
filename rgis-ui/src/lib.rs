@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 use bevy_egui::egui;
 
+mod top_panel;
+
 const MAX_SIDE_PANEL_WIDTH: f32 = 200.0f32;
 
 pub struct RgisUi {
@@ -48,29 +50,10 @@ fn ui(
     mut center_layer_events: ResMut<bevy::app::Events<rgis_renderer::CenterCameraEvent>>,
     thread_pool: Res<bevy::tasks::AsyncComputeTaskPool>,
 ) {
-    egui::TopBottomPanel::top("top_panel").show(bevy_egui_ctx.ctx_mut(), |ui| {
-        ui.horizontal(|ui| {
-            ui.label("rgis");
-            ui.menu_button("File", |ui| {
-                if ui.button("Open").clicked() {
-                    thread_pool.spawn(async {
-                        let task = rfd::AsyncFileDialog::new().pick_file();
-                        let file_handle = task.await;
-                        if let Some(n) = file_handle {
-                            bevy::log::error!("fo: {:?}", n);
-                        }
-                    }).detach();
-                }
-            });
-            ui.menu_button("View", |ui| {
-            });
-            ui.menu_button("Help", |ui| {
-                if ui.button("Source code").clicked() {
-                    let _ = webbrowser::open("https://github.com/frewsxcv/rgis");
-                }
-            });
-        });
-     });
+    top_panel::TopPanel {
+        bevy_egui_ctx: &mut bevy_egui_ctx,
+        thread_pool: &thread_pool,
+    }.render();
 
     render_side_panel(
         bevy_egui_ctx.ctx_mut(),
