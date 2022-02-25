@@ -51,8 +51,8 @@ fn ui(
 ) {
     top_panel::TopPanel {
         bevy_egui_ctx: &mut bevy_egui_ctx,
-        thread_pool: &thread_pool,
-    }.render();
+    }
+    .render();
 
     side_panel::SidePanel {
         egui_ctx: bevy_egui_ctx.ctx_mut(),
@@ -61,7 +61,9 @@ fn ui(
         toggle_events: &mut toggle_events,
         toggle_material_events: &mut toggle_material_events,
         center_layer_events: &mut center_layer_events,
-    }.render();
+        thread_pool: &thread_pool,
+    }
+    .render();
 
     match (ui_state.layer_window_visible, ui_state.managing_layer) {
         (true, Some(layer_id)) => {

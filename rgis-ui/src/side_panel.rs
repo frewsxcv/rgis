@@ -9,6 +9,7 @@ pub struct SidePanel<'a> {
     pub toggle_events: &'a mut bevy::app::Events<rgis_layers::ToggleLayerVisibility>,
     pub toggle_material_events: &'a mut bevy::app::Events<rgis_renderer::ToggleMaterialEvent>,
     pub center_layer_events: &'a mut bevy::app::Events<rgis_renderer::CenterCameraEvent>,
+    pub thread_pool: &'a bevy::tasks::AsyncComputeTaskPool,
 }
 
 impl<'a> SidePanel<'a> {
@@ -34,14 +35,32 @@ impl<'a> SidePanel<'a> {
 
             ui.label(format!("Target CRS: {}", self.ui_state.target_srs));
             egui::Frame::group(ui.style()).show(ui, |ui| {
-                ui.label(format!("X: {}", self.ui_state.projected_mouse_position.coord.x));
-                ui.label(format!("Y: {}", self.ui_state.projected_mouse_position.coord.y));
+                ui.label(format!(
+                    "X: {}",
+                    self.ui_state.projected_mouse_position.coord.x
+                ));
+                ui.label(format!(
+                    "Y: {}",
+                    self.ui_state.projected_mouse_position.coord.y
+                ));
             });
         });
     }
 
     fn render_layers_window(&mut self, ui: &mut egui::Ui) {
         ui.collapsing("🗺 Layers", |ui| {
+            if ui.button("Add Layer").clicked() {
+                self.thread_pool
+                    .spawn(async {
+                        let task = rfd::AsyncFileDialog::new().pick_file();
+                        let file_handle = task.await;
+                        if let Some(n) = file_handle {
+                            bevy::log::error!("fo: {:?}", n);
+                        }
+                    })
+                    .detach();
+            }
+
             let rgis_layers_resource = match self.rgis_layers_resource.read() {
                 Ok(r) => r,
                 Err(_) => {
@@ -59,20 +78,23 @@ impl<'a> SidePanel<'a> {
 
                         if layer.visible {
                             if ui.button("👁 Hide").clicked() {
-                                self.toggle_events.send(rgis_layers::ToggleLayerVisibility(layer.id));
+                                self.toggle_events
+                                    .send(rgis_layers::ToggleLayerVisibility(layer.id));
                                 self.toggle_material_events
                                     .send(rgis_renderer::ToggleMaterialEvent::Hide(layer.id));
                             }
                         } else {
                             if ui.button("👁 Show").clicked() {
-                                self.toggle_events.send(rgis_layers::ToggleLayerVisibility(layer.id));
+                                self.toggle_events
+                                    .send(rgis_layers::ToggleLayerVisibility(layer.id));
                                 self.toggle_material_events
                                     .send(rgis_renderer::ToggleMaterialEvent::Show(layer.id));
                             }
                         }
 
                         if ui.button("🔎 Zoom to extent").clicked() {
-                            self.center_layer_events.send(rgis_renderer::CenterCameraEvent(layer.id))
+                            self.center_layer_events
+                                .send(rgis_renderer::CenterCameraEvent(layer.id))
                         }
                     });
                 });
@@ -80,4 +102,3 @@ impl<'a> SidePanel<'a> {
         });
     }
 }
-
