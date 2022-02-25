@@ -16,6 +16,7 @@ bevy = { version = "0.6", default-features = false, features = [
 bevy_egui = "0.11"
 geo-srs = { path = "../geo-srs" }
 geo-types = "0.7"
+rfd = "0.8"
 rgis-layers = { path = "../rgis-layers" }
 rgis-renderer = { path = "../rgis-renderer" }
 webbrowser = "0.6"

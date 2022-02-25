@@ -46,11 +46,21 @@ fn ui(
     mut toggle_events: ResMut<bevy::app::Events<rgis_layers::ToggleLayerVisibility>>,
     mut remove_events: ResMut<bevy::app::Events<rgis_renderer::ToggleMaterialEvent>>,
     mut center_layer_events: ResMut<bevy::app::Events<rgis_renderer::CenterCameraEvent>>,
+    thread_pool: Res<bevy::tasks::AsyncComputeTaskPool>,
 ) {
     egui::TopBottomPanel::top("top_panel").show(bevy_egui_ctx.ctx_mut(), |ui| {
         ui.horizontal(|ui| {
             ui.label("rgis");
             ui.menu_button("File", |ui| {
+                if ui.button("Open").clicked() {
+                    thread_pool.spawn(async {
+                        let task = rfd::AsyncFileDialog::new().pick_file();
+                        let file_handle = task.await;
+                        if let Some(n) = file_handle {
+                            bevy::log::error!("fo: {:?}", n);
+                        }
+                    }).detach();
+                }
             });
             ui.menu_button("View", |ui| {
             });
