@@ -18,3 +18,4 @@ geo-srs = { path = "../geo-srs" }
 geo-types = "0.7"
 rgis-layers = { path = "../rgis-layers" }
 rgis-renderer = { path = "../rgis-renderer" }
+webbrowser = "0.6"

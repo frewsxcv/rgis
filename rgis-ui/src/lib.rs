@@ -55,8 +55,8 @@ fn ui(
             ui.menu_button("View", |ui| {
             });
             ui.menu_button("Help", |ui| {
-                if ui.button("Source").clicked() {
-                    // …
+                if ui.button("Source code").clicked() {
+                    let _ = webbrowser::open("https://github.com/frewsxcv/rgis");
                 }
             });
         });
