@@ -3246,7 +3246,6 @@ dependencies = [
  "rgis-events",
  "rgis-layer-id",
  "rgis-layers",
- "rgis-renderer",
  "webbrowser 0.6.0",
 ]
 
