@@ -3,7 +3,7 @@ use bevy::prelude::*;
 
 mod geojson;
 
-struct SpawnedLayers(Vec<rgis_layers::LayerId>);
+struct SpawnedLayers(Vec<rgis_layer_id::LayerId>);
 
 type LoadedGeoJsonFileSender = async_channel::Sender<SpawnedLayers>;
 type LoadedGeoJsonFileReceiver = async_channel::Receiver<SpawnedLayers>;
@@ -41,9 +41,9 @@ fn load_geojson_file_handler(
                     .detach();
             }
             rgis_events::LoadGeoJsonFileEvent::FromBytes {
-                bytes,
-                source_srs,
-                target_srs,
+                bytes: _bytes,
+                source_srs: _source_srs,
+                target_srs: _target_srs,
             } => {
                 unreachable!()
             }
@@ -52,12 +52,12 @@ fn load_geojson_file_handler(
 }
 
 fn handle_loaded_layers(
-    mut loaded_events: ResMut<Events<rgis_layers::LayerLoaded>>,
+    mut loaded_events: ResMut<Events<rgis_events::LayerLoadedEvent>>,
     receiver: Res<LoadedGeoJsonFileReceiver>,
 ) {
     while let Ok(layer_ids) = receiver.try_recv() {
         for layer_id in layer_ids.0 {
-            loaded_events.send(rgis_layers::LayerLoaded(layer_id));
+            loaded_events.send(rgis_events::LayerLoadedEvent(layer_id));
         }
     }
 }

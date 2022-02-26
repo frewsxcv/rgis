@@ -13,3 +13,4 @@ bevy = { version = "0.6", default-features = false, features = [
     "bevy_winit",
     "render",
 ] }
+rgis-layer-id = { path = "../rgis-layer-id" }

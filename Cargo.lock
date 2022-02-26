@@ -3150,6 +3150,7 @@ name = "rgis-camera"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "rgis-events",
 ]
 
 [[package]]
@@ -3165,6 +3166,7 @@ name = "rgis-events"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "rgis-layer-id",
 ]
 
 [[package]]
@@ -3177,6 +3179,7 @@ dependencies = [
  "geojson 0.22.2",
  "rgis-cli",
  "rgis-events",
+ "rgis-layer-id",
  "rgis-layers",
  "serde_json",
  "time-logger",
@@ -3188,7 +3191,12 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "rgis-camera",
+ "rgis-events",
 ]
+
+[[package]]
+name = "rgis-layer-id"
+version = "0.1.0"
 
 [[package]]
 name = "rgis-layers"
@@ -3198,6 +3206,8 @@ dependencies = [
  "colorous",
  "geo",
  "geo-srs",
+ "rgis-events",
+ "rgis-layer-id",
  "serde_json",
  "time-logger",
 ]
@@ -3208,6 +3218,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "rgis-camera",
+ "rgis-events",
  "rgis-ui",
 ]
 
@@ -3218,6 +3229,8 @@ dependencies = [
  "bevy",
  "geo-bevy",
  "rgis-camera",
+ "rgis-events",
+ "rgis-layer-id",
  "rgis-layers",
  "time-logger",
 ]
@@ -3232,6 +3245,7 @@ dependencies = [
  "geo-types 0.7.3",
  "rfd",
  "rgis-events",
+ "rgis-layer-id",
  "rgis-layers",
  "rgis-renderer",
  "webbrowser 0.6.0",

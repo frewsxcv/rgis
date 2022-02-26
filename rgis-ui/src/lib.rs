@@ -37,16 +37,16 @@ pub struct UiState {
     /// If the layer window is visible.
     pub layer_window_visible: bool,
     /// Which layer is the user currently managing.
-    pub managing_layer: Option<rgis_layers::LayerId>,
+    pub managing_layer: Option<rgis_layer_id::LayerId>,
 }
 
 fn ui(
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
     mut ui_state: ResMut<UiState>,
     rgis_layers_resource: Res<rgis_layers::RgisLayersResource>,
-    mut toggle_events: ResMut<bevy::app::Events<rgis_layers::ToggleLayerVisibility>>,
-    mut toggle_material_events: ResMut<bevy::app::Events<rgis_renderer::ToggleMaterialEvent>>,
-    mut center_layer_events: ResMut<bevy::app::Events<rgis_renderer::CenterCameraEvent>>,
+    mut toggle_events: ResMut<bevy::app::Events<rgis_events::ToggleLayerVisibilityEvent>>,
+    mut toggle_material_events: ResMut<bevy::app::Events<rgis_events::ToggleMaterialEvent>>,
+    mut center_layer_events: ResMut<bevy::app::Events<rgis_events::CenterCameraEvent>>,
     mut load_geo_json_file_events: ResMut<bevy::app::Events<rgis_events::LoadGeoJsonFileEvent>>,
     thread_pool: Res<bevy::tasks::AsyncComputeTaskPool>,
 ) {

@@ -17,6 +17,7 @@ bevy_egui = "0.11"
 geo-srs = { path = "../geo-srs" }
 geo-types = "0.7"
 rfd = "0.8"
+rgis-layer-id = { path = "../rgis-layer-id" }
 rgis-layers = { path = "../rgis-layers" }
 rgis-renderer = { path = "../rgis-renderer" }
 rgis-events = { path = "../rgis-events" }

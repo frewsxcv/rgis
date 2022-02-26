@@ -7,7 +7,7 @@ pub fn load_from_path(
     layers: &mut Layers,
     source_projection: &str,
     target_projection: &str,
-) -> Vec<rgis_layers::LayerId> {
+) -> Vec<rgis_layer_id::LayerId> {
     load_from_reader(
         std::io::Cursor::new(include_bytes!("../../sample-data/us-states.json")),
         String::from("test data us-states"),
@@ -23,7 +23,7 @@ pub fn load_from_path(
     layers: &mut Layers,
     source_projection: &str,
     target_projection: &str,
-) -> Vec<rgis_layers::LayerId> {
+) -> Vec<rgis_layer_id::LayerId> {
     let tl = time_logger::start(format!("Opening file: {:?}", geojson_file_path));
     let reader = io::BufReader::new(fs::File::open(&geojson_file_path).expect("TODO"));
     tl.finish();
@@ -49,7 +49,7 @@ pub fn load_from_reader<R: io::Read>(
     layers: &mut Layers,
     source_projection: &str,
     target_projection: &str,
-) -> Vec<rgis_layers::LayerId> {
+) -> Vec<rgis_layer_id::LayerId> {
     let tl = time_logger::start(format!("Parsing file: {:?}", file_name));
     let geojson: geojson::GeoJson = serde_json::from_reader(reader).unwrap();
     tl.finish();

@@ -6,9 +6,9 @@ pub struct SidePanel<'a> {
     pub egui_ctx: &'a egui::CtxRef,
     pub ui_state: &'a mut crate::UiState,
     pub rgis_layers_resource: &'a rgis_layers::RgisLayersResource,
-    pub toggle_events: &'a mut bevy::app::Events<rgis_layers::ToggleLayerVisibility>,
-    pub toggle_material_events: &'a mut bevy::app::Events<rgis_renderer::ToggleMaterialEvent>,
-    pub center_layer_events: &'a mut bevy::app::Events<rgis_renderer::CenterCameraEvent>,
+    pub toggle_events: &'a mut bevy::app::Events<rgis_events::ToggleLayerVisibilityEvent>,
+    pub toggle_material_events: &'a mut bevy::app::Events<rgis_events::ToggleMaterialEvent>,
+    pub center_layer_events: &'a mut bevy::app::Events<rgis_events::CenterCameraEvent>,
     pub thread_pool: &'a bevy::tasks::AsyncComputeTaskPool,
     pub load_geo_json_file_events: &'a mut bevy::app::Events<rgis_events::LoadGeoJsonFileEvent>,
 }
@@ -88,22 +88,22 @@ impl<'a> SidePanel<'a> {
                         if layer.visible {
                             if ui.button("👁 Hide").clicked() {
                                 self.toggle_events
-                                    .send(rgis_layers::ToggleLayerVisibility(layer.id));
+                                    .send(rgis_events::ToggleLayerVisibilityEvent(layer.id));
                                 self.toggle_material_events
-                                    .send(rgis_renderer::ToggleMaterialEvent::Hide(layer.id));
+                                    .send(rgis_events::ToggleMaterialEvent::Hide(layer.id));
                             }
                         } else {
                             if ui.button("👁 Show").clicked() {
                                 self.toggle_events
-                                    .send(rgis_layers::ToggleLayerVisibility(layer.id));
+                                    .send(rgis_events::ToggleLayerVisibilityEvent(layer.id));
                                 self.toggle_material_events
-                                    .send(rgis_renderer::ToggleMaterialEvent::Show(layer.id));
+                                    .send(rgis_events::ToggleMaterialEvent::Show(layer.id));
                             }
                         }
 
                         if ui.button("🔎 Zoom to extent").clicked() {
                             self.center_layer_events
-                                .send(rgis_renderer::CenterCameraEvent(layer.id))
+                                .send(rgis_events::CenterCameraEvent(layer.id))
                         }
                     });
                 });

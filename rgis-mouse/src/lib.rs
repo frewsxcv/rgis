@@ -30,11 +30,11 @@ fn cursor_moved_system(
 fn mouse_motion_system(
     mut mouse_motion_event_reader: bevy::app::EventReader<bevy::input::mouse::MouseMotion>,
     mouse_button: Res<bevy::input::Input<bevy::input::mouse::MouseButton>>,
-    mut pan_camera_events: ResMut<bevy::app::Events<rgis_camera::PanCameraEvent>>,
+    mut pan_camera_events: ResMut<bevy::app::Events<rgis_events::PanCameraEvent>>,
 ) {
     if mouse_button.pressed(bevy::input::mouse::MouseButton::Right) {
         for event in mouse_motion_event_reader.iter() {
-            pan_camera_events.send(rgis_camera::PanCameraEvent {
+            pan_camera_events.send(rgis_events::PanCameraEvent {
                 // If the mouse is dragging rightward, `delta.x` will be positive. In this case, we
                 // want the map to move right, and the camera to move left. We need to negate the
                 // delta X value.
@@ -50,13 +50,13 @@ fn mouse_motion_system(
 
 fn mouse_scroll_system(
     mut mouse_scroll_event_reader: bevy::app::EventReader<bevy::input::mouse::MouseWheel>,
-    mut zoom_camera_events: ResMut<bevy::app::Events<rgis_camera::ZoomCameraEvent>>,
+    mut zoom_camera_events: ResMut<bevy::app::Events<rgis_events::ZoomCameraEvent>>,
 ) {
     for event in mouse_scroll_event_reader.iter() {
         if event.y > 0. {
-            zoom_camera_events.send(rgis_camera::ZoomCameraEvent::zoom_in());
+            zoom_camera_events.send(rgis_events::ZoomCameraEvent::zoom_in());
         } else if event.y < 0. {
-            zoom_camera_events.send(rgis_camera::ZoomCameraEvent::zoom_out());
+            zoom_camera_events.send(rgis_events::ZoomCameraEvent::zoom_out());
         }
     }
 }

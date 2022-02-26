@@ -3,9 +3,7 @@ use geo_bevy::BuildBevyMeshes;
 use std::collections;
 
 #[derive(Default)]
-struct EntityStore(collections::HashMap<rgis_layers::LayerId, Vec<bevy::ecs::entity::Entity>>);
-
-pub struct CenterCameraEvent(pub rgis_layers::LayerId);
+struct EntityStore(collections::HashMap<rgis_layer_id::LayerId, Vec<bevy::ecs::entity::Entity>>);
 
 // System
 fn layer_loaded(
@@ -13,8 +11,8 @@ fn layer_loaded(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     layers: rgis_layers::ResLayers,
-    mut event_reader: EventReader<rgis_layers::LayerLoaded>,
-    mut center_camera_events: ResMut<Events<CenterCameraEvent>>,
+    mut event_reader: EventReader<rgis_events::LayerLoadedEvent>,
+    mut center_camera_events: ResMut<Events<rgis_events::CenterCameraEvent>>,
     mut entity_store: ResMut<EntityStore>,
 ) {
     for event in event_reader.iter() {
@@ -35,7 +33,7 @@ fn layer_loaded(
             &mut meshes,
             &mut entity_store,
         );
-        center_camera_events.send(CenterCameraEvent(layer.id));
+        center_camera_events.send(rgis_events::CenterCameraEvent(layer.id));
     }
 }
 
@@ -46,8 +44,6 @@ impl Plugin for RgisRendererPlugin {
         app.add_system(center_camera)
             .add_system(layer_loaded)
             .add_system(toggle_material_event)
-            .add_event::<ToggleMaterialEvent>()
-            .add_event::<CenterCameraEvent>()
             .insert_resource(EntityStore::default());
     }
 }
@@ -83,7 +79,7 @@ fn center_camera(
     layers: rgis_layers::ResLayers,
     mut camera_offset: ResMut<rgis_camera::CameraOffset>,
     mut camera_scale: ResMut<rgis_camera::CameraScale>,
-    mut event_reader: EventReader<CenterCameraEvent>,
+    mut event_reader: EventReader<rgis_events::CenterCameraEvent>,
 ) {
     for event in event_reader.iter() {
         let layers = layers.read().unwrap();
@@ -104,7 +100,7 @@ fn center_camera(
 
 fn toggle_material_event(
     layers: rgis_layers::ResLayers,
-    mut event_reader: EventReader<ToggleMaterialEvent>,
+    mut event_reader: EventReader<rgis_events::ToggleMaterialEvent>,
     mut entity_store: ResMut<EntityStore>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -112,7 +108,7 @@ fn toggle_material_event(
 ) {
     for event in event_reader.iter() {
         match event {
-            ToggleMaterialEvent::Show(layer_id) => {
+            rgis_events::ToggleMaterialEvent::Show(layer_id) => {
                 let layers = layers.read().unwrap();
                 let layer = match layers.get(*layer_id) {
                     Some(l) => l,
@@ -127,7 +123,7 @@ fn toggle_material_event(
                     &mut entity_store,
                 );
             }
-            ToggleMaterialEvent::Hide(layer_id) => {
+            rgis_events::ToggleMaterialEvent::Hide(layer_id) => {
                 let layers = layers.read().unwrap();
                 let layer = match layers.get(*layer_id) {
                     Some(l) => l,
@@ -147,18 +143,13 @@ fn toggle_material_event(
     }
 }
 
-pub enum ToggleMaterialEvent {
-    Show(rgis_layers::LayerId),
-    Hide(rgis_layers::LayerId),
-}
-
 fn spawn_mesh(
     mesh: Mesh,
     material: Handle<ColorMaterial>,
     meshes: &mut Assets<Mesh>,
     commands: &mut Commands,
     entity_store: &mut EntityStore,
-    layer_id: rgis_layers::LayerId,
+    layer_id: rgis_layer_id::LayerId,
 ) {
     let mmb = bevy::sprite::MaterialMesh2dBundle {
         material,

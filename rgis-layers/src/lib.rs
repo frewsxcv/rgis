@@ -3,21 +3,12 @@ use geo::bounding_rect::BoundingRect;
 use geo::contains::Contains;
 use std::sync;
 
-#[derive(Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Hash)]
-pub struct LayerId(i64);
-
-#[derive(Debug)]
-pub struct LayerLoaded(pub LayerId);
-
-#[derive(Debug)]
-pub struct ToggleLayerVisibility(pub LayerId);
-
 #[derive(Clone, Debug)]
 pub struct Layers {
     pub data: Vec<Layer>,
     pub projected_bounding_rect: Option<geo_srs::RectWithSrs<f64>>,
     // ID of the currently selected Layer
-    pub selected_layer_id: Option<LayerId>,
+    pub selected_layer_id: Option<rgis_layer_id::LayerId>,
 }
 
 impl Layers {
@@ -66,14 +57,14 @@ impl Layers {
         prev_selected_layer_id != self.selected_layer_id
     }
 
-    pub fn get(&self, layer_id: LayerId) -> Option<&Layer> {
+    pub fn get(&self, layer_id: rgis_layer_id::LayerId) -> Option<&Layer> {
         self.data
             .binary_search_by_key(&layer_id, |layer| layer.id)
             .ok()
             .and_then(|layer_index| self.data.get(layer_index))
     }
 
-    pub fn get_mut(&mut self, layer_id: LayerId) -> Option<&mut Layer> {
+    pub fn get_mut(&mut self, layer_id: rgis_layer_id::LayerId) -> Option<&mut Layer> {
         self.data
             .binary_search_by_key(&layer_id, |layer| layer.id)
             .ok()
@@ -86,8 +77,8 @@ impl Layers {
             .and_then(|layer_id| self.get(layer_id))
     }
 
-    fn next_layer_id(&self) -> LayerId {
-        LayerId(self.data.last().map(|layer| layer.id.0 + 1).unwrap_or(1))
+    fn next_layer_id(&self) -> rgis_layer_id::LayerId {
+        rgis_layer_id::LayerId(self.data.last().map(|layer| layer.id.0 + 1).unwrap_or(1))
     }
 
     pub fn add(
@@ -97,7 +88,7 @@ impl Layers {
         metadata: Option<Metadata>,
         source_projection: &str,
         target_projection: &str,
-    ) -> LayerId {
+    ) -> rgis_layer_id::LayerId {
         let layer_id = self.next_layer_id();
         let layer = Layer::from_geometry(
             geometry,
@@ -128,7 +119,7 @@ pub struct Layer {
     pub projected_bounding_rect: geo_srs::RectWithSrs<f64>,
     pub color: Color,
     pub metadata: Metadata,
-    pub id: LayerId,
+    pub id: rgis_layer_id::LayerId,
     pub name: String,
     pub visible: bool,
 }
@@ -142,7 +133,7 @@ impl Layer {
     pub fn from_geometry(
         geometry: geo::Geometry<f64>,
         name: String,
-        id: LayerId,
+        id: rgis_layer_id::LayerId,
         metadata: Option<Metadata>,
         source_projection: &str,
         target_projection: &str,
@@ -213,7 +204,9 @@ fn create_rgis_layers_resource() -> RgisLayersResource {
 }
 
 fn read_events(
-    mut toggle_layer_visibility_event_reader: bevy::app::EventReader<ToggleLayerVisibility>,
+    mut toggle_layer_visibility_event_reader: bevy::app::EventReader<
+        rgis_events::ToggleLayerVisibilityEvent,
+    >,
     rgis_layers_resource: ResMut<RgisLayersResource>,
 ) {
     for event in toggle_layer_visibility_event_reader.iter() {
@@ -226,8 +219,6 @@ fn read_events(
 impl Plugin for RgisLayersPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(create_rgis_layers_resource())
-            .add_system(read_events)
-            .add_event::<LayerLoaded>()
-            .add_event::<ToggleLayerVisibility>();
+            .add_system(read_events);
     }
 }
