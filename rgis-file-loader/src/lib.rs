@@ -11,11 +11,11 @@ type LoadedGeoJsonFileReceiver = async_channel::Receiver<SpawnedLayers>;
 // System
 fn load_geojson_file_handler(
     layers: rgis_layers::ResLayers,
-    mut load_event_reader: EventReader<rgis_events::LoadGeoJsonFileEvent>,
+    mut load_event_reader: ResMut<Events<rgis_events::LoadGeoJsonFileEvent>>,
     thread_pool: Res<bevy::tasks::AsyncComputeTaskPool>,
     sender: Res<LoadedGeoJsonFileSender>,
 ) {
-    for event in load_event_reader.iter()
+    for event in load_event_reader.drain()
     {
         match event {
             rgis_events::LoadGeoJsonFileEvent::FromPath {
@@ -24,9 +24,6 @@ fn load_geojson_file_handler(
                 target_srs,
             } => {
                 let layers = layers.clone();
-                let geojson_file_path = geojson_file_path.clone();
-                let source_srs = source_srs.clone();
-                let target_srs = target_srs.clone();
                 let sender: LoadedGeoJsonFileSender = sender.clone();
                 thread_pool
                     .spawn(async move {
@@ -46,12 +43,8 @@ fn load_geojson_file_handler(
                 source_srs,
                 target_srs,
             } => {
-                let bytes = bytes.clone(); // FIXME: why are we cloning
-                let layers = layers.clone();
-                let source_srs = source_srs.clone();
-                let target_srs = target_srs.clone();
                 let sender: LoadedGeoJsonFileSender = sender.clone();
-                let file_name = file_name.clone(); // FIXME
+                let layers = layers.clone();
                 thread_pool
                     .spawn(async move {
                         let spawned_layers = SpawnedLayers(geojson::load_from_reader(
