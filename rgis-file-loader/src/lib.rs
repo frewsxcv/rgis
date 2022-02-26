@@ -68,7 +68,7 @@ fn load_layers_from_cli(
 ) {
     #[cfg(target_arch = "wasm32")]
     {
-        events.send(LoadGeoJsonFile {
+        events.send(rgis_events::LoadGeoJsonFileEvent::FromPath {
             path: "foo".into(),
             source_srs: "EPSG:4326".into(),
             target_srs: "EPSG:4326".into(),
