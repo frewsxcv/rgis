@@ -3190,7 +3190,6 @@ name = "rgis-keyboard"
 version = "0.1.0"
 dependencies = [
  "bevy",
- "rgis-camera",
  "rgis-events",
 ]
 
