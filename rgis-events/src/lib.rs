@@ -26,6 +26,7 @@ pub enum LoadGeoJsonFileEvent {
         target_srs: String,
     },
     FromBytes {
+        file_name: String,
         bytes: Vec<u8>,
         source_srs: String,
         target_srs: String,

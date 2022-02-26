@@ -58,7 +58,10 @@ impl<'a> SidePanel<'a> {
                         let task = rfd::AsyncFileDialog::new().pick_file();
                         let file_handle = task.await;
                         if let Some(n) = file_handle {
-                            hi.send(n.read().await).await.unwrap();
+                            hi.send((
+                                n.file_name(),
+                                n.read().await,
+                            )).await.unwrap();
                         }
                     })
                     .detach();

@@ -41,6 +41,7 @@ fn load_geojson_file_handler(
                     .detach();
             }
             rgis_events::LoadGeoJsonFileEvent::FromBytes {
+                file_name,
                 bytes,
                 source_srs,
                 target_srs,
@@ -50,11 +51,12 @@ fn load_geojson_file_handler(
                 let source_srs = source_srs.clone();
                 let target_srs = target_srs.clone();
                 let sender: LoadedGeoJsonFileSender = sender.clone();
+                let file_name = file_name.clone(); // FIXME
                 thread_pool
                     .spawn(async move {
                         let spawned_layers = SpawnedLayers(geojson::load_from_reader(
                             std::io::Cursor::new(bytes),
-                            "some file name".into(),
+                            file_name,
                             &mut layers.write().unwrap(),
                             &source_srs,
                             &target_srs,

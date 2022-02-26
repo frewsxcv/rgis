@@ -13,8 +13,9 @@ pub struct RgisUi {
 pub struct PositionText;
 
 type OpenedFileBytes = Vec<u8>;
-type OpenedFileBytesSender = async_channel::Sender<OpenedFileBytes>;
-type OpenedFileBytesReceiver = async_channel::Receiver<OpenedFileBytes>;
+type OpenedFileName = String;
+type OpenedFileBytesSender = async_channel::Sender<(OpenedFileName, OpenedFileBytes)>;
+type OpenedFileBytesReceiver = async_channel::Receiver<(OpenedFileName, OpenedFileBytes)>;
 
 impl Plugin for RgisUi {
     fn build(&self, app: &mut App) {
@@ -78,10 +79,11 @@ fn ui(
     }
     .render();
 
-    while let Ok(bytes) = opened_file_bytes_receiver.try_recv() {
+    while let Ok((file_name, bytes)) = opened_file_bytes_receiver.try_recv() {
         load_geo_json_file_events.send(
             rgis_events::LoadGeoJsonFileEvent::FromBytes {
-                bytes: bytes,
+                file_name,
+                bytes,
                 source_srs: "EPSG:4326".into(),
                 target_srs: "EPSG:3857".into(),
             }
