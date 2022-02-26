@@ -11,6 +11,7 @@ pub struct SidePanel<'a> {
     pub center_layer_events: &'a mut bevy::app::Events<rgis_events::CenterCameraEvent>,
     pub thread_pool: &'a bevy::tasks::AsyncComputeTaskPool,
     pub load_geo_json_file_events: &'a mut bevy::app::Events<rgis_events::LoadGeoJsonFileEvent>,
+    pub opened_file_bytes_sender: &'a crate::OpenedFileBytesSender,
 }
 
 impl<'a> SidePanel<'a> {
@@ -51,23 +52,16 @@ impl<'a> SidePanel<'a> {
     fn render_layers_window(&mut self, ui: &mut egui::Ui) {
         ui.collapsing("🗺 Layers", |ui| {
             if ui.button("Add Layer").clicked() {
-                /*
+                let hi = self.opened_file_bytes_sender.clone();
                 self.thread_pool
-                    .spawn(async {
+                    .spawn(async move {
                         let task = rfd::AsyncFileDialog::new().pick_file();
                         let file_handle = task.await;
                         if let Some(n) = file_handle {
-                            self.load_geo_json_file_events.send(
-                                rgis_events::LoadGeoJsonFileEvent::FromBytes {
-                                    bytes: n.read().await,
-                                    source_srs: "foo".into(), // FIXME
-                                    target_srs: "foo".into(), // FIXME
-                                }
-                            );
+                            hi.send(n.read().await).await.unwrap();
                         }
                     })
                     .detach();
-                */
             }
 
             let rgis_layers_resource = match self.rgis_layers_resource.read() {

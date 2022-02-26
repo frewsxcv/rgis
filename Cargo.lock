@@ -3238,6 +3238,7 @@ dependencies = [
 name = "rgis-ui"
 version = "0.1.0"
 dependencies = [
+ "async-channel",
  "bevy",
  "bevy_egui",
  "geo-srs",

@@ -12,9 +12,17 @@ pub struct RgisUi {
 // A unit struct to help identify the Position Text component, since there may be many Text components
 pub struct PositionText;
 
+type OpenedFileBytes = Vec<u8>;
+type OpenedFileBytesSender = async_channel::Sender<OpenedFileBytes>;
+type OpenedFileBytesReceiver = async_channel::Receiver<OpenedFileBytes>;
+
 impl Plugin for RgisUi {
     fn build(&self, app: &mut App) {
+        let (sender, receiver): (OpenedFileBytesSender, OpenedFileBytesReceiver) =
+            async_channel::unbounded();
         app.add_plugin(bevy_egui::EguiPlugin)
+            .insert_resource(sender)
+            .insert_resource(receiver)
             .insert_resource(UiState {
                 projected_mouse_position: geo_srs::CoordWithSrs {
                     srs: self.target_srs.clone(),
@@ -49,6 +57,8 @@ fn ui(
     mut center_layer_events: ResMut<bevy::app::Events<rgis_events::CenterCameraEvent>>,
     mut load_geo_json_file_events: ResMut<bevy::app::Events<rgis_events::LoadGeoJsonFileEvent>>,
     thread_pool: Res<bevy::tasks::AsyncComputeTaskPool>,
+    opened_file_bytes_sender: Res<OpenedFileBytesSender>,
+    opened_file_bytes_receiver: Res<OpenedFileBytesReceiver>,
 ) {
     top_panel::TopPanel {
         bevy_egui_ctx: &mut bevy_egui_ctx,
@@ -64,8 +74,19 @@ fn ui(
         center_layer_events: &mut center_layer_events,
         thread_pool: &thread_pool,
         load_geo_json_file_events: &mut load_geo_json_file_events,
+        opened_file_bytes_sender: &opened_file_bytes_sender,
     }
     .render();
+
+    while let Ok(bytes) = opened_file_bytes_receiver.try_recv() {
+        load_geo_json_file_events.send(
+            rgis_events::LoadGeoJsonFileEvent::FromBytes {
+                bytes: bytes,
+                source_srs: "EPSG:4326".into(),
+                target_srs: "EPSG:4326".into(),
+            }
+        );
+    }
 
     match (ui_state.layer_window_visible, ui_state.managing_layer) {
         (true, Some(layer_id)) => {

@@ -6,6 +6,7 @@ edition = "2021"
 publish = false
 
 [dependencies]
+async-channel = "1"
 bevy = { version = "0.6", default-features = false, features = [
     # "bevy_dynamic_plugin",
     "bevy_gilrs",

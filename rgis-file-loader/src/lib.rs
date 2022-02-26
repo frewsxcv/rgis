@@ -41,11 +41,27 @@ fn load_geojson_file_handler(
                     .detach();
             }
             rgis_events::LoadGeoJsonFileEvent::FromBytes {
-                bytes: _bytes,
-                source_srs: _source_srs,
-                target_srs: _target_srs,
+                bytes,
+                source_srs,
+                target_srs,
             } => {
-                unreachable!()
+                let bytes = bytes.clone(); // FIXME: why are we cloning
+                let layers = layers.clone();
+                let source_srs = source_srs.clone();
+                let target_srs = target_srs.clone();
+                let sender: LoadedGeoJsonFileSender = sender.clone();
+                thread_pool
+                    .spawn(async move {
+                        let spawned_layers = SpawnedLayers(geojson::load_from_reader(
+                            std::io::Cursor::new(bytes),
+                            "some file name".into(),
+                            &mut layers.write().unwrap(),
+                            &source_srs,
+                            &target_srs,
+                        ));
+                        sender.send(spawned_layers).await.unwrap();
+                    })
+                    .detach();
             }
         }
     }
