@@ -58,10 +58,7 @@ impl<'a> SidePanel<'a> {
                         let task = rfd::AsyncFileDialog::new().pick_file();
                         let file_handle = task.await;
                         if let Some(n) = file_handle {
-                            hi.send((
-                                n.file_name(),
-                                n.read().await,
-                            )).await.unwrap();
+                            hi.send((n.file_name(), n.read().await)).await.unwrap();
                         }
                     })
                     .detach();
@@ -76,33 +73,35 @@ impl<'a> SidePanel<'a> {
             };
             for layer in &rgis_layers_resource.data {
                 egui::Frame::group(ui.style()).show(ui, |ui| {
-                    ui.collapsing(layer.name.to_string(), |ui| {
-                        if ui.button("✏ Manage").clicked() {
-                            self.ui_state.layer_window_visible = true;
-                            self.ui_state.managing_layer = Some(layer.id);
-                        }
-
-                        if layer.visible {
-                            if ui.button("👁 Hide").clicked() {
-                                self.toggle_events
-                                    .send(rgis_events::ToggleLayerVisibilityEvent(layer.id));
-                                self.toggle_material_events
-                                    .send(rgis_events::ToggleMaterialEvent::Hide(layer.id));
+                    egui::CollapsingHeader::new(layer.name.to_owned())
+                        .id_source(layer.id) // Instead of using the layer name as the ID (which is not unique), use the layer ID
+                        .show(ui, |ui| {
+                            if ui.button("✏ Manage").clicked() {
+                                self.ui_state.layer_window_visible = true;
+                                self.ui_state.managing_layer = Some(layer.id);
                             }
-                        } else {
-                            if ui.button("👁 Show").clicked() {
-                                self.toggle_events
-                                    .send(rgis_events::ToggleLayerVisibilityEvent(layer.id));
-                                self.toggle_material_events
-                                    .send(rgis_events::ToggleMaterialEvent::Show(layer.id));
-                            }
-                        }
 
-                        if ui.button("🔎 Zoom to extent").clicked() {
-                            self.center_layer_events
-                                .send(rgis_events::CenterCameraEvent(layer.id))
-                        }
-                    });
+                            if layer.visible {
+                                if ui.button("👁 Hide").clicked() {
+                                    self.toggle_events
+                                        .send(rgis_events::ToggleLayerVisibilityEvent(layer.id));
+                                    self.toggle_material_events
+                                        .send(rgis_events::ToggleMaterialEvent::Hide(layer.id));
+                                }
+                            } else {
+                                if ui.button("👁 Show").clicked() {
+                                    self.toggle_events
+                                        .send(rgis_events::ToggleLayerVisibilityEvent(layer.id));
+                                    self.toggle_material_events
+                                        .send(rgis_events::ToggleMaterialEvent::Show(layer.id));
+                                }
+                            }
+
+                            if ui.button("🔎 Zoom to extent").clicked() {
+                                self.center_layer_events
+                                    .send(rgis_events::CenterCameraEvent(layer.id))
+                            }
+                        });
                 });
             }
         });
