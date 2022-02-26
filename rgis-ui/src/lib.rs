@@ -83,7 +83,7 @@ fn ui(
             rgis_events::LoadGeoJsonFileEvent::FromBytes {
                 bytes: bytes,
                 source_srs: "EPSG:4326".into(),
-                target_srs: "EPSG:4326".into(),
+                target_srs: "EPSG:3857".into(),
             }
         );
     }

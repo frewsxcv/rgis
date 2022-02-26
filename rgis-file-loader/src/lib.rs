@@ -87,7 +87,7 @@ fn load_layers_from_cli(
         events.send(rgis_events::LoadGeoJsonFileEvent::FromPath {
             path: "foo".into(),
             source_srs: "EPSG:4326".into(),
-            target_srs: "EPSG:4326".into(),
+            target_srs: "EPSG:3857".into(),
         });
     }
 
