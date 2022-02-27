@@ -3151,6 +3151,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "rgis-events",
+ "rgis-layers",
 ]
 
 [[package]]
@@ -3227,7 +3228,6 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "geo-bevy",
- "rgis-camera",
  "rgis-events",
  "rgis-layer-id",
  "rgis-layers",

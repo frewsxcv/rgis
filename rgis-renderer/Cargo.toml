@@ -17,5 +17,4 @@ geo-bevy = { path = "../geo-bevy" }
 rgis-events = { path = "../rgis-events" }
 rgis-layer-id = { path = "../rgis-layer-id" }
 rgis-layers = { path = "../rgis-layers" }
-rgis-camera = { path = "../rgis-camera" }
 time-logger = { path = "../time-logger" }

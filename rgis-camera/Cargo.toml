@@ -16,3 +16,4 @@ bevy = { version = "0.6", default-features = false, features = [
     "render",
 ] }
 rgis-events = { path = "../rgis-events" }
+rgis-layers = { path = "../rgis-layers" }

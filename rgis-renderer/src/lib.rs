@@ -41,8 +41,7 @@ pub struct RgisRendererPlugin;
 
 impl Plugin for RgisRendererPlugin {
     fn build(&self, app: &mut App) {
-        app.add_system(center_camera)
-            .add_system(layer_loaded)
+        app.add_system(layer_loaded)
             .add_system(toggle_material_event)
             .insert_resource(EntityStore::default());
     }
@@ -73,29 +72,6 @@ fn spawn_geometry_mesh(
         );
     }
     tl.finish();
-}
-
-fn center_camera(
-    layers: rgis_layers::ResLayers,
-    mut camera_offset: ResMut<rgis_camera::CameraOffset>,
-    mut camera_scale: ResMut<rgis_camera::CameraScale>,
-    mut event_reader: EventReader<rgis_events::CenterCameraEvent>,
-) {
-    for event in event_reader.iter() {
-        let layers = layers.read().unwrap();
-        let layer = match layers.get(event.0) {
-            Some(l) => l,
-            None => continue,
-        };
-        let layer_center = layer.projected_bounding_rect.rect.center();
-        // TODO: this scale math is inprecise. it should take into account
-        // .     the height of the geometry. as well as the window size.
-        let scale = layer.projected_bounding_rect.rect.width() / 1_000.;
-        debug!("Moving camera to look at new layer");
-        camera_offset.x = layer_center.x as f32;
-        camera_offset.y = layer_center.y as f32;
-        camera_scale.0 = scale as f32;
-    }
 }
 
 fn toggle_material_event(

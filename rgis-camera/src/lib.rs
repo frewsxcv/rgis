@@ -11,6 +11,7 @@ impl Plugin for RgisCamera {
         app.add_startup_system(setup.system())
             .insert_resource(CameraScale(1.))
             .insert_resource(CameraOffset { x: 0., y: 0. })
+            .add_system(center_camera.system())
             .add_system(pan_camera_system.system())
             .add_system(zoom_camera_system.system())
             .add_system(update_camera_offset.system())
@@ -90,4 +91,28 @@ fn pan_y(amount: f32, camera_offset: &mut CameraOffset, camera_scale: &CameraSca
 
 fn zoom(amount: f32, camera_scale: &mut CameraScale) {
     camera_scale.0 /= amount;
+}
+
+// this should go in rgis_camera
+fn center_camera(
+    layers: rgis_layers::ResLayers,
+    mut camera_offset: ResMut<CameraOffset>,
+    mut camera_scale: ResMut<CameraScale>,
+    mut event_reader: EventReader<rgis_events::CenterCameraEvent>,
+) {
+    for event in event_reader.iter() {
+        let layers = layers.read().unwrap();
+        let layer = match layers.get(event.0) {
+            Some(l) => l,
+            None => continue,
+        };
+        let layer_center = layer.projected_bounding_rect.rect.center();
+        // TODO: this scale math is inprecise. it should take into account
+        // .     the height of the geometry. as well as the window size.
+        let scale = layer.projected_bounding_rect.rect.width() / 1_000.;
+        debug!("Moving camera to look at new layer");
+        camera_offset.x = layer_center.x as f32;
+        camera_offset.y = layer_center.y as f32;
+        camera_scale.0 = scale as f32;
+    }
 }
