@@ -83,7 +83,6 @@ impl ZoomCameraEvent {
     }
 }
 
-
 impl Plugin for RgisEventsPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<LoadGeoJsonFileEvent>()

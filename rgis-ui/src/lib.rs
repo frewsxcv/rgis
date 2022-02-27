@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
+mod manage_layer_window;
 mod side_panel;
 mod top_panel;
-mod manage_layer_window;
 
 pub struct RgisUi {
     pub source_srs: String,
@@ -83,7 +83,8 @@ fn ui(
         ui_state: &mut ui_state,
         rgis_layers_resource: &rgis_layers_resource,
         bevy_egui_ctx: &mut bevy_egui_ctx,
-    }.render();
+    }
+    .render();
 
     while let Ok((file_name, bytes)) = opened_file_bytes_receiver.try_recv() {
         load_geo_json_file_events.send(rgis_events::LoadGeoJsonFileEvent::FromBytes {
