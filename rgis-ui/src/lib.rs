@@ -1,8 +1,8 @@
 use bevy::prelude::*;
-use bevy_egui::egui;
 
 mod side_panel;
 mod top_panel;
+mod manage_layer_window;
 
 pub struct RgisUi {
     pub source_srs: String,
@@ -79,6 +79,12 @@ fn ui(
     }
     .render();
 
+    manage_layer_window::ManageLayerWindow {
+        ui_state: &mut ui_state,
+        rgis_layers_resource: &rgis_layers_resource,
+        bevy_egui_ctx: &mut bevy_egui_ctx,
+    }.render();
+
     while let Ok((file_name, bytes)) = opened_file_bytes_receiver.try_recv() {
         load_geo_json_file_events.send(rgis_events::LoadGeoJsonFileEvent::FromBytes {
             file_name,
@@ -86,35 +92,5 @@ fn ui(
             source_srs: "EPSG:4326".into(),
             target_srs: "EPSG:3857".into(),
         });
-    }
-
-    match (ui_state.layer_window_visible, ui_state.managing_layer) {
-        (true, Some(layer_id)) => {
-            let layers = rgis_layers_resource.read().unwrap(); // TODO: remove unwrap
-            let layer = layers.get(layer_id).unwrap(); // TOOD: remove unwrap
-            egui::Window::new("Manage Layer")
-                .open(&mut ui_state.layer_window_visible)
-                .show(bevy_egui_ctx.ctx_mut(), |ui| {
-                    egui::Grid::new("FIXME")
-                        .num_columns(2)
-                        .striped(true)
-                        .show(ui, |ui| {
-                            ui.label("Name");
-                            ui.label(layer.name.clone());
-                            ui.end_row();
-                            ui.label("Color");
-                            if ui
-                                .color_edit_button_rgba_unmultiplied(
-                                    &mut layer.color.as_linear_rgba_f32(),
-                                )
-                                .changed()
-                            {
-                                println!("Color change attempted!");
-                            }
-                            ui.end_row();
-                        });
-                });
-        }
-        _ => (),
     }
 }

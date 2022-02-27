@@ -2,6 +2,7 @@ use bevy::{app::Events, prelude::*};
 use geo_bevy::BuildBevyMeshes;
 use std::collections;
 
+// Change this to a query?
 #[derive(Default)]
 struct EntityStore(collections::HashMap<rgis_layer_id::LayerId, Vec<bevy::ecs::entity::Entity>>);
 
