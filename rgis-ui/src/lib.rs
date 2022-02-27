@@ -80,14 +80,12 @@ fn ui(
     .render();
 
     while let Ok((file_name, bytes)) = opened_file_bytes_receiver.try_recv() {
-        load_geo_json_file_events.send(
-            rgis_events::LoadGeoJsonFileEvent::FromBytes {
-                file_name,
-                bytes,
-                source_srs: "EPSG:4326".into(),
-                target_srs: "EPSG:3857".into(),
-            }
-        );
+        load_geo_json_file_events.send(rgis_events::LoadGeoJsonFileEvent::FromBytes {
+            file_name,
+            bytes,
+            source_srs: "EPSG:4326".into(),
+            target_srs: "EPSG:3857".into(),
+        });
     }
 
     match (ui_state.layer_window_visible, ui_state.managing_layer) {
@@ -103,6 +101,16 @@ fn ui(
                         .show(ui, |ui| {
                             ui.label("Name");
                             ui.label(layer.name.clone());
+                            ui.end_row();
+                            ui.label("Color");
+                            if ui
+                                .color_edit_button_rgba_unmultiplied(
+                                    &mut layer.color.as_linear_rgba_f32(),
+                                )
+                                .changed()
+                            {
+                                println!("Color change attempted!");
+                            }
                             ui.end_row();
                         });
                 });
