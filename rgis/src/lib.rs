@@ -13,6 +13,10 @@ pub fn run() {
     app.insert_resource(Msaa {
         samples: cli_values.msaa_sample_count,
     })
+    .insert_resource(WindowDescriptor {
+        title: "rgis".to_string(),
+        ..Default::default()
+    })
     .add_plugins(DefaultPlugins)
     .add_plugin(rgis_cli::Plugin(cli_values))
     .add_plugin(rgis_layers::RgisLayersPlugin)
