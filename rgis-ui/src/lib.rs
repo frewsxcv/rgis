@@ -9,9 +9,6 @@ pub struct RgisUi {
     pub target_srs: String,
 }
 
-// A unit struct to help identify the Position Text component, since there may be many Text components
-pub struct PositionText;
-
 type OpenedFileBytes = Vec<u8>;
 type OpenedFileName = String;
 type OpenedFileBytesSender = async_channel::Sender<(OpenedFileName, OpenedFileBytes)>;
@@ -24,18 +21,19 @@ impl Plugin for RgisUi {
         app.add_plugin(bevy_egui::EguiPlugin)
             .insert_resource(sender)
             .insert_resource(receiver)
-            .insert_resource(UiState {
-                source_srs: self.source_srs.to_owned(),
-                target_srs: self.target_srs.to_owned(),
-                layer_window_visible: false,
-                managing_layer: None,
-            })
-            .add_system(ui.system());
+            .add_system(ui.system().config(|params| {
+                params.0 = Some(UiState {
+                    source_srs: self.source_srs.to_owned(),
+                    target_srs: self.target_srs.to_owned(),
+                    layer_window_visible: false,
+                    managing_layer: None,
+                });
+            }));
     }
 }
 
-#[derive(Debug)]
-pub struct UiState {
+#[derive(Debug, Default)]
+struct UiState {
     pub source_srs: String,
     pub target_srs: String,
     /// If the layer window is visible.
@@ -45,8 +43,8 @@ pub struct UiState {
 }
 
 fn ui(
+    mut ui_state: Local<UiState>,
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
-    mut ui_state: ResMut<UiState>,
     rgis_layers_resource: Res<rgis_layers::ArcLayers>,
     mut toggle_events: ResMut<bevy::app::Events<rgis_events::ToggleLayerVisibilityEvent>>,
     mut toggle_material_events: ResMut<bevy::app::Events<rgis_events::ToggleMaterialEvent>>,
@@ -74,7 +72,6 @@ fn ui(
         toggle_material_events: &mut toggle_material_events,
         center_layer_events: &mut center_layer_events,
         thread_pool: &thread_pool,
-        load_geo_json_file_events: &mut load_geo_json_file_events,
         opened_file_bytes_sender: &opened_file_bytes_sender,
         mouse_pos: &mouse_pos,
     }

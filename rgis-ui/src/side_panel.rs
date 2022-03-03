@@ -4,7 +4,7 @@ use geo::algorithm::transform::Transform;
 
 const MAX_SIDE_PANEL_WIDTH: f32 = 200.0f32;
 
-pub struct SidePanel<'a> {
+pub(crate) struct SidePanel<'a> {
     pub egui_ctx: &'a egui::CtxRef,
     pub ui_state: &'a mut crate::UiState,
     pub rgis_layers_resource: &'a rgis_layers::ArcLayers,
@@ -12,7 +12,6 @@ pub struct SidePanel<'a> {
     pub toggle_material_events: &'a mut bevy::app::Events<rgis_events::ToggleMaterialEvent>,
     pub center_layer_events: &'a mut bevy::app::Events<rgis_events::CenterCameraEvent>,
     pub thread_pool: &'a bevy::tasks::AsyncComputeTaskPool,
-    pub load_geo_json_file_events: &'a mut bevy::app::Events<rgis_events::LoadGeoJsonFileEvent>,
     pub opened_file_bytes_sender: &'a crate::OpenedFileBytesSender,
     pub mouse_pos: &'a rgis_mouse::MousePos,
 }
