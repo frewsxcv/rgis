@@ -3,6 +3,7 @@ use bevy_egui::egui;
 pub struct TopPanel<'a> {
     pub app_exit_events: &'a mut bevy::app::Events<bevy::app::AppExit>,
     pub bevy_egui_ctx: &'a mut bevy_egui::EguiContext,
+    pub windows: &'a mut bevy::window::Windows,
 }
 
 impl<'a> TopPanel<'a> {
@@ -11,12 +12,10 @@ impl<'a> TopPanel<'a> {
             ui.horizontal(|ui| {
                 ui.label("rgis");
                 ui.menu_button("File", |ui| {
-                    #[cfg(not(target_arch = "wasm32"))]
-                    {
-                        if ui.button("Exit").clicked() {
-                            self.app_exit_events.send(bevy::app::AppExit);
-                        }
-                    }
+                    render_exit_button(self.app_exit_events, ui);
+                });
+                ui.menu_button("View", |ui| {
+                    render_full_screen_button(self.windows, ui);
                 });
                 ui.menu_button("Help", |ui| {
                     if ui.button("Source code").clicked() {
@@ -26,4 +25,28 @@ impl<'a> TopPanel<'a> {
             });
         });
     }
+}
+
+fn render_exit_button(
+    app_exit_events: &mut bevy::app::Events<bevy::app::AppExit>,
+    ui: &mut egui::Ui,
+) {
+    ui.add_enabled_ui(cfg!(not(target_arch = "wasm32")), |ui| {
+        if ui.button("Exit").clicked() {
+            app_exit_events.send(bevy::app::AppExit);
+        }
+    });
+}
+
+fn render_full_screen_button(windows: &mut bevy::window::Windows, ui: &mut egui::Ui) {
+    ui.add_enabled_ui(cfg!(not(target_arch = "wasm32")), |ui| {
+        if ui.button("Full screen").clicked() {
+            let window = windows.get_primary_mut().unwrap();
+            window.set_mode(if window.mode() == bevy::window::WindowMode::Fullscreen {
+                bevy::window::WindowMode::Windowed
+            } else {
+                bevy::window::WindowMode::Fullscreen
+            });
+        }
+    });
 }

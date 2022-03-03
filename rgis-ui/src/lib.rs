@@ -61,10 +61,12 @@ fn ui(
     opened_file_bytes_sender: Res<OpenedFileBytesSender>,
     opened_file_bytes_receiver: Res<OpenedFileBytesReceiver>,
     mut app_exit_events: ResMut<bevy::app::Events<bevy::app::AppExit>>,
+    mut windows: ResMut<Windows>,
 ) {
     top_panel::TopPanel {
         bevy_egui_ctx: &mut bevy_egui_ctx,
         app_exit_events: &mut app_exit_events,
+        windows: &mut windows,
     }
     .render();
 
