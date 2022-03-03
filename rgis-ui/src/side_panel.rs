@@ -51,7 +51,7 @@ impl<'a> SidePanel<'a> {
 
     fn render_layers_window(&mut self, ui: &mut egui::Ui) {
         ui.collapsing("🗺 Layers", |ui| {
-            if ui.button("Add Layer").clicked() {
+            if ui.button("Add GeoJSON Layer").clicked() {
                 let hi = self.opened_file_bytes_sender.clone();
                 self.thread_pool
                     .spawn(async move {
