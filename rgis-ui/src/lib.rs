@@ -25,10 +25,6 @@ impl Plugin for RgisUi {
             .insert_resource(sender)
             .insert_resource(receiver)
             .insert_resource(UiState {
-                projected_mouse_position: geo_srs::CoordWithSrs {
-                    srs: self.target_srs.clone(),
-                    coord: geo_types::Coordinate { x: 0., y: 0. },
-                },
                 source_srs: self.source_srs.to_owned(),
                 target_srs: self.target_srs.to_owned(),
                 layer_window_visible: false,
@@ -40,7 +36,6 @@ impl Plugin for RgisUi {
 
 #[derive(Debug)]
 pub struct UiState {
-    pub projected_mouse_position: geo_srs::CoordWithSrs<f32>,
     pub source_srs: String,
     pub target_srs: String,
     /// If the layer window is visible.
@@ -62,6 +57,7 @@ fn ui(
     opened_file_bytes_receiver: Res<OpenedFileBytesReceiver>,
     mut app_exit_events: ResMut<bevy::app::Events<bevy::app::AppExit>>,
     mut windows: ResMut<Windows>,
+    mouse_pos: Res<rgis_mouse::MousePos>,
 ) {
     top_panel::TopPanel {
         bevy_egui_ctx: &mut bevy_egui_ctx,
@@ -80,6 +76,7 @@ fn ui(
         thread_pool: &thread_pool,
         load_geo_json_file_events: &mut load_geo_json_file_events,
         opened_file_bytes_sender: &opened_file_bytes_sender,
+        mouse_pos: &mouse_pos,
     }
     .render();
 

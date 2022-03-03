@@ -3219,7 +3219,6 @@ dependencies = [
  "bevy",
  "rgis-camera",
  "rgis-events",
- "rgis-ui",
 ]
 
 [[package]]
@@ -3241,12 +3240,14 @@ dependencies = [
  "async-channel",
  "bevy",
  "bevy_egui",
+ "geo",
  "geo-srs",
  "geo-types 0.7.3",
  "rfd",
  "rgis-events",
  "rgis-layer-id",
  "rgis-layers",
+ "rgis-mouse",
  "webbrowser 0.6.0",
 ]
 

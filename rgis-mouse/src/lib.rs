@@ -1,5 +1,16 @@
 use bevy::ecs::system::{IntoSystem, Query, Res, ResMut};
 
+#[derive(Copy, Clone)]
+pub struct Xy {
+    pub x: f32,
+    pub y: f32,
+}
+
+#[derive(Copy, Clone)]
+pub struct MousePos {
+    pub projected: Xy,
+}
+
 fn cursor_moved_system(
     mut cursor_moved_event_reader: bevy::app::EventReader<bevy::window::CursorMoved>,
     windows: Res<bevy::window::Windows>,
@@ -7,7 +18,7 @@ fn cursor_moved_system(
         &rgis_camera::Camera2d,
         &bevy::transform::components::Transform,
     )>,
-    mut ui_state: ResMut<rgis_ui::UiState>,
+    mut mouse_position: ResMut<MousePos>,
 ) {
     for event in cursor_moved_event_reader.iter() {
         for (_camera, transform) in camera_transform_query.iter() {
@@ -21,8 +32,8 @@ fn cursor_moved_system(
             // apply the camera transform
             let pos_wld = transform.compute_matrix() * p.extend(0.0).extend(1.0);
 
-            ui_state.projected_mouse_position.coord.x = pos_wld.x;
-            ui_state.projected_mouse_position.coord.y = pos_wld.y;
+            mouse_position.projected.x = pos_wld.x;
+            mouse_position.projected.y = pos_wld.y;
         }
     }
 }
@@ -67,6 +78,9 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut bevy::app::App) {
         app.add_system(cursor_moved_system.system())
             .add_system(mouse_scroll_system.system())
-            .add_system(mouse_motion_system.system());
+            .add_system(mouse_motion_system.system())
+            .insert_resource(MousePos {
+                projected: Xy { x: 0., y: 0. },
+            });
     }
 }

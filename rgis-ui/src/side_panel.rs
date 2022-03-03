@@ -1,4 +1,5 @@
 use bevy_egui::egui;
+use geo::algorithm::transform::Transform;
 
 const MAX_SIDE_PANEL_WIDTH: f32 = 200.0f32;
 
@@ -12,6 +13,7 @@ pub struct SidePanel<'a> {
     pub thread_pool: &'a bevy::tasks::AsyncComputeTaskPool,
     pub load_geo_json_file_events: &'a mut bevy::app::Events<rgis_events::LoadGeoJsonFileEvent>,
     pub opened_file_bytes_sender: &'a crate::OpenedFileBytesSender,
+    pub mouse_pos: &'a rgis_mouse::MousePos,
 }
 
 impl<'a> SidePanel<'a> {
@@ -26,25 +28,24 @@ impl<'a> SidePanel<'a> {
 
     fn render_mouse_position_window(&mut self, ui: &mut egui::Ui) {
         ui.collapsing("🖱 Mouse Position", |ui| {
-            let mut unprojected = self.ui_state.projected_mouse_position.clone();
-            unprojected.reproject(&self.ui_state.source_srs);
+            let mut unprojected = geo::Coordinate {
+                x: self.mouse_pos.projected.x,
+                y: self.mouse_pos.projected.y,
+            };
+            unprojected
+                .transform_crs_to_crs(&self.ui_state.target_srs, &self.ui_state.source_srs)
+                .unwrap();
 
             ui.label(format!("Source CRS: {}", self.ui_state.source_srs));
             egui::Frame::group(ui.style()).show(ui, |ui| {
-                ui.label(format!("X: {}", unprojected.coord.x));
-                ui.label(format!("Y: {}", unprojected.coord.y));
+                ui.label(format!("X: {}", unprojected.x));
+                ui.label(format!("Y: {}", unprojected.y));
             });
 
             ui.label(format!("Target CRS: {}", self.ui_state.target_srs));
             egui::Frame::group(ui.style()).show(ui, |ui| {
-                ui.label(format!(
-                    "X: {}",
-                    self.ui_state.projected_mouse_position.coord.x
-                ));
-                ui.label(format!(
-                    "Y: {}",
-                    self.ui_state.projected_mouse_position.coord.y
-                ));
+                ui.label(format!("X: {}", self.mouse_pos.projected.x));
+                ui.label(format!("Y: {}", self.mouse_pos.projected.y));
             });
         });
     }

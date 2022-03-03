@@ -16,4 +16,3 @@ bevy = { version = "0.6", default-features = false, features = [
 ] }
 rgis-camera = { path = "../rgis-camera" }
 rgis-events = { path = "../rgis-events" }
-rgis-ui = { path = "../rgis-ui" }
