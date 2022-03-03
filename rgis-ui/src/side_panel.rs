@@ -5,7 +5,7 @@ const MAX_SIDE_PANEL_WIDTH: f32 = 200.0f32;
 pub struct SidePanel<'a> {
     pub egui_ctx: &'a egui::CtxRef,
     pub ui_state: &'a mut crate::UiState,
-    pub rgis_layers_resource: &'a rgis_layers::RgisLayersResource,
+    pub rgis_layers_resource: &'a rgis_layers::ArcLayers,
     pub toggle_events: &'a mut bevy::app::Events<rgis_events::ToggleLayerVisibilityEvent>,
     pub toggle_material_events: &'a mut bevy::app::Events<rgis_events::ToggleMaterialEvent>,
     pub center_layer_events: &'a mut bevy::app::Events<rgis_events::CenterCameraEvent>,

@@ -11,7 +11,7 @@ fn layer_loaded(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
-    layers: rgis_layers::ResLayers,
+    layers: Res<rgis_layers::ArcLayers>,
     mut event_reader: EventReader<rgis_events::LayerLoadedEvent>,
     mut center_camera_events: ResMut<Events<rgis_events::CenterCameraEvent>>,
     mut entity_store: ResMut<EntityStore>,
@@ -76,7 +76,7 @@ fn spawn_geometry_mesh(
 }
 
 fn toggle_material_event(
-    layers: rgis_layers::ResLayers,
+    layers: Res<rgis_layers::ArcLayers>,
     mut event_reader: EventReader<rgis_events::ToggleMaterialEvent>,
     mut entity_store: ResMut<EntityStore>,
     mut commands: Commands,

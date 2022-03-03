@@ -2,7 +2,7 @@ use bevy_egui::egui;
 
 pub struct ManageLayerWindow<'a> {
     pub ui_state: &'a mut crate::UiState,
-    pub rgis_layers_resource: &'a rgis_layers::RgisLayersResource,
+    pub rgis_layers_resource: &'a rgis_layers::ArcLayers,
     pub bevy_egui_ctx: &'a mut bevy_egui::EguiContext,
 }
 

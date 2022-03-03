@@ -10,7 +10,7 @@ type LoadedGeoJsonFileReceiver = async_channel::Receiver<SpawnedLayers>;
 
 // System
 fn load_geojson_file_handler(
-    layers: rgis_layers::ResLayers,
+    layers: Res<rgis_layers::ArcLayers>,
     mut load_event_reader: ResMut<Events<rgis_events::LoadGeoJsonFileEvent>>,
     thread_pool: Res<bevy::tasks::AsyncComputeTaskPool>,
     sender: Res<LoadedGeoJsonFileSender>,

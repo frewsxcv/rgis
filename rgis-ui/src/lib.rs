@@ -52,7 +52,7 @@ pub struct UiState {
 fn ui(
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
     mut ui_state: ResMut<UiState>,
-    rgis_layers_resource: Res<rgis_layers::RgisLayersResource>,
+    rgis_layers_resource: Res<rgis_layers::ArcLayers>,
     mut toggle_events: ResMut<bevy::app::Events<rgis_events::ToggleLayerVisibilityEvent>>,
     mut toggle_material_events: ResMut<bevy::app::Events<rgis_events::ToggleMaterialEvent>>,
     mut center_layer_events: ResMut<bevy::app::Events<rgis_events::CenterCameraEvent>>,

@@ -193,13 +193,11 @@ fn next_color_index() -> usize {
     COUNTER.fetch_add(1, sync::atomic::Ordering::Relaxed) % COLORS.len()
 }
 
-pub type ResLayers<'a> = Res<'a, sync::Arc<sync::RwLock<Layers>>>;
-
 pub struct RgisLayersPlugin;
 
-pub type RgisLayersResource = sync::Arc<sync::RwLock<Layers>>;
+pub type ArcLayers = sync::Arc<sync::RwLock<Layers>>;
 
-fn create_rgis_layers_resource() -> RgisLayersResource {
+fn create_rgis_layers_resource() -> ArcLayers {
     sync::Arc::new(sync::RwLock::new(Layers::new()))
 }
 
@@ -207,7 +205,7 @@ fn read_events(
     mut toggle_layer_visibility_event_reader: bevy::app::EventReader<
         rgis_events::ToggleLayerVisibilityEvent,
     >,
-    rgis_layers_resource: ResMut<RgisLayersResource>,
+    rgis_layers_resource: ResMut<ArcLayers>,
 ) {
     for event in toggle_layer_visibility_event_reader.iter() {
         let mut layers = rgis_layers_resource.write().unwrap();
