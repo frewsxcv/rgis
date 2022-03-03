@@ -1,12 +1,14 @@
 use bevy::prelude::*;
 use geo::bounding_rect::BoundingRect;
 use geo::contains::Contains;
-use std::sync;
+#[cfg(not(target_arch = "wasm32"))]
+use geo::transform::Transform;
+use std::{fmt, sync};
 
 #[derive(Clone, Debug)]
 pub struct Layers {
     pub data: Vec<Layer>,
-    pub projected_bounding_rect: Option<geo_srs::RectWithSrs<f64>>,
+    pub projected_bounding_rect: Option<geo::Rect<f64>>,
     // ID of the currently selected Layer
     pub selected_layer_id: Option<rgis_layer_id::LayerId>,
 }
@@ -21,7 +23,7 @@ impl Layers {
     }
 
     // coord is assumed to be projected
-    pub fn containing_coord(&self, coord: geo_srs::CoordWithSrs<f64>) -> Vec<Layer> {
+    pub fn containing_coord(&self, coord: geo::Coordinate<f64>) -> Vec<Layer> {
         let projected_bounding_rect = match &self.projected_bounding_rect {
             Some(b) => b,
             None => return vec![],
@@ -39,10 +41,7 @@ impl Layers {
     }
 
     // Returns whether the selected layer changed
-    pub fn set_selected_layer_from_mouse_press(
-        &mut self,
-        coord: geo_srs::CoordWithSrs<f64>,
-    ) -> bool {
+    pub fn set_selected_layer_from_mouse_press(&mut self, coord: geo::Coordinate<f64>) -> bool {
         let intersecting = self.containing_coord(coord);
         if !intersecting.is_empty() {
             info!("A geometry was clicked: {:?}", intersecting[0].metadata);
@@ -100,7 +99,7 @@ impl Layers {
         );
         self.projected_bounding_rect =
             Some(if let Some(r) = self.projected_bounding_rect.clone() {
-                r.merge(&layer.projected_bounding_rect)
+                rect_merge(r, layer.projected_bounding_rect)
             } else {
                 layer.projected_bounding_rect.clone()
             });
@@ -113,10 +112,10 @@ pub type Metadata = serde_json::Map<String, serde_json::Value>;
 
 #[derive(Clone, Debug)]
 pub struct Layer {
-    pub unprojected_geometry: geo_srs::GeometryWithSrs<f64>,
-    pub unprojected_bounding_rect: geo_srs::RectWithSrs<f64>,
-    pub projected_geometry: geo_srs::GeometryWithSrs<f64>,
-    pub projected_bounding_rect: geo_srs::RectWithSrs<f64>,
+    pub unprojected_geometry: geo::Geometry<f64>,
+    pub unprojected_bounding_rect: geo::Rect<f64>,
+    pub projected_geometry: geo::Geometry<f64>,
+    pub projected_bounding_rect: geo::Rect<f64>,
     pub color: Color,
     pub metadata: Metadata,
     pub id: rgis_layer_id::LayerId,
@@ -125,9 +124,8 @@ pub struct Layer {
 }
 
 impl Layer {
-    pub fn contains_coord(&self, coord: &geo_srs::CoordWithSrs<f64>) -> bool {
-        self.projected_bounding_rect.contains(&coord)
-            && self.projected_geometry.geometry.contains(&coord.coord)
+    pub fn contains_coord(&self, coord: &geo::Coordinate<f64>) -> bool {
+        self.projected_bounding_rect.contains(coord) && self.projected_geometry.contains(coord)
     }
 
     pub fn from_geometry(
@@ -138,31 +136,23 @@ impl Layer {
         source_projection: &str,
         target_projection: &str,
     ) -> Self {
-        let unprojected_geometry = geo_srs::GeometryWithSrs {
-            geometry,
-            srs: source_projection.into(),
-        };
-        let unprojected_bounding_rect = geo_srs::RectWithSrs {
-            rect: unprojected_geometry
-                .geometry
-                .bounding_rect()
-                .expect("Could not determine bounding rect of geometry"),
-            srs: unprojected_geometry.srs.to_owned(),
-        };
+        let unprojected_geometry = geometry;
+        let unprojected_bounding_rect = unprojected_geometry
+            .bounding_rect()
+            .expect("Could not determine bounding rect of geometry");
 
         let mut projected_geometry = unprojected_geometry.clone();
 
         let tl = time_logger::start("Reprojecting");
-        projected_geometry.reproject(target_projection);
+        #[cfg(not(target_arch = "wasm32"))]
+        projected_geometry
+            .transform_crs_to_crs(source_projection, target_projection)
+            .unwrap();
         tl.finish();
 
-        let projected_bounding_rect = geo_srs::RectWithSrs {
-            rect: projected_geometry
-                .geometry
-                .bounding_rect()
-                .expect("Could not determine bounding rect of geometry"),
-            srs: projected_geometry.srs.to_string(),
-        };
+        let projected_bounding_rect = projected_geometry
+            .bounding_rect()
+            .expect("Could not determine bounding rect of geometry");
 
         Layer {
             unprojected_geometry,
@@ -219,4 +209,17 @@ impl Plugin for RgisLayersPlugin {
         app.insert_resource(create_rgis_layers_resource())
             .add_system(read_events);
     }
+}
+
+fn rect_merge<T: fmt::Debug + geo::CoordFloat>(a: geo::Rect<T>, b: geo::Rect<T>) -> geo::Rect<T> {
+    geo::Rect::new(
+        geo::Coordinate {
+            x: a.min().x.min(b.min().x),
+            y: a.min().y.min(b.min().y),
+        },
+        geo::Coordinate {
+            x: a.max().x.max(b.max().x),
+            y: a.max().y.max(b.max().y),
+        },
+    )
 }

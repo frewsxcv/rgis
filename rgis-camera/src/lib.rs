@@ -106,10 +106,10 @@ fn center_camera(
             Some(l) => l,
             None => continue,
         };
-        let layer_center = layer.projected_bounding_rect.rect.center();
+        let layer_center = layer.projected_bounding_rect.center();
         // TODO: this scale math is inprecise. it should take into account
         // .     the height of the geometry. as well as the window size.
-        let scale = layer.projected_bounding_rect.rect.width() / 1_000.;
+        let scale = layer.projected_bounding_rect.width() / 1_000.;
         debug!("Moving camera to look at new layer");
         camera_offset.x = layer_center.x as f32;
         camera_offset.y = layer_center.y as f32;

@@ -1,4 +1,5 @@
 use bevy_egui::egui;
+#[cfg(not(target_arch = "wasm32"))]
 use geo::algorithm::transform::Transform;
 
 const MAX_SIDE_PANEL_WIDTH: f32 = 200.0f32;
@@ -28,13 +29,22 @@ impl<'a> SidePanel<'a> {
 
     fn render_mouse_position_window(&mut self, ui: &mut egui::Ui) {
         ui.collapsing("🖱 Mouse Position", |ui| {
-            let mut unprojected = geo::Coordinate {
+            #[cfg(target_arch = "wasm32")]
+            let unprojected = geo::Coordinate {
                 x: self.mouse_pos.projected.x,
                 y: self.mouse_pos.projected.y,
             };
-            unprojected
-                .transform_crs_to_crs(&self.ui_state.target_srs, &self.ui_state.source_srs)
-                .unwrap();
+            #[cfg(not(target_arch = "wasm32"))]
+            let unprojected = {
+                let mut unprojected = geo::Coordinate {
+                    x: self.mouse_pos.projected.x,
+                    y: self.mouse_pos.projected.y,
+                };
+                unprojected
+                    .transform_crs_to_crs(&self.ui_state.target_srs, &self.ui_state.source_srs)
+                    .unwrap();
+                unprojected
+            };
 
             ui.label(format!("Source CRS: {}", self.ui_state.source_srs));
             egui::Frame::group(ui.style()).show(ui, |ui| {

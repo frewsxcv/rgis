@@ -1,5 +1,7 @@
 use rgis_layers::Layers;
-use std::{fs, io, path};
+#[cfg(not(target_arch = "wasm32"))]
+use std::fs;
+use std::{io, path};
 
 #[cfg(target_arch = "wasm32")]
 pub fn load_from_path(
@@ -55,13 +57,13 @@ pub fn load_from_reader<R: io::Read>(
     tl.finish();
 
     let tl = time_logger::start(format!("Converting to geo-types: {:?}", file_name));
-    let geo_geometry_collection: geo_types::GeometryCollection<f64> =
+    let geo_geometry_collection: geo::GeometryCollection<f64> =
         geojson::quick_collection(&geojson).unwrap();
     tl.finish();
 
     let tl = time_logger::start(format!("Adding new layer: {:?}", file_name));
     let layer_id = layers.add(
-        geo_types::Geometry::GeometryCollection(geo_geometry_collection),
+        geo::Geometry::GeometryCollection(geo_geometry_collection),
         file_name,
         None,
         source_projection,

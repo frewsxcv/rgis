@@ -1729,13 +1729,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "geo-srs"
-version = "0.1.0"
-dependencies = [
- "geo",
-]
-
-[[package]]
 name = "geo-types"
 version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3130,7 +3123,6 @@ dependencies = [
  "bevy-web-resizer",
  "geo",
  "geo-bevy",
- "geo-srs",
  "geojson 0.20.1",
  "rgis-camera",
  "rgis-cli",
@@ -3176,7 +3168,7 @@ version = "0.1.0"
 dependencies = [
  "async-channel",
  "bevy",
- "geo-types 0.7.3",
+ "geo",
  "geojson 0.22.2",
  "rgis-cli",
  "rgis-events",
@@ -3205,7 +3197,6 @@ dependencies = [
  "bevy",
  "colorous",
  "geo",
- "geo-srs",
  "rgis-events",
  "rgis-layer-id",
  "serde_json",
@@ -3241,8 +3232,6 @@ dependencies = [
  "bevy",
  "bevy_egui",
  "geo",
- "geo-srs",
- "geo-types 0.7.3",
  "rfd",
  "rgis-events",
  "rgis-layer-id",

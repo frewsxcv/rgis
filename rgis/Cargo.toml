@@ -19,7 +19,6 @@ bevy = { version = "0.6", default-features = false, features = [
 geo = { version = "0.19" }
 geojson = { version = "0.20", features = ['geo-types'] }
 geo-bevy = { path = "../geo-bevy" }
-geo-srs = { path = "../geo-srs" }
 rgis-camera = { path = "../rgis-camera" }
 rgis-cli = { path = "../rgis-cli" }
 rgis-file-loader = { path = "../rgis-file-loader" }

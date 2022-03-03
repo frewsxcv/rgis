@@ -1,7 +1,6 @@
 [workspace]
 members = [
     "geo-bevy",
-    "geo-srs",
     "rgis",
     "rgis-camera",
     "rgis-cli",
