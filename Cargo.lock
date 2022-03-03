@@ -3651,6 +3651,7 @@ name = "time-logger"
 version = "0.1.0"
 dependencies = [
  "bevy_log",
+ "instant",
 ]
 
 [[package]]
