@@ -9,10 +9,7 @@ pub(crate) struct ManageLayerWindow<'a> {
 
 impl<'a> ManageLayerWindow<'a> {
     pub fn render(&mut self) {
-        match (
-            self.state.layer_window_visible,
-            self.state.managing_layer,
-        ) {
+        match (self.state.layer_window_visible, self.state.managing_layer) {
             (true, Some(layer_id)) => {
                 let layers = self.rgis_layers_resource.read().unwrap(); // TODO: remove unwrap
                 let layer = layers.get(layer_id).unwrap(); // TOOD: remove unwrap
