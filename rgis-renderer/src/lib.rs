@@ -83,9 +83,9 @@ fn toggle_material_event(
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     for event in event_reader.iter() {
+        let layers = layers.read().unwrap();
         match event {
             rgis_events::ToggleMaterialEvent::Show(layer_id) => {
-                let layers = layers.read().unwrap();
                 let layer = match layers.get(*layer_id) {
                     Some(l) => l,
                     None => continue,
@@ -100,7 +100,6 @@ fn toggle_material_event(
                 );
             }
             rgis_events::ToggleMaterialEvent::Hide(layer_id) => {
-                let layers = layers.read().unwrap();
                 let layer = match layers.get(*layer_id) {
                     Some(l) => l,
                     None => continue,
