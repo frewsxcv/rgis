@@ -32,17 +32,15 @@ impl<'a> ManageLayerWindow<'a> {
                                     .color_edit_button_rgba_unmultiplied(&mut old_color)
                                     .changed()
                                 {
-                                    self.color_events.send(
-                                        rgis_events::UpdateLayerColor(
-                                            layer.id,
-                                            bevy::prelude::Color::rgba_linear(
-                                                old_color[0],
-                                                old_color[1],
-                                                old_color[2],
-                                                old_color[3],
-                                            ),
+                                    self.color_events.send(rgis_events::UpdateLayerColor(
+                                        layer.id,
+                                        bevy::prelude::Color::rgba_linear(
+                                            old_color[0],
+                                            old_color[1],
+                                            old_color[2],
+                                            old_color[3],
                                         ),
-                                    );
+                                    ));
                                 }
                                 ui.end_row();
                             });
