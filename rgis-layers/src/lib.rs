@@ -204,10 +204,24 @@ fn read_events(
     }
 }
 
+fn read_color_events(
+    mut update_events: bevy::app::EventReader<rgis_events::UpdateLayerColor>,
+    mut updated_events: bevy::app::EventWriter<rgis_events::LayerColorUpdated>,
+    rgis_layers_resource: ResMut<ArcLayers>,
+) {
+    for event in update_events.iter() {
+        let mut layers = rgis_layers_resource.write().unwrap();
+        let layer = layers.get_mut(event.0).unwrap();
+        layer.color = event.1;
+        updated_events.send(rgis_events::LayerColorUpdated(event.0));
+    }
+}
+
 impl Plugin for RgisLayersPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(create_rgis_layers_resource())
-            .add_system(read_events);
+            .add_system(read_events)
+            .add_system(read_color_events);
     }
 }
 

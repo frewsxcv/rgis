@@ -79,6 +79,7 @@ fn spawn_geometry_mesh(
 fn toggle_material_event(
     layers: Res<rgis_layers::ArcLayers>,
     mut event_reader: EventReader<rgis_events::ToggleMaterialEvent>,
+    mut color_event_reader: EventReader<rgis_events::LayerColorUpdated>,
     mut entity_store: ResMut<EntityStore>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -117,33 +118,33 @@ fn toggle_material_event(
                     entity_commands.despawn();
                 }
             }
-            // TODO: don't retriangulate each time we change the color
-            rgis_events::ToggleMaterialEvent::ChangeColor(layer_id, color) => {
-                let layer = match layers.get(*layer_id) {
-                    Some(l) => l,
-                    None => continue,
-                };
-
-                let entities = match entity_store.0.remove(&layer.id) {
-                    Some(h) => h,
-                    None => continue,
-                };
-                for entity in entities {
-                    let mut entity_commands = commands.entity(entity);
-                    entity_commands.despawn();
-                }
-
-                // TODO: update layer.color
-                spawn_geometry_mesh(
-                    &mut materials,
-                    layer,
-                    &mut commands,
-                    &mut meshes,
-                    &mut entity_store,
-                    *color,
-                );
-            }
         }
+    }
+    for event in color_event_reader.iter() {
+        let layers = layers.read().unwrap();
+        let layer = match layers.get(event.0) {
+            Some(l) => l,
+            None => continue,
+        };
+
+        let entities = match entity_store.0.remove(&layer.id) {
+            Some(h) => h,
+            None => continue,
+        };
+        for entity in entities {
+            let mut entity_commands = commands.entity(entity);
+            entity_commands.despawn();
+        }
+
+        // TODO: update layer.color
+        spawn_geometry_mesh(
+            &mut materials,
+            layer,
+            &mut commands,
+            &mut meshes,
+            &mut entity_store,
+            layer.color,
+        );
     }
 }
 

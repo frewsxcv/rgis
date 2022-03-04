@@ -49,6 +49,7 @@ fn ui(
     mut toggle_events: ResMut<bevy::app::Events<rgis_events::ToggleLayerVisibilityEvent>>,
     mut toggle_material_events: ResMut<bevy::app::Events<rgis_events::ToggleMaterialEvent>>,
     mut center_layer_events: ResMut<bevy::app::Events<rgis_events::CenterCameraEvent>>,
+    mut color_events: ResMut<bevy::app::Events<rgis_events::UpdateLayerColor>>,
     mut load_geo_json_file_events: ResMut<bevy::app::Events<rgis_events::LoadGeoJsonFileEvent>>,
     thread_pool: Res<bevy::tasks::AsyncComputeTaskPool>,
     opened_file_bytes_sender: Res<OpenedFileBytesSender>,
@@ -81,7 +82,7 @@ fn ui(
         ui_state: &mut ui_state,
         rgis_layers_resource: &rgis_layers_resource,
         bevy_egui_ctx: &mut bevy_egui_ctx,
-        toggle_material_events: &mut toggle_material_events,
+        color_events: &mut color_events,
     }
     .render();
 

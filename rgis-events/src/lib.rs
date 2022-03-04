@@ -16,8 +16,12 @@ pub struct CenterCameraEvent(pub rgis_layer_id::LayerId);
 pub enum ToggleMaterialEvent {
     Show(rgis_layer_id::LayerId),
     Hide(rgis_layer_id::LayerId),
-    ChangeColor(rgis_layer_id::LayerId, bevy::prelude::Color),
 }
+
+/// Change the `Layer`'s color
+pub struct UpdateLayerColor(pub rgis_layer_id::LayerId, pub bevy::prelude::Color);
+/// After a `Layer`'s color is changed
+pub struct LayerColorUpdated(pub rgis_layer_id::LayerId);
 
 #[derive(Debug)]
 pub enum LoadGeoJsonFileEvent {
@@ -92,6 +96,8 @@ impl Plugin for RgisEventsPlugin {
             .add_event::<ToggleMaterialEvent>()
             .add_event::<PanCameraEvent>()
             .add_event::<ZoomCameraEvent>()
-            .add_event::<CenterCameraEvent>();
+            .add_event::<CenterCameraEvent>()
+            .add_event::<LayerColorUpdated>()
+            .add_event::<UpdateLayerColor>();
     }
 }
