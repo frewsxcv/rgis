@@ -1,7 +1,7 @@
 use bevy_egui::egui;
 
 pub(crate) struct ManageLayerWindow<'a> {
-    pub ui_state: &'a mut crate::UiState,
+    pub state: &'a mut crate::UiState,
     pub rgis_layers_resource: &'a rgis_layers::ArcLayers,
     pub bevy_egui_ctx: &'a mut bevy_egui::EguiContext,
     pub color_events: &'a mut bevy::app::Events<rgis_events::UpdateLayerColor>,
@@ -10,14 +10,14 @@ pub(crate) struct ManageLayerWindow<'a> {
 impl<'a> ManageLayerWindow<'a> {
     pub fn render(&mut self) {
         match (
-            self.ui_state.layer_window_visible,
-            self.ui_state.managing_layer,
+            self.state.layer_window_visible,
+            self.state.managing_layer,
         ) {
             (true, Some(layer_id)) => {
                 let layers = self.rgis_layers_resource.read().unwrap(); // TODO: remove unwrap
                 let layer = layers.get(layer_id).unwrap(); // TOOD: remove unwrap
                 egui::Window::new("Manage Layer")
-                    .open(&mut self.ui_state.layer_window_visible)
+                    .open(&mut self.state.layer_window_visible)
                     .show(self.bevy_egui_ctx.ctx_mut(), |ui| {
                         egui::Grid::new("FIXME")
                             .num_columns(2)

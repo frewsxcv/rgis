@@ -6,7 +6,7 @@ const MAX_SIDE_PANEL_WIDTH: f32 = 200.0f32;
 
 pub(crate) struct SidePanel<'a> {
     pub egui_ctx: &'a egui::CtxRef,
-    pub ui_state: &'a mut crate::UiState,
+    pub state: &'a mut crate::UiState,
     pub rgis_layers_resource: &'a rgis_layers::ArcLayers,
     pub toggle_events: &'a mut bevy::app::Events<rgis_events::ToggleLayerVisibilityEvent>,
     pub toggle_material_events: &'a mut bevy::app::Events<rgis_events::ToggleMaterialEvent>,
@@ -40,18 +40,18 @@ impl<'a> SidePanel<'a> {
                     y: self.mouse_pos.projected.y,
                 };
                 unprojected
-                    .transform_crs_to_crs(&self.ui_state.target_srs, &self.ui_state.source_srs)
+                    .transform_crs_to_crs(&self.state.target_srs, &self.state.source_srs)
                     .unwrap();
                 unprojected
             };
 
-            ui.label(format!("Source CRS: {}", self.ui_state.source_srs));
+            ui.label(format!("Source CRS: {}", self.state.source_srs));
             egui::Frame::group(ui.style()).show(ui, |ui| {
                 ui.label(format!("X: {}", unprojected.x));
                 ui.label(format!("Y: {}", unprojected.y));
             });
 
-            ui.label(format!("Target CRS: {}", self.ui_state.target_srs));
+            ui.label(format!("Target CRS: {}", self.state.target_srs));
             egui::Frame::group(ui.style()).show(ui, |ui| {
                 ui.label(format!("X: {}", self.mouse_pos.projected.x));
                 ui.label(format!("Y: {}", self.mouse_pos.projected.y));
@@ -87,8 +87,8 @@ impl<'a> SidePanel<'a> {
                         .id_source(layer.id) // Instead of using the layer name as the ID (which is not unique), use the layer ID
                         .show(ui, |ui| {
                             if ui.button("✏ Manage").clicked() {
-                                self.ui_state.layer_window_visible = true;
-                                self.ui_state.managing_layer = Some(layer.id);
+                                self.state.layer_window_visible = true;
+                                self.state.managing_layer = Some(layer.id);
                             }
 
                             if layer.visible {
