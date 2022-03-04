@@ -45,6 +45,7 @@ impl Plugin for RgisRendererPlugin {
     fn build(&self, app: &mut App) {
         app.add_system(layer_loaded)
             .add_system(toggle_material_event)
+            .add_system(handle_layer_color_changed_event)
             .insert_resource(EntityStore::default());
     }
 }
@@ -79,7 +80,6 @@ fn spawn_geometry_mesh(
 fn toggle_material_event(
     layers: Res<rgis_layers::ArcLayers>,
     mut event_reader: EventReader<rgis_events::ToggleMaterialEvent>,
-    mut color_event_reader: EventReader<rgis_events::LayerColorUpdated>,
     mut entity_store: ResMut<EntityStore>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -120,30 +120,36 @@ fn toggle_material_event(
             }
         }
     }
-    for event in color_event_reader.iter() {
+}
+
+fn handle_layer_color_changed_event(
+    mut events: EventReader<rgis_events::LayerColorUpdated>,
+    layers: Res<rgis_layers::ArcLayers>,
+    entity_store: Res<EntityStore>,
+    query: Query<(Entity, &Handle<ColorMaterial>)>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+) {
+    for event in events.iter() {
         let layers = layers.read().unwrap();
         let layer = match layers.get(event.0) {
             Some(l) => l,
             None => continue,
         };
 
-        let entities = match entity_store.0.remove(&layer.id) {
+        let entities = match entity_store.0.get(&layer.id) {
             Some(h) => h,
             None => continue,
         };
-        for entity in entities {
-            let mut entity_commands = commands.entity(entity);
-            entity_commands.despawn();
-        }
 
-        spawn_geometry_mesh(
-            &mut materials,
-            layer,
-            &mut commands,
-            &mut meshes,
-            &mut entity_store,
-            layer.color,
-        );
+        for handle in query.iter().filter_map(|(entity, handle)| {
+            if entities.contains(&entity) {
+                Some(handle)
+            } else {
+                None
+            }
+        }) {
+            materials.get_mut(handle).unwrap().color = layer.color;
+        }
     }
 }
 
