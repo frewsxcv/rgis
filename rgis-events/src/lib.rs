@@ -16,6 +16,7 @@ pub struct CenterCameraEvent(pub rgis_layer_id::LayerId);
 pub enum ToggleMaterialEvent {
     Show(rgis_layer_id::LayerId),
     Hide(rgis_layer_id::LayerId),
+    ChangeColor(rgis_layer_id::LayerId, bevy::prelude::Color),
 }
 
 #[derive(Debug)]

@@ -4,6 +4,7 @@ pub(crate) struct ManageLayerWindow<'a> {
     pub ui_state: &'a mut crate::UiState,
     pub rgis_layers_resource: &'a rgis_layers::ArcLayers,
     pub bevy_egui_ctx: &'a mut bevy_egui::EguiContext,
+    pub toggle_material_events: &'a mut bevy::app::Events<rgis_events::ToggleMaterialEvent>,
 }
 
 impl<'a> ManageLayerWindow<'a> {
@@ -26,13 +27,22 @@ impl<'a> ManageLayerWindow<'a> {
                                 ui.label(layer.name.clone());
                                 ui.end_row();
                                 ui.label("Color");
+                                let mut old_color = layer.color.as_linear_rgba_f32();
                                 if ui
-                                    .color_edit_button_rgba_unmultiplied(
-                                        &mut layer.color.as_linear_rgba_f32(),
-                                    )
+                                    .color_edit_button_rgba_unmultiplied(&mut old_color)
                                     .changed()
                                 {
-                                    println!("Color change attempted!");
+                                    self.toggle_material_events.send(
+                                        rgis_events::ToggleMaterialEvent::ChangeColor(
+                                            layer.id,
+                                            bevy::prelude::Color::rgba_linear(
+                                                old_color[0],
+                                                old_color[1],
+                                                old_color[2],
+                                                old_color[3],
+                                            ),
+                                        ),
+                                    );
                                 }
                                 ui.end_row();
                             });

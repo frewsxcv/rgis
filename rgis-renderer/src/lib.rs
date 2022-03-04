@@ -33,6 +33,7 @@ fn layer_loaded(
             &mut commands,
             &mut meshes,
             &mut entity_store,
+            layer.color,
         );
         center_camera_events.send(rgis_events::CenterCameraEvent(layer.id));
     }
@@ -54,8 +55,9 @@ fn spawn_geometry_mesh(
     commands: &mut Commands,
     meshes: &mut Assets<Mesh>,
     entity_store: &mut EntityStore,
+    color: bevy::prelude::Color,
 ) {
-    let material = materials.add(layer.color.into());
+    let material = materials.add(color.into());
 
     let tl = time_logger::start(&format!("Triangulating and building {} mesh", layer.name));
     for mesh in layer
@@ -97,6 +99,7 @@ fn toggle_material_event(
                     &mut commands,
                     &mut meshes,
                     &mut entity_store,
+                    layer.color,
                 );
             }
             rgis_events::ToggleMaterialEvent::Hide(layer_id) => {
@@ -113,6 +116,32 @@ fn toggle_material_event(
                     let mut entity_commands = commands.entity(entity);
                     entity_commands.despawn();
                 }
+            }
+            // TODO: don't retriangulate each time we change the color
+            rgis_events::ToggleMaterialEvent::ChangeColor(layer_id, color) => {
+                let layer = match layers.get(*layer_id) {
+                    Some(l) => l,
+                    None => continue,
+                };
+
+                let entities = match entity_store.0.remove(&layer.id) {
+                    Some(h) => h,
+                    None => continue,
+                };
+                for entity in entities {
+                    let mut entity_commands = commands.entity(entity);
+                    entity_commands.despawn();
+                }
+
+                // TODO: update layer.color
+                spawn_geometry_mesh(
+                    &mut materials,
+                    layer,
+                    &mut commands,
+                    &mut meshes,
+                    &mut entity_store,
+                    *color,
+                );
             }
         }
     }

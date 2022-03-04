@@ -81,6 +81,7 @@ fn ui(
         ui_state: &mut ui_state,
         rgis_layers_resource: &rgis_layers_resource,
         bevy_egui_ctx: &mut bevy_egui_ctx,
+        toggle_material_events: &mut toggle_material_events,
     }
     .render();
 
