@@ -136,7 +136,6 @@ fn toggle_material_event(
             entity_commands.despawn();
         }
 
-        // TODO: update layer.color
         spawn_geometry_mesh(
             &mut materials,
             layer,
