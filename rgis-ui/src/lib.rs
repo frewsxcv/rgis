@@ -37,9 +37,9 @@ impl Plugin for RgisUi {
                 layer_window_visible: false,
                 managing_layer: None,
             })
-            .add_system(render_top_panel.system())
-            .add_system(render_manage_layer_window.system())
-            .add_system(render_side_panel.system());
+            .add_system(render_top_panel.label("top_panel"))
+            .add_system(render_side_panel.label("side_panel").after("top_panel"))
+            .add_system(render_manage_layer_window.label("manage_layer_window").after("side_panel"));
     }
 }
 
