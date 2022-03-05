@@ -86,12 +86,12 @@ fn toggle_material_event(
                     layer.color,
                 );
             }
-            rgis_events::ToggleMaterialEvent::Hide(event_layer_id) => {
-                for (layer_id, entity) in query.iter() {
-                    if layer_id == event_layer_id {
-                        let mut entity_commands = commands.entity(entity);
-                        entity_commands.despawn();
-                    }
+            rgis_events::ToggleMaterialEvent::Hide(layer_id) => {
+                for entity in query
+                    .iter()
+                    .filter_map(|(i, entity)| (i == layer_id).then(|| entity))
+                {
+                    commands.entity(entity).despawn();
                 }
             }
         }
@@ -111,13 +111,10 @@ fn handle_layer_color_changed_event(
             None => continue,
         };
 
-        for handle in query.iter().filter_map(|(layer_id, handle)| {
-            if *layer_id == event.0 {
-                Some(handle)
-            } else {
-                None
-            }
-        }) {
+        for handle in query
+            .iter()
+            .filter_map(|(i, handle)| (*i == event.0).then(|| handle))
+        {
             materials.get_mut(handle).unwrap().color = layer.color;
         }
     }
