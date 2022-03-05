@@ -87,7 +87,6 @@ fn toggle_material_event(
                 );
             }
             rgis_events::ToggleMaterialEvent::Hide(event_layer_id) => {
-                // TODO: remove mesh from asset store?
                 for (layer_id, entity) in query.iter() {
                     if layer_id == event_layer_id {
                         let mut entity_commands = commands.entity(entity);
