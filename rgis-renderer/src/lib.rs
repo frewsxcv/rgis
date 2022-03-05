@@ -67,7 +67,7 @@ fn toggle_material_event(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
-    query: Query<(&rgis_layer_id::LayerId, &Handle<ColorMaterial>, Entity)>,
+    query: Query<(&rgis_layer_id::LayerId, Entity), With<Handle<ColorMaterial>>>,
 ) {
     for event in event_reader.iter() {
         let layers = layers.read().unwrap();
@@ -88,7 +88,7 @@ fn toggle_material_event(
             }
             rgis_events::ToggleMaterialEvent::Hide(event_layer_id) => {
                 // TODO: remove mesh from asset store?
-                for (layer_id, _color_material, entity) in query.iter() {
+                for (layer_id, entity) in query.iter() {
                     if layer_id == event_layer_id {
                         let mut entity_commands = commands.entity(entity);
                         entity_commands.despawn();
