@@ -3189,6 +3189,9 @@ dependencies = [
 [[package]]
 name = "rgis-layer-id"
 version = "0.1.0"
+dependencies = [
+ "bevy",
+]
 
 [[package]]
 name = "rgis-layers"
