@@ -26,7 +26,6 @@ fn layer_loaded(
             &layer,
             &mut commands,
             &mut meshes,
-            layer.color,
         );
         center_camera_events.send(rgis_events::CenterCameraEvent(layer.id));
     }
@@ -47,9 +46,8 @@ fn spawn_geometry_mesh(
     layer: &rgis_layers::Layer,
     commands: &mut Commands,
     meshes: &mut Assets<Mesh>,
-    color: bevy::prelude::Color,
 ) {
-    let material = materials.add(color.into());
+    let material = materials.add(layer.color.into());
 
     let tl = time_logger::start(&format!("Triangulating and building {} mesh", layer.name));
     for mesh in layer
@@ -83,7 +81,6 @@ fn toggle_material_event(
                     layer,
                     &mut commands,
                     &mut meshes,
-                    layer.color,
                 );
             }
             rgis_events::ToggleMaterialEvent::Hide(layer_id) => {
