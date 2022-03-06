@@ -81,10 +81,8 @@ fn build_mesh_from_vertices(
     mesh.set_indices(Some(bevy_render::mesh::Indices::U32(indices)));
     mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, vertices);
 
-    let mut normals = Vec::new();
-    normals.resize(num_vertices, [0.0, 0.0, 0.0]);
-    let mut uvs = Vec::new();
-    uvs.resize(num_vertices, [0.0, 0.0]);
+    let normals = vec![[0.0, 0.0, 0.0]; num_vertices];
+    let uvs = vec![[0.0, 0.0]; num_vertices];
 
     mesh.set_attribute(Mesh::ATTRIBUTE_NORMAL, normals);
     mesh.set_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
