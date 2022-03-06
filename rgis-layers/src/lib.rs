@@ -13,6 +13,12 @@ pub struct Layers {
     pub selected_layer_id: Option<rgis_layer_id::LayerId>,
 }
 
+impl Default for Layers {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Layers {
     pub fn new() -> Layers {
         Layers {
@@ -98,10 +104,10 @@ impl Layers {
             target_projection,
         );
         self.projected_bounding_rect =
-            Some(if let Some(r) = self.projected_bounding_rect.clone() {
+            Some(if let Some(r) = self.projected_bounding_rect {
                 rect_merge(r, layer.projected_bounding_rect)
             } else {
-                layer.projected_bounding_rect.clone()
+                layer.projected_bounding_rect
             });
         self.data.push(layer);
         layer_id

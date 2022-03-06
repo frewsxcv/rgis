@@ -98,13 +98,11 @@ impl<'a> SidePanel<'a> {
                                     self.toggle_material_events
                                         .send(rgis_events::ToggleMaterialEvent::Hide(layer.id));
                                 }
-                            } else {
-                                if ui.button("👁 Show").clicked() {
-                                    self.toggle_events
-                                        .send(rgis_events::ToggleLayerVisibilityEvent(layer.id));
-                                    self.toggle_material_events
-                                        .send(rgis_events::ToggleMaterialEvent::Show(layer.id));
-                                }
+                            } else if ui.button("👁 Show").clicked() {
+                                self.toggle_events
+                                    .send(rgis_events::ToggleLayerVisibilityEvent(layer.id));
+                                self.toggle_material_events
+                                    .send(rgis_events::ToggleMaterialEvent::Show(layer.id));
                             }
 
                             if ui.button("🔎 Zoom to extent").clicked() {

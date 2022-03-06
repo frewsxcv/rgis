@@ -23,7 +23,7 @@ fn layer_loaded(
 
         spawn_geometry_mesh(
             &mut materials,
-            &layer,
+            layer,
             &mut commands,
             &mut meshes,
         );
