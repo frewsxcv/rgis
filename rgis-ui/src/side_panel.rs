@@ -22,19 +22,23 @@ impl<'a> SidePanel<'a> {
             });
     }
 
+    fn open_geojson_layer(&mut self) {
+        let sender = self.opened_file_bytes_sender.clone();
+        self.thread_pool
+            .spawn(async move {
+                let task = rfd::AsyncFileDialog::new().pick_file();
+                let file_handle = task.await;
+                if let Some(n) = file_handle {
+                    sender.send((n.file_name(), n.read().await)).await.unwrap();
+                }
+            })
+            .detach();
+    }
+
     fn render_layers_window(&mut self, ui: &mut egui::Ui) {
         ui.collapsing("🗺 Layers", |ui| {
             if ui.button("Add GeoJSON Layer").clicked() {
-                let hi = self.opened_file_bytes_sender.clone();
-                self.thread_pool
-                    .spawn(async move {
-                        let task = rfd::AsyncFileDialog::new().pick_file();
-                        let file_handle = task.await;
-                        if let Some(n) = file_handle {
-                            hi.send((n.file_name(), n.read().await)).await.unwrap();
-                        }
-                    })
-                    .detach();
+                self.open_geojson_layer()
             }
 
             let rgis_layers_resource = match self.rgis_layers_resource.read() {
