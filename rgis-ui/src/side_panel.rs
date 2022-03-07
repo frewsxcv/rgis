@@ -28,30 +28,7 @@ impl<'a> SidePanel<'a> {
 
     fn render_mouse_position_window(&mut self, ui: &mut egui::Ui) {
         ui.collapsing("🖱 Mouse Position", |ui| {
-            #[cfg(target_arch = "wasm32")]
-            let unprojected = geo::Coordinate {
-                x: self.mouse_pos.projected.x,
-                y: self.mouse_pos.projected.y,
-            };
-            #[cfg(not(target_arch = "wasm32"))]
-            let unprojected = {
-                let mut unprojected = geo::Coordinate {
-                    x: self.mouse_pos.projected.x,
-                    y: self.mouse_pos.projected.y,
-                };
-                unprojected
-                    .transform_crs_to_crs(&self.state.target_srs, &self.state.source_srs)
-                    .unwrap();
-                unprojected
-            };
-
-            ui.label(format!("Source CRS: {}", self.state.source_srs));
-            egui::Frame::group(ui.style()).show(ui, |ui| {
-                ui.label(format!("X: {}", unprojected.x));
-                ui.label(format!("Y: {}", unprojected.y));
-            });
-
-            ui.label(format!("Target CRS: {}", self.state.target_srs));
+            ui.label(format!("CRS: {}", self.state.target_srs));
             egui::Frame::group(ui.style()).show(ui, |ui| {
                 ui.label(format!("X: {}", self.mouse_pos.projected.x));
                 ui.label(format!("Y: {}", self.mouse_pos.projected.y));
@@ -109,6 +86,9 @@ impl<'a> SidePanel<'a> {
                                 self.center_layer_events
                                     .send(rgis_events::CenterCameraEvent(layer.id))
                             }
+
+                            // if ui.button("❌ Remove").clicked() {
+                            // }
                         });
                 });
             }
