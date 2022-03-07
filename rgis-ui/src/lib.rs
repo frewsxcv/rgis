@@ -38,9 +38,13 @@ impl Plugin for RgisUi {
                 layer_window_visible: false,
                 managing_layer: None,
             })
-            .add_system(render_top_panel.label("top_panel"))
-            .add_system(render_bottom_panel.label("bottom_panel").after("top_panel")) // TODO: bottom and top can be grouped
-            .add_system(render_side_panel.label("side_panel").after("bottom_panel"))
+            .add_system_set(
+                SystemSet::new()
+                    .label("top_bottom_panels")
+                    .with_system(render_top_panel)
+                    .with_system(render_bottom_panel)
+            )
+            .add_system(render_side_panel.label("side_panel").after("top_bottom_panels"))
             .add_system(render_manage_layer_window.label("manage_layer_window").after("side_panel"));
     }
 }
