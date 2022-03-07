@@ -60,28 +60,14 @@ fn render_top_panel(
 }
 
 fn render_bottom_panel(
-    // mut state: ResMut<UiState>,
+    mut state: ResMut<UiState>,
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
-    // rgis_layers_resource: Res<rgis_layers::ArcLayers>,
-    // mut toggle_events: ResMut<bevy::app::Events<rgis_events::ToggleLayerVisibilityEvent>>,
-    // mut toggle_material_events: ResMut<bevy::app::Events<rgis_events::ToggleMaterialEvent>>,
-    // mut center_layer_events: ResMut<bevy::app::Events<rgis_events::CenterCameraEvent>>,
-    // mut load_geo_json_file_events: ResMut<bevy::app::Events<rgis_events::LoadGeoJsonFileEvent>>,
-    // thread_pool: Res<bevy::tasks::AsyncComputeTaskPool>,
-    // opened_file_bytes_sender: Res<OpenedFileBytesSender>,
-    // opened_file_bytes_receiver: Res<OpenedFileBytesReceiver>,
-    // mouse_pos: Res<rgis_mouse::MousePos>,
+    mouse_pos: Res<rgis_mouse::MousePos>,
 ) {
     bottom_panel::BottomPanel {
-        bevy_egui_ctx: &mut bevy_egui_ctx,
-        // state: &mut state,
-        // rgis_layers_resource: &rgis_layers_resource,
-        // toggle_events: &mut toggle_events,
-        // toggle_material_events: &mut toggle_material_events,
-        // center_layer_events: &mut center_layer_events,
-        // thread_pool: &thread_pool,
-        // opened_file_bytes_sender: &opened_file_bytes_sender,
-        // mouse_pos: &mouse_pos,
+        egui_ctx: bevy_egui_ctx.ctx_mut(),
+        state: &mut state,
+        mouse_pos: &mouse_pos,
     }
     .render();
 }
@@ -97,7 +83,6 @@ fn render_side_panel(
     thread_pool: Res<bevy::tasks::AsyncComputeTaskPool>,
     opened_file_bytes_sender: Res<OpenedFileBytesSender>,
     opened_file_bytes_receiver: Res<OpenedFileBytesReceiver>,
-    mouse_pos: Res<rgis_mouse::MousePos>,
 ) {
     side_panel::SidePanel {
         egui_ctx: bevy_egui_ctx.ctx_mut(),
@@ -108,7 +93,6 @@ fn render_side_panel(
         center_layer_events: &mut center_layer_events,
         thread_pool: &thread_pool,
         opened_file_bytes_sender: &opened_file_bytes_sender,
-        mouse_pos: &mouse_pos,
     }
     .render();
 

@@ -11,7 +11,6 @@ pub(crate) struct SidePanel<'a> {
     pub center_layer_events: &'a mut bevy::app::Events<rgis_events::CenterCameraEvent>,
     pub thread_pool: &'a bevy::tasks::AsyncComputeTaskPool,
     pub opened_file_bytes_sender: &'a crate::OpenedFileBytesSender,
-    pub mouse_pos: &'a rgis_mouse::MousePos,
 }
 
 impl<'a> SidePanel<'a> {
@@ -19,19 +18,8 @@ impl<'a> SidePanel<'a> {
         egui::SidePanel::left("left-side-panel")
             .max_width(MAX_SIDE_PANEL_WIDTH)
             .show(self.egui_ctx, |ui| {
-                self.render_mouse_position_window(ui);
                 self.render_layers_window(ui);
             });
-    }
-
-    fn render_mouse_position_window(&mut self, ui: &mut egui::Ui) {
-        ui.collapsing("🖱 Mouse Position", |ui| {
-            ui.label(format!("CRS: {}", self.state.target_srs));
-            egui::Frame::group(ui.style()).show(ui, |ui| {
-                ui.label(format!("X: {}", self.mouse_pos.projected.x));
-                ui.label(format!("Y: {}", self.mouse_pos.projected.y));
-            });
-        });
     }
 
     fn render_layers_window(&mut self, ui: &mut egui::Ui) {
