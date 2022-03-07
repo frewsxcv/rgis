@@ -32,12 +32,7 @@ pub fn load_from_path(
         .to_string_lossy()
         .into_owned();
 
-    load_from_reader(
-        reader,
-        file_name,
-        source_projection,
-        target_projection,
-    )
+    load_from_reader(reader, file_name, source_projection, target_projection)
 }
 
 pub fn load_from_reader<R: io::Read>(
