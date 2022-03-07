@@ -1,6 +1,6 @@
 use bevy_egui::egui;
 
-pub struct TopPanel<'a> {
+pub(crate) struct TopPanel<'a> {
     pub app_exit_events: &'a mut bevy::app::Events<bevy::app::AppExit>,
     pub bevy_egui_ctx: &'a mut bevy_egui::EguiContext,
     pub windows: &'a mut bevy::window::Windows,

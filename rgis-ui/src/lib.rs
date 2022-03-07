@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 
+mod bottom_panel;
 mod manage_layer_window;
 mod side_panel;
 mod top_panel;
@@ -38,7 +39,8 @@ impl Plugin for RgisUi {
                 managing_layer: None,
             })
             .add_system(render_top_panel.label("top_panel"))
-            .add_system(render_side_panel.label("side_panel").after("top_panel"))
+            .add_system(render_bottom_panel.label("bottom_panel").after("top_panel")) // TODO: bottom and top can be grouped
+            .add_system(render_side_panel.label("side_panel").after("bottom_panel"))
             .add_system(render_manage_layer_window.label("manage_layer_window").after("side_panel"));
     }
 }
@@ -52,6 +54,33 @@ fn render_top_panel(
         bevy_egui_ctx: &mut bevy_egui_ctx,
         app_exit_events: &mut app_exit_events,
         windows: &mut windows,
+    }
+    .render();
+}
+
+fn render_bottom_panel(
+    // mut state: ResMut<UiState>,
+    mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
+    // rgis_layers_resource: Res<rgis_layers::ArcLayers>,
+    // mut toggle_events: ResMut<bevy::app::Events<rgis_events::ToggleLayerVisibilityEvent>>,
+    // mut toggle_material_events: ResMut<bevy::app::Events<rgis_events::ToggleMaterialEvent>>,
+    // mut center_layer_events: ResMut<bevy::app::Events<rgis_events::CenterCameraEvent>>,
+    // mut load_geo_json_file_events: ResMut<bevy::app::Events<rgis_events::LoadGeoJsonFileEvent>>,
+    // thread_pool: Res<bevy::tasks::AsyncComputeTaskPool>,
+    // opened_file_bytes_sender: Res<OpenedFileBytesSender>,
+    // opened_file_bytes_receiver: Res<OpenedFileBytesReceiver>,
+    // mouse_pos: Res<rgis_mouse::MousePos>,
+) {
+    bottom_panel::BottomPanel {
+        bevy_egui_ctx: &mut bevy_egui_ctx,
+        // state: &mut state,
+        // rgis_layers_resource: &rgis_layers_resource,
+        // toggle_events: &mut toggle_events,
+        // toggle_material_events: &mut toggle_material_events,
+        // center_layer_events: &mut center_layer_events,
+        // thread_pool: &thread_pool,
+        // opened_file_bytes_sender: &opened_file_bytes_sender,
+        // mouse_pos: &mouse_pos,
     }
     .render();
 }

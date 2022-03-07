@@ -86,9 +86,6 @@ impl<'a> SidePanel<'a> {
                                 self.center_layer_events
                                     .send(rgis_events::CenterCameraEvent(layer.id))
                             }
-
-                            // if ui.button("❌ Remove").clicked() {
-                            // }
                         });
                 });
             }
