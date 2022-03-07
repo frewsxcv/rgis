@@ -6,7 +6,6 @@ mod side_panel;
 mod top_panel;
 
 pub struct RgisUi {
-    pub source_srs: String,
     pub target_srs: String,
 }
 
@@ -17,7 +16,6 @@ type OpenedFileBytesReceiver = async_channel::Receiver<(OpenedFileName, OpenedFi
 
 #[derive(Debug, Default)]
 struct UiState {
-    pub source_srs: String,
     pub target_srs: String,
     /// If the layer window is visible.
     pub layer_window_visible: bool,
@@ -33,7 +31,6 @@ impl Plugin for RgisUi {
             .insert_resource(sender)
             .insert_resource(receiver)
             .insert_resource(UiState {
-                source_srs: self.source_srs.to_owned(),
                 target_srs: self.target_srs.to_owned(),
                 layer_window_visible: false,
                 managing_layer: None,

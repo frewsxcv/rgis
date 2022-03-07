@@ -1,6 +1,4 @@
 use bevy_egui::egui;
-#[cfg(not(target_arch = "wasm32"))]
-use geo::algorithm::transform::Transform;
 
 const MAX_SIDE_PANEL_WIDTH: f32 = 200.0f32;
 

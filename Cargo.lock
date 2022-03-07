@@ -3234,7 +3234,6 @@ dependencies = [
  "async-channel",
  "bevy",
  "bevy_egui",
- "geo",
  "rfd",
  "rgis-events",
  "rgis-layer-id",
