@@ -103,12 +103,11 @@ impl Layers {
             source_projection,
             target_projection,
         );
-        self.projected_bounding_rect =
-            Some(if let Some(r) = self.projected_bounding_rect {
-                rect_merge(r, layer.projected_bounding_rect)
-            } else {
-                layer.projected_bounding_rect
-            });
+        self.projected_bounding_rect = Some(if let Some(r) = self.projected_bounding_rect {
+            rect_merge(r, layer.projected_bounding_rect)
+        } else {
+            layer.projected_bounding_rect
+        });
         self.data.push(layer);
         layer_id
     }

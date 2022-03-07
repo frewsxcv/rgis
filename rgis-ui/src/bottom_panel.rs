@@ -11,8 +11,8 @@ impl<'a> BottomPanel<'a> {
         egui::TopBottomPanel::bottom("bottom").show(self.egui_ctx, |ui| {
             ui.horizontal(|ui| {
                 ui.with_layout(egui::Layout::right_to_left(), |ui| {
-                self.render_crs(ui);
-                self.render_mouse_position(ui);
+                    self.render_crs(ui);
+                    self.render_mouse_position(ui);
                 });
             });
         });

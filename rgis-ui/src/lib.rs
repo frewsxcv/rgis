@@ -39,10 +39,18 @@ impl Plugin for RgisUi {
                 SystemSet::new()
                     .label("top_bottom_panels")
                     .with_system(render_top_panel)
-                    .with_system(render_bottom_panel)
+                    .with_system(render_bottom_panel),
             )
-            .add_system(render_side_panel.label("side_panel").after("top_bottom_panels"))
-            .add_system(render_manage_layer_window.label("manage_layer_window").after("side_panel"));
+            .add_system(
+                render_side_panel
+                    .label("side_panel")
+                    .after("top_bottom_panels"),
+            )
+            .add_system(
+                render_manage_layer_window
+                    .label("manage_layer_window")
+                    .after("side_panel"),
+            );
     }
 }
 

@@ -21,12 +21,7 @@ fn layer_loaded(
             continue;
         }
 
-        spawn_geometry_mesh(
-            &mut materials,
-            layer,
-            &mut commands,
-            &mut meshes,
-        );
+        spawn_geometry_mesh(&mut materials, layer, &mut commands, &mut meshes);
         center_camera_events.send(rgis_events::CenterCameraEvent(layer.id));
     }
 }
@@ -76,12 +71,7 @@ fn toggle_material_event(
                     None => continue,
                 };
 
-                spawn_geometry_mesh(
-                    &mut materials,
-                    layer,
-                    &mut commands,
-                    &mut meshes,
-                );
+                spawn_geometry_mesh(&mut materials, layer, &mut commands, &mut meshes);
             }
             rgis_events::ToggleMaterialEvent::Hide(layer_id) => {
                 for entity in query
