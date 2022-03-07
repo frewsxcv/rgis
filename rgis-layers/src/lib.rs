@@ -86,23 +86,19 @@ impl Layers {
         rgis_layer_id::LayerId(self.data.last().map(|layer| layer.id.0 + 1).unwrap_or(1))
     }
 
-    pub fn add(
-        &mut self,
-        geometry: geo::Geometry<f64>,
-        name: String,
-        metadata: Option<Metadata>,
-        source_projection: &str,
-        target_projection: &str,
-    ) -> rgis_layer_id::LayerId {
+    pub fn add(&mut self, unassigned_layer: UnassignedLayer) -> rgis_layer_id::LayerId {
         let layer_id = self.next_layer_id();
-        let layer = Layer::from_geometry(
-            geometry,
-            name,
-            layer_id,
-            metadata,
-            source_projection,
-            target_projection,
-        );
+        let layer = Layer {
+            unprojected_geometry: unassigned_layer.unprojected_geometry,
+            unprojected_bounding_rect: unassigned_layer.unprojected_bounding_rect,
+            projected_geometry: unassigned_layer.projected_geometry,
+            projected_bounding_rect: unassigned_layer.projected_bounding_rect,
+            color: unassigned_layer.color,
+            metadata: unassigned_layer.metadata,
+            name: unassigned_layer.name,
+            visible: unassigned_layer.visible,
+            id: layer_id,
+        };
         self.projected_bounding_rect = Some(if let Some(r) = self.projected_bounding_rect {
             rect_merge(r, layer.projected_bounding_rect)
         } else {
@@ -115,28 +111,22 @@ impl Layers {
 
 pub type Metadata = serde_json::Map<String, serde_json::Value>;
 
-#[derive(Clone, Debug)]
-pub struct Layer {
+#[derive(Debug)]
+pub struct UnassignedLayer {
     pub unprojected_geometry: geo::Geometry<f64>,
     pub unprojected_bounding_rect: geo::Rect<f64>,
     pub projected_geometry: geo::Geometry<f64>,
     pub projected_bounding_rect: geo::Rect<f64>,
     pub color: Color,
     pub metadata: Metadata,
-    pub id: rgis_layer_id::LayerId,
     pub name: String,
     pub visible: bool,
 }
 
-impl Layer {
-    pub fn contains_coord(&self, coord: &geo::Coordinate<f64>) -> bool {
-        self.projected_bounding_rect.contains(coord) && self.projected_geometry.contains(coord)
-    }
-
+impl UnassignedLayer {
     pub fn from_geometry(
         geometry: geo::Geometry<f64>,
         name: String,
-        id: rgis_layer_id::LayerId,
         metadata: Option<Metadata>,
         source_projection: &str,
         target_projection: &str,
@@ -159,17 +149,35 @@ impl Layer {
             .bounding_rect()
             .expect("Could not determine bounding rect of geometry");
 
-        Layer {
+        UnassignedLayer {
             unprojected_geometry,
             unprojected_bounding_rect,
             projected_geometry,
             projected_bounding_rect,
             color: colorous_color_to_bevy_color(next_colorous_color()),
             metadata: metadata.unwrap_or_else(serde_json::Map::new),
-            id,
             name,
             visible: true,
         }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct Layer {
+    pub unprojected_geometry: geo::Geometry<f64>,
+    pub unprojected_bounding_rect: geo::Rect<f64>,
+    pub projected_geometry: geo::Geometry<f64>,
+    pub projected_bounding_rect: geo::Rect<f64>,
+    pub color: Color,
+    pub metadata: Metadata,
+    pub id: rgis_layer_id::LayerId,
+    pub name: String,
+    pub visible: bool,
+}
+
+impl Layer {
+    pub fn contains_coord(&self, coord: &geo::Coordinate<f64>) -> bool {
+        self.projected_bounding_rect.contains(coord) && self.projected_geometry.contains(coord)
     }
 }
 
@@ -190,20 +198,13 @@ fn next_color_index() -> usize {
 
 pub struct RgisLayersPlugin;
 
-pub type ArcLayers = sync::Arc<sync::RwLock<Layers>>;
-
-fn create_rgis_layers_resource() -> ArcLayers {
-    sync::Arc::new(sync::RwLock::new(Layers::new()))
-}
-
 fn read_events(
     mut toggle_layer_visibility_event_reader: bevy::app::EventReader<
         rgis_events::ToggleLayerVisibilityEvent,
     >,
-    rgis_layers_resource: ResMut<ArcLayers>,
+    mut layers: ResMut<Layers>,
 ) {
     for event in toggle_layer_visibility_event_reader.iter() {
-        let mut layers = rgis_layers_resource.write().unwrap();
         let layer = layers.get_mut(event.0).unwrap();
         layer.visible = !layer.visible;
     }
@@ -212,10 +213,9 @@ fn read_events(
 fn read_color_events(
     mut update_events: bevy::app::EventReader<rgis_events::UpdateLayerColor>,
     mut updated_events: bevy::app::EventWriter<rgis_events::LayerColorUpdated>,
-    rgis_layers_resource: ResMut<ArcLayers>,
+    mut layers: ResMut<Layers>,
 ) {
     for event in update_events.iter() {
-        let mut layers = rgis_layers_resource.write().unwrap();
         let layer = layers.get_mut(event.0).unwrap();
         layer.color = event.1;
         updated_events.send(rgis_events::LayerColorUpdated(event.0));
@@ -224,7 +224,7 @@ fn read_color_events(
 
 impl Plugin for RgisLayersPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(create_rgis_layers_resource())
+        app.insert_resource(Layers::new())
             .add_system(read_events)
             .add_system(read_color_events);
     }

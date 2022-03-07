@@ -2,7 +2,7 @@ use bevy_egui::egui;
 
 pub(crate) struct ManageLayerWindow<'a> {
     pub state: &'a mut crate::UiState,
-    pub rgis_layers_resource: &'a rgis_layers::ArcLayers,
+    pub layers: &'a rgis_layers::Layers,
     pub bevy_egui_ctx: &'a mut bevy_egui::EguiContext,
     pub color_events: &'a mut bevy::app::Events<rgis_events::UpdateLayerColor>,
 }
@@ -11,8 +11,7 @@ impl<'a> ManageLayerWindow<'a> {
     pub fn render(&mut self) {
         if let (true, Some(layer_id)) = (self.state.layer_window_visible, self.state.managing_layer)
         {
-            let layers = self.rgis_layers_resource.read().unwrap(); // TODO: remove unwrap
-            let layer = layers.get(layer_id).unwrap(); // TOOD: remove unwrap
+            let layer = self.layers.get(layer_id).unwrap(); // TOOD: remove unwrap
             egui::Window::new("Manage Layer")
                 .open(&mut self.state.layer_window_visible)
                 .show(self.bevy_egui_ctx.ctx_mut(), |ui| {

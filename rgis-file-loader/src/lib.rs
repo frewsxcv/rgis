@@ -3,20 +3,18 @@ use bevy::prelude::*;
 
 mod geojson;
 
-struct SpawnedLayers(Vec<rgis_layer_id::LayerId>);
+struct SpawnedLayers(Vec<rgis_layers::UnassignedLayer>);
 
 type LoadedGeoJsonFileSender = async_channel::Sender<SpawnedLayers>;
 type LoadedGeoJsonFileReceiver = async_channel::Receiver<SpawnedLayers>;
 
 // System
 fn load_geojson_file_handler(
-    layers: Res<rgis_layers::ArcLayers>,
     mut load_event_reader: ResMut<Events<rgis_events::LoadGeoJsonFileEvent>>,
     thread_pool: Res<bevy::tasks::AsyncComputeTaskPool>,
     sender: Res<LoadedGeoJsonFileSender>,
 ) {
     for event in load_event_reader.drain() {
-        let layers = layers.clone();
         let sender: LoadedGeoJsonFileSender = sender.clone();
         match event {
             rgis_events::LoadGeoJsonFileEvent::FromPath {
@@ -28,7 +26,6 @@ fn load_geojson_file_handler(
                     .spawn(async move {
                         let spawned_layers = SpawnedLayers(geojson::load_from_path(
                             geojson_file_path,
-                            &mut layers.write().unwrap(),
                             &source_srs,
                             &target_srs,
                         ));
@@ -47,7 +44,6 @@ fn load_geojson_file_handler(
                         let spawned_layers = SpawnedLayers(geojson::load_from_reader(
                             std::io::Cursor::new(bytes),
                             file_name,
-                            &mut layers.write().unwrap(),
                             &source_srs,
                             &target_srs,
                         ));
@@ -61,10 +57,12 @@ fn load_geojson_file_handler(
 
 fn handle_loaded_layers(
     mut loaded_events: ResMut<Events<rgis_events::LayerLoadedEvent>>,
+    mut layers: ResMut<rgis_layers::Layers>,
     receiver: Res<LoadedGeoJsonFileReceiver>,
 ) {
-    while let Ok(layer_ids) = receiver.try_recv() {
-        for layer_id in layer_ids.0 {
+    while let Ok(spawned_layers) = receiver.try_recv() {
+        for unassigned_layer in spawned_layers.0 {
+            let layer_id = layers.add(unassigned_layer);
             loaded_events.send(rgis_events::LayerLoadedEvent(layer_id));
         }
     }

@@ -95,13 +95,12 @@ fn zoom(amount: f32, camera_scale: &mut CameraScale) {
 
 // this should go in rgis_camera
 fn center_camera(
-    layers: Res<rgis_layers::ArcLayers>,
+    layers: Res<rgis_layers::Layers>,
     mut camera_offset: ResMut<CameraOffset>,
     mut camera_scale: ResMut<CameraScale>,
     mut event_reader: EventReader<rgis_events::CenterCameraEvent>,
 ) {
     for event in event_reader.iter() {
-        let layers = layers.read().unwrap();
         let layer = match layers.get(event.0) {
             Some(l) => l,
             None => continue,

@@ -5,7 +5,7 @@ const MAX_SIDE_PANEL_WIDTH: f32 = 200.0f32;
 pub(crate) struct SidePanel<'a> {
     pub egui_ctx: &'a egui::CtxRef,
     pub state: &'a mut crate::UiState,
-    pub rgis_layers_resource: &'a rgis_layers::ArcLayers,
+    pub layers: &'a rgis_layers::Layers,
     pub toggle_events: &'a mut bevy::app::Events<rgis_events::ToggleLayerVisibilityEvent>,
     pub toggle_material_events: &'a mut bevy::app::Events<rgis_events::ToggleMaterialEvent>,
     pub center_layer_events: &'a mut bevy::app::Events<rgis_events::CenterCameraEvent>,
@@ -41,14 +41,7 @@ impl<'a> SidePanel<'a> {
                 self.open_geojson_layer()
             }
 
-            let rgis_layers_resource = match self.rgis_layers_resource.read() {
-                Ok(r) => r,
-                Err(_) => {
-                    // TODO log failure
-                    return;
-                }
-            };
-            for layer in &rgis_layers_resource.data {
+            for layer in &self.layers.data {
                 egui::Frame::group(ui.style()).show(ui, |ui| {
                     egui::CollapsingHeader::new(layer.name.to_owned())
                         .id_source(layer.id) // Instead of using the layer name as the ID (which is not unique), use the layer ID

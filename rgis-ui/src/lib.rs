@@ -83,7 +83,7 @@ fn render_bottom_panel(
 fn render_side_panel(
     mut state: ResMut<UiState>,
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
-    rgis_layers_resource: Res<rgis_layers::ArcLayers>,
+    layers: Res<rgis_layers::Layers>,
     mut toggle_events: ResMut<bevy::app::Events<rgis_events::ToggleLayerVisibilityEvent>>,
     mut toggle_material_events: ResMut<bevy::app::Events<rgis_events::ToggleMaterialEvent>>,
     mut center_layer_events: ResMut<bevy::app::Events<rgis_events::CenterCameraEvent>>,
@@ -95,7 +95,7 @@ fn render_side_panel(
     side_panel::SidePanel {
         egui_ctx: bevy_egui_ctx.ctx_mut(),
         state: &mut state,
-        rgis_layers_resource: &rgis_layers_resource,
+        layers: &layers,
         toggle_events: &mut toggle_events,
         toggle_material_events: &mut toggle_material_events,
         center_layer_events: &mut center_layer_events,
@@ -117,12 +117,12 @@ fn render_side_panel(
 fn render_manage_layer_window(
     mut state: ResMut<UiState>,
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
-    rgis_layers_resource: Res<rgis_layers::ArcLayers>,
+    layers: Res<rgis_layers::Layers>,
     mut color_events: ResMut<bevy::app::Events<rgis_events::UpdateLayerColor>>,
 ) {
     manage_layer_window::ManageLayerWindow {
         state: &mut state,
-        rgis_layers_resource: &rgis_layers_resource,
+        layers: &layers,
         bevy_egui_ctx: &mut bevy_egui_ctx,
         color_events: &mut color_events,
     }

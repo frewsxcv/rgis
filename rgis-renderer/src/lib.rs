@@ -6,12 +6,11 @@ fn layer_loaded(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
-    layers: Res<rgis_layers::ArcLayers>,
+    layers: Res<rgis_layers::Layers>,
     mut event_reader: EventReader<rgis_events::LayerLoadedEvent>,
     mut center_camera_events: ResMut<Events<rgis_events::CenterCameraEvent>>,
 ) {
     for event in event_reader.iter() {
-        let layers = layers.read().unwrap();
         let layer = match layers.get(event.0) {
             Some(l) => l,
             None => continue,
@@ -55,7 +54,7 @@ fn spawn_geometry_mesh(
 }
 
 fn toggle_material_event(
-    layers: Res<rgis_layers::ArcLayers>,
+    layers: Res<rgis_layers::Layers>,
     mut event_reader: EventReader<rgis_events::ToggleMaterialEvent>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -63,7 +62,6 @@ fn toggle_material_event(
     query: Query<(&rgis_layer_id::LayerId, Entity), With<Handle<ColorMaterial>>>,
 ) {
     for event in event_reader.iter() {
-        let layers = layers.read().unwrap();
         match event {
             rgis_events::ToggleMaterialEvent::Show(layer_id) => {
                 let layer = match layers.get(*layer_id) {
@@ -87,12 +85,11 @@ fn toggle_material_event(
 
 fn handle_layer_color_changed_event(
     mut events: EventReader<rgis_events::LayerColorUpdated>,
-    layers: Res<rgis_layers::ArcLayers>,
+    layers: Res<rgis_layers::Layers>,
     query: Query<(&rgis_layer_id::LayerId, &Handle<ColorMaterial>)>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     for event in events.iter() {
-        let layers = layers.read().unwrap();
         let layer = match layers.get(event.0) {
             Some(l) => l,
             None => continue,
