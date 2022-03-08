@@ -79,7 +79,6 @@ impl Layers {
         let layer_id = self.next_layer_id();
         let layer = Layer {
             unprojected_geometry: unassigned_layer.unprojected_geometry,
-            unprojected_bounding_rect: unassigned_layer.unprojected_bounding_rect,
             projected_geometry: unassigned_layer.projected_geometry,
             projected_bounding_rect: unassigned_layer.projected_bounding_rect,
             color: unassigned_layer.color,
@@ -98,7 +97,6 @@ pub type Metadata = serde_json::Map<String, serde_json::Value>;
 #[derive(Debug)]
 pub struct UnassignedLayer {
     pub unprojected_geometry: geo::Geometry<f64>,
-    pub unprojected_bounding_rect: geo::Rect<f64>,
     pub projected_geometry: geo::Geometry<f64>,
     pub projected_bounding_rect: geo::Rect<f64>,
     pub color: Color,
@@ -116,9 +114,6 @@ impl UnassignedLayer {
         target_projection: &str,
     ) -> Self {
         let unprojected_geometry = geometry;
-        let unprojected_bounding_rect = unprojected_geometry
-            .bounding_rect()
-            .expect("Could not determine bounding rect of geometry");
 
         let mut projected_geometry = unprojected_geometry.clone();
 
@@ -135,7 +130,6 @@ impl UnassignedLayer {
 
         UnassignedLayer {
             unprojected_geometry,
-            unprojected_bounding_rect,
             projected_geometry,
             projected_bounding_rect,
             color: colorous_color_to_bevy_color(next_colorous_color()),
@@ -149,7 +143,6 @@ impl UnassignedLayer {
 #[derive(Clone, Debug)]
 pub struct Layer {
     pub unprojected_geometry: geo::Geometry<f64>,
-    pub unprojected_bounding_rect: geo::Rect<f64>,
     pub projected_geometry: geo::Geometry<f64>,
     pub projected_bounding_rect: geo::Rect<f64>,
     pub color: Color,
