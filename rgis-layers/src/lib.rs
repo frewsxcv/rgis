@@ -3,12 +3,11 @@ use geo::bounding_rect::BoundingRect;
 use geo::contains::Contains;
 #[cfg(not(target_arch = "wasm32"))]
 use geo::transform::Transform;
-use std::{fmt, sync};
+use std::sync;
 
 #[derive(Clone, Debug)]
 pub struct Layers {
     pub data: Vec<Layer>,
-    pub projected_bounding_rect: Option<geo::Rect<f64>>,
     // ID of the currently selected Layer
     pub selected_layer_id: Option<rgis_layer_id::LayerId>,
 }
@@ -23,22 +22,12 @@ impl Layers {
     pub fn new() -> Layers {
         Layers {
             data: vec![],
-            projected_bounding_rect: None,
             selected_layer_id: None,
         }
     }
 
     // coord is assumed to be projected
     pub fn containing_coord(&self, coord: geo::Coordinate<f64>) -> Vec<Layer> {
-        let projected_bounding_rect = match &self.projected_bounding_rect {
-            Some(b) => b,
-            None => return vec![],
-        };
-
-        if !projected_bounding_rect.contains(&coord) {
-            return vec![];
-        }
-
         self.data
             .iter()
             .filter(|layer| layer.contains_coord(&coord))
@@ -99,11 +88,6 @@ impl Layers {
             visible: unassigned_layer.visible,
             id: layer_id,
         };
-        self.projected_bounding_rect = Some(if let Some(r) = self.projected_bounding_rect {
-            rect_merge(r, layer.projected_bounding_rect)
-        } else {
-            layer.projected_bounding_rect
-        });
         self.data.push(layer);
         layer_id
     }
@@ -228,17 +212,4 @@ impl Plugin for RgisLayersPlugin {
             .add_system(read_events)
             .add_system(read_color_events);
     }
-}
-
-fn rect_merge<T: fmt::Debug + geo::CoordFloat>(a: geo::Rect<T>, b: geo::Rect<T>) -> geo::Rect<T> {
-    geo::Rect::new(
-        geo::Coordinate {
-            x: a.min().x.min(b.min().x),
-            y: a.min().y.min(b.min().y),
-        },
-        geo::Coordinate {
-            x: a.max().x.max(b.max().x),
-            y: a.max().y.max(b.max().y),
-        },
-    )
 }
