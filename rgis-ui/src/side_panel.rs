@@ -36,42 +36,41 @@ impl<'a> SidePanel<'a> {
     }
 
     fn render_layers_window(&mut self, ui: &mut egui::Ui) {
-        ui.collapsing("🗺 Layers", |ui| {
-            if ui.button("Add GeoJSON Layer").clicked() {
-                self.open_geojson_layer()
-            }
+        ui.heading("🗺 Layers");
+        if ui.button("Add GeoJSON Layer").clicked() {
+            self.open_geojson_layer()
+        }
 
-            for layer in &self.layers.data {
-                egui::Frame::group(ui.style()).show(ui, |ui| {
-                    egui::CollapsingHeader::new(layer.name.to_owned())
-                        .id_source(layer.id) // Instead of using the layer name as the ID (which is not unique), use the layer ID
-                        .show(ui, |ui| {
-                            if ui.button("✏ Manage").clicked() {
-                                self.state.layer_window_visible = true;
-                                self.state.managing_layer = Some(layer.id);
-                            }
+        for layer in &self.layers.data {
+            egui::Frame::group(ui.style()).show(ui, |ui| {
+                egui::CollapsingHeader::new(layer.name.to_owned())
+                    .id_source(layer.id) // Instead of using the layer name as the ID (which is not unique), use the layer ID
+                    .show(ui, |ui| {
+                        if ui.button("✏ Manage").clicked() {
+                            self.state.layer_window_visible = true;
+                            self.state.managing_layer = Some(layer.id);
+                        }
 
-                            if layer.visible {
-                                if ui.button("👁 Hide").clicked() {
-                                    self.toggle_events
-                                        .send(rgis_events::ToggleLayerVisibilityEvent(layer.id));
-                                    self.toggle_material_events
-                                        .send(rgis_events::ToggleMaterialEvent::Hide(layer.id));
-                                }
-                            } else if ui.button("👁 Show").clicked() {
+                        if layer.visible {
+                            if ui.button("👁 Hide").clicked() {
                                 self.toggle_events
                                     .send(rgis_events::ToggleLayerVisibilityEvent(layer.id));
                                 self.toggle_material_events
-                                    .send(rgis_events::ToggleMaterialEvent::Show(layer.id));
+                                    .send(rgis_events::ToggleMaterialEvent::Hide(layer.id));
                             }
+                        } else if ui.button("👁 Show").clicked() {
+                            self.toggle_events
+                                .send(rgis_events::ToggleLayerVisibilityEvent(layer.id));
+                            self.toggle_material_events
+                                .send(rgis_events::ToggleMaterialEvent::Show(layer.id));
+                        }
 
-                            if ui.button("🔎 Zoom to extent").clicked() {
-                                self.center_layer_events
-                                    .send(rgis_events::CenterCameraEvent(layer.id))
-                            }
-                        });
-                });
-            }
-        });
+                        if ui.button("🔎 Zoom to extent").clicked() {
+                            self.center_layer_events
+                                .send(rgis_events::CenterCameraEvent(layer.id))
+                        }
+                    });
+            });
+        }
     }
 }
