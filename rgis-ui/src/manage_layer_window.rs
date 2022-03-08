@@ -11,7 +11,17 @@ impl<'a> ManageLayerWindow<'a> {
     pub fn render(&mut self) {
         if let (true, Some(layer_id)) = (self.state.layer_window_visible, self.state.managing_layer)
         {
-            let layer = self.layers.get(layer_id).unwrap(); // TOOD: remove unwrap
+            let layer = match self.layers.get(layer_id) {
+                Some(l) => l,
+                None => {
+                    bevy::log::warn!(
+                        "Could not find layer with ID {:?}, closing manage layer window",
+                        layer_id
+                    );
+                    self.state.layer_window_visible = false;
+                    return;
+                }
+            };
             egui::Window::new("Manage Layer")
                 .open(&mut self.state.layer_window_visible)
                 .show(self.bevy_egui_ctx.ctx_mut(), |ui| {
