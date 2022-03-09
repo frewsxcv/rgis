@@ -105,7 +105,6 @@ fn render_side_panel(
             file_name,
             bytes,
             source_crs: "EPSG:4326".into(),
-            target_crs: "EPSG:3857".into(),
         });
     }
 }

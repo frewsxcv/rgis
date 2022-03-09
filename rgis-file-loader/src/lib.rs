@@ -13,14 +13,15 @@ fn load_geojson_file_handler(
     mut load_event_reader: ResMut<Events<rgis_events::LoadGeoJsonFileEvent>>,
     thread_pool: Res<bevy::tasks::AsyncComputeTaskPool>,
     sender: Res<LoadedGeoJsonFileSender>,
+    rgis_settings: Res<rgis_settings::RgisSettings>,
 ) {
     for event in load_event_reader.drain() {
         let sender: LoadedGeoJsonFileSender = sender.clone();
+        let target_crs = rgis_settings.target_crs.clone();
         match event {
             rgis_events::LoadGeoJsonFileEvent::FromPath {
                 path: geojson_file_path,
                 source_crs,
-                target_crs,
             } => {
                 thread_pool
                     .spawn(async move {
@@ -37,7 +38,6 @@ fn load_geojson_file_handler(
                 file_name,
                 bytes,
                 source_crs,
-                target_crs,
             } => {
                 thread_pool
                     .spawn(async move {
@@ -71,13 +71,11 @@ fn handle_loaded_layers(
 fn load_layers_from_cli(
     cli_values: Res<rgis_cli::Values>,
     mut events: EventWriter<rgis_events::LoadGeoJsonFileEvent>,
-    rgis_settings: Res<rgis_settings::RgisSettings>,
 ) {
     #[cfg(target_arch = "wasm32")]
     events.send(rgis_events::LoadGeoJsonFileEvent::FromPath {
         path: "foo".into(),
         source_crs: "EPSG:4326".into(),
-        target_crs: rgis_settings.target_crs,
     });
 
     #[cfg(not(target_arch = "wasm32"))]
@@ -89,7 +87,6 @@ fn load_layers_from_cli(
         events.send(rgis_events::LoadGeoJsonFileEvent::FromPath {
             path: geojson_file_path.clone(),
             source_crs: cli_values.source_crs.clone(),
-            target_crs: rgis_settings.target_crs.clone(),
         });
     }
 }

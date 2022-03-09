@@ -28,13 +28,11 @@ pub enum LoadGeoJsonFileEvent {
     FromPath {
         path: path::PathBuf,
         source_crs: String,
-        target_crs: String,
     },
     FromBytes {
         file_name: String,
         bytes: Vec<u8>,
         source_crs: String,
-        target_crs: String,
     },
 }
 
