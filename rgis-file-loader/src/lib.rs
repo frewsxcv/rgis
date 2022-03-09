@@ -56,7 +56,7 @@ fn load_geojson_file_handler(
 }
 
 fn handle_loaded_layers(
-    mut loaded_events: ResMut<Events<rgis_events::LayerLoadedEvent>>,
+    mut loaded_events: EventWriter<rgis_events::LayerLoadedEvent>,
     mut layers: ResMut<rgis_layers::Layers>,
     receiver: Res<LoadedGeoJsonFileReceiver>,
 ) {
@@ -70,7 +70,7 @@ fn handle_loaded_layers(
 
 fn load_layers_from_cli(
     cli_values: Res<rgis_cli::Values>,
-    mut events: ResMut<Events<rgis_events::LoadGeoJsonFileEvent>>,
+    mut events: EventWriter<rgis_events::LoadGeoJsonFileEvent>,
 ) {
     #[cfg(target_arch = "wasm32")]
     events.send(rgis_events::LoadGeoJsonFileEvent::FromPath {

@@ -1,4 +1,4 @@
-use bevy::{app::Events, prelude::*};
+use bevy::prelude::*;
 use geo_bevy::BuildBevyMeshes;
 
 // System
@@ -8,7 +8,7 @@ fn layer_loaded(
     mut materials: ResMut<Assets<ColorMaterial>>,
     layers: Res<rgis_layers::Layers>,
     mut event_reader: EventReader<rgis_events::LayerLoadedEvent>,
-    mut center_camera_events: ResMut<Events<rgis_events::CenterCameraEvent>>,
+    mut center_camera_events: EventWriter<rgis_events::CenterCameraEvent>,
 ) {
     for event in event_reader.iter() {
         let layer = match layers.get(event.0) {

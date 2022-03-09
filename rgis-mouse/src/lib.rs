@@ -54,7 +54,7 @@ fn screen_coords_to_geo_coords(
 fn mouse_motion_system(
     mut mouse_motion_event_reader: bevy::app::EventReader<bevy::input::mouse::MouseMotion>,
     mouse_button: Res<bevy::input::Input<bevy::input::mouse::MouseButton>>,
-    mut pan_camera_events: ResMut<bevy::app::Events<rgis_events::PanCameraEvent>>,
+    mut pan_camera_events: bevy::app::EventWriter<rgis_events::PanCameraEvent>,
 ) {
     if mouse_button.pressed(bevy::input::mouse::MouseButton::Right) {
         for event in mouse_motion_event_reader.iter() {
@@ -74,7 +74,7 @@ fn mouse_motion_system(
 
 fn mouse_scroll_system(
     mut mouse_scroll_event_reader: bevy::app::EventReader<bevy::input::mouse::MouseWheel>,
-    mut zoom_camera_events: ResMut<bevy::app::Events<rgis_events::ZoomCameraEvent>>,
+    mut zoom_camera_events: bevy::app::EventWriter<rgis_events::ZoomCameraEvent>,
 ) {
     for event in mouse_scroll_event_reader.iter() {
         if event.y > 0. {
