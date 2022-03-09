@@ -1,7 +1,6 @@
 [workspace]
 members = [
     "geo-bevy",
-    "rgis",
     "rgis-camera",
     "rgis-cli",
     "rgis-events",
@@ -10,8 +9,10 @@ members = [
     "rgis-layer-id",
     "rgis-layers",
     "rgis-mouse",
+    "rgis-settings",
     "rgis-renderer",
     "rgis-ui",
+    "rgis",
     "time-logger",
 ]
 resolver = "2"

@@ -26,6 +26,7 @@ pub fn run() {
     .add_plugin(rgis_camera::RgisCamera)
     .add_plugin(rgis_events::RgisEventsPlugin)
     .add_plugin(rgis_ui::RgisUi { target_srs })
+    .add_plugin(rgis_settings::Plugin)
     .insert_resource(ClearColor(Color::WHITE));
 
     #[cfg(target_arch = "wasm32")]

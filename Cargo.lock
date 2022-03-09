@@ -3123,6 +3123,7 @@ dependencies = [
  "rgis-layers",
  "rgis-mouse",
  "rgis-renderer",
+ "rgis-settings",
  "rgis-ui",
  "time-logger",
  "wasm-bindgen",
@@ -3216,6 +3217,13 @@ dependencies = [
  "rgis-layer-id",
  "rgis-layers",
  "time-logger",
+]
+
+[[package]]
+name = "rgis-settings"
+version = "0.1.0"
+dependencies = [
+ "bevy",
 ]
 
 [[package]]
