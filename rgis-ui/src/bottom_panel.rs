@@ -2,8 +2,8 @@ use bevy_egui::egui;
 
 pub(crate) struct BottomPanel<'a> {
     pub egui_ctx: &'a egui::CtxRef,
-    pub state: &'a mut crate::UiState,
     pub mouse_pos: &'a rgis_mouse::MousePos,
+    pub rgis_settings: &'a rgis_settings::RgisSettings,
 }
 
 impl<'a> BottomPanel<'a> {
@@ -20,7 +20,7 @@ impl<'a> BottomPanel<'a> {
 
     fn render_crs(&mut self, ui: &mut egui::Ui) {
         egui::Frame::group(ui.style()).show(ui, |ui| {
-            ui.label(format!("🌍 CRS: {}", self.state.target_srs));
+            ui.label(format!("🌍 CRS: {}", self.rgis_settings.target_crs));
         });
     }
 

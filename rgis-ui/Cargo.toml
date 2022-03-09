@@ -20,4 +20,5 @@ rgis-layer-id = { path = "../rgis-layer-id" }
 rgis-layers = { path = "../rgis-layers" }
 rgis-events = { path = "../rgis-events" }
 rgis-mouse = { path = "../rgis-mouse" }
+rgis-settings = { path = "../rgis-settings" }
 webbrowser = "0.6"

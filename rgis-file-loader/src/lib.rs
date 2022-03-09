@@ -71,12 +71,13 @@ fn handle_loaded_layers(
 fn load_layers_from_cli(
     cli_values: Res<rgis_cli::Values>,
     mut events: EventWriter<rgis_events::LoadGeoJsonFileEvent>,
+    rgis_settings: Res<rgis_settings::RgisSettings>,
 ) {
     #[cfg(target_arch = "wasm32")]
     events.send(rgis_events::LoadGeoJsonFileEvent::FromPath {
         path: "foo".into(),
         source_srs: "EPSG:4326".into(),
-        target_srs: "EPSG:3857".into(),
+        target_srs: rgis_settings.target_crs,
     });
 
     #[cfg(not(target_arch = "wasm32"))]
@@ -88,7 +89,7 @@ fn load_layers_from_cli(
         events.send(rgis_events::LoadGeoJsonFileEvent::FromPath {
             path: geojson_file_path.clone(),
             source_srs: cli_values.source_srs.clone(),
-            target_srs: cli_values.target_srs.clone(),
+            target_srs: rgis_settings.target_crs.clone(),
         });
     }
 }

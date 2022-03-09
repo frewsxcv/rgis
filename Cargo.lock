@@ -3166,6 +3166,7 @@ dependencies = [
  "rgis-events",
  "rgis-layer-id",
  "rgis-layers",
+ "rgis-settings",
  "serde_json",
  "time-logger",
 ]
@@ -3238,6 +3239,7 @@ dependencies = [
  "rgis-layer-id",
  "rgis-layers",
  "rgis-mouse",
+ "rgis-settings",
  "webbrowser 0.6.0",
 ]
 

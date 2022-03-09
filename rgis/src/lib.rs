@@ -5,7 +5,6 @@ use wasm_bindgen::prelude::*;
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
 pub fn run() {
     let cli_values = rgis_cli::run();
-    let target_srs = cli_values.target_srs.clone();
 
     let mut app = App::new();
 
@@ -25,7 +24,7 @@ pub fn run() {
     .add_plugin(rgis_keyboard::Plugin)
     .add_plugin(rgis_camera::RgisCamera)
     .add_plugin(rgis_events::RgisEventsPlugin)
-    .add_plugin(rgis_ui::RgisUi { target_srs })
+    .add_plugin(rgis_ui::RgisUi)
     .add_plugin(rgis_settings::Plugin)
     .insert_resource(ClearColor(Color::WHITE));
 

@@ -5,9 +5,7 @@ mod manage_layer_window;
 mod side_panel;
 mod top_panel;
 
-pub struct RgisUi {
-    pub target_srs: String,
-}
+pub struct RgisUi;
 
 type OpenedFileBytes = Vec<u8>;
 type OpenedFileName = String;
@@ -16,7 +14,6 @@ type OpenedFileBytesReceiver = async_channel::Receiver<(OpenedFileName, OpenedFi
 
 #[derive(Debug, Default)]
 struct UiState {
-    pub target_srs: String,
     /// If the layer window is visible.
     pub layer_window_visible: bool,
     /// Which layer is the user currently managing.
@@ -31,7 +28,6 @@ impl Plugin for RgisUi {
             .insert_resource(sender)
             .insert_resource(receiver)
             .insert_resource(UiState {
-                target_srs: self.target_srs.to_owned(),
                 layer_window_visible: false,
                 managing_layer: None,
             })
@@ -68,14 +64,14 @@ fn render_top_panel(
 }
 
 fn render_bottom_panel(
-    mut state: ResMut<UiState>,
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
     mouse_pos: Res<rgis_mouse::MousePos>,
+    rgis_settings: Res<rgis_settings::RgisSettings>,
 ) {
     bottom_panel::BottomPanel {
         egui_ctx: bevy_egui_ctx.ctx_mut(),
-        state: &mut state,
         mouse_pos: &mouse_pos,
+        rgis_settings: &rgis_settings,
     }
     .render();
 }
