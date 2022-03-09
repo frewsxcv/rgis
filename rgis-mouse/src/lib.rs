@@ -22,19 +22,32 @@ fn cursor_moved_system(
 ) {
     for event in cursor_moved_event_reader.iter() {
         for (_camera, transform) in camera_transform_query.iter() {
-            let window = windows.get_primary().unwrap();
-            let size = bevy::math::Vec2::new(window.width() as f32, window.height() as f32);
-
-            // the default orthographic projection is in pixels from the center;
-            // just undo the translation
-            let p = event.position - size / 2.0;
-
-            // apply the camera transform
-            let pos_wld = transform.compute_matrix() * p.extend(0.0).extend(1.0);
-
-            mouse_position.projected.x = pos_wld.x;
-            mouse_position.projected.y = pos_wld.y;
+            mouse_position.projected = screen_coords_to_geo_coords(
+                event.position,
+                transform,
+                windows.get_primary().unwrap(),
+            );
         }
+    }
+}
+
+fn screen_coords_to_geo_coords(
+    screen_coords: bevy::prelude::Vec2,
+    transform: &bevy::transform::components::Transform,
+    window: &bevy::prelude::Window,
+) -> Xy {
+    let size = bevy::math::Vec2::new(window.width() as f32, window.height() as f32);
+
+    // the default orthographic projection is in pixels from the center;
+    // just undo the translation
+    let p = screen_coords - size / 2.0;
+
+    // apply the camera transform
+    let pos_wld = transform.compute_matrix() * p.extend(0.0).extend(1.0);
+
+    Xy {
+        x: pos_wld.x,
+        y: pos_wld.y,
     }
 }
 
