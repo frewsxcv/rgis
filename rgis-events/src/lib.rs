@@ -27,14 +27,14 @@ pub struct LayerColorUpdated(pub rgis_layer_id::LayerId);
 pub enum LoadGeoJsonFileEvent {
     FromPath {
         path: path::PathBuf,
-        source_srs: String,
-        target_srs: String,
+        source_crs: String,
+        target_crs: String,
     },
     FromBytes {
         file_name: String,
         bytes: Vec<u8>,
-        source_srs: String,
-        target_srs: String,
+        source_crs: String,
+        target_crs: String,
     },
 }
 

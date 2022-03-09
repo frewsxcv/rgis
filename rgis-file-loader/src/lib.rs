@@ -19,15 +19,15 @@ fn load_geojson_file_handler(
         match event {
             rgis_events::LoadGeoJsonFileEvent::FromPath {
                 path: geojson_file_path,
-                source_srs,
-                target_srs,
+                source_crs,
+                target_crs,
             } => {
                 thread_pool
                     .spawn(async move {
                         let spawned_layers = SpawnedLayers(geojson::load_from_path(
                             geojson_file_path,
-                            &source_srs,
-                            &target_srs,
+                            &source_crs,
+                            &target_crs,
                         ));
                         sender.send(spawned_layers).await.unwrap();
                     })
@@ -36,16 +36,16 @@ fn load_geojson_file_handler(
             rgis_events::LoadGeoJsonFileEvent::FromBytes {
                 file_name,
                 bytes,
-                source_srs,
-                target_srs,
+                source_crs,
+                target_crs,
             } => {
                 thread_pool
                     .spawn(async move {
                         let spawned_layers = SpawnedLayers(geojson::load_from_reader(
                             std::io::Cursor::new(bytes),
                             file_name,
-                            &source_srs,
-                            &target_srs,
+                            &source_crs,
+                            &target_crs,
                         ));
                         sender.send(spawned_layers).await.unwrap();
                     })
@@ -76,8 +76,8 @@ fn load_layers_from_cli(
     #[cfg(target_arch = "wasm32")]
     events.send(rgis_events::LoadGeoJsonFileEvent::FromPath {
         path: "foo".into(),
-        source_srs: "EPSG:4326".into(),
-        target_srs: rgis_settings.target_crs,
+        source_crs: "EPSG:4326".into(),
+        target_crs: rgis_settings.target_crs,
     });
 
     #[cfg(not(target_arch = "wasm32"))]
@@ -88,8 +88,8 @@ fn load_layers_from_cli(
         );
         events.send(rgis_events::LoadGeoJsonFileEvent::FromPath {
             path: geojson_file_path.clone(),
-            source_srs: cli_values.source_srs.clone(),
-            target_srs: rgis_settings.target_crs.clone(),
+            source_crs: cli_values.source_crs.clone(),
+            target_crs: rgis_settings.target_crs.clone(),
         });
     }
 }

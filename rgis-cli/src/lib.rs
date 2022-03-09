@@ -10,7 +10,7 @@ type MsaaSampleCount = u32;
 pub struct Values {
     pub msaa_sample_count: MsaaSampleCount,
     pub geojson_files: Vec<path::PathBuf>,
-    pub source_srs: String,
+    pub source_crs: String,
 }
 
 pub fn run() -> Values {
@@ -48,7 +48,7 @@ pub fn run() -> Values {
             .unwrap_or_default()
             .map(|s| path::PathBuf::from(s.to_owned()))
             .collect(),
-        source_srs: matches.value_of("SOURCE SRS").unwrap().to_owned(),
+        source_crs: matches.value_of("SOURCE SRS").unwrap().to_owned(),
         msaa_sample_count: matches
             .value_of("MSAA SAMPLE COUNT")
             .unwrap()

@@ -104,8 +104,8 @@ fn render_side_panel(
         load_geo_json_file_events.send(rgis_events::LoadGeoJsonFileEvent::FromBytes {
             file_name,
             bytes,
-            source_srs: "EPSG:4326".into(),
-            target_srs: "EPSG:3857".into(),
+            source_crs: "EPSG:4326".into(),
+            target_crs: "EPSG:3857".into(),
         });
     }
 }
