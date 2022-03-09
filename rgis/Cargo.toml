@@ -17,7 +17,6 @@ bevy = { version = "0.6", default-features = false, features = [
 ] }
 # bevy = { version = "0.6", features = ['trace' , 'trace_chrome'] }
 geo = { version = "0.19" }
-geojson = { version = "0.20", features = ['geo-types'] }
 geo-bevy = { path = "../geo-bevy" }
 rgis-camera = { path = "../rgis-camera" }
 rgis-cli = { path = "../rgis-cli" }

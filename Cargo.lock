@@ -107,15 +107,6 @@ checksum = "4361135be9122e0870de935d7c439aef945b9f9ddd4199a553b5270b49c82a27"
 
 [[package]]
 name = "approx"
-version = "0.3.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f0e60b75072ecd4168020818c0107f2857bb6c4e64252d8d3983f6263b40a5c3"
-dependencies = [
- "num-traits",
-]
-
-[[package]]
-name = "approx"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3f2a05fd1bd10b2527e20a2cd32d8873d115b8b39fe219ee25f42a8aca6ba278"
@@ -1709,7 +1700,7 @@ version = "0.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "61faf6a68f9432b5287c393268e86a07e4dfed79e6e0962b0e6e59b2f70c77d8"
 dependencies = [
- "geo-types 0.7.3",
+ "geo-types",
  "geographiclib-rs",
  "log",
  "num-traits",
@@ -1726,16 +1717,6 @@ dependencies = [
  "bevy_log",
  "bevy_render",
  "geo",
-]
-
-[[package]]
-name = "geo-types"
-version = "0.6.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7583925a1fdb2b450c461fe0878ba6e99a8f1332b2bc72fb1383fd25b2f13bf2"
-dependencies = [
- "approx 0.3.2",
- "num-traits",
 ]
 
 [[package]]
@@ -1760,24 +1741,11 @@ dependencies = [
 
 [[package]]
 name = "geojson"
-version = "0.20.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "df48768ce77d725b32f692a4653d4529a24e2882c8740bcaa03a0f788c853af6"
-dependencies = [
- "geo-types 0.6.2",
- "num-traits",
- "serde",
- "serde_json",
- "thiserror",
-]
-
-[[package]]
-name = "geojson"
 version = "0.22.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9c209e446d28d9142fb23127808bef2a1485924e7b42cd8c9407ea7cbfe09ccc"
 dependencies = [
- "geo-types 0.7.3",
+ "geo-types",
  "serde",
  "serde_json",
  "thiserror",
@@ -2970,7 +2938,7 @@ version = "0.25.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e4b1daec3e965c80c5f542dc57396f6977a2675e388ab73796b940005799fc66"
 dependencies = [
- "geo-types 0.7.3",
+ "geo-types",
  "libc",
  "num-traits",
  "proj-sys",
@@ -3123,7 +3091,6 @@ dependencies = [
  "bevy-web-resizer",
  "geo",
  "geo-bevy",
- "geojson 0.20.1",
  "rgis-camera",
  "rgis-cli",
  "rgis-events",
@@ -3169,7 +3136,7 @@ dependencies = [
  "async-channel",
  "bevy",
  "geo",
- "geojson 0.22.2",
+ "geojson",
  "rgis-cli",
  "rgis-events",
  "rgis-layer-id",
