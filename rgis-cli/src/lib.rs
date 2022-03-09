@@ -1,4 +1,4 @@
-use clap::{App, Arg};
+use clap::{Arg, Command};
 use std::path;
 
 static DEFAULT_SOURCE_SRS: &str = "EPSG:4326";
@@ -16,12 +16,12 @@ pub struct Values {
 }
 
 pub fn run() -> Values {
-    let matches = App::new("rgis")
+    let matches = Command::new("rgis")
         .version("0.1.0")
         .author("Corey Farwell <coreyf@rwell.org>")
         .about("Geospatial data viewer written in Rust")
         .arg(
-            Arg::with_name("MSAA SAMPLE COUNT")
+            Arg::new("MSAA SAMPLE COUNT")
                 .long("--msaa-sample-count")
                 .default_value(DEFAULT_MSAA)
                 .help("Multi-Sample Anti-Aliasing sample count. Setting the sample count higher will result in smoother edges, but it will also increase the cost to render those edges. The range should generally be somewhere between 1 (no multi sampling, but cheap) to 8 (crisp but expensive).")
@@ -35,20 +35,20 @@ pub fn run() -> Values {
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name("SOURCE SRS")
+            Arg::new("SOURCE SRS")
                 .long("--source-srs")
                 .default_value(DEFAULT_SOURCE_SRS)
                 .help("SRS of input files")
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name("TARGET SRS")
+            Arg::new("TARGET SRS")
                 .long("--target-srs")
                 .default_value(DEFAULT_TARGET_SRS)
                 .help("Reproject to this SRS")
                 .takes_value(true),
         )
-        .arg(Arg::with_name("GEOJSON FILE").multiple(true))
+        .arg(Arg::new("GEOJSON FILE").multiple_occurrences(true))
         .get_matches();
 
     Values {
