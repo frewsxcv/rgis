@@ -14,4 +14,4 @@ bevy = { version = "0.6", default-features = false, features = [
     "bevy_winit",
     "render",
 ] }
-clap = "2"
+clap = "3"
