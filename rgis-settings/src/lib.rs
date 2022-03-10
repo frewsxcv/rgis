@@ -8,6 +8,8 @@ pub struct Plugin;
 
 impl bevy::prelude::Plugin for Plugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.insert_resource(RgisSettings { target_crs: DEFAULT_TARGET_CRS.into() });
+        app.insert_resource(RgisSettings {
+            target_crs: DEFAULT_TARGET_CRS.into(),
+        });
     }
 }

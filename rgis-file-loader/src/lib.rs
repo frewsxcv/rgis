@@ -18,40 +18,27 @@ fn load_geojson_file_handler(
     for event in load_event_reader.drain() {
         let sender: LoadedGeoJsonFileSender = sender.clone();
         let target_crs = rgis_settings.target_crs.clone();
-        match event {
-            rgis_events::LoadGeoJsonFileEvent::FromPath {
-                path: geojson_file_path,
-                source_crs,
-            } => {
-                thread_pool
-                    .spawn(async move {
-                        let spawned_layers = SpawnedLayers(geojson::load_from_path(
-                            geojson_file_path,
-                            &source_crs,
-                            &target_crs,
-                        ));
-                        sender.send(spawned_layers).await.unwrap();
-                    })
-                    .detach();
-            }
-            rgis_events::LoadGeoJsonFileEvent::FromBytes {
-                file_name,
-                bytes,
-                source_crs,
-            } => {
-                thread_pool
-                    .spawn(async move {
-                        let spawned_layers = SpawnedLayers(geojson::load_from_reader(
-                            std::io::Cursor::new(bytes),
-                            file_name,
-                            &source_crs,
-                            &target_crs,
-                        ));
-                        sender.send(spawned_layers).await.unwrap();
-                    })
-                    .detach();
-            }
-        }
+        thread_pool
+            .spawn(async move {
+                let spawned_layers = SpawnedLayers(match event {
+                    rgis_events::LoadGeoJsonFileEvent::FromPath {
+                        path: geojson_file_path,
+                        source_crs,
+                    } => geojson::load_from_path(geojson_file_path, &source_crs, &target_crs),
+                    rgis_events::LoadGeoJsonFileEvent::FromBytes {
+                        file_name,
+                        bytes,
+                        source_crs,
+                    } => geojson::load_from_reader(
+                        std::io::Cursor::new(bytes),
+                        file_name,
+                        &source_crs,
+                        &target_crs,
+                    ),
+                });
+                sender.send(spawned_layers).await.unwrap();
+            })
+            .detach();
     }
 }
 
