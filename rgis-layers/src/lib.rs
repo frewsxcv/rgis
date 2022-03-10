@@ -117,7 +117,7 @@ impl UnassignedLayer {
 
         let mut projected_geometry = unprojected_geometry.clone();
 
-        let tl = time_logger::start("Reprojecting");
+        let tl = time_logger::start!("Reprojecting");
         #[cfg(not(target_arch = "wasm32"))]
         projected_geometry
             .transform_crs_to_crs(source_projection, target_projection)

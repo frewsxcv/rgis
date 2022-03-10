@@ -23,6 +23,9 @@ impl TimeLogger {
     }
 }
 
-pub fn start(title: impl Into<String>) -> TimeLogger {
-    TimeLogger::start(title)
+#[macro_export]
+macro_rules! start {
+    ($($args:tt)*) => {{
+        time_logger::TimeLogger::start(format!($($args)*))
+    }};
 }

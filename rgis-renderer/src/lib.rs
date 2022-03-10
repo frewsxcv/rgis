@@ -43,7 +43,7 @@ fn spawn_geometry_mesh(
 ) {
     let material = materials.add(layer.color.into());
 
-    let tl = time_logger::start(&format!("Triangulating and building {} mesh", layer.name));
+    let tl = time_logger::start!("Triangulating and building {} mesh", layer.name);
     for mesh in layer
         .projected_geometry
         .build_bevy_meshes(geo_bevy::BuildBevyMeshesContext::new())

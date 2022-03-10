@@ -22,7 +22,7 @@ pub fn load_from_path(
     source_projection: &str,
     target_projection: &str,
 ) -> Vec<rgis_layers::UnassignedLayer> {
-    let tl = time_logger::start(format!("Opening file: {:?}", geojson_file_path));
+    let tl = time_logger::start!("Opening file: {:?}", geojson_file_path);
     let reader = io::BufReader::new(fs::File::open(&geojson_file_path).expect("TODO"));
     tl.finish();
 
@@ -41,11 +41,11 @@ pub fn load_from_reader<R: io::Read>(
     source_projection: &str,
     target_projection: &str,
 ) -> Vec<rgis_layers::UnassignedLayer> {
-    let tl = time_logger::start(format!("Parsing file: {:?}", file_name));
+    let tl = time_logger::start!("Parsing file: {:?}", file_name);
     let geojson: geojson::GeoJson = serde_json::from_reader(reader).unwrap();
     tl.finish();
 
-    let tl = time_logger::start(format!("Converting to geo-types: {:?}", file_name));
+    let tl = time_logger::start!("Converting to geo-types: {:?}", file_name);
     let geo_geometry_collection: geo::GeometryCollection<f64> =
         geojson::quick_collection(&geojson).unwrap();
     tl.finish();
