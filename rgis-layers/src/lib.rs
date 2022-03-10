@@ -51,18 +51,26 @@ impl Layers {
         prev_selected_layer_id != self.selected_layer_id
     }
 
-    pub fn get(&self, layer_id: rgis_layer_id::LayerId) -> Option<&Layer> {
+    fn get_index(&self, layer_id: rgis_layer_id::LayerId) -> Option<usize> {
         self.data
             .binary_search_by_key(&layer_id, |layer| layer.id)
             .ok()
-            .and_then(|layer_index| self.data.get(layer_index))
+    }
+
+    pub fn get(&self, layer_id: rgis_layer_id::LayerId) -> Option<&Layer> {
+        let index = self.get_index(layer_id)?;
+        self.data.get(index)
     }
 
     pub fn get_mut(&mut self, layer_id: rgis_layer_id::LayerId) -> Option<&mut Layer> {
-        self.data
-            .binary_search_by_key(&layer_id, |layer| layer.id)
-            .ok()
-            .and_then(|layer_index| self.data.get_mut(layer_index))
+        let index = self.get_index(layer_id)?;
+        self.data.get_mut(index)
+    }
+
+    pub fn remove(&mut self, layer_id: rgis_layer_id::LayerId) {
+        if let Some(index) = self.get_index(layer_id) {
+            self.data.remove(index);
+        }
     }
 
     #[allow(unused)]
@@ -175,7 +183,7 @@ fn next_color_index() -> usize {
 
 pub struct RgisLayersPlugin;
 
-fn read_events(
+fn handle_toggle_layer_visibility_events(
     mut toggle_layer_visibility_event_reader: bevy::app::EventReader<
         rgis_events::ToggleLayerVisibilityEvent,
     >,
@@ -187,7 +195,7 @@ fn read_events(
     }
 }
 
-fn read_color_events(
+fn handle_update_color_events(
     mut update_events: bevy::app::EventReader<rgis_events::UpdateLayerColor>,
     mut updated_events: bevy::app::EventWriter<rgis_events::LayerColorUpdated>,
     mut layers: ResMut<Layers>,
@@ -199,10 +207,22 @@ fn read_color_events(
     }
 }
 
+fn handle_delete_layer_events(
+    mut delete_layer_event_reader: bevy::app::EventReader<rgis_events::DeleteLayer>,
+    mut layer_deleted_event_writer: bevy::app::EventWriter<rgis_events::LayerDeleted>,
+    mut layers: ResMut<Layers>,
+) {
+    for event in delete_layer_event_reader.iter() {
+        layers.remove(event.0);
+        layer_deleted_event_writer.send(rgis_events::LayerDeleted(event.0));
+    }
+}
+
 impl Plugin for RgisLayersPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(Layers::new())
-            .add_system(read_events)
-            .add_system(read_color_events);
+            .add_system(handle_toggle_layer_visibility_events)
+            .add_system(handle_update_color_events)
+            .add_system(handle_delete_layer_events);
     }
 }

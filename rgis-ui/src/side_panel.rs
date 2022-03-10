@@ -9,6 +9,7 @@ pub(crate) struct SidePanel<'a> {
     pub toggle_events: &'a mut bevy::app::Events<rgis_events::ToggleLayerVisibilityEvent>,
     pub toggle_material_events: &'a mut bevy::app::Events<rgis_events::ToggleMaterialEvent>,
     pub center_layer_events: &'a mut bevy::app::Events<rgis_events::CenterCameraEvent>,
+    pub delete_layer_events: &'a mut bevy::app::Events<rgis_events::DeleteLayer>,
     pub thread_pool: &'a bevy::tasks::AsyncComputeTaskPool,
     pub opened_file_bytes_sender: &'a crate::OpenedFileBytesSender,
 }
@@ -68,6 +69,11 @@ impl<'a> SidePanel<'a> {
                         if ui.button("🔎 Zoom to extent").clicked() {
                             self.center_layer_events
                                 .send(rgis_events::CenterCameraEvent(layer.id))
+                        }
+
+                        if ui.button("❌ Remove").clicked() {
+                            self.delete_layer_events
+                                .send(rgis_events::DeleteLayer(layer.id))
                         }
                     });
             });

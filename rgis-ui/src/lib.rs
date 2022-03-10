@@ -84,6 +84,7 @@ fn render_side_panel(
     mut toggle_material_events: ResMut<bevy::app::Events<rgis_events::ToggleMaterialEvent>>,
     mut center_layer_events: ResMut<bevy::app::Events<rgis_events::CenterCameraEvent>>,
     mut load_geo_json_file_events: ResMut<bevy::app::Events<rgis_events::LoadGeoJsonFileEvent>>,
+    mut delete_layer_events: ResMut<bevy::app::Events<rgis_events::DeleteLayer>>,
     thread_pool: Res<bevy::tasks::AsyncComputeTaskPool>,
     opened_file_bytes_sender: Res<OpenedFileBytesSender>,
     opened_file_bytes_receiver: Res<OpenedFileBytesReceiver>,
@@ -95,6 +96,7 @@ fn render_side_panel(
         toggle_events: &mut toggle_events,
         toggle_material_events: &mut toggle_material_events,
         center_layer_events: &mut center_layer_events,
+        delete_layer_events: &mut delete_layer_events,
         thread_pool: &thread_pool,
         opened_file_bytes_sender: &opened_file_bytes_sender,
     }

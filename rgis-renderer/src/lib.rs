@@ -31,7 +31,23 @@ impl Plugin for RgisRendererPlugin {
     fn build(&self, app: &mut App) {
         app.add_system(layer_loaded)
             .add_system(toggle_material_event)
-            .add_system(handle_layer_color_changed_event);
+            .add_system(handle_layer_color_changed_event)
+            .add_system(handle_layer_deleted_events);
+    }
+}
+
+fn handle_layer_deleted_events(
+    mut layer_deleted_event_reader: bevy::app::EventReader<rgis_events::LayerDeleted>,
+    mut commands: Commands,
+    query: Query<(&rgis_layer_id::LayerId, Entity), With<Handle<ColorMaterial>>>,
+) {
+    for event in layer_deleted_event_reader.iter() {
+        for entity in query
+            .iter()
+            .filter_map(|(i, entity)| (*i == event.0).then(|| entity))
+        {
+            commands.entity(entity).despawn();
+        }
     }
 }
 
