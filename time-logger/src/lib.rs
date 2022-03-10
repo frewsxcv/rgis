@@ -3,10 +3,6 @@ pub struct TimeLogger {
     duration: instant::Instant,
 }
 
-fn new_instant() -> instant::Instant {
-    instant::Instant::now()
-}
-
 impl TimeLogger {
     pub fn start(title: impl Into<String>) -> Self {
         let title: String = title.into();
@@ -14,7 +10,7 @@ impl TimeLogger {
 
         TimeLogger {
             title,
-            duration: new_instant(),
+            duration: instant::Instant::now(),
         }
     }
 
