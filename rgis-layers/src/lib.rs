@@ -134,31 +134,31 @@ impl UnassignedLayer {
                 .unwrap()
                 .dyn_into::<js_sys::Function>()
                 .unwrap();
+            let projector = proj4
+                .call2(
+                    &wasm_bindgen::JsValue::UNDEFINED,
+                    &"EPSG:4326".into(),
+                    &"EPSG:3857".into(),
+                )
+                .unwrap();
             projected_geometry
                 .map_coords_inplace(|(x, y)| {
                     let mut array = js_sys::Array::new();
                     array.push(&wasm_bindgen::JsValue::from_f64(*x));
                     array.push(&wasm_bindgen::JsValue::from_f64(*y));
-                    let result = proj4 // TODO: dont look up EPSG every single time. construct a projector
-                        .call3(
+                    let result = js_sys::Reflect::get(&projector, &"forward".into())
+                        .unwrap()
+                        .dyn_into::<js_sys::Function>()
+                        .unwrap()
+                        .call1(
                             &wasm_bindgen::JsValue::UNDEFINED,
-                            &"EPSG:4326".into(),
-                            &"EPSG:3857".into(),
-                            &array,
+                            &array
                         )
                         .unwrap()
                         .dyn_into::<js_sys::Array>()
                         .unwrap();
                     (result.get(0).as_f64().unwrap(), result.get(1).as_f64().unwrap())
                 });
-            // let result = js_sys::Reflect::get(pojector, &"t".into())
-            //     .dyn_into::<js_sys::Function>()
-            //     .unwrap()
-            //     .call2(
-            //         &wasm_bindgen::JsValue::UNDEFINED,
-            //         &"EPSG:4326".into(),
-            //         &"EPSG:3857".into(),
-            //     );
         }
         #[cfg(not(target_arch = "wasm32"))]
         {
