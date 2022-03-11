@@ -141,11 +141,11 @@ impl UnassignedLayer {
                     &"EPSG:3857".into(),
                 )
                 .unwrap();
+            let mut array = js_sys::Array::new_with_length(2);
             projected_geometry
                 .map_coords_inplace(|(x, y)| {
-                    let mut array = js_sys::Array::new();
-                    array.push(&wasm_bindgen::JsValue::from_f64(*x));
-                    array.push(&wasm_bindgen::JsValue::from_f64(*y));
+                    array.set(0, wasm_bindgen::JsValue::from_f64(*x));
+                    array.set(1, wasm_bindgen::JsValue::from_f64(*y));
                     let result = js_sys::Reflect::get(&projector, &"forward".into())
                         .unwrap()
                         .dyn_into::<js_sys::Function>()
