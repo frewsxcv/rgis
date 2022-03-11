@@ -137,8 +137,8 @@ impl UnassignedLayer {
             let projector = proj4
                 .call2(
                     &wasm_bindgen::JsValue::UNDEFINED,
-                    &"EPSG:4326".into(),
-                    &"EPSG:3857".into(),
+                    &source_projection.into(),
+                    &target_projection.into(),
                 )
                 .unwrap();
             let mut array = js_sys::Array::new_with_length(2);
