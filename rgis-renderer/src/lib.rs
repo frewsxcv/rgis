@@ -30,7 +30,8 @@ pub struct Plugin;
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_system(layer_loaded)
-            .add_system(toggle_material_event)
+            .add_system(handle_layer_became_hidden_event)
+            .add_system(handle_layer_became_visible_event)
             .add_system(handle_layer_color_changed_event)
             .add_system(handle_layer_deleted_events);
     }
@@ -69,33 +70,35 @@ fn spawn_geometry_mesh(
     tl.finish();
 }
 
-fn toggle_material_event(
-    layers: Res<rgis_layers::Layers>,
-    mut event_reader: EventReader<rgis_events::ToggleMaterialEvent>,
+fn handle_layer_became_hidden_event(
+    mut event_reader: EventReader<rgis_events::LayerBecameHiddenEvent>,
     mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
     query: Query<(&rgis_layer_id::LayerId, Entity), With<Handle<ColorMaterial>>>,
 ) {
     for event in event_reader.iter() {
-        match event {
-            rgis_events::ToggleMaterialEvent::Show(layer_id) => {
-                let layer = match layers.get(*layer_id) {
-                    Some(l) => l,
-                    None => continue,
-                };
-
-                spawn_geometry_mesh(&mut materials, layer, &mut commands, &mut meshes);
-            }
-            rgis_events::ToggleMaterialEvent::Hide(layer_id) => {
-                for entity in query
-                    .iter()
-                    .filter_map(|(i, entity)| (i == layer_id).then(|| entity))
-                {
-                    commands.entity(entity).despawn();
-                }
-            }
+        for entity in query
+            .iter()
+            .filter_map(|(i, entity)| (*i == event.0).then(|| entity))
+        {
+            commands.entity(entity).despawn();
         }
+    }
+}
+
+fn handle_layer_became_visible_event(
+    layers: Res<rgis_layers::Layers>,
+    mut event_reader: EventReader<rgis_events::LayerBecameVisibleEvent>,
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+) {
+    for event in event_reader.iter() {
+        let layer = match layers.get(event.0) {
+            Some(l) => l,
+            None => continue,
+        };
+
+        spawn_geometry_mesh(&mut materials, layer, &mut commands, &mut meshes);
     }
 }
 

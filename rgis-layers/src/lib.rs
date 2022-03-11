@@ -224,11 +224,22 @@ fn handle_toggle_layer_visibility_events(
     mut toggle_layer_visibility_event_reader: bevy::app::EventReader<
         rgis_events::ToggleLayerVisibilityEvent,
     >,
+    mut layer_became_visible_event_writer: bevy::app::EventWriter<
+        rgis_events::LayerBecameVisibleEvent,
+    >,
+    mut layer_became_hidden_event_writer: bevy::app::EventWriter<
+        rgis_events::LayerBecameHiddenEvent,
+    >,
     mut layers: ResMut<Layers>,
 ) {
     for event in toggle_layer_visibility_event_reader.iter() {
         let layer = layers.get_mut(event.0).unwrap();
         layer.visible = !layer.visible;
+        if layer.visible {
+            layer_became_visible_event_writer.send(rgis_events::LayerBecameVisibleEvent(event.0));
+        } else {
+            layer_became_hidden_event_writer.send(rgis_events::LayerBecameHiddenEvent(event.0));
+        }
     }
 }
 

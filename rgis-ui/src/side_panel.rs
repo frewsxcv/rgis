@@ -6,8 +6,8 @@ pub(crate) struct SidePanel<'a> {
     pub egui_ctx: &'a egui::CtxRef,
     pub state: &'a mut crate::UiState,
     pub layers: &'a rgis_layers::Layers,
-    pub toggle_events: &'a mut bevy::app::Events<rgis_events::ToggleLayerVisibilityEvent>,
-    pub toggle_material_events: &'a mut bevy::app::Events<rgis_events::ToggleMaterialEvent>,
+    pub toggle_layer_visibility_events:
+        &'a mut bevy::app::Events<rgis_events::ToggleLayerVisibilityEvent>,
     pub center_layer_events: &'a mut bevy::app::Events<rgis_events::CenterCameraEvent>,
     pub delete_layer_events: &'a mut bevy::app::Events<rgis_events::DeleteLayer>,
     pub thread_pool: &'a bevy::tasks::AsyncComputeTaskPool,
@@ -54,16 +54,12 @@ impl<'a> SidePanel<'a> {
 
                         if layer.visible {
                             if ui.button("👁 Hide").clicked() {
-                                self.toggle_events
+                                self.toggle_layer_visibility_events
                                     .send(rgis_events::ToggleLayerVisibilityEvent(layer.id));
-                                self.toggle_material_events
-                                    .send(rgis_events::ToggleMaterialEvent::Hide(layer.id));
                             }
                         } else if ui.button("👁 Show").clicked() {
-                            self.toggle_events
+                            self.toggle_layer_visibility_events
                                 .send(rgis_events::ToggleLayerVisibilityEvent(layer.id));
-                            self.toggle_material_events
-                                .send(rgis_events::ToggleMaterialEvent::Show(layer.id));
                         }
 
                         if ui.button("🔎 Zoom to extent").clicked() {

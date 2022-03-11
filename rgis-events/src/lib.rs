@@ -13,10 +13,10 @@ pub struct ToggleLayerVisibilityEvent(pub rgis_layer_id::LayerId);
 pub struct CenterCameraEvent(pub rgis_layer_id::LayerId);
 
 #[derive(Debug)]
-pub enum ToggleMaterialEvent {
-    Show(rgis_layer_id::LayerId),
-    Hide(rgis_layer_id::LayerId),
-}
+pub struct LayerBecameHiddenEvent(pub rgis_layer_id::LayerId);
+
+#[derive(Debug)]
+pub struct LayerBecameVisibleEvent(pub rgis_layer_id::LayerId);
 
 /// Change the `Layer`'s color
 pub struct UpdateLayerColor(pub rgis_layer_id::LayerId, pub bevy::prelude::Color);
@@ -94,7 +94,8 @@ impl bevy::app::Plugin for Plugin {
         app.add_event::<LoadGeoJsonFileEvent>()
             .add_event::<LayerLoadedEvent>()
             .add_event::<ToggleLayerVisibilityEvent>()
-            .add_event::<ToggleMaterialEvent>()
+            .add_event::<LayerBecameHiddenEvent>()
+            .add_event::<LayerBecameVisibleEvent>()
             .add_event::<PanCameraEvent>()
             .add_event::<ZoomCameraEvent>()
             .add_event::<CenterCameraEvent>()
