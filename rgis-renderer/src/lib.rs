@@ -25,9 +25,9 @@ fn layer_loaded(
     }
 }
 
-pub struct RgisRendererPlugin;
+pub struct Plugin;
 
-impl Plugin for RgisRendererPlugin {
+impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_system(layer_loaded)
             .add_system(toggle_material_event)

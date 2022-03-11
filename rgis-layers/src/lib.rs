@@ -218,7 +218,7 @@ fn next_color_index() -> usize {
     COUNTER.fetch_add(1, sync::atomic::Ordering::Relaxed) % COLORS.len()
 }
 
-pub struct RgisLayersPlugin;
+pub struct Plugin;
 
 fn handle_toggle_layer_visibility_events(
     mut toggle_layer_visibility_event_reader: bevy::app::EventReader<
@@ -255,7 +255,7 @@ fn handle_delete_layer_events(
     }
 }
 
-impl Plugin for RgisLayersPlugin {
+impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(Layers::new())
             .add_system(handle_toggle_layer_visibility_events)

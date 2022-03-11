@@ -78,9 +78,9 @@ fn load_layers_from_cli(
     }
 }
 
-pub struct RgisFileLoaderPlugin;
+pub struct Plugin;
 
-impl Plugin for RgisFileLoaderPlugin {
+impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         let (sender, receiver): (LoadedGeoJsonFileSender, LoadedGeoJsonFileReceiver) =
             async_channel::unbounded();

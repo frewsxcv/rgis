@@ -39,7 +39,7 @@ pub enum LoadGeoJsonFileEvent {
     },
 }
 
-pub struct RgisEventsPlugin;
+pub struct Plugin;
 
 #[derive(Debug)]
 pub struct PanCameraEvent {
@@ -89,7 +89,7 @@ impl ZoomCameraEvent {
     }
 }
 
-impl Plugin for RgisEventsPlugin {
+impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_event::<LoadGeoJsonFileEvent>()
             .add_event::<LayerLoadedEvent>()

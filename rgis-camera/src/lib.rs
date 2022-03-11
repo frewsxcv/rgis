@@ -1,12 +1,12 @@
 use bevy::prelude::*;
 
-pub struct RgisCamera;
+pub struct Plugin;
 
 // Component that gets added to the Camera2dBundle entity.
 #[derive(Component)]
 pub struct Camera2d;
 
-impl Plugin for RgisCamera {
+impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system(setup.system())
             .insert_resource(CameraScale(1.))

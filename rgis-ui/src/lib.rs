@@ -5,7 +5,7 @@ mod manage_layer_window;
 mod side_panel;
 mod top_panel;
 
-pub struct RgisUi;
+pub struct Plugin;
 
 type OpenedFileBytes = Vec<u8>;
 type OpenedFileName = String;
@@ -20,7 +20,7 @@ struct UiState {
     pub managing_layer: Option<rgis_layer_id::LayerId>,
 }
 
-impl Plugin for RgisUi {
+impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         let (sender, receiver): (OpenedFileBytesSender, OpenedFileBytesReceiver) =
             async_channel::unbounded();
