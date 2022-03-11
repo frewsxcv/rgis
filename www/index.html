@@ -12,8 +12,12 @@
       }
     </style>
   </head>
-  <body oncontextmenu="return false;"><!-- oncontextmenu: disable right click menu -->
+  <body>
     <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
+    <script>
+      /* oncontextmenu: disable right click menu */
+      document.body.addEventListener("contextmenu", e => e.preventDefault());
+    </script>
     <script src="./bootstrap.js"></script>
   </body>
 </html>
