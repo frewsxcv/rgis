@@ -31,6 +31,7 @@ impl Plugin for RgisUi {
                 layer_window_visible: false,
                 managing_layer: None,
             })
+            .add_system(handle_opened_file_bytes_receiver)
             .add_system_set(
                 SystemSet::new()
                     .label("top_bottom_panels")
@@ -83,11 +84,9 @@ fn render_side_panel(
     mut toggle_events: ResMut<bevy::app::Events<rgis_events::ToggleLayerVisibilityEvent>>,
     mut toggle_material_events: ResMut<bevy::app::Events<rgis_events::ToggleMaterialEvent>>,
     mut center_layer_events: ResMut<bevy::app::Events<rgis_events::CenterCameraEvent>>,
-    mut load_geo_json_file_events: ResMut<bevy::app::Events<rgis_events::LoadGeoJsonFileEvent>>,
     mut delete_layer_events: ResMut<bevy::app::Events<rgis_events::DeleteLayer>>,
     thread_pool: Res<bevy::tasks::AsyncComputeTaskPool>,
     opened_file_bytes_sender: Res<OpenedFileBytesSender>,
-    opened_file_bytes_receiver: Res<OpenedFileBytesReceiver>,
 ) {
     side_panel::SidePanel {
         egui_ctx: bevy_egui_ctx.ctx_mut(),
@@ -101,7 +100,12 @@ fn render_side_panel(
         opened_file_bytes_sender: &opened_file_bytes_sender,
     }
     .render();
+}
 
+fn handle_opened_file_bytes_receiver(
+    opened_file_bytes_receiver: Res<OpenedFileBytesReceiver>,
+    mut load_geo_json_file_events: ResMut<bevy::app::Events<rgis_events::LoadGeoJsonFileEvent>>,
+) {
     while let Ok((file_name, bytes)) = opened_file_bytes_receiver.try_recv() {
         load_geo_json_file_events.send(rgis_events::LoadGeoJsonFileEvent::FromBytes {
             file_name,
