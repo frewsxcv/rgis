@@ -1,8 +1,6 @@
 use bevy::prelude::*;
 use geo::bounding_rect::BoundingRect;
 use geo::contains::Contains;
-#[cfg(not(target_arch = "wasm32"))]
-use geo::transform::Transform;
 use std::sync;
 
 #[derive(Clone, Debug)]
@@ -126,10 +124,49 @@ impl UnassignedLayer {
         let mut projected_geometry = unprojected_geometry.clone();
 
         let tl = time_logger::start!("Reprojecting");
+        #[cfg(target_arch = "wasm32")]
+        {
+            use wasm_bindgen::JsCast;
+            use geo::algorithm::map_coords::MapCoordsInplace;
+            let proj4 = web_sys::window()
+                .unwrap()
+                .get("proj4")
+                .unwrap()
+                .dyn_into::<js_sys::Function>()
+                .unwrap();
+            projected_geometry
+                .map_coords_inplace(|(x, y)| {
+                    let mut array = js_sys::Array::new();
+                    array.push(&wasm_bindgen::JsValue::from_f64(*x));
+                    array.push(&wasm_bindgen::JsValue::from_f64(*y));
+                    let result = proj4 // TODO: dont look up EPSG every single time. construct a projector
+                        .call3(
+                            &wasm_bindgen::JsValue::UNDEFINED,
+                            &"EPSG:4326".into(),
+                            &"EPSG:3857".into(),
+                            &array,
+                        )
+                        .unwrap()
+                        .dyn_into::<js_sys::Array>()
+                        .unwrap();
+                    (result.get(0).as_f64().unwrap(), result.get(1).as_f64().unwrap())
+                });
+            // let result = js_sys::Reflect::get(pojector, &"t".into())
+            //     .dyn_into::<js_sys::Function>()
+            //     .unwrap()
+            //     .call2(
+            //         &wasm_bindgen::JsValue::UNDEFINED,
+            //         &"EPSG:4326".into(),
+            //         &"EPSG:3857".into(),
+            //     );
+        }
         #[cfg(not(target_arch = "wasm32"))]
-        projected_geometry
-            .transform_crs_to_crs(source_projection, target_projection)
-            .unwrap();
+        {
+            use geo::transform::Transform;
+            projected_geometry
+                .transform_crs_to_crs(source_projection, target_projection)
+                .unwrap();
+        }
         tl.finish();
 
         let projected_bounding_rect = projected_geometry
