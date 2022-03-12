@@ -3204,6 +3204,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "rgis-library"
+version = "0.1.0"
+
+[[package]]
 name = "rgis-mouse"
 version = "0.1.0"
 dependencies = [

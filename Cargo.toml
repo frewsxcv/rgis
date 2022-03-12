@@ -8,6 +8,7 @@ members = [
     "rgis-keyboard",
     "rgis-layer-id",
     "rgis-layers",
+    "rgis-library",
     "rgis-mouse",
     "rgis-settings",
     "rgis-renderer",
