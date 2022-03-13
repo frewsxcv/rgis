@@ -20,7 +20,7 @@ struct UiState {
     /// Which layer is the user currently managing.
     pub managing_layer: Option<rgis_layer_id::LayerId>,
     /// Is the 'add layer' window visible?
-    pub is_add_layer_window_visible: bool
+    pub is_add_layer_window_visible: bool,
 }
 
 impl bevy::app::Plugin for Plugin {
