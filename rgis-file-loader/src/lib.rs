@@ -59,13 +59,6 @@ fn load_layers_from_cli(
     cli_values: Res<rgis_cli::Values>,
     mut events: EventWriter<rgis_events::LoadGeoJsonFileEvent>,
 ) {
-    #[cfg(target_arch = "wasm32")]
-    events.send(rgis_events::LoadGeoJsonFileEvent::FromPath {
-        path: "foo".into(),
-        source_crs: "EPSG:4326".into(),
-    });
-
-    #[cfg(not(target_arch = "wasm32"))]
     for geojson_file_path in &cli_values.geojson_files {
         debug!(
             "sending LoadGeoJsonFile event: {}",

@@ -15,6 +15,21 @@ impl<'a> AddLayerWindow<'a> {
                 if ui.button("Add GeoJSON Layer").clicked() {
                     open_geojson_layer(self.opened_file_bytes_sender, self.thread_pool)
                 }
+                ui.separator();
+                if ui.button("Add US Borders Layer").clicked() {
+                    let sender = self.opened_file_bytes_sender.clone();
+                    self.thread_pool
+                        .spawn(async move {
+                            sender
+                                .send((
+                                    rgis_library::ENTRIES[0].name.to_string(),
+                                    rgis_library::ENTRIES[0].bytes.to_owned(),
+                                ))
+                                .await
+                                .unwrap();
+                        })
+                        .detach();
+                }
             });
     }
 }

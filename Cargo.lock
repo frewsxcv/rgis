@@ -3246,6 +3246,7 @@ dependencies = [
  "rgis-events",
  "rgis-layer-id",
  "rgis-layers",
+ "rgis-library",
  "rgis-mouse",
  "rgis-settings",
  "webbrowser 0.6.0",

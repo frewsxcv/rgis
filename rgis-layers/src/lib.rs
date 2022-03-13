@@ -141,7 +141,7 @@ impl UnassignedLayer {
                     &target_projection.into(),
                 )
                 .unwrap();
-            let mut array = js_sys::Array::new_with_length(2);
+            let array = js_sys::Array::new_with_length(2);
             let forward = js_sys::Reflect::get(&projector, &"forward".into())
                 .unwrap()
                 .dyn_into::<js_sys::Function>()
