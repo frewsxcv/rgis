@@ -23,7 +23,7 @@ jobs:
           ~/.cargo/registry/cache/
           ~/.cargo/git/db/
           target/
-        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+        key: desktop-${{ runner.os }}-linux-cargo-${{ hashFiles('**/Cargo.lock') }}
     - name: Install Dependencies
       run: |
         export DEBIAN_FRONTEND=noninteractive
@@ -47,7 +47,7 @@ jobs:
           ~/.cargo/registry/cache/
           ~/.cargo/git/db/
           target/
-        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+        key: web-${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
     - run: command -v wasm-pack >/dev/null 2>&1 || cargo install wasm-pack
     - name: Install wasm Rust target
       run: rustup target add wasm32-unknown-unknown
