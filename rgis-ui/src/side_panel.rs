@@ -10,8 +10,6 @@ pub(crate) struct SidePanel<'a> {
         &'a mut bevy::app::Events<rgis_events::ToggleLayerVisibilityEvent>,
     pub center_layer_events: &'a mut bevy::app::Events<rgis_events::CenterCameraEvent>,
     pub delete_layer_events: &'a mut bevy::app::Events<rgis_events::DeleteLayer>,
-    pub thread_pool: &'a bevy::tasks::AsyncComputeTaskPool,
-    pub opened_file_bytes_sender: &'a crate::OpenedFileBytesSender,
 }
 
 impl<'a> SidePanel<'a> {
@@ -23,23 +21,10 @@ impl<'a> SidePanel<'a> {
             });
     }
 
-    fn open_geojson_layer(&mut self) {
-        let sender = self.opened_file_bytes_sender.clone();
-        self.thread_pool
-            .spawn(async move {
-                let task = rfd::AsyncFileDialog::new().pick_file();
-                let file_handle = task.await;
-                if let Some(n) = file_handle {
-                    sender.send((n.file_name(), n.read().await)).await.unwrap();
-                }
-            })
-            .detach();
-    }
-
     fn render_layers_window(&mut self, ui: &mut egui::Ui) {
         ui.heading("🗺 Layers");
-        if ui.button("Add GeoJSON Layer").clicked() {
-            self.open_geojson_layer()
+        if ui.button("Add Layer").clicked() {
+            self.state.is_add_layer_window_visible = true;
         }
 
         for layer in &self.layers.data {
@@ -48,7 +33,7 @@ impl<'a> SidePanel<'a> {
                     .id_source(layer.id) // Instead of using the layer name as the ID (which is not unique), use the layer ID
                     .show(ui, |ui| {
                         if ui.button("✏ Manage").clicked() {
-                            self.state.layer_window_visible = true;
+                            self.state.is_manage_layer_window_visible = true;
                             self.state.managing_layer = Some(layer.id);
                         }
 
