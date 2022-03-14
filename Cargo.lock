@@ -227,9 +227,9 @@ dependencies = [
 
 [[package]]
 name = "bevy-web-resizer"
-version = "0.2.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bdd0910eb2b63f385d8e348c915a655c806c4a534893feb0245ae4ace99e6299"
+checksum = "95cb06266ef97bab8a0a6ecdc4af4545e163cd925643dcb6eff1cae8d2796452"
 dependencies = [
  "bevy",
  "crossbeam-channel",
