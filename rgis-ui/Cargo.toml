@@ -10,12 +10,9 @@ async-channel = "1"
 bevy = { version = "0.6", default-features = false, features = [
     "bevy_winit",
     "bevy_core_pipeline",
-#"bevy_pbr",
-#"bevy_gltf",
-"bevy_render",
-"bevy_sprite",
-#"bevy_text",
-"bevy_ui",
+    "bevy_render",
+    "bevy_sprite",
+    "bevy_ui",
 ] }
 bevy_egui = "0.11"
 rfd = "0.8"

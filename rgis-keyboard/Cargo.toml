@@ -9,11 +9,8 @@ publish = false
 bevy = { version = "0.6", default-features = false, features = [
     "bevy_winit",
     "bevy_core_pipeline",
-#"bevy_pbr",
-#"bevy_gltf",
-"bevy_render",
-"bevy_sprite",
-#"bevy_text",
-"bevy_ui",
+    "bevy_render",
+    "bevy_sprite",
+    "bevy_ui",
 ] }
 rgis-events = { path = "../rgis-events" }
