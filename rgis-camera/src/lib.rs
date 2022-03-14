@@ -26,9 +26,9 @@ fn setup(mut commands: Commands) {
         .insert(Camera2d);
 }
 
-pub struct CameraScale(pub f32);
+struct CameraScale(pub f32);
 
-pub struct CameraOffset {
+struct CameraOffset {
     pub x: f32,
     pub y: f32,
 }
