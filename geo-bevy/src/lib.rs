@@ -124,7 +124,8 @@ pub fn build_bevy_meshes<G: BuildBevyMeshes>(
         ctx.point_mesh_builder.build(),
         ctx.line_string_mesh_builder.build(),
         ctx.polygon_mesh_builder.build(),
-    ].into_iter()
+    ]
+    .into_iter()
 }
 
 pub trait BuildBevyMeshes {

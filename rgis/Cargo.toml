@@ -9,9 +9,14 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 bevy = { version = "0.6", default-features = false, features = [
-    "bevy_gltf",
     "bevy_winit",
-    "render",
+    "bevy_core_pipeline",
+#"bevy_pbr",
+#"bevy_gltf",
+"bevy_render",
+"bevy_sprite",
+#"bevy_text",
+"bevy_ui",
 ] }
 geo = { version = "0.19" }
 geo-bevy = { path = "../geo-bevy" }
