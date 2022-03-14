@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use geo_bevy::BuildBevyMeshes;
 
 // System
 fn layer_loaded(
@@ -61,10 +60,10 @@ fn spawn_geometry_mesh(
     let material = materials.add(layer.color.into());
 
     let tl = time_logger::start!("Triangulating and building {} mesh", layer.name);
-    for mesh in layer
-        .projected_geometry
-        .build_bevy_meshes(geo_bevy::BuildBevyMeshesContext::new())
-    {
+    for mesh in geo_bevy::build_bevy_meshes(
+        &layer.projected_geometry,
+        geo_bevy::BuildBevyMeshesContext::new(),
+    ) {
         spawn_mesh(mesh, material.clone(), meshes, commands, layer.id);
     }
     tl.finish();

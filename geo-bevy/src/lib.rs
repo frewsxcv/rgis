@@ -112,21 +112,22 @@ impl Default for BuildBevyMeshesContext {
     }
 }
 
+pub fn build_bevy_meshes<G: BuildBevyMeshes>(
+    geo: &G,
+    mut ctx: BuildBevyMeshesContext,
+) -> impl Iterator<Item = Mesh> {
+    geo.populate_mesh_builders(&mut ctx);
+
+    // TODO: do the builders handle the empty case?
+
+    [
+        ctx.point_mesh_builder.build(),
+        ctx.line_string_mesh_builder.build(),
+        ctx.polygon_mesh_builder.build(),
+    ].into_iter()
+}
+
 pub trait BuildBevyMeshes {
-    fn build_bevy_meshes(&self, mut ctx: BuildBevyMeshesContext) -> Vec<Mesh> {
-        let mut meshes = vec![];
-
-        self.populate_mesh_builders(&mut ctx);
-
-        // TODO: do the builders handle the empty case?
-
-        meshes.push(ctx.point_mesh_builder.build());
-        meshes.push(ctx.line_string_mesh_builder.build());
-        meshes.push(ctx.polygon_mesh_builder.build());
-
-        meshes
-    }
-
     fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext);
 }
 
