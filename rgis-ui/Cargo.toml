@@ -14,7 +14,7 @@ bevy = { version = "0.6", default-features = false, features = [
     "bevy_sprite",
     "bevy_ui",
 ] }
-bevy_egui = "0.11"
+bevy_egui = "0.12"
 rfd = "0.8"
 rgis-layer-id = { path = "../rgis-layer-id" }
 rgis-layers = { path = "../rgis-layers" }

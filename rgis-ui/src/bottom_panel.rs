@@ -1,7 +1,7 @@
 use bevy_egui::egui;
 
 pub(crate) struct BottomPanel<'a> {
-    pub egui_ctx: &'a egui::CtxRef,
+    pub egui_ctx: &'a egui::Context,
     pub mouse_pos: &'a rgis_mouse::MousePos,
     pub rgis_settings: &'a rgis_settings::RgisSettings,
 }

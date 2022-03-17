@@ -3,7 +3,7 @@ use bevy_egui::egui;
 const MAX_SIDE_PANEL_WIDTH: f32 = 200.0f32;
 
 pub(crate) struct SidePanel<'a> {
-    pub egui_ctx: &'a egui::CtxRef,
+    pub egui_ctx: &'a egui::Context,
     pub state: &'a mut crate::UiState,
     pub layers: &'a rgis_layers::Layers,
     pub toggle_layer_visibility_events:
