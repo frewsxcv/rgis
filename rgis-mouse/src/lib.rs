@@ -1,3 +1,4 @@
+use bevy::ecs::query::With;
 use bevy::ecs::system::{IntoSystem, Query, Res, ResMut};
 
 #[derive(Copy, Clone)]
@@ -14,14 +15,14 @@ pub struct MousePos {
 fn cursor_moved_system(
     mut cursor_moved_event_reader: bevy::app::EventReader<bevy::window::CursorMoved>,
     windows: Res<bevy::window::Windows>,
-    camera_transform_query: Query<(
-        &rgis_camera::Camera2d,
+    camera_transform_query: Query<
         &bevy::transform::components::Transform,
-    )>,
+        With<rgis_camera::Camera2d>,
+    >,
     mut mouse_position: ResMut<MousePos>,
 ) {
     for event in cursor_moved_event_reader.iter() {
-        for (_camera, transform) in camera_transform_query.iter() {
+        for transform in camera_transform_query.iter() {
             mouse_position.projected = screen_coords_to_geo_coords(
                 event.position,
                 transform,
