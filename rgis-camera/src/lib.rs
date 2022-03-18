@@ -55,13 +55,13 @@ fn zoom_camera_system(
 
 fn update_camera_offset(
     camera_offset: Res<CameraOffset>,
-    mut camera_transform_query: Query<(&Camera2d, &mut Transform)>,
+    mut camera_transform_query: Query<&mut Transform, With<Camera2d>>,
 ) {
     if !camera_offset.is_changed() {
         return;
     }
     debug!("Camera offset changed");
-    for (_camera, mut transform) in camera_transform_query.iter_mut() {
+    for mut transform in camera_transform_query.iter_mut() {
         transform.translation = Vec3::new(camera_offset.x, camera_offset.y, 0.);
         debug!("New transform translation: {:?}", transform.translation);
     }
@@ -69,13 +69,13 @@ fn update_camera_offset(
 
 fn update_camera_scale(
     camera_scale: Res<CameraScale>,
-    mut camera_transform_query: Query<(&Camera2d, &mut Transform)>,
+    mut camera_transform_query: Query<&mut Transform, With<Camera2d>>,
 ) {
     if !camera_scale.is_changed() {
         return;
     }
     debug!("Camera scale changed");
-    for (_camera, mut transform) in camera_transform_query.iter_mut() {
+    for mut transform in camera_transform_query.iter_mut() {
         transform.scale = Vec3::new(camera_scale.0, camera_scale.0, 1.);
         debug!("New transform scale: {:?}", transform.scale);
     }
