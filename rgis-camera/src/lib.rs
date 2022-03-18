@@ -9,13 +9,9 @@ pub struct Camera2d;
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_startup_system(setup.system())
-            .insert_resource(CameraScale(1.))
-            .insert_resource(CameraOffset { x: 0., y: 0. })
             .add_system(center_camera.system())
             .add_system(pan_camera_system.system())
-            .add_system(zoom_camera_system.system())
-            .add_system(update_camera_offset.system())
-            .add_system(update_camera_scale.system());
+            .add_system(zoom_camera_system.system());
     }
 }
 
@@ -35,49 +31,50 @@ struct CameraOffset {
 
 fn pan_camera_system(
     mut pan_camera_event_reader: bevy::app::EventReader<rgis_events::PanCameraEvent>,
-    mut camera_offset: ResMut<CameraOffset>,
-    camera_scale: ResMut<CameraScale>,
+    mut camera_transform_query: Query<&mut Transform, With<Camera2d>>,
 ) {
     for event in pan_camera_event_reader.iter() {
-        pan_x(event.x, &mut camera_offset, &camera_scale);
-        pan_y(event.y, &mut camera_offset, &camera_scale);
+        for mut transform in camera_transform_query.iter_mut() {
+            let mut camera_offset = CameraOffset {
+                x: transform.translation[0],
+                y: transform.translation[1],
+            };
+            let camera_scale = CameraScale(transform.scale[0] as f32);
+
+            pan_x(event.x, &mut camera_offset, &camera_scale);
+            pan_y(event.y, &mut camera_offset, &camera_scale);
+
+            set_camera_transform(&mut transform, &camera_offset, &camera_scale);
+        }
     }
+}
+
+fn set_camera_transform(
+    transform: &mut Transform,
+    camera_offset: &CameraOffset,
+    camera_scale: &CameraScale,
+) {
+    transform.translation = Vec3::new(camera_offset.x, camera_offset.y, 0.);
+    transform.scale = Vec3::new(camera_scale.0, camera_scale.0, 1.);
+    debug!("New transform scale: {:?}", transform.scale);
 }
 
 fn zoom_camera_system(
     mut zoom_camera_event_reader: bevy::app::EventReader<rgis_events::ZoomCameraEvent>,
-    mut camera_scale: ResMut<CameraScale>,
+    mut camera_transform_query: Query<&mut Transform, With<Camera2d>>,
 ) {
     for event in zoom_camera_event_reader.iter() {
-        zoom(event.amount, &mut camera_scale)
-    }
-}
+        for mut transform in camera_transform_query.iter_mut() {
+            let camera_offset = CameraOffset {
+                x: transform.translation[0],
+                y: transform.translation[1],
+            };
+            let mut camera_scale = CameraScale(transform.scale[0] as f32);
 
-fn update_camera_offset(
-    camera_offset: Res<CameraOffset>,
-    mut camera_transform_query: Query<&mut Transform, With<Camera2d>>,
-) {
-    if !camera_offset.is_changed() {
-        return;
-    }
-    debug!("Camera offset changed");
-    for mut transform in camera_transform_query.iter_mut() {
-        transform.translation = Vec3::new(camera_offset.x, camera_offset.y, 0.);
-        debug!("New transform translation: {:?}", transform.translation);
-    }
-}
+            zoom(event.amount, &mut camera_scale);
 
-fn update_camera_scale(
-    camera_scale: Res<CameraScale>,
-    mut camera_transform_query: Query<&mut Transform, With<Camera2d>>,
-) {
-    if !camera_scale.is_changed() {
-        return;
-    }
-    debug!("Camera scale changed");
-    for mut transform in camera_transform_query.iter_mut() {
-        transform.scale = Vec3::new(camera_scale.0, camera_scale.0, 1.);
-        debug!("New transform scale: {:?}", transform.scale);
+            set_camera_transform(&mut transform, &camera_offset, &camera_scale);
+        }
     }
 }
 
@@ -96,9 +93,8 @@ fn zoom(amount: f32, camera_scale: &mut CameraScale) {
 // this should go in rgis_camera
 fn center_camera(
     layers: Res<rgis_layers::Layers>,
-    mut camera_offset: ResMut<CameraOffset>,
-    mut camera_scale: ResMut<CameraScale>,
     mut event_reader: EventReader<rgis_events::CenterCameraEvent>,
+    mut camera_transform_query: Query<&mut Transform, With<Camera2d>>,
 ) {
     for event in event_reader.iter() {
         let layer = match layers.get(event.0) {
@@ -110,8 +106,14 @@ fn center_camera(
         // .     the height of the geometry. as well as the window size.
         let scale = layer.projected_bounding_rect.width() / 1_000.;
         debug!("Moving camera to look at new layer");
-        camera_offset.x = layer_center.x as f32;
-        camera_offset.y = layer_center.y as f32;
-        camera_scale.0 = scale as f32;
+        let camera_offset = CameraOffset {
+            x: layer_center.x as f32,
+            y: layer_center.y as f32,
+        };
+        let camera_scale = CameraScale(scale as f32);
+
+        for mut transform in camera_transform_query.iter_mut() {
+            set_camera_transform(&mut transform, &camera_offset, &camera_scale);
+        }
     }
 }
