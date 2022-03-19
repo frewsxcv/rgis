@@ -71,33 +71,29 @@ fn spawn_geometry_mesh(
 
 fn handle_layer_became_hidden_event(
     mut event_reader: EventReader<rgis_events::LayerBecameHiddenEvent>,
-    mut commands: Commands,
-    query: Query<(&rgis_layer_id::LayerId, Entity), With<Handle<ColorMaterial>>>,
+    mut query: Query<(&rgis_layer_id::LayerId, &mut bevy::render::view::Visibility)>,
 ) {
     for event in event_reader.iter() {
-        for entity in query
-            .iter()
-            .filter_map(|(i, entity)| (*i == event.0).then(|| entity))
+        for mut visibility in query
+            .iter_mut()
+            .filter_map(|(i, visibility)| (*i == event.0).then(|| visibility))
         {
-            commands.entity(entity).despawn();
+            visibility.is_visible = false;
         }
     }
 }
 
 fn handle_layer_became_visible_event(
-    layers: Res<rgis_layers::Layers>,
     mut event_reader: EventReader<rgis_events::LayerBecameVisibleEvent>,
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
+    mut query: Query<(&rgis_layer_id::LayerId, &mut bevy::render::view::Visibility)>,
 ) {
     for event in event_reader.iter() {
-        let layer = match layers.get(event.0) {
-            Some(l) => l,
-            None => continue,
-        };
-
-        spawn_geometry_mesh(&mut materials, layer, &mut commands, &mut meshes);
+        for mut visibility in query
+            .iter_mut()
+            .filter_map(|(i, visibility)| (*i == event.0).then(|| visibility))
+        {
+            visibility.is_visible = true;
+        }
     }
 }
 
