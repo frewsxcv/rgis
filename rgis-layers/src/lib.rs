@@ -139,8 +139,8 @@ impl UnassignedLayer {
             let projector = proj4
                 .call2(
                     &wasm_bindgen::JsValue::UNDEFINED,
-                    &source_projection.into(),
-                    &target_projection.into(),
+                    &source_crs.into(),
+                    &target_crs.into(),
                 )
                 .unwrap();
             let array = js_sys::Array::new_with_length(2);
