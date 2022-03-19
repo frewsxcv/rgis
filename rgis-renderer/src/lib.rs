@@ -117,7 +117,10 @@ fn handle_layer_color_changed_event(
             .iter()
             .filter_map(|(i, handle)| (*i == event.0).then(|| handle))
         {
-            materials.get_mut(handle).unwrap().color = layer.color;
+            match materials.get_mut(handle) {
+                Some(color_material) => color_material.color = layer.color,
+                None => continue,
+            }
         }
     }
 }
