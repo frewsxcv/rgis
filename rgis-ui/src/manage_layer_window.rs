@@ -34,6 +34,9 @@ impl<'a> ManageLayerWindow<'a> {
                             ui.label("Name");
                             ui.label(layer.name.clone());
                             ui.end_row();
+                            ui.label("CRS");
+                            ui.label(layer.crs.clone());
+                            ui.end_row();
                             ui.label("Color");
                             let mut old_color = layer.color.as_linear_rgba_f32();
                             if ui

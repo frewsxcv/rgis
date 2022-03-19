@@ -92,6 +92,7 @@ impl Layers {
             name: unassigned_layer.name,
             visible: unassigned_layer.visible,
             id: layer_id,
+            crs: unassigned_layer.crs,
         };
         self.data.push(layer);
         layer_id
@@ -109,6 +110,7 @@ pub struct UnassignedLayer {
     pub metadata: Metadata,
     pub name: String,
     pub visible: bool,
+    pub crs: String,
 }
 
 impl UnassignedLayer {
@@ -116,8 +118,8 @@ impl UnassignedLayer {
         geometry: geo::Geometry<f64>,
         name: String,
         metadata: Option<Metadata>,
-        source_projection: &str,
-        target_projection: &str,
+        source_crs: &str,
+        target_crs: &str,
     ) -> Self {
         let unprojected_geometry = geometry;
 
@@ -164,7 +166,7 @@ impl UnassignedLayer {
         {
             use geo::transform::Transform;
             projected_geometry
-                .transform_crs_to_crs(source_projection, target_projection)
+                .transform_crs_to_crs(source_crs, target_crs)
                 .unwrap();
         }
         tl.finish();
@@ -179,6 +181,7 @@ impl UnassignedLayer {
             projected_bounding_rect,
             color: colorous_color_to_bevy_color(next_colorous_color()),
             metadata: metadata.unwrap_or_else(serde_json::Map::new),
+            crs: source_crs.to_string(),
             name,
             visible: true,
         }
@@ -195,6 +198,7 @@ pub struct Layer {
     pub id: rgis_layer_id::LayerId,
     pub name: String,
     pub visible: bool,
+    pub crs: String,
 }
 
 impl Layer {
