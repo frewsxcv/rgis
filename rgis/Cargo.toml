@@ -14,6 +14,7 @@ bevy = { version = "0.6", default-features = false, features = [
     "bevy_render",
     "bevy_sprite",
     "bevy_ui",
+    "png",
 ] }
 geo = { version = "0.19" }
 geo-bevy = { path = "../geo-bevy" }

@@ -1557,9 +1557,8 @@ dependencies = [
 name = "geo-bevy"
 version = "0.0.0"
 dependencies = [
+ "bevy",
  "bevy-earcutr",
- "bevy_log",
- "bevy_render",
  "geo",
 ]
 
@@ -2818,6 +2817,7 @@ name = "rgis-renderer"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "geo",
  "geo-bevy",
  "rgis-events",
  "rgis-layer-id",

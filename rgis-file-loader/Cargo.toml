@@ -12,6 +12,7 @@ bevy = { version = "0.6", default-features = false, features = [
     "bevy_render",
     "bevy_sprite",
     "bevy_ui",
+    "png",
 ] }
 geo = "0.19"
 geojson = { version = "0.22", features = ["geo-types"] }

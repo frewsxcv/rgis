@@ -8,6 +8,7 @@ fn layer_loaded(
     layers: Res<rgis_layers::Layers>,
     mut event_reader: EventReader<rgis_events::LayerLoadedEvent>,
     mut center_camera_events: EventWriter<rgis_events::CenterCameraEvent>,
+    asset_server: Res<AssetServer>,
 ) {
     for event in event_reader.iter() {
         let layer = match layers.get(event.0) {
@@ -19,7 +20,7 @@ fn layer_loaded(
             continue;
         }
 
-        spawn_geometry_mesh(&mut materials, layer, &mut commands, &mut meshes);
+        spawn_geometry_mesh(&mut materials, layer, &mut commands, &mut meshes, &asset_server);
         center_camera_events.send(rgis_events::CenterCameraEvent(layer.id));
     }
 }
@@ -56,6 +57,7 @@ fn spawn_geometry_mesh(
     layer: &rgis_layers::Layer,
     commands: &mut Commands,
     meshes: &mut Assets<Mesh>,
+    asset_server: &AssetServer,
 ) {
     let material = materials.add(layer.color.into());
 
@@ -64,7 +66,28 @@ fn spawn_geometry_mesh(
         &layer.projected_geometry,
         geo_bevy::BuildBevyMeshesContext::new(),
     ) {
-        spawn_mesh(mesh, material.clone(), meshes, commands, layer.id);
+        match mesh {
+            geo_bevy::MeshType::Point(m) => {
+                use geo::algorithm::coords_iter::CoordsIter;
+                let image_handle = asset_server.load("circle.png");
+                for coord in layer.projected_geometry.coords_iter() {
+                    let mut transform = Transform::from_xyz(coord.x as f32, coord.y as f32, 0.);
+                    transform.scale = (1., 1., 1.,).into();
+                    let bundle = SpriteBundle {
+                        texture: image_handle.clone(),
+                        transform: transform,
+                        ..Default::default()
+                    };
+                    commands.spawn_bundle(bundle).insert(layer.id);
+                }
+            },
+            geo_bevy::MeshType::LineString(m) => {
+                spawn_material_mesh_2d_bundle(m, material.clone(), meshes, commands, layer.id);
+            },
+            geo_bevy::MeshType::Polygon(m) => {
+                spawn_material_mesh_2d_bundle(m, material.clone(), meshes, commands, layer.id);
+            },
+        }
     }
     tl.finish();
 }
@@ -90,6 +113,7 @@ fn handle_layer_became_visible_event(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    asset_server: Res<AssetServer>,
 ) {
     for event in event_reader.iter() {
         let layer = match layers.get(event.0) {
@@ -97,7 +121,7 @@ fn handle_layer_became_visible_event(
             None => continue,
         };
 
-        spawn_geometry_mesh(&mut materials, layer, &mut commands, &mut meshes);
+        spawn_geometry_mesh(&mut materials, layer, &mut commands, &mut meshes, &asset_server);
     }
 }
 
@@ -125,17 +149,39 @@ fn handle_layer_color_changed_event(
     }
 }
 
-fn spawn_mesh(
+fn spawn_sprite_bundle(
     mesh: Mesh,
     material: Handle<ColorMaterial>,
     meshes: &mut Assets<Mesh>,
     commands: &mut Commands,
     layer_id: rgis_layer_id::LayerId,
 ) {
-    let mmb = bevy::sprite::MaterialMesh2dBundle {
+    let bundle = SpriteBundle {
+        // mesh: meshes.add(mesh),
+        // material: materials.add(Color::PINK.into()),
+        // sprite: Sprite::new(Vec2::new(
+        //     2.0 * BLOCK_SIZE,
+        //     2.0 * BLOCK_SIZE,
+        // )),
+        // transform: Transform::from_translation(
+        //     Vec3::new(0.0, 0.0, 0.0),
+        // ),
+        ..Default::default()
+    };
+    commands.spawn_bundle(bundle).insert(layer_id);
+}
+
+fn spawn_material_mesh_2d_bundle(
+    mesh: Mesh,
+    material: Handle<ColorMaterial>,
+    meshes: &mut Assets<Mesh>,
+    commands: &mut Commands,
+    layer_id: rgis_layer_id::LayerId,
+) {
+    let bundle = bevy::sprite::MaterialMesh2dBundle {
         material,
         mesh: bevy::sprite::Mesh2dHandle(meshes.add(mesh)),
         ..Default::default()
     };
-    commands.spawn_bundle(mmb).insert(layer_id);
+    commands.spawn_bundle(bundle).insert(layer_id);
 }

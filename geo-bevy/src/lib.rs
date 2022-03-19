@@ -1,4 +1,4 @@
-use bevy_render::prelude::*;
+use bevy::prelude::*;
 use geo::algorithm::coords_iter::CoordsIter;
 use std::convert::TryFrom;
 
@@ -31,13 +31,28 @@ impl LineStringMeshBuilder {
         }
     }
 
-    pub fn build(self) -> Mesh {
+    fn build(self) -> Mesh {
         build_mesh_from_vertices(
-            bevy_render::render_resource::PrimitiveTopology::LineList,
+            bevy::render::render_resource::PrimitiveTopology::LineList,
             self.vertices,
             self.indices,
         )
     }
+
+    /*
+    fn build_material(
+        self,
+        meshes: &mut Assets<Mesh>,
+        materials: &mut Assets<ColorMaterial>,
+    ) -> bevy::sprite::MaterialMesh2dBundle<ColorMaterial> {
+        let mesh = self.build_mesh();
+        bevy::sprite::MaterialMesh2dBundle {
+            material,
+            mesh: bevy::sprite::Mesh2dHandle(meshes.add(mesh)),
+            ..Default::default()
+        }
+    }
+    */
 }
 
 struct PointMeshBuilder {
@@ -63,22 +78,27 @@ impl PointMeshBuilder {
     }
 
     pub fn build(self) -> Mesh {
-        build_mesh_from_vertices(
-            bevy_render::render_resource::PrimitiveTopology::PointList,
-            self.vertices,
-            self.indices,
-        )
+        let mut mesh: Mesh = shape::Box::new(1.0, 1.0, 0.0).into();
+        let num_vertices = self.vertices.len();
+        mesh.set_indices(Some(bevy::render::mesh::Indices::U32(self.indices)));
+        mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, self.vertices);
+        let normals = vec![[0.0, 0.0, 0.0]; num_vertices];
+        let uvs = vec![[0.0, 0.0]; num_vertices];
+
+        mesh.set_attribute(Mesh::ATTRIBUTE_NORMAL, normals);
+        mesh.set_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
+        mesh
     }
 }
 
 fn build_mesh_from_vertices(
-    primitive_topology: bevy_render::render_resource::PrimitiveTopology,
+    primitive_topology: bevy::render::render_resource::PrimitiveTopology,
     vertices: Vec<Vertex>,
     indices: Vec<u32>,
 ) -> Mesh {
     let num_vertices = vertices.len();
     let mut mesh = Mesh::new(primitive_topology);
-    mesh.set_indices(Some(bevy_render::mesh::Indices::U32(indices)));
+    mesh.set_indices(Some(bevy::render::mesh::Indices::U32(indices)));
     mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, vertices);
 
     let normals = vec![[0.0, 0.0, 0.0]; num_vertices];
@@ -112,18 +132,24 @@ impl Default for BuildBevyMeshesContext {
     }
 }
 
+pub enum MeshType {
+    Point(Mesh),
+    LineString(Mesh),
+    Polygon(Mesh),
+}
+
 pub fn build_bevy_meshes<G: BuildBevyMeshes>(
     geo: &G,
     mut ctx: BuildBevyMeshesContext,
-) -> impl Iterator<Item = Mesh> {
+) -> impl Iterator<Item = MeshType> {
     geo.populate_mesh_builders(&mut ctx);
 
     // TODO: do the builders handle the empty case?
 
     [
-        ctx.point_mesh_builder.build(),
-        ctx.line_string_mesh_builder.build(),
-        ctx.polygon_mesh_builder.build(),
+        MeshType::Point(ctx.point_mesh_builder.build()),
+        MeshType::LineString(ctx.line_string_mesh_builder.build()),
+        MeshType::Polygon(ctx.polygon_mesh_builder.build()),
     ]
     .into_iter()
 }
