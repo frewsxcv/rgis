@@ -21,6 +21,7 @@ fn load_geojson_file_handler(
         thread_pool
             .spawn(async move {
                 let spawned_layers = SpawnedLayers(match event {
+                    #[cfg(not(target_arch = "wasm32"))]
                     rgis_events::LoadGeoJsonFileEvent::FromPath {
                         path: geojson_file_path,
                         source_crs,
@@ -55,6 +56,7 @@ fn handle_loaded_layers(
     }
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 fn load_layers_from_cli(
     cli_values: Res<rgis_cli::Values>,
     mut events: EventWriter<rgis_events::LoadGeoJsonFileEvent>,
@@ -79,8 +81,10 @@ impl bevy::app::Plugin for Plugin {
             async_channel::unbounded();
         app.insert_resource(sender)
             .insert_resource(receiver)
-            .add_startup_system(load_layers_from_cli.system())
             .add_system(load_geojson_file_handler.system())
             .add_system(handle_loaded_layers.system());
+
+        #[cfg(not(target_arch = "wasm32"))]
+        app.add_startup_system(load_layers_from_cli.system());
     }
 }

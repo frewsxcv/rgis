@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+#[cfg(not(target_arch = "wasm32"))]
 use std::path;
 
 const ZOOM_AMOUNT: f32 = 1.15; // Larger number will zoom more
@@ -28,6 +29,7 @@ pub struct LayerDeleted(pub rgis_layer_id::LayerId);
 
 #[derive(Debug)]
 pub enum LoadGeoJsonFileEvent {
+    #[cfg(not(target_arch = "wasm32"))]
     FromPath {
         path: path::PathBuf,
         source_crs: String,

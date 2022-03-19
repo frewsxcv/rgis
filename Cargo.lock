@@ -1564,6 +1564,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "geo-proj-js"
+version = "0.1.0"
+dependencies = [
+ "geo",
+ "js-sys",
+ "wasm-bindgen",
+ "web-sys",
+]
+
+[[package]]
 name = "geo-types"
 version = "0.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2791,13 +2801,11 @@ dependencies = [
  "bevy",
  "colorous",
  "geo",
- "js-sys",
+ "geo-proj-js",
  "rgis-events",
  "rgis-layer-id",
  "serde_json",
  "time-logger",
- "wasm-bindgen",
- "web-sys",
 ]
 
 [[package]]
