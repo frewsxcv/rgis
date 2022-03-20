@@ -90,19 +90,13 @@ fn render_side_panel(
     mut state: ResMut<UiState>,
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
     layers: Res<rgis_layers::Layers>,
-    mut toggle_layer_visibility_events: ResMut<
-        bevy::app::Events<rgis_events::ToggleLayerVisibilityEvent>,
-    >,
-    mut center_layer_events: ResMut<bevy::app::Events<rgis_events::CenterCameraEvent>>,
-    mut delete_layer_events: ResMut<bevy::app::Events<rgis_events::DeleteLayer>>,
+    mut events: side_panel::Events,
 ) {
     side_panel::SidePanel {
         egui_ctx: bevy_egui_ctx.ctx_mut(),
         state: &mut state,
         layers: &layers,
-        toggle_layer_visibility_events: &mut toggle_layer_visibility_events,
-        center_layer_events: &mut center_layer_events,
-        delete_layer_events: &mut delete_layer_events,
+        events: &mut events,
     }
     .render();
 }

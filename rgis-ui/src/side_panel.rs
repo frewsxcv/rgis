@@ -2,17 +2,22 @@ use bevy_egui::egui;
 
 const MAX_SIDE_PANEL_WIDTH: f32 = 200.0f32;
 
-pub(crate) struct SidePanel<'a> {
+#[derive(bevy::ecs::system::SystemParam)]
+pub struct Events<'w, 's> {
+    toggle_layer_visibility_event_writer:
+        bevy::app::EventWriter<'w, 's, rgis_events::ToggleLayerVisibilityEvent>,
+    center_layer_event_writer: bevy::app::EventWriter<'w, 's, rgis_events::CenterCameraEvent>,
+    delete_layer_event_writer: bevy::app::EventWriter<'w, 's, rgis_events::DeleteLayer>,
+}
+
+pub(crate) struct SidePanel<'a, 'w, 's> {
     pub egui_ctx: &'a egui::Context,
     pub state: &'a mut crate::UiState,
     pub layers: &'a rgis_layers::Layers,
-    pub toggle_layer_visibility_events:
-        &'a mut bevy::app::Events<rgis_events::ToggleLayerVisibilityEvent>,
-    pub center_layer_events: &'a mut bevy::app::Events<rgis_events::CenterCameraEvent>,
-    pub delete_layer_events: &'a mut bevy::app::Events<rgis_events::DeleteLayer>,
+    pub events: &'a mut Events<'w, 's>,
 }
 
-impl<'a> SidePanel<'a> {
+impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
     pub fn render(&mut self) {
         egui::SidePanel::left("left-side-panel")
             .max_width(MAX_SIDE_PANEL_WIDTH)
@@ -39,21 +44,25 @@ impl<'a> SidePanel<'a> {
 
                         if layer.visible {
                             if ui.button("👁 Hide").clicked() {
-                                self.toggle_layer_visibility_events
+                                self.events
+                                    .toggle_layer_visibility_event_writer
                                     .send(rgis_events::ToggleLayerVisibilityEvent(layer.id));
                             }
                         } else if ui.button("👁 Show").clicked() {
-                            self.toggle_layer_visibility_events
+                            self.events
+                                .toggle_layer_visibility_event_writer
                                 .send(rgis_events::ToggleLayerVisibilityEvent(layer.id));
                         }
 
                         if ui.button("🔎 Zoom to extent").clicked() {
-                            self.center_layer_events
+                            self.events
+                                .center_layer_event_writer
                                 .send(rgis_events::CenterCameraEvent(layer.id))
                         }
 
                         if ui.button("❌ Remove").clicked() {
-                            self.delete_layer_events
+                            self.events
+                                .delete_layer_event_writer
                                 .send(rgis_events::DeleteLayer(layer.id))
                         }
                     });
