@@ -243,9 +243,9 @@ dependencies = [
 
 [[package]]
 name = "bevy-earcutr"
-version = "0.3.1"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "759ef27d672858823eef6d04610944629db64b461394921763df9b999fd42440"
+checksum = "e17895038d90f36ec8c107a02d9d668665d67d485fa7d10f937c99be4a1cdfb1"
 dependencies = [
  "bevy_render",
  "earcutr",

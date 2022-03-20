@@ -31,12 +31,16 @@ impl LineStringMeshBuilder {
         }
     }
 
-    pub fn build(self) -> Mesh {
-        build_mesh_from_vertices(
-            bevy_render::render_resource::PrimitiveTopology::LineList,
-            self.vertices,
-            self.indices,
-        )
+    pub fn build(self) -> Option<Mesh> {
+        if self.vertices.is_empty() {
+            None
+        } else {
+            Some(build_mesh_from_vertices(
+                bevy_render::render_resource::PrimitiveTopology::LineList,
+                self.vertices,
+                self.indices,
+            ))
+        }
     }
 }
 
@@ -62,12 +66,16 @@ impl PointMeshBuilder {
         self.indices.push(u32::try_from(index_base).unwrap());
     }
 
-    pub fn build(self) -> Mesh {
-        build_mesh_from_vertices(
-            bevy_render::render_resource::PrimitiveTopology::PointList,
-            self.vertices,
-            self.indices,
-        )
+    pub fn build(self) -> Option<Mesh> {
+        if self.vertices.is_empty() {
+            None
+        } else {
+            Some(build_mesh_from_vertices(
+                bevy_render::render_resource::PrimitiveTopology::PointList,
+                self.vertices,
+                self.indices,
+            ))
+        }
     }
 }
 
@@ -118,14 +126,13 @@ pub fn build_bevy_meshes<G: BuildBevyMeshes>(
 ) -> impl Iterator<Item = Mesh> {
     geo.populate_mesh_builders(&mut ctx);
 
-    // TODO: do the builders handle the empty case?
-
     [
         ctx.point_mesh_builder.build(),
         ctx.line_string_mesh_builder.build(),
         ctx.polygon_mesh_builder.build(),
     ]
     .into_iter()
+    .flat_map(|n| n)
 }
 
 pub trait BuildBevyMeshes {
