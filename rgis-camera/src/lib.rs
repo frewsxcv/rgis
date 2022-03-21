@@ -90,7 +90,6 @@ fn zoom(amount: f32, camera_scale: &mut CameraScale) {
     camera_scale.0 /= amount;
 }
 
-// this should go in rgis_camera
 fn center_camera(
     layers: Res<rgis_layers::Layers>,
     mut event_reader: EventReader<rgis_events::CenterCameraEvent>,
