@@ -132,7 +132,7 @@ pub fn build_bevy_meshes<G: BuildBevyMeshes>(
         ctx.polygon_mesh_builder.build(),
     ]
     .into_iter()
-    .flat_map(|n| n)
+    .flatten()
 }
 
 pub trait BuildBevyMeshes {
