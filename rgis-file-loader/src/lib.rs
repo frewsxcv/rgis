@@ -34,38 +34,44 @@ fn load_geojson_file_handler(
         })
     }
     for event in load_event_reader.drain() {
-        let sender: LoadedGeoJsonFileSender = sender.clone();
-        let target_crs = rgis_settings.target_crs.clone();
-        let fetched_bytes_sender = fetched_bytes_sender.clone();
-        thread_pool
-            .spawn(async move {
-                match event {
-                    #[cfg(not(target_arch = "wasm32"))]
-                    rgis_events::LoadGeoJsonFileEvent::FromPath {
-                        path: geojson_file_path,
-                        crs,
-                    } => {
+        match event {
+            #[cfg(not(target_arch = "wasm32"))]
+            rgis_events::LoadGeoJsonFileEvent::FromPath {
+                path: geojson_file_path,
+                crs,
+            } => {
+                let sender: LoadedGeoJsonFileSender = sender.clone();
+                let target_crs = rgis_settings.target_crs.clone();
+                thread_pool
+                    .spawn(async move {
                         let spawned_layers = SpawnedLayers(geojson::load_from_path(
                             geojson_file_path,
                             &crs,
                             &target_crs,
                         ));
                         sender.send(spawned_layers).await.unwrap();
-                    }
-                    rgis_events::LoadGeoJsonFileEvent::FromNetwork { url, crs, name } => {
-                        let request = ehttp::Request::get(url);
-                        ehttp::fetch(request, move |result: ehttp::Result<ehttp::Response>| {
-                            let bytes = result.unwrap().bytes;
-                            fetched_bytes_sender
-                                .try_send(FetchedFile { bytes, crs, name })
-                                .unwrap();
-                        });
-                    }
-                    rgis_events::LoadGeoJsonFileEvent::FromBytes {
-                        file_name,
-                        bytes,
-                        crs,
-                    } => {
+                    })
+                    .detach();
+            }
+            rgis_events::LoadGeoJsonFileEvent::FromNetwork { url, crs, name } => {
+                let fetched_bytes_sender = fetched_bytes_sender.clone();
+                let request = ehttp::Request::get(url);
+                ehttp::fetch(request, move |result: ehttp::Result<ehttp::Response>| {
+                    let bytes = result.unwrap().bytes;
+                    fetched_bytes_sender
+                        .try_send(FetchedFile { bytes, crs, name })
+                        .unwrap();
+                });
+            }
+            rgis_events::LoadGeoJsonFileEvent::FromBytes {
+                file_name,
+                bytes,
+                crs,
+            } => {
+                let sender: LoadedGeoJsonFileSender = sender.clone();
+                let target_crs = rgis_settings.target_crs.clone();
+                thread_pool
+                    .spawn(async move {
                         let spawned_layers = SpawnedLayers(geojson::load_from_reader(
                             std::io::Cursor::new(bytes),
                             file_name,
@@ -73,10 +79,10 @@ fn load_geojson_file_handler(
                             &target_crs,
                         ));
                         sender.send(spawned_layers).await.unwrap();
-                    }
-                }
-            })
-            .detach();
+                    })
+                    .detach();
+            }
+        }
     }
 }
 
