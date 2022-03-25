@@ -61,9 +61,8 @@ jobs:
     - name: Build and publish
       run: ./.github/publish.sh
     - name: Deploy to GitHub Pages
-      uses: JamesIves/github-pages-deploy-action@releases/v3
+      uses: JamesIves/github-pages-deploy-action@v4.2.5
       with:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        BRANCH: gh-pages
-        FOLDER: www/dist/
-        SINGLE_COMMIT: true
+        branch: gh-pages
+        folder: www/dist/
+        single_commit: true
