@@ -30,14 +30,16 @@ pub struct LayerDeleted(pub rgis_layer_id::LayerId);
 #[derive(Debug)]
 pub enum LoadGeoJsonFileEvent {
     #[cfg(not(target_arch = "wasm32"))]
-    FromPath {
-        path: path::PathBuf,
-        source_crs: String,
+    FromPath { path: path::PathBuf, crs: String },
+    FromNetwork {
+        name: String,
+        url: String,
+        crs: String,
     },
     FromBytes {
         file_name: String,
         bytes: Vec<u8>,
-        source_crs: String,
+        crs: String,
     },
 }
 

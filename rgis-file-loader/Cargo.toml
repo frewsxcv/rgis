@@ -13,6 +13,7 @@ bevy = { version = "0.6", default-features = false, features = [
     "bevy_sprite",
     "bevy_ui",
 ] }
+ehttp = "0.2"
 geo = "0.19"
 geojson = { version = "0.22", features = ["geo-types"] }
 rgis-cli = { path = "../rgis-cli" }

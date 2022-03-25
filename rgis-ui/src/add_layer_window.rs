@@ -5,6 +5,7 @@ pub(crate) struct AddLayerWindow<'a> {
     pub bevy_egui_ctx: &'a mut bevy_egui::EguiContext,
     pub thread_pool: &'a bevy::tasks::AsyncComputeTaskPool,
     pub opened_file_bytes_sender: &'a crate::OpenedFileBytesSender,
+    pub load_geo_json_file_events: &'a mut bevy::app::Events<rgis_events::LoadGeoJsonFileEvent>,
 }
 
 impl<'a> AddLayerWindow<'a> {
@@ -16,19 +17,16 @@ impl<'a> AddLayerWindow<'a> {
                     open_geojson_layer(self.opened_file_bytes_sender, self.thread_pool)
                 }
                 ui.separator();
-                if ui.button("Add US Borders Layer").clicked() {
-                    let sender = self.opened_file_bytes_sender.clone();
-                    self.thread_pool
-                        .spawn(async move {
-                            sender
-                                .send((
-                                    rgis_library::ENTRIES[0].name.to_string(),
-                                    rgis_library::ENTRIES[0].bytes.to_owned(),
-                                ))
-                                .await
-                                .unwrap();
-                        })
-                        .detach();
+                for entry in rgis_library::ENTRIES {
+                    if ui.button(format!("Add '{}' Layer", entry.name)).clicked() {
+                        self.load_geo_json_file_events.send(
+                            rgis_events::LoadGeoJsonFileEvent::FromNetwork {
+                                name: entry.name.into(),
+                                url: entry.url.into(),
+                                crs: entry.crs.into(),
+                            },
+                        )
+                    }
                 }
             });
     }

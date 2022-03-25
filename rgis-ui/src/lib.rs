@@ -110,7 +110,7 @@ fn handle_opened_file_bytes_receiver(
         load_geo_json_file_events.send(rgis_events::LoadGeoJsonFileEvent::FromBytes {
             file_name,
             bytes,
-            source_crs: "EPSG:4326".into(),
+            crs: "EPSG:4326".into(),
         });
         state.is_add_layer_window_visible = false;
     }
@@ -134,6 +134,7 @@ fn render_manage_layer_window(
 fn render_add_layer_window(
     mut state: ResMut<UiState>,
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
+    mut load_geo_json_file_events: ResMut<bevy::app::Events<rgis_events::LoadGeoJsonFileEvent>>,
     thread_pool: Res<bevy::tasks::AsyncComputeTaskPool>,
     opened_file_bytes_sender: Res<OpenedFileBytesSender>,
 ) {
@@ -142,6 +143,7 @@ fn render_add_layer_window(
         bevy_egui_ctx: &mut bevy_egui_ctx,
         thread_pool: &thread_pool,
         opened_file_bytes_sender: &opened_file_bytes_sender,
+        load_geo_json_file_events: &mut load_geo_json_file_events,
     }
     .render();
 }
