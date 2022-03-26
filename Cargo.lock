@@ -2795,6 +2795,7 @@ dependencies = [
  "rgis-layer-id",
  "rgis-layers",
  "rgis-settings",
+ "rgis-task",
  "serde_json",
  "time-logger",
 ]
@@ -2857,6 +2858,14 @@ dependencies = [
 name = "rgis-settings"
 version = "0.1.0"
 dependencies = [
+ "bevy",
+]
+
+[[package]]
+name = "rgis-task"
+version = "0.1.0"
+dependencies = [
+ "async-channel",
  "bevy",
 ]
 

@@ -20,6 +20,7 @@ rgis-cli = { path = "../rgis-cli" }
 rgis-layers = { path = "../rgis-layers" }
 rgis-layer-id = { path = "../rgis-layer-id" }
 rgis-settings = { path = "../rgis-settings" }
+rgis-task = { path = "../rgis-task" }
 serde_json = "1"
 time-logger = { path = "../time-logger" }
 rgis-events = { path = "../rgis-events" }

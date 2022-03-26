@@ -4,7 +4,7 @@ use std::path;
 
 #[cfg(not(target_arch = "wasm32"))]
 pub fn load_from_path(
-    geojson_file_path: path::PathBuf,
+    geojson_file_path: &path::Path,
     source_projection: &str,
     target_projection: &str,
 ) -> Vec<rgis_layers::UnassignedLayer> {

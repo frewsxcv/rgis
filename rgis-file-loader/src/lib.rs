@@ -1,17 +1,49 @@
 use bevy::app::Events;
 use bevy::prelude::*;
+use rgis_task::Task;
+use std::{io, path};
 
 mod geojson;
 
 struct SpawnedLayers(Vec<rgis_layers::UnassignedLayer>);
 
-type LoadedGeoJsonFileSender = async_channel::Sender<SpawnedLayers>;
-type LoadedGeoJsonFileReceiver = async_channel::Receiver<SpawnedLayers>;
-
 struct FetchedFile {
     name: String,
     bytes: Vec<u8>,
     crs: String,
+}
+
+enum GeoJsonSource {
+    Path(path::PathBuf),
+    Bytes { file_name: String, bytes: Vec<u8> },
+}
+
+struct LoadGeoJsonFileTask {
+    geojson_source: GeoJsonSource,
+    source_crs: String,
+    target_crs: String,
+}
+
+impl rgis_task::Task for LoadGeoJsonFileTask {
+    type Outcome = SpawnedLayers;
+
+    fn name(&self) -> String {
+        "Loading GeoJson file".into()
+    }
+
+    fn perform(self) -> SpawnedLayers {
+        SpawnedLayers(match self.geojson_source {
+            GeoJsonSource::Path(path) => {
+                geojson::load_from_path(&path, &self.source_crs, &self.target_crs)
+            }
+            GeoJsonSource::Bytes { file_name, bytes } => geojson::load_from_reader(
+                io::Cursor::new(bytes),
+                file_name,
+                &self.source_crs,
+                &self.target_crs,
+            ),
+        })
+    }
 }
 
 type FetchedFileSender = async_channel::Sender<FetchedFile>;
@@ -21,10 +53,10 @@ type FetchedFileReceiver = async_channel::Receiver<FetchedFile>;
 fn load_geojson_file_handler(
     mut load_event_reader: ResMut<Events<rgis_events::LoadGeoJsonFileEvent>>,
     thread_pool: Res<bevy::tasks::AsyncComputeTaskPool>,
-    sender: Res<LoadedGeoJsonFileSender>,
     rgis_settings: Res<rgis_settings::RgisSettings>,
     fetched_bytes_sender: Res<FetchedFileSender>,
     fetched_bytes_receiver: Res<FetchedFileReceiver>,
+    mut commands: bevy::ecs::system::Commands,
 ) {
     while let Ok(fetched) = fetched_bytes_receiver.try_recv() {
         load_event_reader.send(rgis_events::LoadGeoJsonFileEvent::FromBytes {
@@ -40,18 +72,12 @@ fn load_geojson_file_handler(
                 path: geojson_file_path,
                 crs,
             } => {
-                let sender: LoadedGeoJsonFileSender = sender.clone();
-                let target_crs = rgis_settings.target_crs.clone();
-                thread_pool
-                    .spawn(async move {
-                        let spawned_layers = SpawnedLayers(geojson::load_from_path(
-                            geojson_file_path,
-                            &crs,
-                            &target_crs,
-                        ));
-                        sender.send(spawned_layers).await.unwrap();
-                    })
-                    .detach();
+                LoadGeoJsonFileTask {
+                    geojson_source: GeoJsonSource::Path(geojson_file_path.clone()),
+                    source_crs: crs.clone(),
+                    target_crs: rgis_settings.target_crs.clone(),
+                }
+                .spawn(&thread_pool, &mut commands);
             }
             rgis_events::LoadGeoJsonFileEvent::FromNetwork { url, crs, name } => {
                 let fetched_bytes_sender = fetched_bytes_sender.clone();
@@ -68,19 +94,12 @@ fn load_geojson_file_handler(
                 bytes,
                 crs,
             } => {
-                let sender: LoadedGeoJsonFileSender = sender.clone();
-                let target_crs = rgis_settings.target_crs.clone();
-                thread_pool
-                    .spawn(async move {
-                        let spawned_layers = SpawnedLayers(geojson::load_from_reader(
-                            std::io::Cursor::new(bytes),
-                            file_name,
-                            &crs,
-                            &target_crs,
-                        ));
-                        sender.send(spawned_layers).await.unwrap();
-                    })
-                    .detach();
+                LoadGeoJsonFileTask {
+                    geojson_source: GeoJsonSource::Bytes { bytes, file_name },
+                    source_crs: crs.clone(),
+                    target_crs: rgis_settings.target_crs.clone(),
+                }
+                .spawn(&thread_pool, &mut commands);
             }
         }
     }
@@ -89,10 +108,12 @@ fn load_geojson_file_handler(
 fn handle_loaded_layers(
     mut loaded_events: EventWriter<rgis_events::LayerLoadedEvent>,
     mut layers: ResMut<rgis_layers::Layers>,
-    receiver: Res<LoadedGeoJsonFileReceiver>,
+    mut task_finished: ResMut<
+        bevy::ecs::event::Events<rgis_task::TaskFinishedEvent<LoadGeoJsonFileTask>>,
+    >,
 ) {
-    while let Ok(spawned_layers) = receiver.try_recv() {
-        for unassigned_layer in spawned_layers.0 {
+    for event in task_finished.drain() {
+        for unassigned_layer in event.outcome.0 {
             let layer_id = layers.add(unassigned_layer);
             loaded_events.send(rgis_events::LayerLoadedEvent(layer_id));
         }
@@ -120,14 +141,12 @@ pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        let (sender, receiver): (LoadedGeoJsonFileSender, LoadedGeoJsonFileReceiver) =
-            async_channel::unbounded();
         let (sender2, receiver2): (FetchedFileSender, FetchedFileReceiver) =
             async_channel::unbounded();
-        app.insert_resource(sender)
-            .insert_resource(receiver)
-            .insert_resource(sender2)
+        app.insert_resource(sender2)
             .insert_resource(receiver2)
+            .add_system(rgis_task::check_system::<LoadGeoJsonFileTask>)
+            .add_event::<rgis_task::TaskFinishedEvent<LoadGeoJsonFileTask>>()
             .add_system(load_geojson_file_handler.system())
             .add_system(handle_loaded_layers.system());
 
