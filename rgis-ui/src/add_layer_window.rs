@@ -12,6 +12,7 @@ impl<'a> AddLayerWindow<'a> {
     pub fn render(&mut self) {
         egui::Window::new("Add Layer")
             .open(&mut self.state.is_add_layer_window_visible)
+            .anchor(egui::Align2::LEFT_TOP, [5., 5.])
             .show(self.bevy_egui_ctx.ctx_mut(), |ui| {
                 if ui.button("Add GeoJSON Layer").clicked() {
                     open_geojson_layer(self.opened_file_bytes_sender, self.thread_pool)
