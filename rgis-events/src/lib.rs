@@ -27,6 +27,7 @@ pub struct LayerColorUpdated(pub rgis_layer_id::LayerId);
 pub struct DeleteLayer(pub rgis_layer_id::LayerId);
 pub struct LayerDeleted(pub rgis_layer_id::LayerId);
 
+// TODO: this can be removed
 #[derive(Debug)]
 pub enum LoadGeoJsonFileEvent {
     #[cfg(not(target_arch = "wasm32"))]

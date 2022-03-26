@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_egui::egui;
 
 mod add_layer_window;
 mod bottom_panel;
@@ -56,7 +57,8 @@ impl bevy::app::Plugin for Plugin {
                 render_add_layer_window
                     .label("add_layer_window")
                     .after("side_panel"),
-            );
+            )
+            .add_system(render_in_progress.after("top_bottom_panels"));
     }
 }
 
@@ -146,4 +148,28 @@ fn render_add_layer_window(
         load_geo_json_file_events: &mut load_geo_json_file_events,
     }
     .render();
+}
+
+fn render_in_progress(
+    query: Query<&rgis_task::InProgressTask>,
+    mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
+) {
+    let mut running_tasks = vec![];
+    for task in query.iter() {
+        running_tasks.push(task.task_name.clone());
+    }
+    if !running_tasks.is_empty() {
+        egui::Window::new("Running tasks")
+            .open(&mut true)
+            .title_bar(false)
+            .anchor(egui::Align2::RIGHT_BOTTOM, [-5., -5.])
+            .show(bevy_egui_ctx.ctx_mut(), |ui| {
+                for task_name in running_tasks {
+                    ui.horizontal(|ui| {
+                        ui.add(egui::Spinner::new());
+                        ui.label(format!("Running '{}'", task_name));
+                    });
+                }
+            });
+    }
 }

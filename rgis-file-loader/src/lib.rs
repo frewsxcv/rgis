@@ -16,7 +16,10 @@ struct FetchedFile {
 enum GeoJsonSource {
     #[cfg(not(target_arch = "wasm32"))]
     Path(std::path::PathBuf),
-    Bytes { file_name: String, bytes: Vec<u8> },
+    Bytes {
+        file_name: String,
+        bytes: Vec<u8>,
+    },
 }
 
 struct LoadGeoJsonFileTask {

@@ -2883,6 +2883,7 @@ dependencies = [
  "rgis-library",
  "rgis-mouse",
  "rgis-settings",
+ "rgis-task",
  "webbrowser 0.6.0",
 ]
 
