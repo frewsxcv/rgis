@@ -1,7 +1,7 @@
 use bevy::app::Events;
 use bevy::prelude::*;
 use rgis_task::Task;
-use std::{io, path};
+use std::io;
 
 mod geojson;
 
@@ -14,7 +14,8 @@ struct FetchedFile {
 }
 
 enum GeoJsonSource {
-    Path(path::PathBuf),
+    #[cfg(not(target_arch = "wasm32"))]
+    Path(std::path::PathBuf),
     Bytes { file_name: String, bytes: Vec<u8> },
 }
 
@@ -33,6 +34,7 @@ impl rgis_task::Task for LoadGeoJsonFileTask {
 
     fn perform(self) -> SpawnedLayers {
         SpawnedLayers(match self.geojson_source {
+            #[cfg(not(target_arch = "wasm32"))]
             GeoJsonSource::Path(path) => {
                 geojson::load_from_path(&path, &self.source_crs, &self.target_crs)
             }
