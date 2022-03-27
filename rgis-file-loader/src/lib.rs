@@ -28,7 +28,6 @@ struct LoadGeoJsonFileTask {
     target_crs: String,
 }
 
-#[rgis_task::async_trait]
 impl rgis_task::Task for LoadGeoJsonFileTask {
     type Outcome = SpawnedLayers;
 
@@ -36,18 +35,20 @@ impl rgis_task::Task for LoadGeoJsonFileTask {
         "Loading GeoJson file".into()
     }
 
-    async fn perform(self) -> SpawnedLayers {
-        SpawnedLayers(match self.geojson_source {
-            #[cfg(not(target_arch = "wasm32"))]
-            GeoJsonSource::Path(path) => {
-                geojson::load_from_path(&path, &self.source_crs, &self.target_crs)
-            }
-            GeoJsonSource::Bytes { file_name, bytes } => geojson::load_from_reader(
-                io::Cursor::new(bytes),
-                file_name,
-                &self.source_crs,
-                &self.target_crs,
-            ),
+    fn perform(self) -> rgis_task::PerformReturn<Self::Outcome> {
+        Box::pin(async move {
+            SpawnedLayers(match self.geojson_source {
+                #[cfg(not(target_arch = "wasm32"))]
+                GeoJsonSource::Path(path) => {
+                    geojson::load_from_path(&path, &self.source_crs, &self.target_crs)
+                }
+                GeoJsonSource::Bytes { file_name, bytes } => geojson::load_from_reader(
+                    io::Cursor::new(bytes),
+                    file_name,
+                    &self.source_crs,
+                    &self.target_crs,
+                ),
+            })
         })
     }
 }

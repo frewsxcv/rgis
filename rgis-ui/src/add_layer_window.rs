@@ -3,7 +3,6 @@ use rgis_task::Task;
 
 pub struct OpenFileTask;
 
-#[rgis_task::async_trait]
 impl rgis_task::Task for OpenFileTask {
     type Outcome = Option<(String, Vec<u8>)>;
 
@@ -11,13 +10,19 @@ impl rgis_task::Task for OpenFileTask {
         "Opening file".into()
     }
 
-    async fn perform(self) -> Self::Outcome {
-        let task = rfd::AsyncFileDialog::new().pick_file();
-        let file_handle = task.await;
-        match file_handle {
-            Some(fh) => Some((fh.file_name(), fh.read().await)),
-            None => None,
-        }
+    fn perform(self) -> rgis_task::PerformReturn<Self::Outcome> {
+        Box::pin(async move {
+            let task = rfd::AsyncFileDialog::new().pick_file();
+            let file_handle = task.await;
+            match file_handle {
+                Some(fh) => {
+                    let file_name = fh.file_name();
+                    let bytes = fh.read().await;
+                    Some((file_name, bytes))
+                }
+                None => None,
+            }
+        })
     }
 }
 

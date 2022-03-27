@@ -1,7 +1,5 @@
 use bevy::prelude::Component;
 
-pub use async_trait::async_trait;
-
 #[derive(Default)]
 pub struct TaskPlugin<T: Task> {
     t: std::marker::PhantomData<T>,
@@ -22,13 +20,17 @@ impl<T: Task> bevy::prelude::Plugin for TaskPlugin<T> {
     }
 }
 
-#[async_trait]
+#[cfg(not(target_arch = "wasm32"))]
+pub type PerformReturn<Output> = std::pin::Pin<Box<dyn std::future::Future<Output = Output> + Send + 'static>>;
+#[cfg(target_arch = "wasm32")]
+pub type PerformReturn<Output> = std::pin::Pin<Box<dyn std::future::Future<Output = Output> + 'static>>;
+
 pub trait Task: Sized + Send + Sync + 'static {
-    type Outcome: Send + Sync;
+    type Outcome: Send + Sync + 'static;
 
     fn name(&self) -> String;
 
-    async fn perform(self) -> Self::Outcome;
+    fn perform(self) -> PerformReturn<Self::Outcome>;
 
     fn spawn(
         self,
