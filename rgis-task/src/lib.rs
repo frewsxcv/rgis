@@ -2,8 +2,28 @@ use bevy::prelude::Component;
 
 pub use async_trait::async_trait;
 
+#[derive(Default)]
+pub struct TaskPlugin<T: Task> {
+    t: std::marker::PhantomData<T>,
+}
+
+impl<T: Task> TaskPlugin<T> {
+    pub fn new() -> Self {
+        TaskPlugin {
+            t: std::marker::PhantomData,
+        }
+    }
+}
+
+impl<T: Task> bevy::prelude::Plugin for TaskPlugin<T> {
+    fn build(&self, app: &mut bevy::prelude::App) {
+        app.add_system(check_system::<T>)
+            .add_event::<TaskFinishedEvent<T>>();
+    }
+}
+
 #[async_trait]
-pub trait Task: Sized + Send + 'static {
+pub trait Task: Sized + Send + Sync + 'static {
     type Outcome: Send + Sync;
 
     fn name(&self) -> String;

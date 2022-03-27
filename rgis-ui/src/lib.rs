@@ -28,9 +28,7 @@ impl bevy::app::Plugin for Plugin {
                 is_add_layer_window_visible: true,
             })
             .add_system(handle_open_file_task)
-            .add_system(rgis_task::check_system::<add_layer_window::OpenFileTask>)
-            .add_event::<rgis_task::TaskFinishedEvent<add_layer_window::OpenFileTask>>()
-            .add_event::<rgis_task::InProgressTaskOutcomeReceiver<add_layer_window::OpenFileTask>>()
+            .add_plugin(rgis_task::TaskPlugin::<add_layer_window::OpenFileTask>::new())
             .add_system_set(
                 SystemSet::new()
                     .label("top_bottom_panels")
@@ -106,7 +104,6 @@ fn handle_open_file_task(
 ) {
     for event in events.drain() {
         if let Some(outcome) = event.outcome {
-            bevy::log::error!("received an event");
             load_geo_json_file_events.send(rgis_events::LoadGeoJsonFileEvent::FromBytes {
                 file_name: outcome.0,
                 bytes: outcome.1,

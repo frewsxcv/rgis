@@ -151,8 +151,7 @@ impl bevy::app::Plugin for Plugin {
             async_channel::unbounded();
         app.insert_resource(sender2)
             .insert_resource(receiver2)
-            .add_system(rgis_task::check_system::<LoadGeoJsonFileTask>)
-            .add_event::<rgis_task::TaskFinishedEvent<LoadGeoJsonFileTask>>()
+            .add_plugin(rgis_task::TaskPlugin::<LoadGeoJsonFileTask>::new())
             .add_system(load_geojson_file_handler.system())
             .add_system(handle_loaded_layers.system());
 
