@@ -1,21 +1,42 @@
 use bevy_egui::egui;
+use rgis_task::Task;
 
-pub(crate) struct AddLayerWindow<'a> {
+pub struct OpenFileTask;
+
+#[rgis_task::async_trait]
+impl rgis_task::Task for OpenFileTask {
+    type Outcome = Option<(String, Vec<u8>)>;
+
+    fn name(&self) -> String {
+        "Opening file".into()
+    }
+
+    async fn perform(self) -> Self::Outcome {
+        let task = rfd::AsyncFileDialog::new().pick_file();
+        let file_handle = task.await;
+        match file_handle {
+            Some(fh) => Some((fh.file_name(), fh.read().await)),
+            None => None,
+        }
+    }
+}
+
+pub(crate) struct AddLayerWindow<'a, 'w, 's> {
     pub state: &'a mut crate::UiState,
     pub bevy_egui_ctx: &'a mut bevy_egui::EguiContext,
     pub thread_pool: &'a bevy::tasks::AsyncComputeTaskPool,
-    pub opened_file_bytes_sender: &'a crate::OpenedFileBytesSender,
     pub load_geo_json_file_events: &'a mut bevy::app::Events<rgis_events::LoadGeoJsonFileEvent>,
+    pub commands: &'a mut bevy::prelude::Commands<'w, 's>,
 }
 
-impl<'a> AddLayerWindow<'a> {
+impl<'a, 'w, 's> AddLayerWindow<'a, 'w, 's> {
     pub fn render(&mut self) {
         egui::Window::new("Add Layer")
             .open(&mut self.state.is_add_layer_window_visible)
             .anchor(egui::Align2::LEFT_TOP, [5., 5.])
             .show(self.bevy_egui_ctx.ctx_mut(), |ui| {
                 if ui.button("Add GeoJSON Layer").clicked() {
-                    open_geojson_layer(self.opened_file_bytes_sender, self.thread_pool)
+                    OpenFileTask.spawn(self.thread_pool, self.commands)
                 }
                 ui.separator();
                 for entry in rgis_library::ENTRIES {
@@ -31,20 +52,4 @@ impl<'a> AddLayerWindow<'a> {
                 }
             });
     }
-}
-
-fn open_geojson_layer(
-    opened_file_bytes_sender: &crate::OpenedFileBytesSender,
-    thread_pool: &bevy::tasks::AsyncComputeTaskPool,
-) {
-    let sender = opened_file_bytes_sender.clone();
-    thread_pool
-        .spawn(async move {
-            let task = rfd::AsyncFileDialog::new().pick_file();
-            let file_handle = task.await;
-            if let Some(n) = file_handle {
-                sender.send((n.file_name(), n.read().await)).await.unwrap();
-            }
-        })
-        .detach();
 }
