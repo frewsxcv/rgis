@@ -21,9 +21,11 @@ impl<T: Task> bevy::prelude::Plugin for TaskPlugin<T> {
 }
 
 #[cfg(not(target_arch = "wasm32"))]
-pub type PerformReturn<Output> = std::pin::Pin<Box<dyn std::future::Future<Output = Output> + Send + 'static>>;
+pub type PerformReturn<Output> =
+    std::pin::Pin<Box<dyn std::future::Future<Output = Output> + Send + 'static>>;
 #[cfg(target_arch = "wasm32")]
-pub type PerformReturn<Output> = std::pin::Pin<Box<dyn std::future::Future<Output = Output> + 'static>>;
+pub type PerformReturn<Output> =
+    std::pin::Pin<Box<dyn std::future::Future<Output = Output> + 'static>>;
 
 pub trait Task: Sized + Send + Sync + 'static {
     type Outcome: Send + Sync + 'static;
