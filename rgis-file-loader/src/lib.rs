@@ -28,6 +28,7 @@ struct LoadGeoJsonFileTask {
     target_crs: String,
 }
 
+#[rgis_task::async_trait]
 impl rgis_task::Task for LoadGeoJsonFileTask {
     type Outcome = SpawnedLayers;
 
@@ -35,7 +36,7 @@ impl rgis_task::Task for LoadGeoJsonFileTask {
         "Loading GeoJson file".into()
     }
 
-    fn perform(self) -> SpawnedLayers {
+    async fn perform(self) -> SpawnedLayers {
         SpawnedLayers(match self.geojson_source {
             #[cfg(not(target_arch = "wasm32"))]
             GeoJsonSource::Path(path) => {

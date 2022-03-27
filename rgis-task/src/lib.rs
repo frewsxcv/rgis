@@ -1,10 +1,14 @@
 use bevy::prelude::Component;
 
+pub use async_trait::async_trait;
+
+#[async_trait]
 pub trait Task: Sized + Send + 'static {
     type Outcome: Send + Sync;
 
     fn name(&self) -> String;
-    fn perform(self) -> Self::Outcome;
+
+    async fn perform(self) -> Self::Outcome;
 
     fn spawn(
         self,
@@ -21,7 +25,7 @@ pub trait Task: Sized + Send + 'static {
         pool.spawn(async move {
             let task_name = task_name.clone();
             bevy::log::info!("Starting task '{}'", task_name);
-            let outcome = self.perform();
+            let outcome = self.perform().await;
             bevy::log::info!("Completed task '{}'", task_name);
             sender.send(outcome).await.unwrap();
         })
