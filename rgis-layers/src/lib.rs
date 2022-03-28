@@ -78,7 +78,7 @@ impl Layers {
     }
 
     fn next_layer_id(&self) -> rgis_layer_id::LayerId {
-        rgis_layer_id::LayerId(self.data.last().map(|layer| layer.id.0 + 1).unwrap_or(1))
+        rgis_layer_id::LayerId::new()
     }
 
     pub fn add(&mut self, unassigned_layer: UnassignedLayer) -> rgis_layer_id::LayerId {

@@ -33,6 +33,9 @@ pub fn load_from_reader<R: io::Read>(
     tl.finish();
 
     let tl = time_logger::start!("Converting to geo-types: {:?}", file_name);
+
+    // let x = geojson::FeatureIterator;
+
     let geo_geometry_collection: geo::GeometryCollection<f64> =
         geojson::quick_collection(&geojson).unwrap();
     tl.finish();
