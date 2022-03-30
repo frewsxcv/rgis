@@ -1,7 +1,7 @@
 use bevy::app::Events;
 use bevy::prelude::*;
 use rgis_task::Task;
-use std::io;
+use std::{error, io};
 
 mod geojson;
 
@@ -29,7 +29,7 @@ struct LoadGeoJsonFileTask {
 }
 
 impl rgis_task::Task for LoadGeoJsonFileTask {
-    type Outcome = SpawnedLayers;
+    type Outcome = Result<SpawnedLayers, Box<dyn error::Error + Send + Sync>>;
 
     fn name(&self) -> String {
         "Loading GeoJson file".into()
@@ -37,18 +37,18 @@ impl rgis_task::Task for LoadGeoJsonFileTask {
 
     fn perform(self) -> rgis_task::PerformReturn<Self::Outcome> {
         Box::pin(async move {
-            SpawnedLayers(match self.geojson_source {
+            Ok(SpawnedLayers(match self.geojson_source {
                 #[cfg(not(target_arch = "wasm32"))]
                 GeoJsonSource::Path(path) => {
-                    geojson::load_from_path(&path, &self.source_crs, &self.target_crs)
+                    geojson::load_from_path(&path, &self.source_crs, &self.target_crs)?
                 }
                 GeoJsonSource::Bytes { file_name, bytes } => geojson::load_from_reader(
                     io::Cursor::new(bytes),
                     file_name,
                     &self.source_crs,
                     &self.target_crs,
-                ),
-            })
+                )?,
+            }))
         })
     }
 }
@@ -120,9 +120,16 @@ fn handle_loaded_layers(
     >,
 ) {
     for event in task_finished.drain() {
-        for unassigned_layer in event.outcome.0 {
-            let layer_id = layers.add(unassigned_layer);
-            loaded_events.send(rgis_events::LayerLoadedEvent(layer_id));
+        match event.outcome {
+            Ok(unassigned_layers) => {
+                for unassigned_layer in unassigned_layers.0 {
+                    let layer_id = layers.add(unassigned_layer);
+                    loaded_events.send(rgis_events::LayerLoadedEvent(layer_id));
+                }
+            }
+            Err(e) => {
+                bevy::log::error!("Encountered error when loading GeoJSON file: {:?}", e);
+            }
         }
     }
 }

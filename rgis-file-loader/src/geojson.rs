@@ -1,4 +1,4 @@
-use std::io;
+use std::{error, io};
 #[cfg(not(target_arch = "wasm32"))]
 use std::path;
 
@@ -7,7 +7,7 @@ pub fn load_from_path(
     geojson_file_path: &path::Path,
     source_projection: &str,
     target_projection: &str,
-) -> Vec<rgis_layers::UnassignedLayer> {
+) -> Result<Vec<rgis_layers::UnassignedLayer>, Box<dyn error::Error + Send + Sync>> {
     use std::fs;
     let tl = time_logger::start!("Opening file: {:?}", geojson_file_path);
     let reader = io::BufReader::new(fs::File::open(&geojson_file_path).expect("TODO"));
@@ -27,7 +27,7 @@ pub fn load_from_reader<R: io::Read + io::Seek>(
     file_name: String,
     source_projection: &str,
     target_projection: &str,
-) -> Vec<rgis_layers::UnassignedLayer> {
+) -> Result<Vec<rgis_layers::UnassignedLayer>, Box<dyn error::Error + Send + Sync>> {
     let mut iter = geojson::FeatureIterator::new(&mut reader).peekable();
 
     let mut geo_geometry_collection: geo::GeometryCollection<f64>;
@@ -37,19 +37,19 @@ pub fn load_from_reader<R: io::Read + io::Seek>(
         geo_geometry_collection = geo::GeometryCollection::new();
         for feature_result in iter {
             // todo: handle errors gracefully
-            let feature = feature_result.unwrap();
-            geo_geometry_collection.0.push(feature.geometry.unwrap().try_into().unwrap());
+            let feature = feature_result?;
+            geo_geometry_collection.0.push(feature.geometry.unwrap().try_into()?);
         }
         tl.finish();
     } else {
-        reader.rewind().unwrap(); // todo: handle error gracefully
+        reader.rewind()?;
         let tl = time_logger::start!("Parsing file: {:?}", file_name);
-        let geojson: geojson::GeoJson = serde_json::from_reader(reader).unwrap();
+        let geojson: geojson::GeoJson = serde_json::from_reader(reader)?;
         tl.finish();
 
         let tl = time_logger::start!("Converting to geo-types: {:?}", file_name);
         geo_geometry_collection =
-            geojson::quick_collection(&geojson).unwrap();
+            geojson::quick_collection(&geojson)?;
         tl.finish();
     };
 
@@ -61,7 +61,7 @@ pub fn load_from_reader<R: io::Read + io::Seek>(
         target_projection,
     );
 
-    vec![unassigned_layer]
+    Ok(vec![unassigned_layer])
 }
 
 /*
