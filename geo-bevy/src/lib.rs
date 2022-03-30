@@ -1,3 +1,5 @@
+#![warn(clippy::unwrap_used)]
+
 use bevy_render::prelude::*;
 use geo::algorithm::coords_iter::CoordsIter;
 use std::convert::TryFrom;

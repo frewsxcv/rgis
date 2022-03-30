@@ -1,3 +1,5 @@
+#![warn(clippy::unwrap_used)]
+
 use clap::{Arg, Command};
 use std::path;
 

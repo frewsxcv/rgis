@@ -1,3 +1,5 @@
+#![warn(clippy::unwrap_used)]
+
 use bevy::ecs::system::{IntoSystem, Res};
 
 const PAN_AMOUNT: f32 = 15.; // Larger number will pan more

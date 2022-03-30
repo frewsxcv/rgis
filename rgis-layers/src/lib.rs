@@ -1,3 +1,5 @@
+#![warn(clippy::unwrap_used)]
+
 use bevy::prelude::*;
 use geo::bounding_rect::BoundingRect;
 use geo::contains::Contains;

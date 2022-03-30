@@ -1,3 +1,5 @@
+#![warn(clippy::unwrap_used)]
+
 static DEFAULT_TARGET_CRS: &str = "EPSG:3857";
 
 pub struct RgisSettings {

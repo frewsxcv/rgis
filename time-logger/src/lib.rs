@@ -1,3 +1,5 @@
+#![warn(clippy::unwrap_used)]
+
 pub struct TimeLogger {
     title: String,
     duration: instant::Instant,

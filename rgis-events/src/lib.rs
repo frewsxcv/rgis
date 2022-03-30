@@ -1,3 +1,5 @@
+#![warn(clippy::unwrap_used)]
+
 use bevy::prelude::*;
 #[cfg(not(target_arch = "wasm32"))]
 use std::path;

@@ -1,3 +1,5 @@
+#![warn(clippy::unwrap_used)]
+
 use std::sync;
 
 static NEXT_ID: sync::atomic::AtomicU16 = sync::atomic::AtomicU16::new(0);

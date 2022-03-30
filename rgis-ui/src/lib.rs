@@ -1,3 +1,5 @@
+#![warn(clippy::unwrap_used)]
+
 use bevy::prelude::*;
 use bevy_egui::egui;
 

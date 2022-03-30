@@ -1,3 +1,5 @@
+#![warn(clippy::unwrap_used)]
+
 use geo::algorithm::map_coords::MapCoordsInplace;
 use wasm_bindgen::JsCast;
 

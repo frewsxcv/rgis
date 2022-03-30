@@ -1,3 +1,5 @@
+#![warn(clippy::unwrap_used)]
+
 use bevy::app::Events;
 use bevy::prelude::*;
 use rgis_task::Task;

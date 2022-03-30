@@ -1,3 +1,5 @@
+#![warn(clippy::unwrap_used)]
+
 use bevy::ecs::query::With;
 use bevy::ecs::system::{IntoSystem, Query, Res, ResMut};
 

@@ -1,3 +1,5 @@
+#![warn(clippy::unwrap_used)]
+
 pub struct LibraryEntry {
     pub name: &'static str,
     pub url: &'static str,

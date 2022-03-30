@@ -1,3 +1,5 @@
+#![warn(clippy::unwrap_used)]
+
 use bevy::prelude::Component;
 
 #[derive(Default)]
