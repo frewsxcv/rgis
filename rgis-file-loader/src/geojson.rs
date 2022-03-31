@@ -1,6 +1,6 @@
-use std::{error, io};
 #[cfg(not(target_arch = "wasm32"))]
 use std::path;
+use std::{error, io};
 
 #[cfg(not(target_arch = "wasm32"))]
 pub fn load_from_path(
@@ -38,7 +38,9 @@ pub fn load_from_reader<R: io::Read + io::Seek>(
         for feature_result in iter {
             // todo: handle errors gracefully
             let feature = feature_result?;
-            geo_geometry_collection.0.push(feature.geometry.unwrap().try_into()?);
+            geo_geometry_collection
+                .0
+                .push(feature.geometry.unwrap().try_into()?);
         }
         tl.finish();
     } else {
@@ -48,8 +50,7 @@ pub fn load_from_reader<R: io::Read + io::Seek>(
         tl.finish();
 
         let tl = time_logger::start!("Converting to geo-types: {:?}", file_name);
-        geo_geometry_collection =
-            geojson::quick_collection(&geojson)?;
+        geo_geometry_collection = geojson::quick_collection(&geojson)?;
         tl.finish();
     };
 
