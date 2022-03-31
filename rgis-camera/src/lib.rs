@@ -1,4 +1,4 @@
-#![warn(clippy::unwrap_used, clippy::as_conversions, clippy::unimplemented, clippy::expect_used)]
+#![warn(clippy::unwrap_used, clippy::cast_lossless, clippy::unimplemented, clippy::expect_used)]
 
 use bevy::prelude::*;
 
@@ -41,7 +41,7 @@ fn pan_camera_system(
                 x: transform.translation[0],
                 y: transform.translation[1],
             };
-            let camera_scale = CameraScale(transform.scale[0] as f32);
+            let camera_scale = CameraScale(transform.scale[0]);
 
             pan_x(event.x, &mut camera_offset, &camera_scale);
             pan_y(event.y, &mut camera_offset, &camera_scale);
@@ -71,7 +71,7 @@ fn zoom_camera_system(
                 x: transform.translation[0],
                 y: transform.translation[1],
             };
-            let mut camera_scale = CameraScale(transform.scale[0] as f32);
+            let mut camera_scale = CameraScale(transform.scale[0]);
 
             zoom(event.amount, &mut camera_scale);
 
