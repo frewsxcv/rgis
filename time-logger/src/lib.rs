@@ -1,4 +1,4 @@
-#![warn(clippy::unwrap_used, clippy::expect_used)]
+#![warn(clippy::unwrap_used, clippy::unimplemented, clippy::expect_used)]
 
 pub struct TimeLogger {
     title: String,

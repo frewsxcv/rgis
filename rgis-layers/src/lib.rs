@@ -1,4 +1,4 @@
-#![warn(clippy::unwrap_used, clippy::expect_used)]
+#![warn(clippy::unwrap_used, clippy::unimplemented, clippy::expect_used)]
 
 use bevy::prelude::*;
 use geo::bounding_rect::BoundingRect;
