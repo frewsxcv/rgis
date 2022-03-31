@@ -24,12 +24,13 @@ fn cursor_moved_system(
     mut mouse_position: ResMut<MousePos>,
 ) {
     for event in cursor_moved_event_reader.iter() {
+        let window = match windows.get_primary() {
+            Some(w) => w,
+            None => continue,
+        };
         for transform in camera_transform_query.iter() {
-            mouse_position.projected = screen_coords_to_geo_coords(
-                event.position,
-                transform,
-                windows.get_primary().unwrap(),
-            );
+            mouse_position.projected =
+                screen_coords_to_geo_coords(event.position, transform, window);
         }
     }
 }
