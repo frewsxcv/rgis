@@ -1,4 +1,9 @@
-#![warn(clippy::unwrap_used, clippy::cast_lossless, clippy::unimplemented, clippy::expect_used)]
+#![warn(
+    clippy::unwrap_used,
+    clippy::cast_lossless,
+    clippy::unimplemented,
+    clippy::expect_used
+)]
 
 use geo::algorithm::map_coords::MapCoordsInplace;
 use std::{error, fmt};

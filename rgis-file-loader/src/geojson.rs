@@ -38,9 +38,7 @@ pub fn load_from_reader<R: io::Read + io::Seek>(
         for feature_result in iter {
             let feature = feature_result?;
             if let Some(geometry) = feature.geometry {
-                geo_geometry_collection
-                    .0
-                    .push(geometry.try_into()?);
+                geo_geometry_collection.0.push(geometry.try_into()?);
             }
         }
         tl.finish();
