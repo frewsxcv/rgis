@@ -19,7 +19,7 @@ pub fn transform(
     geometry: &mut geo::Geometry<f64>,
     source_crs: &str,
     target_crs: &str,
-) -> Result<(), Box<dyn error::Error>> {
+) -> Result<(), Box<dyn error::Error + Send + Sync>> {
     let proj4 = web_sys::window()
         .ok_or(CouldNotProjectError)?
         .get("proj4")
