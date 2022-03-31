@@ -215,7 +215,7 @@ fn handle_toggle_layer_visibility_events(
             None => {
                 bevy::log::warn!("Could not find layer");
                 continue;
-            },
+            }
         };
         layer.visible = !layer.visible;
         if layer.visible {
