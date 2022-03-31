@@ -10,7 +10,7 @@ pub fn load_from_path(
 ) -> Result<Vec<rgis_layers::UnassignedLayer>, Box<dyn error::Error + Send + Sync>> {
     use std::fs;
     let tl = time_logger::start!("Opening file: {:?}", geojson_file_path);
-    let reader = io::BufReader::new(fs::File::open(&geojson_file_path).expect("TODO"));
+    let reader = io::BufReader::new(fs::File::open(&geojson_file_path)?);
     tl.finish();
 
     let file_name = geojson_file_path
@@ -36,11 +36,12 @@ pub fn load_from_reader<R: io::Read + io::Seek>(
         let tl = time_logger::start!("Parsing file and converting to geo-types: {:?}", file_name);
         geo_geometry_collection = geo::GeometryCollection::new();
         for feature_result in iter {
-            // todo: handle errors gracefully
             let feature = feature_result?;
-            geo_geometry_collection
-                .0
-                .push(feature.geometry.unwrap().try_into()?);
+            if let Some(geometry) = feature.geometry {
+                geo_geometry_collection
+                    .0
+                    .push(geometry.try_into()?);
+            }
         }
         tl.finish();
     } else {
@@ -64,13 +65,3 @@ pub fn load_from_reader<R: io::Read + io::Seek>(
 
     Ok(vec![unassigned_layer])
 }
-
-/*
-fn process_feature_iterator() -> geo::GeometryCollection<f64> {
-
-}
-
-fn process_geojson() -> geo::GeometryCollection<f64> {
-    let geojson: geojson::GeoJson = serde_json::from_reader(reader).unwrap();
-}
-*/
