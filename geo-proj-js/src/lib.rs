@@ -1,4 +1,4 @@
-#![warn(clippy::unwrap_used)]
+#![warn(clippy::unwrap_used, clippy::expect_used)]
 
 use geo::algorithm::map_coords::MapCoordsInplace;
 use wasm_bindgen::JsCast;

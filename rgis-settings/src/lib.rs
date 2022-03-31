@@ -1,4 +1,4 @@
-#![warn(clippy::unwrap_used)]
+#![warn(clippy::unwrap_used, clippy::expect_used)]
 
 static DEFAULT_TARGET_CRS: &str = "EPSG:3857";
 

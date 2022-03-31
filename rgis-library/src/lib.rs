@@ -1,4 +1,4 @@
-#![warn(clippy::unwrap_used)]
+#![warn(clippy::unwrap_used, clippy::expect_used)]
 
 pub struct LibraryEntry {
     pub name: &'static str,
