@@ -59,7 +59,7 @@ pub fn load_from_reader<R: io::Read + io::Seek>(
         None,
         source_projection,
         target_projection,
-    );
+    )?;
 
     Ok(vec![unassigned_layer])
 }

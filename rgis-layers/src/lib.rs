@@ -3,7 +3,7 @@
 use bevy::prelude::*;
 use geo::bounding_rect::BoundingRect;
 use geo::contains::Contains;
-use std::sync;
+use std::{error, sync};
 
 #[derive(Clone, Debug)]
 pub struct Layers {
@@ -122,7 +122,7 @@ impl UnassignedLayer {
         metadata: Option<Metadata>,
         source_crs: &str,
         target_crs: &str,
-    ) -> Self {
+    ) -> Result<Self, Box<dyn error::Error + Send + Sync>> {
         let unprojected_geometry = geometry;
 
         let mut projected_geometry = unprojected_geometry.clone();
@@ -135,9 +135,7 @@ impl UnassignedLayer {
         #[cfg(not(target_arch = "wasm32"))]
         {
             use geo::transform::Transform;
-            projected_geometry
-                .transform_crs_to_crs(source_crs, target_crs)
-                .unwrap();
+            projected_geometry.transform_crs_to_crs(source_crs, target_crs)?;
         }
         tl.finish();
 
@@ -145,7 +143,7 @@ impl UnassignedLayer {
             .bounding_rect()
             .expect("Could not determine bounding rect of geometry");
 
-        UnassignedLayer {
+        Ok(UnassignedLayer {
             unprojected_geometry,
             projected_geometry,
             projected_bounding_rect,
@@ -154,7 +152,7 @@ impl UnassignedLayer {
             crs: source_crs.to_string(),
             name,
             visible: true,
-        }
+        })
     }
 }
 
