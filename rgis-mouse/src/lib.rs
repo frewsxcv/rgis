@@ -31,7 +31,10 @@ fn cursor_moved_system(
     for event in cursor_moved_event_reader.iter() {
         let window = match windows.get_primary() {
             Some(w) => w,
-            None => continue,
+            None => {
+                bevy::log::error!("Could not find primary window");
+                continue;
+            }
         };
         for transform in camera_transform_query.iter() {
             mouse_position.projected =

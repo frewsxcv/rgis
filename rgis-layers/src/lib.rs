@@ -210,7 +210,13 @@ fn handle_toggle_layer_visibility_events(
     mut layers: ResMut<Layers>,
 ) {
     for event in toggle_layer_visibility_event_reader.iter() {
-        let layer = layers.get_mut(event.0).unwrap();
+        let layer = match layers.get_mut(event.0) {
+            Some(l) => l,
+            None => {
+                bevy::log::warn!("Could not find layer");
+                continue;
+            },
+        };
         layer.visible = !layer.visible;
         if layer.visible {
             layer_became_visible_event_writer.send(rgis_events::LayerBecameVisibleEvent(event.0));
@@ -226,7 +232,13 @@ fn handle_update_color_events(
     mut layers: ResMut<Layers>,
 ) {
     for event in update_events.iter() {
-        let layer = layers.get_mut(event.0).unwrap();
+        let layer = match layers.get_mut(event.0) {
+            Some(l) => l,
+            None => {
+                bevy::log::warn!("Could not find layer");
+                continue;
+            }
+        };
         layer.color = event.1;
         updated_events.send(rgis_events::LayerColorUpdated(event.0));
     }
