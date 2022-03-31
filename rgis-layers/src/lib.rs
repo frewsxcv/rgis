@@ -130,7 +130,7 @@ impl UnassignedLayer {
         let tl = time_logger::start!("Reprojecting");
         #[cfg(target_arch = "wasm32")]
         {
-            geo_proj_js::transform(&mut projected_geometry, source_crs, target_crs);
+            geo_proj_js::transform(&mut projected_geometry, source_crs, target_crs)?;
         }
         #[cfg(not(target_arch = "wasm32"))]
         {
