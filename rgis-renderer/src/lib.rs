@@ -6,6 +6,7 @@
 )]
 
 use bevy::prelude::*;
+use std::error;
 
 // System
 fn layer_loaded(
@@ -26,8 +27,10 @@ fn layer_loaded(
             continue;
         }
 
-        spawn_geometry_mesh(&mut materials, layer, &mut commands, &mut meshes);
-        center_camera_events.send(rgis_events::CenterCameraEvent(layer.id));
+        match spawn_geometry_mesh(&mut materials, layer, &mut commands, &mut meshes) {
+            Ok(_) => center_camera_events.send(rgis_events::CenterCameraEvent(layer.id)),
+            Err(e) => bevy::log::error!("Encountered error when spawning mesh: {}", e),
+        }
     }
 }
 
@@ -63,17 +66,18 @@ fn spawn_geometry_mesh(
     layer: &rgis_layers::Layer,
     commands: &mut Commands,
     meshes: &mut Assets<Mesh>,
-) {
+) -> Result<(), Box<dyn error::Error>> {
     let material = materials.add(layer.color.into());
 
     let tl = time_logger::start!("Triangulating and building {} mesh", layer.name);
     for mesh in geo_bevy::build_bevy_meshes(
         &layer.projected_geometry,
         geo_bevy::BuildBevyMeshesContext::new(),
-    ) {
+    )? {
         spawn_mesh(mesh, material.clone(), meshes, commands, layer.id);
     }
     tl.finish();
+    Ok(())
 }
 
 fn handle_layer_became_hidden_event(

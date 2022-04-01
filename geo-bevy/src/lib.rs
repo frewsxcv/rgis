@@ -7,7 +7,7 @@
 
 use bevy_render::prelude::*;
 use geo::algorithm::coords_iter::CoordsIter;
-use std::convert::TryFrom;
+use std::{convert::TryFrom, error};
 
 type Vertex = [f32; 3]; // [x, y, z]
 
@@ -26,16 +26,19 @@ impl LineStringMeshBuilder {
     }
 
     /// Call for `add_earcutr_input` for each polygon you want to add to the mesh.
-    fn add_line_string(&mut self, line_string: &geo::LineString<f64>) {
+    fn add_line_string(
+        &mut self,
+        line_string: &geo::LineString<f64>,
+    ) -> Result<(), Box<dyn error::Error>> {
         let index_base = self.vertices.len();
         for (i, coord) in line_string.0.iter().enumerate() {
             self.vertices.push([coord.x as f32, coord.y as f32, 0.0]);
             if i != line_string.0.len() - 1 {
-                self.indices.push(u32::try_from(index_base + i).unwrap());
-                self.indices
-                    .push(u32::try_from(index_base + i + 1).unwrap());
+                self.indices.push(u32::try_from(index_base + i)?);
+                self.indices.push(u32::try_from(index_base + i + 1)?);
             }
         }
+        Ok(())
     }
 
     pub fn build(self) -> Option<Mesh> {
@@ -66,11 +69,12 @@ impl PointMeshBuilder {
     }
 
     /// Call for `add_earcutr_input` for each polygon you want to add to the mesh.
-    fn add_point(&mut self, point: &geo::Point<f64>) {
+    fn add_point(&mut self, point: &geo::Point<f64>) -> Result<(), Box<dyn error::Error>> {
         let index_base = self.vertices.len();
         self.vertices
             .push([point.x() as f32, point.y() as f32, 0.0]);
-        self.indices.push(u32::try_from(index_base).unwrap());
+        self.indices.push(u32::try_from(index_base)?);
+        Ok(())
     }
 
     pub fn build(self) -> Option<Mesh> {
@@ -130,85 +134,122 @@ impl Default for BuildBevyMeshesContext {
 pub fn build_bevy_meshes<G: BuildBevyMeshes>(
     geo: &G,
     mut ctx: BuildBevyMeshesContext,
-) -> impl Iterator<Item = Mesh> {
-    geo.populate_mesh_builders(&mut ctx);
+) -> Result<impl Iterator<Item = Mesh>, Box<dyn error::Error>> {
+    geo.populate_mesh_builders(&mut ctx)?;
 
-    [
+    Ok([
         ctx.point_mesh_builder.build(),
         ctx.line_string_mesh_builder.build(),
         ctx.polygon_mesh_builder.build(),
     ]
     .into_iter()
-    .flatten()
+    .flatten())
 }
 
 pub trait BuildBevyMeshes {
-    fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext);
+    fn populate_mesh_builders(
+        &self,
+        ctx: &mut BuildBevyMeshesContext,
+    ) -> Result<(), Box<dyn error::Error>>;
 }
 
 impl BuildBevyMeshes for geo::Point<f64> {
-    fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) {
-        ctx.point_mesh_builder.add_point(self);
+    fn populate_mesh_builders(
+        &self,
+        ctx: &mut BuildBevyMeshesContext,
+    ) -> Result<(), Box<dyn error::Error>> {
+        ctx.point_mesh_builder.add_point(self)
     }
 }
 
 impl BuildBevyMeshes for geo::LineString<f64> {
-    fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) {
-        ctx.line_string_mesh_builder.add_line_string(self);
+    fn populate_mesh_builders(
+        &self,
+        ctx: &mut BuildBevyMeshesContext,
+    ) -> Result<(), Box<dyn error::Error>> {
+        ctx.line_string_mesh_builder.add_line_string(self)
     }
 }
 
 impl BuildBevyMeshes for geo::Polygon<f64> {
-    fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) {
+    fn populate_mesh_builders(
+        &self,
+        ctx: &mut BuildBevyMeshesContext,
+    ) -> Result<(), Box<dyn error::Error>> {
         ctx.polygon_mesh_builder
             .add_earcutr_input(polygon_to_earcutr_input(self));
+        Ok(())
     }
 }
 
 impl BuildBevyMeshes for geo::MultiPoint<f64> {
-    fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) {
+    fn populate_mesh_builders(
+        &self,
+        ctx: &mut BuildBevyMeshesContext,
+    ) -> Result<(), Box<dyn error::Error>> {
         for point in &self.0 {
-            point.populate_mesh_builders(ctx);
+            point.populate_mesh_builders(ctx)?;
         }
+        Ok(())
     }
 }
 
 impl BuildBevyMeshes for geo::MultiLineString<f64> {
-    fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) {
+    fn populate_mesh_builders(
+        &self,
+        ctx: &mut BuildBevyMeshesContext,
+    ) -> Result<(), Box<dyn error::Error>> {
         for line_string in &self.0 {
-            line_string.populate_mesh_builders(ctx);
+            line_string.populate_mesh_builders(ctx)?;
         }
+        Ok(())
     }
 }
 
 impl BuildBevyMeshes for geo::MultiPolygon<f64> {
-    fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) {
+    fn populate_mesh_builders(
+        &self,
+        ctx: &mut BuildBevyMeshesContext,
+    ) -> Result<(), Box<dyn error::Error>> {
         for polygon in &self.0 {
-            polygon.populate_mesh_builders(ctx);
+            polygon.populate_mesh_builders(ctx)?;
         }
+        Ok(())
     }
 }
 
 impl BuildBevyMeshes for geo::Line<f64> {
-    fn populate_mesh_builders(&self, _ctx: &mut BuildBevyMeshesContext) {
+    fn populate_mesh_builders(
+        &self,
+        _ctx: &mut BuildBevyMeshesContext,
+    ) -> Result<(), Box<dyn error::Error>> {
         unimplemented!()
     }
 }
 
 impl BuildBevyMeshes for geo::Triangle<f64> {
-    fn populate_mesh_builders(&self, _ctx: &mut BuildBevyMeshesContext) {
+    fn populate_mesh_builders(
+        &self,
+        _ctx: &mut BuildBevyMeshesContext,
+    ) -> Result<(), Box<dyn error::Error>> {
         unimplemented!()
     }
 }
 
 impl BuildBevyMeshes for geo::Rect<f64> {
-    fn populate_mesh_builders(&self, _ctx: &mut BuildBevyMeshesContext) {
+    fn populate_mesh_builders(
+        &self,
+        _ctx: &mut BuildBevyMeshesContext,
+    ) -> Result<(), Box<dyn error::Error>> {
         unimplemented!()
     }
 }
 
 impl BuildBevyMeshes for geo::Geometry<f64> {
-    fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) {
+    fn populate_mesh_builders(
+        &self,
+        ctx: &mut BuildBevyMeshesContext,
+    ) -> Result<(), Box<dyn error::Error>> {
         match self {
             geo::Geometry::Point(g) => g.populate_mesh_builders(ctx),
             geo::Geometry::Line(g) => g.populate_mesh_builders(ctx),
@@ -225,10 +266,14 @@ impl BuildBevyMeshes for geo::Geometry<f64> {
 }
 
 impl BuildBevyMeshes for geo::GeometryCollection<f64> {
-    fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) {
+    fn populate_mesh_builders(
+        &self,
+        ctx: &mut BuildBevyMeshesContext,
+    ) -> Result<(), Box<dyn error::Error>> {
         for g in self {
-            g.populate_mesh_builders(ctx);
+            g.populate_mesh_builders(ctx)?;
         }
+        Ok(())
     }
 }
 
