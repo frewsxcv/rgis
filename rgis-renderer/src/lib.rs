@@ -131,6 +131,17 @@ fn handle_layer_color_changed_event(
     }
 }
 
+#[allow(dead_code)]
+fn update_z_index_mesh(mesh: &mut Mesh, z_index: f32) {
+    if let Some(bevy::render::mesh::VertexAttributeValues::Float32x3(coords)) =
+        mesh.attribute_mut(Mesh::ATTRIBUTE_POSITION)
+    {
+        for coord in coords {
+            coord[2] = z_index;
+        }
+    }
+}
+
 fn spawn_mesh(
     mesh: Mesh,
     material: Handle<ColorMaterial>,
