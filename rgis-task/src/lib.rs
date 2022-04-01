@@ -6,6 +6,7 @@
 )]
 
 use bevy::prelude::Component;
+use std::{pin, future};
 
 #[derive(Default)]
 pub struct TaskPlugin<T: Task> {
@@ -29,10 +30,9 @@ impl<T: Task> bevy::prelude::Plugin for TaskPlugin<T> {
 
 #[cfg(not(target_arch = "wasm32"))]
 pub type PerformReturn<Output> =
-    std::pin::Pin<Box<dyn std::future::Future<Output = Output> + Send + 'static>>;
+    pin::Pin<Box<dyn future::Future<Output = Output> + Send + 'static>>;
 #[cfg(target_arch = "wasm32")]
-pub type PerformReturn<Output> =
-    std::pin::Pin<Box<dyn std::future::Future<Output = Output> + 'static>>;
+pub type PerformReturn<Output> = pin::Pin<Box<dyn future::Future<Output = Output> + 'static>>;
 
 pub trait Task: Sized + Send + Sync + 'static {
     type Outcome: Send + Sync + 'static;
