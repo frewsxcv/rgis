@@ -67,6 +67,11 @@ impl Layers {
         self.data.get(index)
     }
 
+    pub fn get_with_z_index(&self, layer_id: rgis_layer_id::LayerId) -> Option<(&Layer, usize)> {
+        let index = self.get_index(layer_id)?;
+        self.data.get(index).map(|layer| (layer, index))
+    }
+
     pub fn get_mut(&mut self, layer_id: rgis_layer_id::LayerId) -> Option<&mut Layer> {
         let index = self.get_index(layer_id)?;
         self.data.get_mut(index)

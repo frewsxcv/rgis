@@ -61,7 +61,11 @@ fn set_camera_transform(
     camera_offset: &CameraOffset,
     camera_scale: &CameraScale,
 ) {
-    transform.translation = Vec3::new(camera_offset.x, camera_offset.y, 0.);
+    transform.translation = Vec3::new(
+        camera_offset.x,
+        camera_offset.y,
+        999.9, // https://bevy-cheatbook.github.io/pitfalls/2d-camera-z.html
+    );
     transform.scale = Vec3::new(camera_scale.0, camera_scale.0, 1.);
     debug!("New transform scale: {:?}", transform.scale);
 }

@@ -18,7 +18,7 @@ fn layer_loaded(
     mut center_camera_events: EventWriter<rgis_events::CenterCameraEvent>,
 ) {
     for event in event_reader.iter() {
-        let layer = match layers.get(event.0) {
+        let (layer, z_index) = match layers.get_with_z_index(event.0) {
             Some(l) => l,
             None => continue,
         };
@@ -27,7 +27,7 @@ fn layer_loaded(
             continue;
         }
 
-        match spawn_geometry_mesh(&mut materials, layer, &mut commands, &mut meshes) {
+        match spawn_geometry_mesh(&mut materials, layer, &mut commands, &mut meshes, z_index) {
             Ok(_) => center_camera_events.send(rgis_events::CenterCameraEvent(layer.id)),
             Err(e) => bevy::log::error!("Encountered error when spawning mesh: {}", e),
         }
@@ -66,13 +66,14 @@ fn spawn_geometry_mesh(
     layer: &rgis_layers::Layer,
     commands: &mut Commands,
     meshes: &mut Assets<Mesh>,
+    z_index: usize,
 ) -> Result<(), Box<dyn error::Error>> {
     let material = materials.add(layer.color.into());
 
     let tl = time_logger::start!("Triangulating and building {} mesh", layer.name);
     for mesh in geo_bevy::build_bevy_meshes(
         &layer.projected_geometry,
-        geo_bevy::BuildBevyMeshesContext::new(0),
+        geo_bevy::BuildBevyMeshesContext::new(z_index),
     )? {
         spawn_mesh(mesh, material.clone(), meshes, commands, layer.id);
     }

@@ -21,7 +21,7 @@ impl PointMeshBuilder {
     pub fn add_point(&mut self, point: &geo::Point<f64>) -> Result<(), Box<dyn error::Error>> {
         let index_base = self.vertices.len();
         self.vertices
-            .push([point.x() as f32, point.y() as f32, 0.0]);
+            .push([point.x() as f32, point.y() as f32, self.z_index as f32]);
         self.indices.push(u32::try_from(index_base)?);
         Ok(())
     }
