@@ -33,7 +33,7 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
             self.state.is_add_layer_window_visible = true;
         }
 
-        for layer in self.layers.data.iter().rev() {
+        for (z_index, layer) in self.layers.data.iter().rev().enumerate() {
             egui::Frame::group(ui.style()).show(ui, |ui| {
                 egui::CollapsingHeader::new(layer.name.to_owned())
                     .id_source(layer.id) // Instead of using the layer name as the ID (which is not unique), use the layer ID
@@ -44,7 +44,7 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
                         }
 
                         if ui
-                            .add_enabled(true, egui::Button::new("⬆ Move up"))
+                            .add_enabled(z_index > 0, egui::Button::new("⬆ Move up"))
                             .clicked()
                         {
                             self.events
@@ -56,7 +56,10 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
                         }
 
                         if ui
-                            .add_enabled(true, egui::Button::new("⬇ Move down"))
+                            .add_enabled(
+                                z_index < (self.layers.data.len() - 1),
+                                egui::Button::new("⬇ Move down"),
+                            )
                             .clicked()
                         {
                             self.events
