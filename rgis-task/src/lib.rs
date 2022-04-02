@@ -6,7 +6,7 @@
 )]
 
 use bevy::prelude::Component;
-use std::{pin, future};
+use std::{future, pin};
 
 #[derive(Default)]
 pub struct TaskPlugin<T: Task> {
