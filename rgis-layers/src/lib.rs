@@ -146,7 +146,7 @@ impl UnassignedLayer {
 
         let projected_bounding_rect = projected_geometry
             .bounding_rect()
-            .expect("Could not determine bounding rect of geometry");
+            .ok_or("Could not generate bounding rectangle for the geometry")?;
 
         Ok(UnassignedLayer {
             unprojected_geometry,
