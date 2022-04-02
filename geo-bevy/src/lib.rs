@@ -17,7 +17,7 @@ struct LineStringMeshBuilder {
 }
 
 impl LineStringMeshBuilder {
-    fn new() -> Self {
+    fn new(z_index: usize) -> Self {
         // TODO: capacity?
         LineStringMeshBuilder {
             vertices: vec![],
@@ -57,14 +57,16 @@ impl LineStringMeshBuilder {
 struct PointMeshBuilder {
     vertices: Vec<Vertex>,
     indices: Vec<u32>,
+    z_index: usize,
 }
 
 impl PointMeshBuilder {
-    fn new() -> Self {
+    fn new(z_index: usize) -> Self {
         // TODO: capacity?
         PointMeshBuilder {
             vertices: vec![],
             indices: vec![],
+            z_index,
         }
     }
 
@@ -116,18 +118,12 @@ pub struct BuildBevyMeshesContext {
 }
 
 impl BuildBevyMeshesContext {
-    pub fn new() -> Self {
+    pub fn new(z_index: usize) -> Self {
         BuildBevyMeshesContext {
-            point_mesh_builder: PointMeshBuilder::new(),
-            line_string_mesh_builder: LineStringMeshBuilder::new(),
+            point_mesh_builder: PointMeshBuilder::new(z_index),
+            line_string_mesh_builder: LineStringMeshBuilder::new(z_index),
             polygon_mesh_builder: bevy_earcutr::PolygonMeshBuilder::new(),
         }
-    }
-}
-
-impl Default for BuildBevyMeshesContext {
-    fn default() -> Self {
-        Self::new()
     }
 }
 
