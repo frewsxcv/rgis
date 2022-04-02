@@ -42,6 +42,12 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
                             self.state.managing_layer = Some(layer.id);
                         }
 
+                        if ui.add_enabled(false, egui::Button::new("⬆ Move up")).clicked() {
+                        }
+
+                        if ui.add_enabled(false, egui::Button::new("⬇ Move down")).clicked() {
+                        }
+
                         if layer.visible {
                             if ui.button("👁 Hide").clicked() {
                                 self.events
