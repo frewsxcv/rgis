@@ -8,6 +8,7 @@ pub struct Events<'w, 's> {
         bevy::app::EventWriter<'w, 's, rgis_events::ToggleLayerVisibilityEvent>,
     center_layer_event_writer: bevy::app::EventWriter<'w, 's, rgis_events::CenterCameraEvent>,
     delete_layer_event_writer: bevy::app::EventWriter<'w, 's, rgis_events::DeleteLayer>,
+    move_layer_event_writer: bevy::app::EventWriter<'w, 's, rgis_events::MoveLayerEvent>,
 }
 
 pub(crate) struct SidePanel<'a, 'w, 's> {
@@ -42,10 +43,28 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
                             self.state.managing_layer = Some(layer.id);
                         }
 
-                        if ui.add_enabled(false, egui::Button::new("⬆ Move up")).clicked() {
+                        if ui
+                            .add_enabled(true, egui::Button::new("⬆ Move up"))
+                            .clicked()
+                        {
+                            self.events
+                                .move_layer_event_writer
+                                .send(rgis_events::MoveLayerEvent(
+                                    layer.id,
+                                    rgis_events::MoveDirection::Up,
+                                ));
                         }
 
-                        if ui.add_enabled(false, egui::Button::new("⬇ Move down")).clicked() {
+                        if ui
+                            .add_enabled(true, egui::Button::new("⬇ Move down"))
+                            .clicked()
+                        {
+                            self.events
+                                .move_layer_event_writer
+                                .send(rgis_events::MoveLayerEvent(
+                                    layer.id,
+                                    rgis_events::MoveDirection::Down,
+                                ));
                         }
 
                         if layer.visible {

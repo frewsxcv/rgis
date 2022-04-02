@@ -34,6 +34,14 @@ pub struct LayerColorUpdated(pub rgis_layer_id::LayerId);
 pub struct DeleteLayer(pub rgis_layer_id::LayerId);
 pub struct LayerDeleted(pub rgis_layer_id::LayerId);
 
+pub enum MoveDirection {
+    Up,
+    Down,
+}
+pub struct MoveLayerEvent(pub rgis_layer_id::LayerId, pub MoveDirection);
+
+pub struct LayerZIndexUpdated(pub rgis_layer_id::LayerId);
+
 // TODO: this can be removed
 #[derive(Debug)]
 pub enum LoadGeoJsonFileEvent {
@@ -113,6 +121,8 @@ impl bevy::app::Plugin for Plugin {
             .add_event::<CenterCameraEvent>()
             .add_event::<LayerColorUpdated>()
             .add_event::<UpdateLayerColor>()
+            .add_event::<MoveLayerEvent>()
+            .add_event::<LayerZIndexUpdated>()
             .add_event::<DeleteLayer>()
             .add_event::<LayerDeleted>();
     }

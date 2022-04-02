@@ -58,8 +58,8 @@ impl Layers {
 
     fn get_index(&self, layer_id: rgis_layer_id::LayerId) -> Option<usize> {
         self.data
-            .binary_search_by_key(&layer_id, |layer| layer.id)
-            .ok()
+            .iter()
+            .position(|entry| entry.id == layer_id)
     }
 
     pub fn get(&self, layer_id: rgis_layer_id::LayerId) -> Option<&Layer> {
@@ -260,11 +260,50 @@ fn handle_delete_layer_events(
     }
 }
 
+fn handle_move_layer_events(
+    mut move_layer_event_reader: bevy::app::EventReader<rgis_events::MoveLayerEvent>,
+    mut layer_z_index_updated_event_writer: bevy::app::EventWriter<rgis_events::LayerZIndexUpdated>,
+    mut layers: ResMut<Layers>,
+) {
+    for event in move_layer_event_reader.iter() {
+        let (_, old_z_index) = match layers.get_with_z_index(event.0) {
+            Some(result) => result,
+            None => {
+                bevy::log::warn!("Could not find layer");
+                continue;
+            }
+        };
+
+        let new_z_index = match event.1 {
+            rgis_events::MoveDirection::Up => {
+                old_z_index + 1
+            },
+            rgis_events::MoveDirection::Down => {
+                old_z_index - 1
+            },
+        };
+
+        let other_layer_id = match layers.data.get(new_z_index) {
+            Some(layer) => layer.id,
+            None => {
+                bevy::log::warn!("Could not find layer");
+                continue;
+            }
+        };
+
+        layers.data.swap(old_z_index, new_z_index);
+
+        layer_z_index_updated_event_writer.send(rgis_events::LayerZIndexUpdated(event.0));
+        layer_z_index_updated_event_writer.send(rgis_events::LayerZIndexUpdated(other_layer_id));
+    }
+}
+
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(Layers::new())
             .add_system(handle_toggle_layer_visibility_events)
             .add_system(handle_update_color_events)
+            .add_system(handle_move_layer_events)
             .add_system(handle_delete_layer_events);
     }
 }

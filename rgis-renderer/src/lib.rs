@@ -42,7 +42,33 @@ impl bevy::app::Plugin for Plugin {
             .add_system(handle_layer_became_hidden_event)
             .add_system(handle_layer_became_visible_event)
             .add_system(handle_layer_color_changed_event)
+            .add_system(handle_layer_z_index_updated_event)
             .add_system(handle_layer_deleted_events);
+    }
+}
+
+fn handle_layer_z_index_updated_event(
+    mut layer_z_index_updated_event_reader: bevy::app::EventReader<rgis_events::LayerZIndexUpdated>,
+    query: Query<(&rgis_layer_id::LayerId, &bevy::sprite::Mesh2dHandle)>,
+    mut mesh_assets: ResMut<Assets<Mesh>>,
+    layers: Res<rgis_layers::Layers>,
+) {
+    for event in layer_z_index_updated_event_reader.iter() {
+        let (layer, z_index) = match layers.get_with_z_index(event.0) {
+            Some(l) => l,
+            None => continue,
+        };
+
+        for entity in query
+            .iter()
+            .filter_map(|(i, entity)| (*i == event.0).then(|| entity))
+        {
+            if let Some(mesh) = mesh_assets.get_mut(&entity.0) {
+                update_z_index_mesh(mesh, layer, z_index as f32);
+            } else {
+                bevy::log::error!("Failed to find mesh in assets");
+            }
+        }
     }
 }
 
@@ -132,14 +158,16 @@ fn handle_layer_color_changed_event(
     }
 }
 
-#[allow(dead_code)]
-fn update_z_index_mesh(mesh: &mut Mesh, z_index: f32) {
+fn update_z_index_mesh(mesh: &mut Mesh, layer: &rgis_layers::Layer, z_index: f32) {
     if let Some(bevy::render::mesh::VertexAttributeValues::Float32x3(coords)) =
         mesh.attribute_mut(Mesh::ATTRIBUTE_POSITION)
     {
+        bevy::log::info!("Updating Z indices for '{}' to {}", layer.name, z_index);
         for coord in coords {
             coord[2] = z_index;
         }
+    } else {
+        bevy::log::error!("Failed to fetch mesh positions");
     }
 }
 
