@@ -32,7 +32,7 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
             self.state.is_add_layer_window_visible = true;
         }
 
-        for layer in &self.layers.data {
+        for layer in self.layers.data.iter().rev() {
             egui::Frame::group(ui.style()).show(ui, |ui| {
                 egui::CollapsingHeader::new(layer.name.to_owned())
                     .id_source(layer.id) // Instead of using the layer name as the ID (which is not unique), use the layer ID
