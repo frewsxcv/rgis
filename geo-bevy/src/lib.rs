@@ -41,7 +41,6 @@ pub struct BuildBevyMeshesContext {
 
 impl BuildBevyMeshesContext {
     pub fn new(z_index: usize) -> Self {
-        bevy_log::info!("z_index: {}", z_index);
         BuildBevyMeshesContext {
             point_mesh_builder: point::PointMeshBuilder::new(z_index),
             line_string_mesh_builder: line_string::LineStringMeshBuilder::new(z_index),
