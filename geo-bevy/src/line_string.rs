@@ -22,8 +22,7 @@ impl LineStringMeshBuilder {
     ) -> Result<(), Box<dyn error::Error>> {
         let index_base = self.vertices.len();
         for (i, coord) in line_string.0.iter().enumerate() {
-            self.vertices
-                .push([coord.x as f32, coord.y as f32, 0.0f32]);
+            self.vertices.push([coord.x as f32, coord.y as f32, 0.0f32]);
             if i != line_string.0.len() - 1 {
                 self.indices.push(u32::try_from(index_base + i)?);
                 self.indices.push(u32::try_from(index_base + i + 1)?);

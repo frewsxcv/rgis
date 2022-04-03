@@ -57,9 +57,7 @@ impl Layers {
     }
 
     fn get_index(&self, layer_id: rgis_layer_id::LayerId) -> Option<usize> {
-        self.data
-            .iter()
-            .position(|entry| entry.id == layer_id)
+        self.data.iter().position(|entry| entry.id == layer_id)
     }
 
     pub fn get(&self, layer_id: rgis_layer_id::LayerId) -> Option<&Layer> {
@@ -275,12 +273,8 @@ fn handle_move_layer_events(
         };
 
         let new_z_index = match event.1 {
-            rgis_events::MoveDirection::Up => {
-                old_z_index + 1
-            },
-            rgis_events::MoveDirection::Down => {
-                old_z_index - 1
-            },
+            rgis_events::MoveDirection::Up => old_z_index + 1,
+            rgis_events::MoveDirection::Down => old_z_index - 1,
         };
 
         let other_layer_id = match layers.data.get(new_z_index) {
