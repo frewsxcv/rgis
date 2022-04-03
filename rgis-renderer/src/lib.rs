@@ -49,25 +49,20 @@ impl bevy::app::Plugin for Plugin {
 
 fn handle_layer_z_index_updated_event(
     mut layer_z_index_updated_event_reader: bevy::app::EventReader<rgis_events::LayerZIndexUpdated>,
-    query: Query<(&rgis_layer_id::LayerId, &bevy::sprite::Mesh2dHandle)>,
-    mut mesh_assets: ResMut<Assets<Mesh>>,
+    mut query: Query<(&rgis_layer_id::LayerId, &mut Transform), With<bevy::sprite::Mesh2dHandle>>,
     layers: Res<rgis_layers::Layers>,
 ) {
     for event in layer_z_index_updated_event_reader.iter() {
-        let (layer, z_index) = match layers.get_with_z_index(event.0) {
+        let (_, z_index) = match layers.get_with_z_index(event.0) {
             Some(l) => l,
             None => continue,
         };
 
-        for entity in query
-            .iter()
-            .filter_map(|(i, entity)| (*i == event.0).then(|| entity))
+        for mut transform in query
+            .iter_mut()
+            .filter_map(|(i, transform)| (*i == event.0).then(|| transform))
         {
-            if let Some(mesh) = mesh_assets.get_mut(&entity.0) {
-                update_z_index_mesh(mesh, layer, z_index as f32);
-            } else {
-                bevy::log::error!("Failed to find mesh in assets");
-            }
+            transform.translation[2] = z_index as f32;
         }
     }
 }
@@ -99,9 +94,9 @@ fn spawn_geometry_mesh(
     let tl = time_logger::start!("Triangulating and building {} mesh", layer.name);
     for mesh in geo_bevy::build_bevy_meshes(
         &layer.projected_geometry,
-        geo_bevy::BuildBevyMeshesContext::new(z_index),
+        geo_bevy::BuildBevyMeshesContext::new(),
     )? {
-        spawn_mesh(mesh, material.clone(), meshes, commands, layer.id);
+        spawn_mesh(mesh, z_index, material.clone(), meshes, commands, layer.id);
     }
     tl.finish();
     Ok(())
@@ -158,21 +153,9 @@ fn handle_layer_color_changed_event(
     }
 }
 
-fn update_z_index_mesh(mesh: &mut Mesh, layer: &rgis_layers::Layer, z_index: f32) {
-    if let Some(bevy::render::mesh::VertexAttributeValues::Float32x3(coords)) =
-        mesh.attribute_mut(Mesh::ATTRIBUTE_POSITION)
-    {
-        bevy::log::info!("Updating Z indices for '{}' to {}", layer.name, z_index);
-        for coord in coords {
-            coord[2] = z_index;
-        }
-    } else {
-        bevy::log::error!("Failed to fetch mesh positions");
-    }
-}
-
 fn spawn_mesh(
     mesh: Mesh,
+    z_index: usize,
     material: Handle<ColorMaterial>,
     meshes: &mut Assets<Mesh>,
     commands: &mut Commands,
@@ -181,6 +164,7 @@ fn spawn_mesh(
     let mmb = bevy::sprite::MaterialMesh2dBundle {
         material,
         mesh: bevy::sprite::Mesh2dHandle(meshes.add(mesh)),
+        transform: Transform::from_xyz(0., 0., z_index as f32),
         ..Default::default()
     };
     commands.spawn_bundle(mmb).insert(layer_id);
