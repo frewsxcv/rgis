@@ -8,10 +8,11 @@
 use bevy::{core_pipeline::ClearColor, prelude::*};
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
+use std::error;
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
-pub fn run() {
-    let cli_values = rgis_cli::run();
+pub fn run() -> Result<(), Box<dyn error::Error>> {
+    let cli_values = rgis_cli::run()?;
 
     let mut app = App::new();
 
@@ -50,4 +51,6 @@ pub fn run() {
     }
 
     app.run();
+
+    Ok(())
 }

@@ -6,7 +6,7 @@
 )]
 
 use clap::{Arg, Command};
-use std::path;
+use std::{error, path};
 
 static DEFAULT_SOURCE_SRS: &str = "EPSG:4326";
 static DEFAULT_MSAA: &str = "4";
@@ -20,7 +20,7 @@ pub struct Values {
     pub source_crs: String,
 }
 
-pub fn run() -> Values {
+pub fn run() -> Result<Values, Box<dyn error::Error>> {
     let matches = Command::new("rgis")
         .version("0.1.0")
         .author("Corey Farwell <coreyf@rwell.org>")
@@ -49,19 +49,21 @@ pub fn run() -> Values {
         .arg(Arg::new("GEOJSON FILE").multiple_occurrences(true))
         .get_matches();
 
-    Values {
+    Ok(Values {
         geojson_files: matches
             .values_of("GEOJSON FILE")
             .unwrap_or_default()
             .map(|s| path::PathBuf::from(s.to_owned()))
             .collect(),
-        source_crs: matches.value_of("SOURCE SRS").unwrap().to_owned(),
+        source_crs: matches
+            .value_of("SOURCE SRS")
+            .ok_or("Could not fetch source SRS from clap")?
+            .to_owned(),
         msaa_sample_count: matches
             .value_of("MSAA SAMPLE COUNT")
-            .unwrap()
-            .parse()
-            .unwrap(),
-    }
+            .ok_or("Could not fetch MSAA sample count from clap")?
+            .parse()?,
+    })
 }
 
 pub struct Plugin(pub Values);
