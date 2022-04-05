@@ -15,9 +15,8 @@ pub fn load_from_path(
 
     let file_name = geojson_file_path
         .file_name()
-        .unwrap()
-        .to_string_lossy()
-        .into_owned();
+        .ok_or("Could not retrieve file name of GeoJSON path")
+        .map(|s| s.to_string_lossy().into_owned())?;
 
     load_from_reader(reader, file_name, source_projection, target_projection)
 }
