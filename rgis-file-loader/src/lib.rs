@@ -60,8 +60,8 @@ impl rgis_task::Task for LoadGeoJsonFileTask {
     }
 }
 
-type FetchedFileSender = async_channel::Sender<FetchedFile>;
-type FetchedFileReceiver = async_channel::Receiver<FetchedFile>;
+type FetchedFileSender = async_channel::Sender<Result<FetchedFile, String>>;
+type FetchedFileReceiver = async_channel::Receiver<Result<FetchedFile, String>>;
 
 // System
 fn load_geojson_file_handler(
@@ -73,12 +73,18 @@ fn load_geojson_file_handler(
     mut commands: bevy::ecs::system::Commands,
 ) {
     while let Ok(fetched) = fetched_bytes_receiver.try_recv() {
-        load_event_reader.send(rgis_events::LoadGeoJsonFileEvent::FromBytes {
-            bytes: fetched.bytes,
-            file_name: fetched.name,
-            crs: fetched.crs,
-        })
+        match fetched {
+            Ok(fetched) => load_event_reader.send(rgis_events::LoadGeoJsonFileEvent::FromBytes {
+                bytes: fetched.bytes,
+                file_name: fetched.name,
+                crs: fetched.crs,
+            }),
+            Err(e) => {
+                bevy::log::error!("Could not fetch file: {:?}", e);
+            }
+        }
     }
+
     for event in load_event_reader.drain() {
         match event {
             #[cfg(not(target_arch = "wasm32"))]
@@ -97,10 +103,16 @@ fn load_geojson_file_handler(
                 let fetched_bytes_sender = fetched_bytes_sender.clone();
                 let request = ehttp::Request::get(url);
                 ehttp::fetch(request, move |result: ehttp::Result<ehttp::Response>| {
-                    let bytes = result.unwrap().bytes;
-                    fetched_bytes_sender
-                        .try_send(FetchedFile { bytes, crs, name })
-                        .unwrap();
+                    if let Err(e) = fetched_bytes_sender.try_send(result.map(|r| FetchedFile {
+                        bytes: r.bytes,
+                        crs,
+                        name,
+                    })) {
+                        bevy::log::error!(
+                            "Failed to send network response to main thread: {:?}",
+                            e
+                        );
+                    }
                 });
             }
             rgis_events::LoadGeoJsonFileEvent::FromBytes {
