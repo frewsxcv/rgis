@@ -139,27 +139,27 @@ impl BuildBevyMeshes for geo::MultiPolygon<f64> {
 impl BuildBevyMeshes for geo::Line<f64> {
     fn populate_mesh_builders(
         &self,
-        _ctx: &mut BuildBevyMeshesContext,
+        ctx: &mut BuildBevyMeshesContext,
     ) -> Result<(), Box<dyn error::Error>> {
-        unimplemented!()
+        geo::LineString::new(vec![self.start, self.end]).populate_mesh_builders(ctx)
     }
 }
 
 impl BuildBevyMeshes for geo::Triangle<f64> {
     fn populate_mesh_builders(
         &self,
-        _ctx: &mut BuildBevyMeshesContext,
+        ctx: &mut BuildBevyMeshesContext,
     ) -> Result<(), Box<dyn error::Error>> {
-        unimplemented!()
+        self.to_polygon().populate_mesh_builders(ctx)
     }
 }
 
 impl BuildBevyMeshes for geo::Rect<f64> {
     fn populate_mesh_builders(
         &self,
-        _ctx: &mut BuildBevyMeshesContext,
+        ctx: &mut BuildBevyMeshesContext,
     ) -> Result<(), Box<dyn error::Error>> {
-        unimplemented!()
+        self.to_polygon().populate_mesh_builders(ctx)
     }
 }
 
