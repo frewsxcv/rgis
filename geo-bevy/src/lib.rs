@@ -39,6 +39,12 @@ pub struct BuildBevyMeshesContext {
     polygon_mesh_builder: bevy_earcutr::PolygonMeshBuilder,
 }
 
+impl Default for BuildBevyMeshesContext {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl BuildBevyMeshesContext {
     pub fn new() -> Self {
         BuildBevyMeshesContext {
