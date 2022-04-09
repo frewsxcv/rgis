@@ -58,7 +58,13 @@ pub trait Task: Sized + Send + Sync + 'static {
             bevy::log::info!("Starting task '{}'", task_name);
             let outcome = self.perform().await;
             bevy::log::info!("Completed task '{}'", task_name);
-            sender.send(outcome).await.unwrap();
+            if let Err(e) = sender.send(outcome).await {
+                bevy::log::error!(
+                    "Failed to send result from task {} back to main thread: {:?}",
+                    task_name,
+                    e
+                );
+            }
         })
         .detach();
 
