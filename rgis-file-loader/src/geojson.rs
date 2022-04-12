@@ -33,7 +33,7 @@ pub fn load_from_reader<R: io::Read + io::Seek>(
 
     if iter.peek().is_some() {
         let tl = time_logger::start!("Parsing file and converting to geo-types: {:?}", file_name);
-        geo_geometry_collection = geo::GeometryCollection::new();
+        geo_geometry_collection = geo::GeometryCollection::default();
         for feature_result in iter {
             let feature = feature_result?;
             if let Some(geometry) = feature.geometry {
