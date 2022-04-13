@@ -23,3 +23,6 @@ rgis-mouse = { path = "../rgis-mouse" }
 rgis-settings = { path = "../rgis-settings" }
 rgis-task = { path = "../rgis-task" }
 webbrowser = "0.6"
+
+# TODO: remove
+geo = "*"

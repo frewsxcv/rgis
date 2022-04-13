@@ -88,6 +88,13 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
                                 .send(rgis_events::CenterCameraEvent(layer.id))
                         }
 
+                        if ui.button("⚙ Calculate planar area").clicked() {
+                            use geo::algorithm::area::Area;
+                            println!("{:?}", layer.projected_geometry.unsigned_area());
+                        }
+
+                        // TODO: assert 4326
+
                         if ui.button("❌ Remove").clicked() {
                             self.events
                                 .delete_layer_event_writer

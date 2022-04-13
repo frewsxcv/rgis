@@ -13,6 +13,7 @@ mod bottom_panel;
 mod manage_layer_window;
 mod side_panel;
 mod top_panel;
+mod message_window;
 
 pub struct Plugin;
 
@@ -24,6 +25,7 @@ struct UiState {
     pub managing_layer: Option<rgis_layer_id::LayerId>,
     /// Is the 'add layer' window visible?
     pub is_add_layer_window_visible: bool,
+    pub messages: Vec<String>,
 }
 
 impl bevy::app::Plugin for Plugin {
@@ -33,12 +35,18 @@ impl bevy::app::Plugin for Plugin {
                 is_manage_layer_window_visible: false,
                 managing_layer: None,
                 is_add_layer_window_visible: true,
+                messages: vec![],
             })
             .add_system(handle_open_file_task)
             .add_plugin(rgis_task::TaskPlugin::<add_layer_window::OpenFileTask>::new())
+            .add_system(
+                render_message_window
+                    .label("message_window")
+            )
             .add_system_set(
                 SystemSet::new()
                     .label("top_bottom_panels")
+                    .after("message_window")
                     .with_system(render_top_panel)
                     .with_system(render_bottom_panel),
             )
@@ -149,6 +157,17 @@ fn render_add_layer_window(
         thread_pool: &thread_pool,
         load_geo_json_file_events: &mut load_geo_json_file_events,
         commands: &mut commands,
+    }
+    .render();
+}
+
+fn render_message_window(
+    mut state: ResMut<UiState>,
+    mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
+) {
+    message_window::MessageWindow {
+        state: &mut state,
+        bevy_egui_ctx: &mut bevy_egui_ctx,
     }
     .render();
 }
