@@ -11,7 +11,11 @@ use wasm_bindgen::prelude::*;
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
 pub fn run() {
-    let cli_values = rgis_cli::run().unwrap();
+    let cli_values = if let Ok(c) = rgis_cli::run() {
+        c
+    } else {
+        return;
+    };
 
     let mut app = App::new();
 

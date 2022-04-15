@@ -19,6 +19,7 @@ pub struct MousePos {
     pub projected: Xy,
 }
 
+#[allow(clippy::only_used_in_recursion)]
 fn cursor_moved_system(
     mut cursor_moved_event_reader: bevy::app::EventReader<bevy::window::CursorMoved>,
     windows: Res<bevy::window::Windows>,
