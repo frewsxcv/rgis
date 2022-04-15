@@ -11,9 +11,9 @@ use bevy_egui::egui;
 mod add_layer_window;
 mod bottom_panel;
 mod manage_layer_window;
+mod message_window;
 mod side_panel;
 mod top_panel;
-mod message_window;
 
 pub struct Plugin;
 
@@ -39,10 +39,7 @@ impl bevy::app::Plugin for Plugin {
             })
             .add_system(handle_open_file_task)
             .add_plugin(rgis_task::TaskPlugin::<add_layer_window::OpenFileTask>::new())
-            .add_system(
-                render_message_window
-                    .label("message_window")
-            )
+            .add_system(render_message_window.label("message_window"))
             .add_system_set(
                 SystemSet::new()
                     .label("top_bottom_panels")
@@ -147,7 +144,7 @@ fn render_manage_layer_window(
 fn render_add_layer_window(
     mut state: ResMut<UiState>,
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
-    mut load_geo_json_file_events: ResMut<bevy::app::Events<rgis_events::LoadGeoJsonFileEvent>>,
+    mut load_geo_json_file_event_writer: bevy::app::EventWriter<rgis_events::LoadGeoJsonFileEvent>,
     thread_pool: Res<bevy::tasks::AsyncComputeTaskPool>,
     mut commands: bevy::ecs::system::Commands,
 ) {
@@ -155,7 +152,7 @@ fn render_add_layer_window(
         state: &mut state,
         bevy_egui_ctx: &mut bevy_egui_ctx,
         thread_pool: &thread_pool,
-        load_geo_json_file_events: &mut load_geo_json_file_events,
+        load_geo_json_file_event_writer: &mut load_geo_json_file_event_writer,
         commands: &mut commands,
     }
     .render();
