@@ -1560,8 +1560,7 @@ dependencies = [
 [[package]]
 name = "geo"
 version = "0.19.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "61faf6a68f9432b5287c393268e86a07e4dfed79e6e0962b0e6e59b2f70c77d8"
+source = "git+https://github.com/georust/geo.git#863477f72c2aec5884ac0d99b9d11c54020849f5"
 dependencies = [
  "geo-types",
  "geographiclib-rs",
