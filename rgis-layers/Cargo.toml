@@ -6,7 +6,7 @@ edition = "2021"
 publish = false
 
 [dependencies]
-bevy = { version = "0.6", default-features = false, features = [
+bevy = { version = "0.7", default-features = false, features = [
     "bevy_winit",
     "bevy_core_pipeline",
     "bevy_render",
@@ -20,8 +20,8 @@ time-logger = { path = "../time-logger" }
 serde_json = "1"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-geo = { version = "0.19", features = ["use-proj"] }
+geo = { version = "0.20", features = ["use-proj"] }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 geo-proj-js = { path = "../geo-proj-js" }
-geo = { version = "0.19" }
+geo = { version = "0.20" }

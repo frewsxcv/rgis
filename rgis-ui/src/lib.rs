@@ -68,7 +68,7 @@ impl bevy::app::Plugin for Plugin {
 
 fn render_top_panel(
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
-    mut app_exit_events: ResMut<bevy::app::Events<bevy::app::AppExit>>,
+    mut app_exit_events: ResMut<bevy::ecs::event::Events<bevy::app::AppExit>>,
     mut windows: ResMut<Windows>,
 ) {
     top_panel::TopPanel {
@@ -109,9 +109,9 @@ fn render_side_panel(
 
 fn handle_open_file_task(
     mut events: ResMut<
-        bevy::app::Events<rgis_task::TaskFinishedEvent<add_layer_window::OpenFileTask>>,
+        bevy::ecs::event::Events<rgis_task::TaskFinishedEvent<add_layer_window::OpenFileTask>>,
     >,
-    mut load_geo_json_file_events: bevy::app::EventWriter<rgis_events::LoadGeoJsonFileEvent>,
+    mut load_geo_json_file_events: bevy::ecs::event::EventWriter<rgis_events::LoadGeoJsonFileEvent>,
     mut state: ResMut<UiState>,
 ) {
     for event in events.drain() {
@@ -130,7 +130,7 @@ fn render_manage_layer_window(
     mut state: ResMut<UiState>,
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
     layers: Res<rgis_layers::Layers>,
-    mut color_events: ResMut<bevy::app::Events<rgis_events::UpdateLayerColor>>,
+    mut color_events: ResMut<bevy::ecs::event::Events<rgis_events::UpdateLayerColor>>,
 ) {
     manage_layer_window::ManageLayerWindow {
         state: &mut state,
@@ -144,7 +144,7 @@ fn render_manage_layer_window(
 fn render_add_layer_window(
     mut state: ResMut<UiState>,
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
-    mut load_geo_json_file_event_writer: bevy::app::EventWriter<rgis_events::LoadGeoJsonFileEvent>,
+    mut load_geo_json_file_event_writer: bevy::ecs::event::EventWriter<rgis_events::LoadGeoJsonFileEvent>,
     thread_pool: Res<bevy::tasks::AsyncComputeTaskPool>,
     mut commands: bevy::ecs::system::Commands,
 ) {

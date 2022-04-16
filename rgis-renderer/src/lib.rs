@@ -48,7 +48,7 @@ impl bevy::app::Plugin for Plugin {
 }
 
 fn handle_layer_z_index_updated_event(
-    mut layer_z_index_updated_event_reader: bevy::app::EventReader<rgis_events::LayerZIndexUpdated>,
+    mut layer_z_index_updated_event_reader: bevy::ecs::event::EventReader<rgis_events::LayerZIndexUpdated>,
     mut query: Query<(&rgis_layer_id::LayerId, &mut Transform), With<bevy::sprite::Mesh2dHandle>>,
     layers: Res<rgis_layers::Layers>,
 ) {
@@ -68,7 +68,7 @@ fn handle_layer_z_index_updated_event(
 }
 
 fn handle_layer_deleted_events(
-    mut layer_deleted_event_reader: bevy::app::EventReader<rgis_events::LayerDeleted>,
+    mut layer_deleted_event_reader: bevy::ecs::event::EventReader<rgis_events::LayerDeleted>,
     mut commands: Commands,
     query: Query<(&rgis_layer_id::LayerId, Entity), With<Handle<ColorMaterial>>>,
 ) {

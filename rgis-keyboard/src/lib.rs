@@ -5,7 +5,7 @@
     clippy::expect_used
 )]
 
-use bevy::ecs::system::{IntoSystem, Res};
+use bevy::ecs::system::Res;
 
 const PAN_AMOUNT: f32 = 15.; // Larger number will pan more
 
@@ -13,14 +13,14 @@ pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut bevy::app::App) {
-        app.add_system(process_key_code_input_system.system());
+        app.add_system(process_key_code_input_system);
     }
 }
 
 fn process_key_code_input_system(
     keyboard_input: Res<bevy::input::Input<bevy::input::keyboard::KeyCode>>,
-    mut pan_camera_events: bevy::app::EventWriter<rgis_events::PanCameraEvent>,
-    mut zoom_camera_events: bevy::app::EventWriter<rgis_events::ZoomCameraEvent>,
+    mut pan_camera_events: bevy::ecs::event::EventWriter<rgis_events::PanCameraEvent>,
+    mut zoom_camera_events: bevy::ecs::event::EventWriter<rgis_events::ZoomCameraEvent>,
 ) {
     for key in keyboard_input.get_just_pressed() {
         match key {

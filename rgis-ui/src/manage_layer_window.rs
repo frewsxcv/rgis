@@ -4,7 +4,7 @@ pub(crate) struct ManageLayerWindow<'a> {
     pub state: &'a mut crate::UiState,
     pub layers: &'a rgis_layers::Layers,
     pub bevy_egui_ctx: &'a mut bevy_egui::EguiContext,
-    pub color_events: &'a mut bevy::app::Events<rgis_events::UpdateLayerColor>,
+    pub color_events: &'a mut bevy::ecs::event::Events<rgis_events::UpdateLayerColor>,
 }
 
 impl<'a> ManageLayerWindow<'a> {

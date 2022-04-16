@@ -31,7 +31,7 @@ pub(crate) struct AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
     pub bevy_egui_ctx: &'a mut bevy_egui::EguiContext,
     pub thread_pool: &'a bevy::tasks::AsyncComputeTaskPool,
     pub load_geo_json_file_event_writer:
-        &'a mut bevy::app::EventWriter<'w1, 's1, rgis_events::LoadGeoJsonFileEvent>,
+        &'a mut bevy::ecs::event::EventWriter<'w1, 's1, rgis_events::LoadGeoJsonFileEvent>,
     pub commands: &'a mut bevy::prelude::Commands<'w2, 's2>,
 }
 

@@ -6,7 +6,7 @@
 )]
 
 use bevy::ecs::query::With;
-use bevy::ecs::system::{IntoSystem, Query, Res, ResMut};
+use bevy::ecs::system::{Query, Res, ResMut};
 
 #[derive(Copy, Clone)]
 pub struct Xy {
@@ -21,7 +21,7 @@ pub struct MousePos {
 
 #[allow(clippy::only_used_in_recursion)]
 fn cursor_moved_system(
-    mut cursor_moved_event_reader: bevy::app::EventReader<bevy::window::CursorMoved>,
+    mut cursor_moved_event_reader: bevy::ecs::event::EventReader<bevy::window::CursorMoved>,
     windows: Res<bevy::window::Windows>,
     camera_transform_query: Query<
         &bevy::transform::components::Transform,
@@ -65,9 +65,9 @@ fn screen_coords_to_geo_coords(
 }
 
 fn mouse_motion_system(
-    mut mouse_motion_event_reader: bevy::app::EventReader<bevy::input::mouse::MouseMotion>,
+    mut mouse_motion_event_reader: bevy::ecs::event::EventReader<bevy::input::mouse::MouseMotion>,
     mouse_button: Res<bevy::input::Input<bevy::input::mouse::MouseButton>>,
-    mut pan_camera_events: bevy::app::EventWriter<rgis_events::PanCameraEvent>,
+    mut pan_camera_events: bevy::ecs::event::EventWriter<rgis_events::PanCameraEvent>,
 ) {
     if mouse_button.pressed(bevy::input::mouse::MouseButton::Right) {
         for event in mouse_motion_event_reader.iter() {
@@ -86,8 +86,8 @@ fn mouse_motion_system(
 }
 
 fn mouse_scroll_system(
-    mut mouse_scroll_event_reader: bevy::app::EventReader<bevy::input::mouse::MouseWheel>,
-    mut zoom_camera_events: bevy::app::EventWriter<rgis_events::ZoomCameraEvent>,
+    mut mouse_scroll_event_reader: bevy::ecs::event::EventReader<bevy::input::mouse::MouseWheel>,
+    mut zoom_camera_events: bevy::ecs::event::EventWriter<rgis_events::ZoomCameraEvent>,
 ) {
     for event in mouse_scroll_event_reader.iter() {
         if event.y > 0. {
@@ -102,9 +102,9 @@ pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut bevy::app::App) {
-        app.add_system(cursor_moved_system.system())
-            .add_system(mouse_scroll_system.system())
-            .add_system(mouse_motion_system.system())
+        app.add_system(cursor_moved_system)
+            .add_system(mouse_scroll_system)
+            .add_system(mouse_motion_system)
             .insert_resource(MousePos {
                 projected: Xy { x: 0., y: 0. },
             });

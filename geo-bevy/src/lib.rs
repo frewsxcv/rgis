@@ -22,13 +22,13 @@ fn build_mesh_from_vertices(
     let num_vertices = vertices.len();
     let mut mesh = Mesh::new(primitive_topology);
     mesh.set_indices(Some(bevy_render::mesh::Indices::U32(indices)));
-    mesh.set_attribute(Mesh::ATTRIBUTE_POSITION, vertices);
+    mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, vertices);
 
     let normals = vec![[0.0, 0.0, 0.0]; num_vertices];
     let uvs = vec![[0.0, 0.0]; num_vertices];
 
-    mesh.set_attribute(Mesh::ATTRIBUTE_NORMAL, normals);
-    mesh.set_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
+    mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, normals);
+    mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
 
     mesh
 }

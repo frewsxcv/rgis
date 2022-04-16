@@ -5,7 +5,7 @@
     clippy::expect_used
 )]
 
-use geo::algorithm::map_coords::TryMapCoordsInplace;
+use geo::algorithm::map_coords::MapCoordsInplace;
 use std::{error, fmt};
 use wasm_bindgen::JsCast;
 
@@ -43,16 +43,25 @@ pub fn transform(
         .map_err(|_| CouldNotProjectError)?
         .dyn_into::<js_sys::Function>()
         .map_err(|_| CouldNotProjectError)?;
-    geometry.try_map_coords_inplace(|(x, y)| -> Result<_, Box<dyn error::Error + Send + Sync>> {
-        array.set(0, wasm_bindgen::JsValue::from_f64(*x));
-        array.set(1, wasm_bindgen::JsValue::from_f64(*y));
-        let result = forward
-            .call1(&wasm_bindgen::JsValue::UNDEFINED, &array).map_err(|_| CouldNotProjectError)?
-            .dyn_into::<js_sys::Array>().map_err(|_| CouldNotProjectError)?;
-        Ok((
-            result.get(0).as_f64().ok_or(CouldNotProjectError)?,
-            result.get(1).as_f64().ok_or(CouldNotProjectError)?,
-        ))
-    })?;
+    geometry.map_coords_inplace(|(x, y)| in_place((x, y), &forward, &array).unwrap());
+    // geometry.try_map_coords_inplace(|(x, y)| in_place((x, y), &forward, &array))?;
     Ok(())
+}
+
+fn in_place(
+    (x, y): (f64, f64),
+    forward: &js_sys::Function,
+    array: &js_sys::Array,
+) -> Result<(f64, f64), Box<dyn error::Error + Send + Sync>> {
+    array.set(0, wasm_bindgen::JsValue::from_f64(x));
+    array.set(1, wasm_bindgen::JsValue::from_f64(y));
+    let result = forward
+        .call1(&wasm_bindgen::JsValue::UNDEFINED, &array)
+        .map_err(|_| CouldNotProjectError)?
+        .dyn_into::<js_sys::Array>()
+        .map_err(|_| CouldNotProjectError)?;
+    Ok((
+        result.get(0).as_f64().ok_or(CouldNotProjectError)?,
+        result.get(1).as_f64().ok_or(CouldNotProjectError)?,
+    ))
 }

@@ -5,7 +5,7 @@
     clippy::expect_used
 )]
 
-use bevy::app::Events;
+use bevy::ecs::event::Events;
 use bevy::prelude::*;
 use rgis_task::Task;
 use std::{error, io};
@@ -179,10 +179,10 @@ impl bevy::app::Plugin for Plugin {
         app.insert_resource(sender2)
             .insert_resource(receiver2)
             .add_plugin(rgis_task::TaskPlugin::<LoadGeoJsonFileTask>::new())
-            .add_system(load_geojson_file_handler.system())
-            .add_system(handle_loaded_layers.system());
+            .add_system(load_geojson_file_handler)
+            .add_system(handle_loaded_layers);
 
         #[cfg(not(target_arch = "wasm32"))]
-        app.add_startup_system(load_layers_from_cli.system());
+        app.add_startup_system(load_layers_from_cli);
     }
 }

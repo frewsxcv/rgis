@@ -6,7 +6,7 @@ edition = "2021"
 
 [dependencies]
 async-channel = "1"
-bevy = { version = "0.6", default-features = false, features = [
+bevy = { version = "0.7", default-features = false, features = [
     "bevy_winit",
     "bevy_core_pipeline",
     "bevy_render",
@@ -14,7 +14,7 @@ bevy = { version = "0.6", default-features = false, features = [
     "bevy_ui",
 ] }
 ehttp = "0.2"
-geo = "0.19"
+geo = "0.20"
 geojson = { version = "0.22", features = ["geo-types"] }
 rgis-cli = { path = "../rgis-cli" }
 rgis-layers = { path = "../rgis-layers" }

@@ -1,7 +1,7 @@
 use bevy_egui::egui;
 
 pub(crate) struct TopPanel<'a> {
-    pub app_exit_events: &'a mut bevy::app::Events<bevy::app::AppExit>,
+    pub app_exit_events: &'a mut bevy::ecs::event::Events<bevy::app::AppExit>,
     pub bevy_egui_ctx: &'a mut bevy_egui::EguiContext,
     pub windows: &'a mut bevy::window::Windows,
 }
@@ -28,7 +28,7 @@ impl<'a> TopPanel<'a> {
 }
 
 fn render_exit_button(
-    app_exit_events: &mut bevy::app::Events<bevy::app::AppExit>,
+    app_exit_events: &mut bevy::ecs::event::Events<bevy::app::AppExit>,
     ui: &mut egui::Ui,
 ) {
     ui.add_enabled_ui(cfg!(not(target_arch = "wasm32")), |ui| {

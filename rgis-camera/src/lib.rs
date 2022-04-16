@@ -15,10 +15,10 @@ pub struct Camera2d;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(setup.system())
-            .add_system(center_camera.system())
-            .add_system(pan_camera_system.system())
-            .add_system(zoom_camera_system.system());
+        app.add_startup_system(setup)
+            .add_system(center_camera)
+            .add_system(pan_camera_system)
+            .add_system(zoom_camera_system);
     }
 }
 
@@ -37,7 +37,7 @@ struct CameraOffset {
 }
 
 fn pan_camera_system(
-    mut pan_camera_event_reader: bevy::app::EventReader<rgis_events::PanCameraEvent>,
+    mut pan_camera_event_reader: bevy::ecs::event::EventReader<rgis_events::PanCameraEvent>,
     mut camera_transform_query: Query<&mut Transform, With<Camera2d>>,
 ) {
     for event in pan_camera_event_reader.iter() {
@@ -71,7 +71,7 @@ fn set_camera_transform(
 }
 
 fn zoom_camera_system(
-    mut zoom_camera_event_reader: bevy::app::EventReader<rgis_events::ZoomCameraEvent>,
+    mut zoom_camera_event_reader: bevy::ecs::event::EventReader<rgis_events::ZoomCameraEvent>,
     mut camera_transform_query: Query<&mut Transform, With<Camera2d>>,
 ) {
     for event in zoom_camera_event_reader.iter() {
