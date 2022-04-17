@@ -13,7 +13,7 @@ bevy = { version = "0.7", default-features = false, features = [
     "bevy_sprite",
     "bevy_ui",
 ] }
-bevy_egui = { git = "https://github.com/forbjok/bevy_egui.git", branch = "bevy-0.7" }
+bevy_egui = "0.13.0"
 rfd = "0.8"
 rgis-layer-id = { path = "../rgis-layer-id" }
 rgis-layers = { path = "../rgis-layers" }
