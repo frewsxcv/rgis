@@ -144,7 +144,9 @@ fn render_manage_layer_window(
 fn render_add_layer_window(
     mut state: ResMut<UiState>,
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
-    mut load_geo_json_file_event_writer: bevy::ecs::event::EventWriter<rgis_events::LoadGeoJsonFileEvent>,
+    mut load_geo_json_file_event_writer: bevy::ecs::event::EventWriter<
+        rgis_events::LoadGeoJsonFileEvent,
+    >,
     thread_pool: Res<bevy::tasks::AsyncComputeTaskPool>,
     mut commands: bevy::ecs::system::Commands,
 ) {

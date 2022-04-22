@@ -6,7 +6,8 @@ const MAX_SIDE_PANEL_WIDTH: f32 = 200.0f32;
 pub struct Events<'w, 's> {
     toggle_layer_visibility_event_writer:
         bevy::ecs::event::EventWriter<'w, 's, rgis_events::ToggleLayerVisibilityEvent>,
-    center_layer_event_writer: bevy::ecs::event::EventWriter<'w, 's, rgis_events::CenterCameraEvent>,
+    center_layer_event_writer:
+        bevy::ecs::event::EventWriter<'w, 's, rgis_events::CenterCameraEvent>,
     delete_layer_event_writer: bevy::ecs::event::EventWriter<'w, 's, rgis_events::DeleteLayer>,
     move_layer_event_writer: bevy::ecs::event::EventWriter<'w, 's, rgis_events::MoveLayerEvent>,
 }

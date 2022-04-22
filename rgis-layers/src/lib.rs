@@ -260,7 +260,9 @@ fn handle_delete_layer_events(
 
 fn handle_move_layer_events(
     mut move_layer_event_reader: bevy::ecs::event::EventReader<rgis_events::MoveLayerEvent>,
-    mut layer_z_index_updated_event_writer: bevy::ecs::event::EventWriter<rgis_events::LayerZIndexUpdated>,
+    mut layer_z_index_updated_event_writer: bevy::ecs::event::EventWriter<
+        rgis_events::LayerZIndexUpdated,
+    >,
     mut layers: ResMut<Layers>,
 ) {
     for event in move_layer_event_reader.iter() {
