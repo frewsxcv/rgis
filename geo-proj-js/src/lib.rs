@@ -43,8 +43,19 @@ pub fn transform(
         .map_err(|_| CouldNotProjectError)?
         .dyn_into::<js_sys::Function>()
         .map_err(|_| CouldNotProjectError)?;
-    geometry.map_coords_inplace(|(x, y)| in_place((x, y), &forward, &array).unwrap());
+
+    geometry.map_coords_inplace(|(x, y)| {
+        match in_place((x, y), &forward, &array) {
+            Ok(n) => n,
+            Err(e) => {
+                log::error!("Failed to convert coordinate: {:?}", e);
+                (x, y)
+            }
+        }
+    });
+
     // geometry.try_map_coords_inplace(|(x, y)| in_place((x, y), &forward, &array))?;
+
     Ok(())
 }
 
@@ -56,7 +67,7 @@ fn in_place(
     array.set(0, wasm_bindgen::JsValue::from_f64(x));
     array.set(1, wasm_bindgen::JsValue::from_f64(y));
     let result = forward
-        .call1(&wasm_bindgen::JsValue::UNDEFINED, &array)
+        .call1(&wasm_bindgen::JsValue::UNDEFINED, array)
         .map_err(|_| CouldNotProjectError)?
         .dyn_into::<js_sys::Array>()
         .map_err(|_| CouldNotProjectError)?;

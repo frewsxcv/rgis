@@ -1613,6 +1613,7 @@ version = "0.1.0"
 dependencies = [
  "geo",
  "js-sys",
+ "log",
  "wasm-bindgen",
  "web-sys",
 ]
