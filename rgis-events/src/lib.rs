@@ -27,12 +27,12 @@ pub struct LayerBecameHiddenEvent(pub rgis_layer_id::LayerId);
 pub struct LayerBecameVisibleEvent(pub rgis_layer_id::LayerId);
 
 /// Change the `Layer`'s color
-pub struct UpdateLayerColor(pub rgis_layer_id::LayerId, pub bevy::prelude::Color);
+pub struct UpdateLayerColorEvent(pub rgis_layer_id::LayerId, pub bevy::prelude::Color);
 /// After a `Layer`'s color is changed
-pub struct LayerColorUpdated(pub rgis_layer_id::LayerId);
+pub struct LayerColorUpdatedEvent(pub rgis_layer_id::LayerId);
 
-pub struct DeleteLayer(pub rgis_layer_id::LayerId);
-pub struct LayerDeleted(pub rgis_layer_id::LayerId);
+pub struct DeleteLayerEvent(pub rgis_layer_id::LayerId);
+pub struct LayerDeletedEvent(pub rgis_layer_id::LayerId);
 
 pub enum MoveDirection {
     Up,
@@ -40,7 +40,7 @@ pub enum MoveDirection {
 }
 pub struct MoveLayerEvent(pub rgis_layer_id::LayerId, pub MoveDirection);
 
-pub struct LayerZIndexUpdated(pub rgis_layer_id::LayerId);
+pub struct LayerZIndexUpdatedEvent(pub rgis_layer_id::LayerId);
 
 // TODO: this can be removed
 #[derive(Debug)]
@@ -119,11 +119,11 @@ impl bevy::app::Plugin for Plugin {
             .add_event::<PanCameraEvent>()
             .add_event::<ZoomCameraEvent>()
             .add_event::<CenterCameraEvent>()
-            .add_event::<LayerColorUpdated>()
-            .add_event::<UpdateLayerColor>()
+            .add_event::<LayerColorUpdatedEvent>()
+            .add_event::<UpdateLayerColorEvent>()
             .add_event::<MoveLayerEvent>()
-            .add_event::<LayerZIndexUpdated>()
-            .add_event::<DeleteLayer>()
-            .add_event::<LayerDeleted>();
+            .add_event::<LayerZIndexUpdatedEvent>()
+            .add_event::<DeleteLayerEvent>()
+            .add_event::<LayerDeletedEvent>();
     }
 }

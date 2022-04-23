@@ -230,8 +230,8 @@ fn handle_toggle_layer_visibility_events(
 }
 
 fn handle_update_color_events(
-    mut update_events: bevy::ecs::event::EventReader<rgis_events::UpdateLayerColor>,
-    mut updated_events: bevy::ecs::event::EventWriter<rgis_events::LayerColorUpdated>,
+    mut update_events: bevy::ecs::event::EventReader<rgis_events::UpdateLayerColorEvent>,
+    mut updated_events: bevy::ecs::event::EventWriter<rgis_events::LayerColorUpdatedEvent>,
     mut layers: ResMut<Layers>,
 ) {
     for event in update_events.iter() {
@@ -243,25 +243,25 @@ fn handle_update_color_events(
             }
         };
         layer.color = event.1;
-        updated_events.send(rgis_events::LayerColorUpdated(event.0));
+        updated_events.send(rgis_events::LayerColorUpdatedEvent(event.0));
     }
 }
 
 fn handle_delete_layer_events(
-    mut delete_layer_event_reader: bevy::ecs::event::EventReader<rgis_events::DeleteLayer>,
-    mut layer_deleted_event_writer: bevy::ecs::event::EventWriter<rgis_events::LayerDeleted>,
+    mut delete_layer_event_reader: bevy::ecs::event::EventReader<rgis_events::DeleteLayerEvent>,
+    mut layer_deleted_event_writer: bevy::ecs::event::EventWriter<rgis_events::LayerDeletedEvent>,
     mut layers: ResMut<Layers>,
 ) {
     for event in delete_layer_event_reader.iter() {
         layers.remove(event.0);
-        layer_deleted_event_writer.send(rgis_events::LayerDeleted(event.0));
+        layer_deleted_event_writer.send(rgis_events::LayerDeletedEvent(event.0));
     }
 }
 
 fn handle_move_layer_events(
     mut move_layer_event_reader: bevy::ecs::event::EventReader<rgis_events::MoveLayerEvent>,
     mut layer_z_index_updated_event_writer: bevy::ecs::event::EventWriter<
-        rgis_events::LayerZIndexUpdated,
+        rgis_events::LayerZIndexUpdatedEvent,
     >,
     mut layers: ResMut<Layers>,
 ) {
@@ -289,8 +289,9 @@ fn handle_move_layer_events(
 
         layers.data.swap(old_z_index, new_z_index);
 
-        layer_z_index_updated_event_writer.send(rgis_events::LayerZIndexUpdated(event.0));
-        layer_z_index_updated_event_writer.send(rgis_events::LayerZIndexUpdated(other_layer_id));
+        layer_z_index_updated_event_writer.send(rgis_events::LayerZIndexUpdatedEvent(event.0));
+        layer_z_index_updated_event_writer
+            .send(rgis_events::LayerZIndexUpdatedEvent(other_layer_id));
     }
 }
 

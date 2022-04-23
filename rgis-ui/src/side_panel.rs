@@ -8,7 +8,7 @@ pub struct Events<'w, 's> {
         bevy::ecs::event::EventWriter<'w, 's, rgis_events::ToggleLayerVisibilityEvent>,
     center_layer_event_writer:
         bevy::ecs::event::EventWriter<'w, 's, rgis_events::CenterCameraEvent>,
-    delete_layer_event_writer: bevy::ecs::event::EventWriter<'w, 's, rgis_events::DeleteLayer>,
+    delete_layer_event_writer: bevy::ecs::event::EventWriter<'w, 's, rgis_events::DeleteLayerEvent>,
     move_layer_event_writer: bevy::ecs::event::EventWriter<'w, 's, rgis_events::MoveLayerEvent>,
 }
 
@@ -99,7 +99,7 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
                         if ui.button("❌ Remove").clicked() {
                             self.events
                                 .delete_layer_event_writer
-                                .send(rgis_events::DeleteLayer(layer.id))
+                                .send(rgis_events::DeleteLayerEvent(layer.id))
                         }
                     });
             });

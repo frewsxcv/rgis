@@ -130,7 +130,7 @@ fn render_manage_layer_window(
     mut state: ResMut<UiState>,
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
     layers: Res<rgis_layers::Layers>,
-    mut color_events: ResMut<bevy::ecs::event::Events<rgis_events::UpdateLayerColor>>,
+    mut color_events: ResMut<bevy::ecs::event::Events<rgis_events::UpdateLayerColorEvent>>,
 ) {
     manage_layer_window::ManageLayerWindow {
         state: &mut state,
