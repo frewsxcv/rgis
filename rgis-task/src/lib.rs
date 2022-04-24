@@ -75,7 +75,7 @@ pub trait Task: Sized + Send + Sync + 'static {
     }
 }
 
-pub fn check_system<T: Task>(
+fn check_system<T: Task>(
     query: bevy::ecs::system::Query<(&InProgressTaskOutcomeReceiver<T>, bevy::ecs::entity::Entity)>,
     mut commands: bevy::ecs::system::Commands,
     mut event_writer: bevy::ecs::event::EventWriter<TaskFinishedEvent<T>>,
