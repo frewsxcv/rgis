@@ -24,4 +24,4 @@ resolver = "2"
 debug = true
 
 [patch.crates-io]
-geo = { git = "https://github.com/georust/geo.git", branch = "frewsxcv-map" }
+geo = { git = "https://github.com/georust/geo.git", branch = "main" }

@@ -1585,8 +1585,8 @@ dependencies = [
 
 [[package]]
 name = "geo"
-version = "0.20.0"
-source = "git+https://github.com/georust/geo.git?branch=frewsxcv-map#36db307358ff41c88151dfabae2a6e3264d50258"
+version = "0.20.1"
+source = "git+https://github.com/georust/geo.git?branch=main#68f6e847a2fcbca675bdfabfd1f9a5587541f804"
 dependencies = [
  "geo-types",
  "geographiclib-rs",
@@ -2620,9 +2620,9 @@ checksum = "9145ac0af1d93c638c98c40cf7d25665f427b2a44ad0a99b1dccf3e2f25bb987"
 
 [[package]]
 name = "proj"
-version = "0.25.2"
+version = "0.26.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e4b1daec3e965c80c5f542dc57396f6977a2675e388ab73796b940005799fc66"
+checksum = "edc1004266e35da94b85f69b93a59b6eb23da55c5c9d68a7b305e272ccd28548"
 dependencies = [
  "geo-types",
  "libc",
@@ -2633,9 +2633,9 @@ dependencies = [
 
 [[package]]
 name = "proj-sys"
-version = "0.22.0"
+version = "0.23.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "56e99bdef390764af925545b4328a12540494f658bad2653b051dfe8838f3e2e"
+checksum = "1135c2ad2fd0636d141be2d2baeae5788bd8fa0623899ec5a689ffe143bcab63"
 dependencies = [
  "bindgen",
  "cmake",

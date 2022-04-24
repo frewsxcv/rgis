@@ -5,7 +5,7 @@
     clippy::expect_used
 )]
 
-use geo::algorithm::map_coords::MapCoordsInplace;
+use geo::algorithm::map_coords::MapCoordsInPlace;
 use std::{error, fmt};
 use wasm_bindgen::JsCast;
 
@@ -44,7 +44,7 @@ pub fn transform(
         .dyn_into::<js_sys::Function>()
         .map_err(|_| CouldNotProjectError)?;
 
-    geometry.map_coords_inplace(|(x, y)| match in_place((x, y), &forward, &array) {
+    geometry.map_coords_in_place(|(x, y)| match in_place((x, y), &forward, &array) {
         Ok(n) => n,
         Err(e) => {
             log::error!("Failed to convert coordinate: {:?}", e);
@@ -52,7 +52,7 @@ pub fn transform(
         }
     });
 
-    // geometry.try_map_coords_inplace(|(x, y)| in_place((x, y), &forward, &array))?;
+    // geometry.try_map_coords_in_place(|(x, y)| in_place((x, y), &forward, &array))?;
 
     Ok(())
 }
