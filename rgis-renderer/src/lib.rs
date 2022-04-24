@@ -75,10 +75,7 @@ fn handle_layer_deleted_events(
     query: Query<(&rgis_layer_id::LayerId, Entity), With<Handle<ColorMaterial>>>,
 ) {
     for event in layer_deleted_event_reader.iter() {
-        for entity in query
-            .iter()
-            .filter_map(|(i, entity)| (*i == event.0).then(|| entity))
-        {
+        for (_, entity) in query.iter().filter(|(i, _)| **i == event.0) {
             commands.entity(entity).despawn();
         }
     }
@@ -109,10 +106,7 @@ fn handle_layer_became_hidden_event(
     mut query: Query<(&rgis_layer_id::LayerId, &mut bevy::render::view::Visibility)>,
 ) {
     for event in event_reader.iter() {
-        for mut visibility in query
-            .iter_mut()
-            .filter_map(|(i, visibility)| (*i == event.0).then(|| visibility))
-        {
+        for (_, mut visibility) in query.iter_mut().filter(|(i, _)| **i == event.0) {
             visibility.is_visible = false;
         }
     }
@@ -123,10 +117,7 @@ fn handle_layer_became_visible_event(
     mut query: Query<(&rgis_layer_id::LayerId, &mut bevy::render::view::Visibility)>,
 ) {
     for event in event_reader.iter() {
-        for mut visibility in query
-            .iter_mut()
-            .filter_map(|(i, visibility)| (*i == event.0).then(|| visibility))
-        {
+        for (_, mut visibility) in query.iter_mut().filter(|(i, _)| **i == event.0) {
             visibility.is_visible = true;
         }
     }
@@ -144,10 +135,7 @@ fn handle_layer_color_changed_event(
             None => continue,
         };
 
-        for handle in query
-            .iter()
-            .filter_map(|(i, handle)| (*i == event.0).then(|| handle))
-        {
+        for (_, handle) in query.iter().filter(|(i, _)| **i == event.0) {
             if let Some(color_material) = materials.get_mut(handle) {
                 color_material.color = layer.color
             }
