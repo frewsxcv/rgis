@@ -60,21 +60,25 @@ impl Layers {
         self.data.iter().position(|entry| entry.id == layer_id)
     }
 
+    #[inline]
     pub fn get(&self, layer_id: rgis_layer_id::LayerId) -> Option<&Layer> {
         let index = self.get_index(layer_id)?;
         self.data.get(index)
     }
 
+    #[inline]
     pub fn get_with_z_index(&self, layer_id: rgis_layer_id::LayerId) -> Option<(&Layer, usize)> {
         let index = self.get_index(layer_id)?;
         self.data.get(index).map(|layer| (layer, index))
     }
 
+    #[inline]
     pub fn get_mut(&mut self, layer_id: rgis_layer_id::LayerId) -> Option<&mut Layer> {
         let index = self.get_index(layer_id)?;
         self.data.get_mut(index)
     }
 
+    #[inline]
     pub fn remove(&mut self, layer_id: rgis_layer_id::LayerId) {
         if let Some(index) = self.get_index(layer_id) {
             self.data.remove(index);

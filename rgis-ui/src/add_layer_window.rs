@@ -36,7 +36,7 @@ pub(crate) struct AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
 }
 
 impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
-    pub fn render(&mut self) {
+    pub(crate) fn render(&mut self) {
         egui::Window::new("Add Layer")
             .open(&mut self.state.is_add_layer_window_visible)
             .anchor(egui::Align2::LEFT_TOP, [5., 5.])

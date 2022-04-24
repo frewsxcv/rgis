@@ -7,7 +7,7 @@ pub(crate) struct BottomPanel<'a> {
 }
 
 impl<'a> BottomPanel<'a> {
-    pub fn render(&mut self) {
+    pub(crate) fn render(&mut self) {
         egui::TopBottomPanel::bottom("bottom").show(self.egui_ctx, |ui| {
             ui.horizontal(|ui| {
                 ui.with_layout(egui::Layout::right_to_left(), |ui| {

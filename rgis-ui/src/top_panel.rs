@@ -7,7 +7,7 @@ pub(crate) struct TopPanel<'a> {
 }
 
 impl<'a> TopPanel<'a> {
-    pub fn render(&mut self) {
+    pub(crate) fn render(&mut self) {
         egui::TopBottomPanel::top("top_panel").show(self.bevy_egui_ctx.ctx_mut(), |ui| {
             ui.horizontal(|ui| {
                 ui.label("rgis");

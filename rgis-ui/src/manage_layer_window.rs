@@ -8,7 +8,7 @@ pub(crate) struct ManageLayerWindow<'a> {
 }
 
 impl<'a> ManageLayerWindow<'a> {
-    pub fn render(&mut self) {
+    pub(crate) fn render(&mut self) {
         if let (true, Some(layer_id)) = (
             self.state.is_manage_layer_window_visible,
             self.state.managing_layer,

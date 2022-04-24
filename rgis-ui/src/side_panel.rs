@@ -20,7 +20,7 @@ pub(crate) struct SidePanel<'a, 'w, 's> {
 }
 
 impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
-    pub fn render(&mut self) {
+    pub(crate) fn render(&mut self) {
         egui::SidePanel::left("left-side-panel")
             .max_width(MAX_SIDE_PANEL_WIDTH)
             .show(self.egui_ctx, |ui| {

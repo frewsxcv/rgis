@@ -6,7 +6,7 @@ pub(crate) struct MessageWindow<'a> {
 }
 
 impl<'a> MessageWindow<'a> {
-    pub fn render(&mut self) {
+    pub(crate) fn render(&mut self) {
         if let Some(message) = self.state.messages.pop() {
             egui::Window::new("Message Window")
                 .id(egui::Id::new("Message window"))
