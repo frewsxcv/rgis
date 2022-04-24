@@ -70,18 +70,22 @@ pub struct PanCameraEvent {
 }
 
 impl PanCameraEvent {
+    #[inline]
     pub fn up(amount: f32) -> Self {
         PanCameraEvent { x: 0., y: amount }
     }
 
+    #[inline]
     pub fn right(amount: f32) -> Self {
         PanCameraEvent { x: amount, y: 0. }
     }
 
+    #[inline]
     pub fn down(amount: f32) -> Self {
         PanCameraEvent { x: 0., y: -amount }
     }
 
+    #[inline]
     pub fn left(amount: f32) -> Self {
         PanCameraEvent { x: -amount, y: 0. }
     }
@@ -96,12 +100,14 @@ pub struct ZoomCameraEvent {
 }
 
 impl ZoomCameraEvent {
+    #[inline]
     pub fn zoom_in() -> Self {
         ZoomCameraEvent {
             amount: ZOOM_AMOUNT,
         }
     }
 
+    #[inline]
     pub fn zoom_out() -> Self {
         ZoomCameraEvent {
             amount: 1. / ZOOM_AMOUNT,
