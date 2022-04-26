@@ -30,12 +30,31 @@ impl bevy::app::Plugin for Plugin {
     }
 }
 
+#[derive(Clone, Copy)]
 struct CameraScale(pub f32);
 
+impl CameraScale {
+    fn to_transform_scale_vec(self) -> Vec3 {
+        Vec3::new(self.0, self.0, 1.)
+    }
+}
+
+#[derive(Clone, Copy)]
 struct CameraOffset {
     pub x: f32,
     pub y: f32,
 }
+
+impl CameraOffset {
+    fn to_transform_translation_vec(self) -> Vec3 {
+        Vec3::new(
+            self.x,
+            self.y,
+            999.9, // https://bevy-cheatbook.github.io/pitfalls/2d-camera-z.html
+        )
+    }
+}
+
 
 fn pan_camera_system(
     mut pan_camera_event_reader: bevy::ecs::event::EventReader<rgis_events::PanCameraEvent>,
@@ -56,23 +75,19 @@ fn pan_camera_system(
     let camera_scale = CameraScale(transform.scale[0]);
 
     for event in pan_camera_event_reader.iter() {
-        pan_x(event.x, &mut camera_offset, &camera_scale);
-        pan_y(event.y, &mut camera_offset, &camera_scale);
-        set_camera_transform(&mut transform, &camera_offset, &camera_scale);
+        pan_x(event.x, &mut camera_offset, camera_scale);
+        pan_y(event.y, &mut camera_offset, camera_scale);
+        set_camera_transform(&mut transform, camera_offset, camera_scale);
     }
 }
 
 fn set_camera_transform(
     transform: &mut Transform,
-    camera_offset: &CameraOffset,
-    camera_scale: &CameraScale,
+    camera_offset: CameraOffset,
+    camera_scale: CameraScale,
 ) {
-    transform.translation = Vec3::new(
-        camera_offset.x,
-        camera_offset.y,
-        999.9, // https://bevy-cheatbook.github.io/pitfalls/2d-camera-z.html
-    );
-    transform.scale = Vec3::new(camera_scale.0, camera_scale.0, 1.);
+    transform.translation = camera_offset.to_transform_translation_vec();
+    transform.scale = camera_scale.to_transform_scale_vec();
     debug!("New transform scale: {:?}", transform.scale);
 }
 
@@ -91,16 +106,16 @@ fn zoom_camera_system(
 
             zoom(event.amount, &mut camera_scale);
 
-            set_camera_transform(&mut transform, &camera_offset, &camera_scale);
+            set_camera_transform(&mut transform, camera_offset, camera_scale);
         }
     }
 }
 
-fn pan_x(amount: f32, camera_offset: &mut CameraOffset, camera_scale: &CameraScale) {
+fn pan_x(amount: f32, camera_offset: &mut CameraOffset, camera_scale: CameraScale) {
     camera_offset.x += amount * camera_scale.0;
 }
 
-fn pan_y(amount: f32, camera_offset: &mut CameraOffset, camera_scale: &CameraScale) {
+fn pan_y(amount: f32, camera_offset: &mut CameraOffset, camera_scale: CameraScale) {
     camera_offset.y += amount * camera_scale.0;
 }
 
@@ -131,7 +146,7 @@ fn center_camera(
         let camera_scale = CameraScale(scale as f32);
 
         if let Ok(mut transform) = query.get_mut(camera_2d.0) {
-            set_camera_transform(&mut transform, &camera_offset, &camera_scale);
+            set_camera_transform(&mut transform, camera_offset, camera_scale);
         }
     }
 }
