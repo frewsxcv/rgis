@@ -41,16 +41,12 @@ fn render_exit_button(
 fn render_full_screen_button(windows: &mut bevy::window::Windows, ui: &mut egui::Ui) {
     ui.add_enabled_ui(cfg!(not(target_arch = "wasm32")), |ui| {
         if ui.button("Full screen").clicked() {
-            match windows.get_primary_mut() {
-                Some(window) => {
-                    window.set_mode(if window.mode() == bevy::window::WindowMode::Fullscreen {
-                        bevy::window::WindowMode::Windowed
-                    } else {
-                        bevy::window::WindowMode::Fullscreen
-                    });
-                }
-                None => bevy::log::error!("Could not find primary window"),
-            };
+            let window = windows.primary_mut();
+            window.set_mode(if window.mode() == bevy::window::WindowMode::Fullscreen {
+                bevy::window::WindowMode::Windowed
+            } else {
+                bevy::window::WindowMode::Fullscreen
+            });
         }
     });
 }

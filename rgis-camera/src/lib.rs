@@ -42,19 +42,23 @@ fn pan_camera_system(
     camera_2d: Res<Camera2d>,
     mut query: Query<&mut Transform>,
 ) {
+    if pan_camera_event_reader.is_empty() {
+        return;
+    }
+    let mut transform = match query.get_mut(camera_2d.0) {
+        Ok(t) => t,
+        Err(_) => return,
+    };
+    let mut camera_offset = CameraOffset {
+        x: transform.translation[0],
+        y: transform.translation[1],
+    };
+    let camera_scale = CameraScale(transform.scale[0]);
+
     for event in pan_camera_event_reader.iter() {
-        if let Ok(mut transform) = query.get_mut(camera_2d.0) {
-            let mut camera_offset = CameraOffset {
-                x: transform.translation[0],
-                y: transform.translation[1],
-            };
-            let camera_scale = CameraScale(transform.scale[0]);
-
-            pan_x(event.x, &mut camera_offset, &camera_scale);
-            pan_y(event.y, &mut camera_offset, &camera_scale);
-
-            set_camera_transform(&mut transform, &camera_offset, &camera_scale);
-        }
+        pan_x(event.x, &mut camera_offset, &camera_scale);
+        pan_y(event.y, &mut camera_offset, &camera_scale);
+        set_camera_transform(&mut transform, &camera_offset, &camera_scale);
     }
 }
 

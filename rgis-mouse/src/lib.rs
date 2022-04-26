@@ -26,18 +26,17 @@ fn cursor_moved_system(
     query: Query<&mut bevy::transform::components::Transform>,
     mut mouse_position: ResMut<MousePos>,
 ) {
+    if cursor_moved_event_reader.is_empty() {
+        return;
+    }
+    let window = windows.primary();
+    let transform = match query.get(camera_2d.0) {
+        Ok(transform) => transform,
+        Err(_) => return,
+    };
     for event in cursor_moved_event_reader.iter() {
-        let window = match windows.get_primary() {
-            Some(w) => w,
-            None => {
-                bevy::log::error!("Could not find primary window");
-                continue;
-            }
-        };
-        if let Ok(transform) = query.get(camera_2d.0) {
-            mouse_position.projected =
-                screen_coords_to_geo_coords(event.position, transform, window);
-        }
+        mouse_position.projected =
+            screen_coords_to_geo_coords(event.position, transform, window);
     }
 }
 
