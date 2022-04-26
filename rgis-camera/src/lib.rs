@@ -9,24 +9,25 @@ use bevy::prelude::*;
 
 pub struct Plugin;
 
-// Component that gets added to the Camera2dBundle entity.
-#[derive(Component)]
-pub struct Camera2d;
+pub struct Camera2d(pub Entity);
+
+impl FromWorld for Camera2d {
+    fn from_world(world: &mut World) -> Self {
+        let entity = world
+            .spawn()
+            .insert_bundle(OrthographicCameraBundle::new_2d())
+            .id();
+        Camera2d(entity)
+    }
+}
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system(setup)
+        app.init_resource::<Camera2d>()
             .add_system(center_camera)
             .add_system(pan_camera_system)
             .add_system(zoom_camera_system);
     }
-}
-
-fn setup(mut commands: Commands) {
-    commands
-        .spawn()
-        .insert_bundle(OrthographicCameraBundle::new_2d())
-        .insert(Camera2d);
 }
 
 struct CameraScale(pub f32);
@@ -38,10 +39,11 @@ struct CameraOffset {
 
 fn pan_camera_system(
     mut pan_camera_event_reader: bevy::ecs::event::EventReader<rgis_events::PanCameraEvent>,
-    mut camera_transform_query: Query<&mut Transform, With<Camera2d>>,
+    camera_2d: Res<Camera2d>,
+    mut query: Query<&mut Transform>,
 ) {
     for event in pan_camera_event_reader.iter() {
-        for mut transform in camera_transform_query.iter_mut() {
+        if let Ok(mut transform) = query.get_mut(camera_2d.0) {
             let mut camera_offset = CameraOffset {
                 x: transform.translation[0],
                 y: transform.translation[1],
@@ -72,10 +74,11 @@ fn set_camera_transform(
 
 fn zoom_camera_system(
     mut zoom_camera_event_reader: bevy::ecs::event::EventReader<rgis_events::ZoomCameraEvent>,
-    mut camera_transform_query: Query<&mut Transform, With<Camera2d>>,
+    camera_2d: Res<Camera2d>,
+    mut query: Query<&mut Transform>,
 ) {
     for event in zoom_camera_event_reader.iter() {
-        for mut transform in camera_transform_query.iter_mut() {
+        if let Ok(mut transform) = query.get_mut(camera_2d.0) {
             let camera_offset = CameraOffset {
                 x: transform.translation[0],
                 y: transform.translation[1],
@@ -104,7 +107,8 @@ fn zoom(amount: f32, camera_scale: &mut CameraScale) {
 fn center_camera(
     layers: Res<rgis_layers::Layers>,
     mut event_reader: EventReader<rgis_events::CenterCameraEvent>,
-    mut camera_transform_query: Query<&mut Transform, With<Camera2d>>,
+    camera_2d: Res<Camera2d>,
+    mut query: Query<&mut Transform>,
 ) {
     for event in event_reader.iter() {
         let layer = match layers.get(event.0) {
@@ -122,7 +126,7 @@ fn center_camera(
         };
         let camera_scale = CameraScale(scale as f32);
 
-        for mut transform in camera_transform_query.iter_mut() {
+        if let Ok(mut transform) = query.get_mut(camera_2d.0) {
             set_camera_transform(&mut transform, &camera_offset, &camera_scale);
         }
     }
