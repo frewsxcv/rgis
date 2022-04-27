@@ -129,13 +129,12 @@ fn handle_layer_color_changed_event(
     query: Query<(&rgis_layer_id::LayerId, &Handle<ColorMaterial>)>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    for event in events.iter() {
-        let layer = match layers.get(event.0) {
-            Some(l) => l,
-            None => continue,
-        };
-
-        for (_, handle) in query.iter().filter(|(i, _)| **i == event.0) {
+    for layer in events
+        .iter()
+        .map(|event| event.0)
+        .filter_map(|layer_id| layers.get(layer_id))
+    {
+        for (_, handle) in query.iter().filter(|(i, _)| **i == layer.id) {
             if let Some(color_material) = materials.get_mut(handle) {
                 color_material.color = layer.color
             }
