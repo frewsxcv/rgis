@@ -35,8 +35,7 @@ fn cursor_moved_system(
         Err(_) => return,
     };
     for event in cursor_moved_event_reader.iter() {
-        mouse_position.projected =
-            screen_coords_to_geo_coords(event.position, transform, window);
+        mouse_position.projected = screen_coords_to_geo_coords(event.position, transform, window);
     }
 }
 

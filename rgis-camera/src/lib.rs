@@ -48,13 +48,11 @@ struct CameraOffset {
 impl CameraOffset {
     fn to_transform_translation_vec(self) -> Vec3 {
         Vec3::new(
-            self.x,
-            self.y,
+            self.x, self.y,
             999.9, // https://bevy-cheatbook.github.io/pitfalls/2d-camera-z.html
         )
     }
 }
-
 
 fn pan_camera_system(
     mut pan_camera_event_reader: bevy::ecs::event::EventReader<rgis_events::PanCameraEvent>,
