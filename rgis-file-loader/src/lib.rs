@@ -93,8 +93,8 @@ fn load_geojson_file_handler(
                 crs,
             } => {
                 LoadGeoJsonFileTask {
-                    geojson_source: GeoJsonSource::Path(geojson_file_path.clone()),
-                    source_crs: crs.clone(),
+                    geojson_source: GeoJsonSource::Path(geojson_file_path),
+                    source_crs: crs,
                     target_crs: rgis_settings.target_crs.clone(),
                 }
                 .spawn(&thread_pool, &mut commands);
@@ -122,7 +122,7 @@ fn load_geojson_file_handler(
             } => {
                 LoadGeoJsonFileTask {
                     geojson_source: GeoJsonSource::Bytes { bytes, file_name },
-                    source_crs: crs.clone(),
+                    source_crs: crs,
                     target_crs: rgis_settings.target_crs.clone(),
                 }
                 .spawn(&thread_pool, &mut commands);
