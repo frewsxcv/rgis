@@ -54,7 +54,6 @@ pub trait Task: Sized + Send + Sync + 'static {
         };
 
         pool.spawn(async move {
-            let task_name = task_name.clone();
             bevy::log::info!("Starting task '{}'", task_name);
             let outcome = self.perform().await;
             bevy::log::info!("Completed task '{}'", task_name);
