@@ -141,11 +141,7 @@ fn center_camera(
     camera_2d: Res<Camera2d>,
     mut query: Query<&mut Transform>,
 ) {
-    for event in event_reader.iter() {
-        let layer = match layers.get(event.0) {
-            Some(l) => l,
-            None => continue,
-        };
+    for layer in event_reader.iter().filter_map(|event| layers.get(event.0)) {
         let layer_center = layer.projected_bounding_rect.center();
         // TODO: this scale math is inprecise. it should take into account
         // .     the height of the geometry. as well as the window size.
