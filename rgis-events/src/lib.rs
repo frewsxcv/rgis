@@ -20,6 +20,13 @@ pub struct ToggleLayerVisibilityEvent(pub rgis_layer_id::LayerId);
 #[derive(Debug)]
 pub struct CenterCameraEvent(pub rgis_layer_id::LayerId);
 
+impl From<rgis_layer_id::LayerId> for CenterCameraEvent {
+    #[inline]
+    fn from(layer_id: rgis_layer_id::LayerId) -> Self {
+        CenterCameraEvent(layer_id)
+    }
+}
+
 #[derive(Debug)]
 pub struct LayerBecameHiddenEvent(pub rgis_layer_id::LayerId);
 
@@ -33,6 +40,15 @@ pub struct LayerColorUpdatedEvent(pub rgis_layer_id::LayerId);
 
 pub struct DeleteLayerEvent(pub rgis_layer_id::LayerId);
 pub struct LayerDeletedEvent(pub rgis_layer_id::LayerId);
+
+pub struct MeshesSpawnedEvent(pub rgis_layer_id::LayerId);
+
+impl From<rgis_layer_id::LayerId> for MeshesSpawnedEvent {
+    #[inline]
+    fn from(layer_id: rgis_layer_id::LayerId) -> Self {
+        MeshesSpawnedEvent(layer_id)
+    }
+}
 
 pub enum MoveDirection {
     Up,
@@ -130,6 +146,7 @@ impl bevy::app::Plugin for Plugin {
             .add_event::<MoveLayerEvent>()
             .add_event::<LayerZIndexUpdatedEvent>()
             .add_event::<DeleteLayerEvent>()
-            .add_event::<LayerDeletedEvent>();
+            .add_event::<LayerDeletedEvent>()
+            .add_event::<MeshesSpawnedEvent>();
     }
 }

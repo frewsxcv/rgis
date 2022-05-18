@@ -15,7 +15,7 @@ fn layer_loaded(
     mut materials: ResMut<Assets<ColorMaterial>>,
     layers: Res<rgis_layers::Layers>,
     mut event_reader: EventReader<rgis_events::LayerLoadedEvent>,
-    mut center_camera_events: EventWriter<rgis_events::CenterCameraEvent>,
+    mut meshes_spawned_event_writer: EventWriter<rgis_events::MeshesSpawnedEvent>,
 ) {
     for event in event_reader.iter() {
         let (layer, z_index) = match layers.get_with_z_index(event.0) {
@@ -27,8 +27,8 @@ fn layer_loaded(
             continue;
         }
 
-        match spawn_geometry_mesh(&mut materials, layer, &mut commands, &mut meshes, z_index) {
-            Ok(_) => center_camera_events.send(rgis_events::CenterCameraEvent(layer.id)),
+        match spawn_geometry_meshes(&mut materials, layer, &mut commands, &mut meshes, z_index) {
+            Ok(_) => meshes_spawned_event_writer.send(layer.id.into()),
             Err(e) => bevy::log::error!("Encountered error when spawning mesh: {}", e),
         }
     }
@@ -81,7 +81,7 @@ fn handle_layer_deleted_events(
     }
 }
 
-fn spawn_geometry_mesh(
+fn spawn_geometry_meshes(
     materials: &mut Assets<ColorMaterial>,
     layer: &rgis_layers::Layer,
     commands: &mut Commands,

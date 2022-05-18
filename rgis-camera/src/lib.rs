@@ -26,6 +26,7 @@ impl bevy::app::Plugin for Plugin {
         app.init_resource::<Camera2d>()
             .add_system(center_camera)
             .add_system(pan_camera_system)
+            .add_system(handle_meshes_spawned_events)
             .add_system(zoom_camera_system);
     }
 }
@@ -108,6 +109,21 @@ fn zoom_camera_system(
         }
     }
 }
+
+fn handle_meshes_spawned_events(
+    mut meshes_spawned_event_reader: bevy::ecs::event::EventReader<rgis_events::MeshesSpawnedEvent>,
+    mut center_camera_event_writer: bevy::ecs::event::EventWriter<rgis_events::CenterCameraEvent>,
+    mut has_moved: bevy::ecs::system::Local<bool>,
+) {
+    for event in meshes_spawned_event_reader.iter() {
+        if !(*has_moved) {
+            center_camera_event_writer.send(event.0.into());
+            *has_moved = true;
+        }
+    }
+}
+
+// TODO: loop over meshes loaded events, and then conditionally center the camera
 
 fn pan_x(amount: f32, camera_offset: &mut CameraOffset, camera_scale: CameraScale) {
     camera_offset.x += amount * camera_scale.0;
