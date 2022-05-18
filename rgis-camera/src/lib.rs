@@ -142,6 +142,10 @@ fn center_camera(
     mut query: Query<&mut Transform>,
 ) {
     for layer in event_reader.iter().filter_map(|event| layers.get(event.0)) {
+        let mut transform = match query.get_mut(camera_2d.0) {
+            Ok(t) => t,
+            Err(_) => continue,
+        };
         let layer_center = layer.projected_bounding_rect.center();
         // TODO: this scale math is inprecise. it should take into account
         // .     the height of the geometry. as well as the window size.
@@ -152,9 +156,6 @@ fn center_camera(
             y: layer_center.y as f32,
         };
         let camera_scale = CameraScale(scale as f32);
-
-        if let Ok(mut transform) = query.get_mut(camera_2d.0) {
-            set_camera_transform(&mut transform, camera_offset, camera_scale);
-        }
+        set_camera_transform(&mut transform, camera_offset, camera_scale);
     }
 }
