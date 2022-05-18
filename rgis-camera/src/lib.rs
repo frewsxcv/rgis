@@ -123,8 +123,6 @@ fn handle_meshes_spawned_events(
     }
 }
 
-// TODO: loop over meshes loaded events, and then conditionally center the camera
-
 fn pan_x(amount: f32, camera_offset: &mut CameraOffset, camera_scale: CameraScale) {
     camera_offset.x += amount * camera_scale.0;
 }
