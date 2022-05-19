@@ -913,9 +913,9 @@ dependencies = [
 
 [[package]]
 name = "cfg-expr"
-version = "0.10.2"
+version = "0.10.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5e068cb2806bbc15b439846dc16c5f89f8599f2c3e4d73d4449d38f9b2f0b6c5"
+checksum = "0aacacf4d96c24b2ad6eb8ee6df040e4f27b0d0b39a5710c30091baa830485db"
 dependencies = [
  "smallvec",
 ]
@@ -1583,7 +1583,7 @@ dependencies = [
 [[package]]
 name = "geo"
 version = "0.20.1"
-source = "git+https://github.com/georust/geo.git?branch=main#8a41ca765b887c7aee1bf7ca2086ddea8fc12e52"
+source = "git+https://github.com/georust/geo.git?branch=main#c5c9ba86b75430097dc902ba182791d6ecf31bd3"
 dependencies = [
  "geo-types",
  "geographiclib-rs",
@@ -2418,9 +2418,9 @@ dependencies = [
 
 [[package]]
 name = "once_cell"
-version = "1.10.0"
+version = "1.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "87f3e037eac156d1775da914196f0f37741a274155e34a0b7e427c35d2a2ecb9"
+checksum = "7b10983b38c53aebdf33f542c6275b0f58a238129d00c4ae0e6fb59738d783ca"
 
 [[package]]
 name = "os_str_bytes"
