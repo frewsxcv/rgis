@@ -95,18 +95,22 @@ fn zoom_camera_system(
     camera_2d: Res<Camera2d>,
     mut query: Query<&mut Transform>,
 ) {
+    if zoom_camera_event_reader.is_empty() {
+        return;
+    }
+    let mut transform = match query.get_mut(camera_2d.0) {
+        Ok(t) => t,
+        Err(_) => return,
+    };
+    let camera_offset = CameraOffset {
+        x: transform.translation[0],
+        y: transform.translation[1],
+    };
+    let mut camera_scale = CameraScale(transform.scale[0]);
     for event in zoom_camera_event_reader.iter() {
-        if let Ok(mut transform) = query.get_mut(camera_2d.0) {
-            let camera_offset = CameraOffset {
-                x: transform.translation[0],
-                y: transform.translation[1],
-            };
-            let mut camera_scale = CameraScale(transform.scale[0]);
+        zoom(event.amount, &mut camera_scale);
 
-            zoom(event.amount, &mut camera_scale);
-
-            set_camera_transform(&mut transform, camera_offset, camera_scale);
-        }
+        set_camera_transform(&mut transform, camera_offset, camera_scale);
     }
 }
 
