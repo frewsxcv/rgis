@@ -144,6 +144,7 @@ fn center_camera(
     mut event_reader: EventReader<rgis_events::CenterCameraEvent>,
     camera_2d: Res<Camera2d>,
     mut query: Query<&mut Transform>,
+    windows: Res<bevy::window::Windows>,
 ) {
     for layer in event_reader.iter().filter_map(|event| layers.get(event.0)) {
         let mut transform = match query.get_mut(camera_2d.0) {
@@ -151,9 +152,10 @@ fn center_camera(
             Err(_) => continue,
         };
         let layer_center = layer.projected_bounding_rect.center();
-        // TODO: this scale math is inprecise. it should take into account
-        // .     the height of the geometry. as well as the window size.
-        let scale = layer.projected_bounding_rect.width() / 1_000.;
+        let window = windows.primary();
+        // TODO: this should subtract the topbar, sidebar, and bottombar sizes.
+        let scale = (layer.projected_bounding_rect.width() / f64::from(window.width()))
+            .max(layer.projected_bounding_rect.height() / f64::from(window.height()));
         debug!("Moving camera to look at new layer");
         let camera_offset = CameraOffset {
             x: layer_center.x as f32,
