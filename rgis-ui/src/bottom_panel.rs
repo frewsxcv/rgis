@@ -8,7 +8,7 @@ pub(crate) struct BottomPanel<'a> {
 
 impl<'a> BottomPanel<'a> {
     pub(crate) fn render(&mut self) {
-        egui::TopBottomPanel::bottom("bottom").show(self.egui_ctx, |ui| {
+        let inner_response = egui::TopBottomPanel::bottom("bottom").show(self.egui_ctx, |ui| {
             ui.horizontal(|ui| {
                 ui.with_layout(egui::Layout::right_to_left(), |ui| {
                     self.render_crs(ui);
@@ -16,6 +16,10 @@ impl<'a> BottomPanel<'a> {
                 });
             });
         });
+        if inner_response.response.changed() {
+            println!("resized");
+            // set height of resource?
+        }
     }
 
     fn render_crs(&mut self, ui: &mut egui::Ui) {
