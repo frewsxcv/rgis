@@ -56,12 +56,18 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
     }
 
     fn render_layers(&mut self, ui: &mut egui::Ui) {
-        for (z_index, layer) in self.layers.data.iter().rev().enumerate() {
-            self.render_layer(ui, z_index, layer);
+        for (i, layer) in self.layers.data.iter().rev().enumerate() {
+            self.render_layer(ui, layer, i > 0, i < (self.layers.data.len() - 1));
         }
     }
 
-    fn render_layer(&mut self, ui: &mut egui::Ui, z_index: usize, layer: &rgis_layers::Layer) {
+    fn render_layer(
+        &mut self,
+        ui: &mut egui::Ui,
+        layer: &rgis_layers::Layer,
+        is_move_up_enabled: bool,
+        is_move_down_enabled: bool,
+    ) {
         egui::Frame::group(ui.style()).show(ui, |ui| {
             egui::CollapsingHeader::new(layer.name.to_owned())
                 .id_source(layer.id) // Instead of using the layer name as the ID (which is not unique), use the layer ID
@@ -72,7 +78,7 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
                     }
 
                     if ui
-                        .add_enabled(z_index > 0, egui::Button::new("⬆ Move up"))
+                        .add_enabled(is_move_up_enabled, egui::Button::new("⬆ Move up"))
                         .clicked()
                     {
                         self.events
@@ -84,10 +90,7 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
                     }
 
                     if ui
-                        .add_enabled(
-                            z_index < (self.layers.data.len() - 1),
-                            egui::Button::new("⬇ Move down"),
-                        )
+                        .add_enabled(is_move_down_enabled, egui::Button::new("⬇ Move down"))
                         .clicked()
                     {
                         self.events
