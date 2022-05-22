@@ -32,9 +32,11 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
         ui.vertical_centered_justified(|ui| {
             egui::ScrollArea::vertical().show(ui, |ui| {
                 ui.heading("🗺 Layers");
-                if ui.button("Add Layer").clicked() {
-                    self.state.is_add_layer_window_visible = true;
-                }
+                ui.add_enabled_ui(!self.state.is_add_layer_window_visible, |ui| {
+                    if ui.button("➕ Add Layer").clicked() {
+                        self.state.is_add_layer_window_visible = true;
+                    }
+                });
 
                 for (z_index, layer) in self.layers.data.iter().rev().enumerate() {
                     egui::Frame::group(ui.style()).show(ui, |ui| {
