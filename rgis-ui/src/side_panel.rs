@@ -21,94 +21,114 @@ pub(crate) struct SidePanel<'a, 'w, 's> {
 
 impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
     pub(crate) fn render(&mut self) {
-        let inner_response = egui::SidePanel::left("left-side-panel").resizable(true);
+        let side_panel = egui::SidePanel::left("left-side-panel").resizable(true);
 
-        inner_response.show(self.egui_ctx, |ui| {
+        let inner_response = side_panel.show(self.egui_ctx, |ui| {
             self.render_layers_window(ui);
         });
+
+        if inner_response.response.changed() {
+            bevy::log::error!("resized");
+            // set height of resource?
+        }
     }
 
     fn render_layers_window(&mut self, ui: &mut egui::Ui) {
         ui.vertical_centered_justified(|ui| {
             egui::ScrollArea::vertical().show(ui, |ui| {
-                ui.heading("🗺 Layers");
-                ui.add_enabled_ui(!self.state.is_add_layer_window_visible, |ui| {
-                    if ui.button("➕ Add Layer").clicked() {
-                        self.state.is_add_layer_window_visible = true;
+                self.render_layers_heading(ui);
+                self.render_add_layer_button(ui);
+                self.render_layers(ui);
+            });
+        });
+    }
+
+    fn render_layers_heading(&mut self, ui: &mut egui::Ui) {
+        ui.heading("🗺 Layers");
+    }
+
+    fn render_add_layer_button(&mut self, ui: &mut egui::Ui) {
+        ui.add_enabled_ui(!self.state.is_add_layer_window_visible, |ui| {
+            if ui.button("➕ Add Layer").clicked() {
+                self.state.is_add_layer_window_visible = true;
+            }
+        });
+    }
+
+    fn render_layers(&mut self, ui: &mut egui::Ui) {
+        for (z_index, layer) in self.layers.data.iter().rev().enumerate() {
+            self.render_layer(ui, z_index, layer);
+        }
+    }
+
+    fn render_layer(&mut self, ui: &mut egui::Ui, z_index: usize, layer: &rgis_layers::Layer) {
+        egui::Frame::group(ui.style()).show(ui, |ui| {
+            egui::CollapsingHeader::new(layer.name.to_owned())
+                .id_source(layer.id) // Instead of using the layer name as the ID (which is not unique), use the layer ID
+                .show(ui, |ui| {
+                    if ui.button("✏ Manage").clicked() {
+                        self.state.is_manage_layer_window_visible = true;
+                        self.state.managing_layer = Some(layer.id);
+                    }
+
+                    if ui
+                        .add_enabled(z_index > 0, egui::Button::new("⬆ Move up"))
+                        .clicked()
+                    {
+                        self.events
+                            .move_layer_event_writer
+                            .send(rgis_events::MoveLayerEvent(
+                                layer.id,
+                                rgis_events::MoveDirection::Up,
+                            ));
+                    }
+
+                    if ui
+                        .add_enabled(
+                            z_index < (self.layers.data.len() - 1),
+                            egui::Button::new("⬇ Move down"),
+                        )
+                        .clicked()
+                    {
+                        self.events
+                            .move_layer_event_writer
+                            .send(rgis_events::MoveLayerEvent(
+                                layer.id,
+                                rgis_events::MoveDirection::Down,
+                            ));
+                    }
+
+                    if layer.visible {
+                        if ui.button("👁 Hide").clicked() {
+                            self.events
+                                .toggle_layer_visibility_event_writer
+                                .send(rgis_events::ToggleLayerVisibilityEvent(layer.id));
+                        }
+                    } else if ui.button("👁 Show").clicked() {
+                        self.events
+                            .toggle_layer_visibility_event_writer
+                            .send(rgis_events::ToggleLayerVisibilityEvent(layer.id));
+                    }
+
+                    if ui.button("🔎 Zoom to extent").clicked() {
+                        self.events
+                            .center_layer_event_writer
+                            .send(rgis_events::CenterCameraEvent(layer.id))
+                    }
+
+                    if ui.button("⚙ Calculate planar area").clicked() {
+                        use geo::algorithm::area::Area;
+                        println!("{:?}", layer.projected_geometry.unsigned_area());
+                    }
+
+                    // TODO: assert 4326
+
+                    if ui.button("❌ Remove").clicked() {
+                        self.events
+                            .delete_layer_event_writer
+                            .send(rgis_events::DeleteLayerEvent(layer.id))
                     }
                 });
-
-                for (z_index, layer) in self.layers.data.iter().rev().enumerate() {
-                    egui::Frame::group(ui.style()).show(ui, |ui| {
-                        egui::CollapsingHeader::new(layer.name.to_owned())
-                            .id_source(layer.id) // Instead of using the layer name as the ID (which is not unique), use the layer ID
-                            .show(ui, |ui| {
-                                if ui.button("✏ Manage").clicked() {
-                                    self.state.is_manage_layer_window_visible = true;
-                                    self.state.managing_layer = Some(layer.id);
-                                }
-
-                                if ui
-                                    .add_enabled(z_index > 0, egui::Button::new("⬆ Move up"))
-                                    .clicked()
-                                {
-                                    self.events.move_layer_event_writer.send(
-                                        rgis_events::MoveLayerEvent(
-                                            layer.id,
-                                            rgis_events::MoveDirection::Up,
-                                        ),
-                                    );
-                                }
-
-                                if ui
-                                    .add_enabled(
-                                        z_index < (self.layers.data.len() - 1),
-                                        egui::Button::new("⬇ Move down"),
-                                    )
-                                    .clicked()
-                                {
-                                    self.events.move_layer_event_writer.send(
-                                        rgis_events::MoveLayerEvent(
-                                            layer.id,
-                                            rgis_events::MoveDirection::Down,
-                                        ),
-                                    );
-                                }
-
-                                if layer.visible {
-                                    if ui.button("👁 Hide").clicked() {
-                                        self.events
-                                            .toggle_layer_visibility_event_writer
-                                            .send(rgis_events::ToggleLayerVisibilityEvent(layer.id));
-                                    }
-                                } else if ui.button("👁 Show").clicked() {
-                                    self.events
-                                        .toggle_layer_visibility_event_writer
-                                        .send(rgis_events::ToggleLayerVisibilityEvent(layer.id));
-                                }
-
-                                if ui.button("🔎 Zoom to extent").clicked() {
-                                    self.events
-                                        .center_layer_event_writer
-                                        .send(rgis_events::CenterCameraEvent(layer.id))
-                                }
-
-                                if ui.button("⚙ Calculate planar area").clicked() {
-                                    use geo::algorithm::area::Area;
-                                    println!("{:?}", layer.projected_geometry.unsigned_area());
-                                }
-
-                                // TODO: assert 4326
-
-                                if ui.button("❌ Remove").clicked() {
-                                    self.events
-                                        .delete_layer_event_writer
-                                        .send(rgis_events::DeleteLayerEvent(layer.id))
-                                }
-                            });
-                    });
-                }
-            });
         });
     }
 }
