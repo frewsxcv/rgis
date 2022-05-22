@@ -66,8 +66,14 @@ fn mouse_motion_system(
     mut mouse_motion_event_reader: bevy::ecs::event::EventReader<bevy::input::mouse::MouseMotion>,
     mouse_button: Res<bevy::input::Input<bevy::input::mouse::MouseButton>>,
     mut pan_camera_events: bevy::ecs::event::EventWriter<rgis_events::PanCameraEvent>,
+    mut windows: ResMut<bevy::window::Windows>,
 ) {
-    if mouse_button.pressed(bevy::input::mouse::MouseButton::Right) {
+    if mouse_button.pressed(bevy::input::mouse::MouseButton::Left)
+        || mouse_button.pressed(bevy::input::mouse::MouseButton::Right)
+    {
+        windows
+            .primary_mut()
+            .set_cursor_icon(bevy::window::CursorIcon::Grabbing);
         for event in mouse_motion_event_reader.iter() {
             pan_camera_events.send(rgis_events::PanCameraEvent {
                 // If the mouse is dragging rightward, `delta.x` will be positive. In this case, we
