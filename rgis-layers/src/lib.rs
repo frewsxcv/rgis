@@ -32,26 +32,28 @@ impl Layers {
     }
 
     // coord is assumed to be projected
-    pub fn containing_coord(&self, coord: geo::Coordinate<f64>) -> Vec<Layer> {
+    pub fn containing_coord(&self, coord: geo::Coordinate<f64>) -> impl Iterator<Item = &Layer> {
         self.data
             .iter()
-            .filter(|layer| layer.contains_coord(&coord))
-            .cloned()
-            .collect()
+            .filter(move |layer| layer.contains_coord(&coord))
     }
 
     // Returns whether the selected layer changed
     pub fn set_selected_layer_from_mouse_press(&mut self, coord: geo::Coordinate<f64>) -> bool {
-        let intersecting = self.containing_coord(coord);
-        if !intersecting.is_empty() {
-            info!("A geometry was clicked: {:?}", intersecting[0].metadata);
-        }
-        if intersecting.len() > 1 {
-            warn!("Multiple layers clicked. Choosing one randomly.");
-        }
+        let selected_layer_id = {
+            let mut iter = self.containing_coord(coord);
+            let new_selected_layer = iter.next();
+            if let Some(layer) = new_selected_layer {
+                info!("A geometry was clicked: {:?}", layer.metadata);
+            }
+            if iter.next().is_some() {
+                warn!("Multiple layers clicked. Choosing one randomly.");
+            }
+            new_selected_layer.map(|layer| layer.id)
+        };
         let prev_selected_layer_id = self.selected_layer_id;
 
-        self.selected_layer_id = intersecting.get(0).map(|layer| layer.id);
+        self.selected_layer_id = selected_layer_id;
 
         prev_selected_layer_id != self.selected_layer_id
     }
