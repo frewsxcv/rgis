@@ -56,8 +56,8 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
     }
 
     fn render_layers(&mut self, ui: &mut egui::Ui) {
-        for (i, layer) in self.layers.data.iter().rev().enumerate() {
-            self.render_layer(ui, layer, i > 0, i < (self.layers.data.len() - 1));
+        for (i, layer) in self.layers.iter_top_to_bottom().enumerate() {
+            self.render_layer(ui, layer, i > 0, i < self.layers.count());
         }
     }
 

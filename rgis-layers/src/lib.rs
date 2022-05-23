@@ -12,7 +12,7 @@ use std::{error, sync};
 
 #[derive(Clone, Debug)]
 pub struct Layers {
-    pub data: Vec<Layer>,
+    data: Vec<Layer>,
     // ID of the currently selected Layer
     pub selected_layer_id: Option<rgis_layer_id::LayerId>,
 }
@@ -31,8 +31,21 @@ impl Layers {
         }
     }
 
+    pub fn iter_bottom_to_top(&self) -> impl Iterator<Item = &Layer> {
+        self.data.iter()
+    }
+
+    pub fn iter_top_to_bottom(&self) -> impl Iterator<Item = &Layer> {
+        self.data.iter().rev()
+    }
+
+    pub fn count(&self) -> usize {
+        self.data.len()
+    }
+
     // coord is assumed to be projected
     pub fn containing_coord(&self, coord: geo::Coordinate<f64>) -> impl Iterator<Item = &Layer> {
+        // reverse?
         self.data
             .iter()
             .filter(move |layer| layer.contains_coord(&coord))
