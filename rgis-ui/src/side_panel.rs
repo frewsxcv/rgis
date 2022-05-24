@@ -120,8 +120,8 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
                     }
 
                     if ui.button("⚙ Calculate planar area").clicked() {
-                        use geo::algorithm::area::Area;
-                        println!("{:?}", layer.projected_geometry.unsigned_area());
+                        // use geo::algorithm::area::Area;
+                        // println!("{:?}", layer.projected_geometry.unsigned_area());
                     }
 
                     if ui.button("❌ Remove").clicked() {
