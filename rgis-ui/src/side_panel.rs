@@ -124,8 +124,6 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
                         println!("{:?}", layer.projected_geometry.unsigned_area());
                     }
 
-                    // TODO: assert 4326
-
                     if ui.button("❌ Remove").clicked() {
                         self.events
                             .delete_layer_event_writer
