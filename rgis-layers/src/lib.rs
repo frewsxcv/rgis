@@ -48,7 +48,8 @@ impl Layers {
 
     // coord is assumed to be projected
     pub fn containing_coord(&self, coord: geo::Coordinate<f64>) -> impl Iterator<Item = &Layer> {
-        self.iter_top_to_bottom().filter(move |layer| layer.contains_coord(&coord))
+        self.iter_top_to_bottom()
+            .filter(move |layer| layer.contains_coord(&coord))
     }
 
     // Returns whether the selected layer changed
