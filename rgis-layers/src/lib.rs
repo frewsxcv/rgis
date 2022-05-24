@@ -31,24 +31,24 @@ impl Layers {
         }
     }
 
+    #[inline]
     pub fn iter_bottom_to_top(&self) -> impl Iterator<Item = &Layer> {
         self.data.iter()
     }
 
+    #[inline]
     pub fn iter_top_to_bottom(&self) -> impl Iterator<Item = &Layer> {
         self.data.iter().rev()
     }
 
+    #[inline]
     pub fn count(&self) -> usize {
         self.data.len()
     }
 
     // coord is assumed to be projected
     pub fn containing_coord(&self, coord: geo::Coordinate<f64>) -> impl Iterator<Item = &Layer> {
-        // reverse?
-        self.data
-            .iter()
-            .filter(move |layer| layer.contains_coord(&coord))
+        self.iter_top_to_bottom().filter(move |layer| layer.contains_coord(&coord))
     }
 
     // Returns whether the selected layer changed
