@@ -6,6 +6,7 @@
 )]
 
 use clap::{Arg, Command};
+use std::io::{self, Read};
 use std::{error, path};
 
 static DEFAULT_SOURCE_SRS: &str = "EPSG:4326";
@@ -17,6 +18,7 @@ type MsaaSampleCount = u32;
 pub struct Values {
     pub msaa_sample_count: MsaaSampleCount,
     pub geojson_files: Vec<path::PathBuf>,
+    pub geojson_stdin_bytes: Option<Vec<u8>>,
     pub source_crs: String,
 }
 
@@ -49,6 +51,14 @@ pub fn run() -> Result<Values, Box<dyn error::Error>> {
         .arg(Arg::new("GEOJSON FILE").multiple_occurrences(true))
         .get_matches();
 
+    let geojson_stdin_bytes = if atty::isnt(atty::Stream::Stdin) {
+        let mut bytes = vec![];
+        io::stdin().read_to_end(&mut bytes)?;
+        Some(bytes)
+    } else {
+        None
+    };
+
     Ok(Values {
         geojson_files: matches
             .values_of("GEOJSON FILE")
@@ -63,6 +73,7 @@ pub fn run() -> Result<Values, Box<dyn error::Error>> {
             .value_of("MSAA SAMPLE COUNT")
             .ok_or("Could not fetch MSAA sample count from clap")?
             .parse()?,
+        geojson_stdin_bytes,
     })
 }
 

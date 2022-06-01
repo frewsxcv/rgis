@@ -8,7 +8,7 @@
 use bevy::ecs::event::Events;
 use bevy::prelude::*;
 use rgis_task::Task;
-use std::{error, io};
+use std::{error, io, mem};
 
 mod geojson;
 
@@ -155,16 +155,23 @@ fn handle_loaded_layers(
 
 #[cfg(not(target_arch = "wasm32"))]
 fn load_layers_from_cli(
-    cli_values: Res<rgis_cli::Values>,
+    mut cli_values: ResMut<rgis_cli::Values>,
     mut events: EventWriter<rgis_events::LoadGeoJsonFileEvent>,
 ) {
-    for geojson_file_path in &cli_values.geojson_files {
+    if let Some(geojson_stdin_bytes) = cli_values.geojson_stdin_bytes.take() {
+        events.send(rgis_events::LoadGeoJsonFileEvent::FromBytes {
+            bytes: geojson_stdin_bytes,
+            crs: cli_values.source_crs.clone(),
+            file_name: "Standard input".into(),
+        })
+    }
+    for geojson_file_path in mem::take(&mut cli_values.geojson_files) {
         debug!(
             "sending LoadGeoJsonFile event: {}",
             &geojson_file_path.display(),
         );
         events.send(rgis_events::LoadGeoJsonFileEvent::FromPath {
-            path: geojson_file_path.clone(),
+            path: geojson_file_path,
             crs: cli_values.source_crs.clone(),
         });
     }
