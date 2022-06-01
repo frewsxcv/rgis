@@ -22,6 +22,12 @@ Render GeoJSON files:
 rgis file1.geojson file2.geojson
 ```
 
+Read GeoJSON files from standard in:
+
+```
+cat file1.geojson | rgis
+```
+
 Print help information:
 
 ```
