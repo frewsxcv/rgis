@@ -16,7 +16,7 @@ bevy = { version = "0.7", default-features = false, features = [
 ] }
 ehttp = "0.2"
 geo = "0.20"
-geojson = { version = "0.22", features = ["geo-types"] }
+geojson = { version = "0.23", features = ["geo-types"] }
 rgis-cli = { path = "../rgis-cli" }
 rgis-layers = { path = "../rgis-layers" }
 rgis-layer-id = { path = "../rgis-layer-id" }
