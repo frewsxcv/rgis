@@ -10,7 +10,7 @@ rgis is released under [The Anti-Capitalist Software License (version 1.4)](http
 
 Install `proj` (e.g. `brew intall proj`).
 
-```
+```sh
 cargo install --git https://github.com/frewsxcv/rgis
 ```
 
@@ -18,19 +18,19 @@ cargo install --git https://github.com/frewsxcv/rgis
 
 Render GeoJSON files:
 
-```
+```sh
 rgis file1.geojson file2.geojson
 ```
 
 Read GeoJSON files from standard in:
 
-```
+```sh
 cat file1.geojson | rgis
 ```
 
 Print help information:
 
-```
+```sh
 rgis --help
 ```
 
