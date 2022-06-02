@@ -61,8 +61,8 @@ impl bevy::app::Plugin for Plugin {
                 render_add_layer_window
                     .label("add_layer_window")
                     .after("side_panel"),
-            )
-            .add_system(render_in_progress.after("top_bottom_panels"));
+            );
+        // .add_system(render_in_progress.after("top_bottom_panels"));
     }
 }
 
@@ -171,6 +171,7 @@ fn render_message_window(
     .render();
 }
 
+/*
 fn render_in_progress(
     query: Query<&rgis_task::InProgressTask>,
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
@@ -194,3 +195,4 @@ fn render_in_progress(
             });
     }
 }
+*/

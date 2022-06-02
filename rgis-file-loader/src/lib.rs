@@ -29,7 +29,9 @@ enum GeoJsonSource {
     },
 }
 
-struct LoadGeoJsonFileTask {
+struct LoadGeoJsonFileTask;
+
+struct LoadGeoJsonFileTaskArgs {
     geojson_source: GeoJsonSource,
     source_crs: String,
     target_crs: String,
@@ -37,23 +39,24 @@ struct LoadGeoJsonFileTask {
 
 impl rgis_task::Task for LoadGeoJsonFileTask {
     type Outcome = Result<SpawnedLayers, Box<dyn error::Error + Send + Sync>>;
+    type Arguments = LoadGeoJsonFileTaskArgs;
 
     fn name(&self) -> String {
         "Loading GeoJson file".into()
     }
 
-    fn perform(self) -> rgis_task::PerformReturn<Self::Outcome> {
+    fn perform(args: Self::Arguments) -> rgis_task::PerformReturn<Self::Outcome> {
         Box::pin(async move {
-            Ok(SpawnedLayers(match self.geojson_source {
+            Ok(SpawnedLayers(match args.geojson_source {
                 #[cfg(not(target_arch = "wasm32"))]
                 GeoJsonSource::Path(path) => {
-                    geojson::load_from_path(&path, &self.source_crs, &self.target_crs)?
+                    geojson::load_from_path(&path, &args.source_crs, &args.target_crs)?
                 }
                 GeoJsonSource::Bytes { file_name, bytes } => geojson::load_from_reader(
                     io::Cursor::new(bytes),
                     file_name,
-                    &self.source_crs,
-                    &self.target_crs,
+                    &args.source_crs,
+                    &args.target_crs,
                 )?,
             }))
         })
@@ -92,12 +95,15 @@ fn load_geojson_file_handler(
                 path: geojson_file_path,
                 crs,
             } => {
-                LoadGeoJsonFileTask {
-                    geojson_source: GeoJsonSource::Path(geojson_file_path),
-                    source_crs: crs,
-                    target_crs: rgis_settings.target_crs.clone(),
-                }
-                .spawn(&thread_pool, &mut commands);
+                LoadGeoJsonFileTask.spawn(
+                    LoadGeoJsonFileTaskArgs {
+                        geojson_source: GeoJsonSource::Path(geojson_file_path),
+                        source_crs: crs,
+                        target_crs: rgis_settings.target_crs.clone(),
+                    },
+                    &thread_pool,
+                    &mut commands,
+                );
             }
             rgis_events::LoadGeoJsonFileEvent::FromNetwork { url, crs, name } => {
                 let fetched_bytes_sender = fetched_bytes_sender.clone();
@@ -120,12 +126,15 @@ fn load_geojson_file_handler(
                 bytes,
                 crs,
             } => {
-                LoadGeoJsonFileTask {
-                    geojson_source: GeoJsonSource::Bytes { bytes, file_name },
-                    source_crs: crs,
-                    target_crs: rgis_settings.target_crs.clone(),
-                }
-                .spawn(&thread_pool, &mut commands);
+                LoadGeoJsonFileTask.spawn(
+                    LoadGeoJsonFileTaskArgs {
+                        geojson_source: GeoJsonSource::Bytes { bytes, file_name },
+                        source_crs: crs,
+                        target_crs: rgis_settings.target_crs.clone(),
+                    },
+                    &thread_pool,
+                    &mut commands,
+                );
             }
         }
     }

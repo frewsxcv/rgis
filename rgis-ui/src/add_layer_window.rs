@@ -5,12 +5,13 @@ pub struct OpenFileTask;
 
 impl rgis_task::Task for OpenFileTask {
     type Outcome = Option<(String, Vec<u8>)>;
+    type Arguments = ();
 
     fn name(&self) -> String {
         "Opening file".into()
     }
 
-    fn perform(self) -> rgis_task::PerformReturn<Self::Outcome> {
+    fn perform(args: Self::Arguments) -> rgis_task::PerformReturn<Self::Outcome> {
         Box::pin(async move {
             let task = rfd::AsyncFileDialog::new().pick_file();
             let file_handle = task.await;
@@ -42,7 +43,7 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
             .anchor(egui::Align2::LEFT_TOP, [5., 5.])
             .show(self.bevy_egui_ctx.ctx_mut(), |ui| {
                 if ui.button("Add GeoJSON Layer").clicked() {
-                    OpenFileTask.spawn(self.thread_pool, self.commands)
+                    OpenFileTask.spawn((), self.thread_pool, self.commands)
                 }
                 ui.separator();
                 for entry in rgis_library::ENTRIES {
