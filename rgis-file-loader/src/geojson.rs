@@ -1,6 +1,6 @@
+use std::io;
 #[cfg(not(target_arch = "wasm32"))]
 use std::path;
-use std::io;
 
 #[cfg(not(target_arch = "wasm32"))]
 pub fn load_from_path(
