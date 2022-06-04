@@ -15,9 +15,11 @@ bevy = { version = "0.7", default-features = false, features = [
     "wayland",
 ] }
 colorous = "1"
+proj = "0.26"
 rgis-events = { path = "../rgis-events" }
 rgis-layer-id = { path = "../rgis-layer-id" }
 time-logger = { path = "../time-logger" }
+thiserror = "1"
 serde_json = "1"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]

@@ -8,7 +8,7 @@
 use bevy::prelude::*;
 use geo::bounding_rect::BoundingRect;
 use geo::contains::Contains;
-use std::{error, sync};
+use std::sync;
 
 #[derive(Clone, Debug)]
 pub struct Layers {
@@ -143,6 +143,18 @@ pub struct UnassignedLayer {
     pub crs: String,
 }
 
+#[derive(thiserror::Error, Debug)]
+pub enum LayerCreateError {
+    #[error("Could not generate bounding box")]
+    BoundingBox,
+    #[cfg(target_arch = "wasm32")]
+    #[error("{0}")]
+    GeoProjJs(#[from] geo_proj_js::Error),
+    #[cfg(not(target_arch = "wasm32"))]
+    #[error("{0}")]
+    Proj(#[from] proj::TransformError),
+}
+
 impl UnassignedLayer {
     pub fn from_geometry(
         geometry: geo::Geometry<f64>,
@@ -150,7 +162,7 @@ impl UnassignedLayer {
         metadata: Option<Metadata>,
         source_crs: &str,
         target_crs: &str,
-    ) -> Result<Self, Box<dyn error::Error + Send + Sync>> {
+    ) -> Result<Self, LayerCreateError> {
         let unprojected_geometry = geometry;
 
         let mut projected_geometry = unprojected_geometry.clone();
@@ -169,7 +181,7 @@ impl UnassignedLayer {
 
         let projected_bounding_rect = projected_geometry
             .bounding_rect()
-            .ok_or("Could not generate bounding rectangle for the geometry")?;
+            .ok_or(LayerCreateError::BoundingBox)?;
 
         Ok(UnassignedLayer {
             unprojected_geometry,

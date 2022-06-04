@@ -24,4 +24,5 @@ rgis-settings = { path = "../rgis-settings" }
 rgis-task = { path = "../rgis-task" }
 serde_json = "1"
 time-logger = { path = "../time-logger" }
+thiserror = "1"
 rgis-events = { path = "../rgis-events" }

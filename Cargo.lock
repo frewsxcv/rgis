@@ -2808,6 +2808,7 @@ dependencies = [
  "rgis-settings",
  "rgis-task",
  "serde_json",
+ "thiserror",
  "time-logger",
 ]
 
@@ -2834,9 +2835,11 @@ dependencies = [
  "colorous",
  "geo",
  "geo-proj-js",
+ "proj",
  "rgis-events",
  "rgis-layer-id",
  "serde_json",
+ "thiserror",
  "time-logger",
 ]
 

@@ -8,7 +8,7 @@
 use bevy::ecs::event::Events;
 use bevy::prelude::*;
 use rgis_task::Task;
-use std::{error, io, mem};
+use std::{io, mem};
 
 mod geojson;
 
@@ -36,7 +36,7 @@ struct LoadGeoJsonFileTask {
 }
 
 impl rgis_task::Task for LoadGeoJsonFileTask {
-    type Outcome = Result<SpawnedLayers, Box<dyn error::Error + Send + Sync>>;
+    type Outcome = Result<SpawnedLayers, geojson::LoadGeoJsonError>;
 
     fn name(&self) -> String {
         "Loading GeoJson file".into()

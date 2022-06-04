@@ -1,6 +1,6 @@
 use bevy_egui::egui;
 
-const MAX_SIDE_PANEL_WIDTH: f32 = 200.0f32;
+// const MAX_SIDE_PANEL_WIDTH: f32 = 200.0f32;
 
 #[derive(bevy::ecs::system::SystemParam)]
 pub struct Events<'w, 's> {
