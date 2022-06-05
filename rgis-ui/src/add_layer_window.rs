@@ -13,15 +13,10 @@ impl rgis_task::Task for OpenFileTask {
     fn perform(self) -> rgis_task::PerformReturn<Self::Outcome> {
         Box::pin(async move {
             let task = rfd::AsyncFileDialog::new().pick_file();
-            let file_handle = task.await;
-            match file_handle {
-                Some(fh) => {
-                    let file_name = fh.file_name();
-                    let bytes = fh.read().await;
-                    Some((file_name, bytes))
-                }
-                None => None,
-            }
+            let file_handle = task.await?;
+            let file_name = file_handle.file_name();
+            let bytes = file_handle.read().await;
+            Some((file_name, bytes))
         })
     }
 }
