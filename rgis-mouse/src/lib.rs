@@ -33,11 +33,8 @@ fn cursor_moved_system(
         Ok(transform) => transform,
         Err(_) => return,
     };
-    for geo_coord in cursor_moved_event_reader
-        .iter()
-        .map(|event| screen_coords_to_geo_coords(event.position, transform, window))
-    {
-        mouse_position.projected = geo_coord;
+    if let Some(event) = cursor_moved_event_reader.iter().next_back() {
+        mouse_position.projected = screen_coords_to_geo_coords(event.position, transform, window);
     }
 }
 
