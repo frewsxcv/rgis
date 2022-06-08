@@ -24,7 +24,17 @@ impl<'a> BottomPanel<'a> {
 
     fn render_crs(&mut self, ui: &mut egui::Ui) {
         egui::Frame::group(ui.style()).show(ui, |ui| {
-            ui.label(format!("🌍 CRS: {}", self.rgis_settings.target_crs));
+            ui.horizontal(|ui| {
+                // TODO: The ordering is backwards here (the edit button should be specified after)
+                //       Is this from the right_to_left call above?
+                let button = ui.button("✏");
+
+                if button.clicked() {
+                    bevy::log::error!("CLICKED");
+                }
+
+                ui.label(format!("🌍 CRS: {}", self.rgis_settings.target_crs));
+            });
         });
     }
 
