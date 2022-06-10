@@ -174,10 +174,12 @@ fn render_add_layer_window(
 fn render_change_crs_window(
     mut state: ResMut<UiState>,
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
+    mut text_field_value: Local<String>,
 ) {
     change_crs_window::ChangeCrsWindow {
         state: &mut state,
         bevy_egui_ctx: &mut bevy_egui_ctx,
+        text_field_value: &mut text_field_value,
     }
     .render();
 }
