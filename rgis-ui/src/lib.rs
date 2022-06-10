@@ -10,6 +10,7 @@ use bevy_egui::egui;
 
 mod add_layer_window;
 mod bottom_panel;
+mod change_crs_window;
 mod manage_layer_window;
 mod message_window;
 mod side_panel;
@@ -25,6 +26,8 @@ struct UiState {
     pub managing_layer: Option<rgis_layer_id::LayerId>,
     /// Is the 'add layer' window visible?
     pub is_add_layer_window_visible: bool,
+    /// Is the 'change CRS' window visible?
+    pub is_change_crs_window_visible: bool,
     pub messages: Vec<String>,
 }
 
@@ -35,6 +38,7 @@ impl bevy::app::Plugin for Plugin {
                 is_manage_layer_window_visible: false,
                 managing_layer: None,
                 is_add_layer_window_visible: true,
+                is_change_crs_window_visible: false,
                 messages: vec![],
             })
             .add_system(handle_open_file_task)
@@ -60,7 +64,12 @@ impl bevy::app::Plugin for Plugin {
             .add_system(
                 render_add_layer_window
                     .label("add_layer_window")
-                    .after("side_panel"),
+                    .after("manage_layer_window"),
+            )
+            .add_system(
+                render_change_crs_window
+                    .label("change_crs_window")
+                    .after("add_layer_window"),
             )
             .add_system(render_in_progress.after("top_bottom_panels"));
     }
@@ -80,6 +89,7 @@ fn render_top_panel(
 }
 
 fn render_bottom_panel(
+    mut state: ResMut<UiState>,
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
     mouse_pos: Res<rgis_mouse::MousePos>,
     rgis_settings: Res<rgis_settings::RgisSettings>,
@@ -88,6 +98,7 @@ fn render_bottom_panel(
         egui_ctx: bevy_egui_ctx.ctx_mut(),
         mouse_pos: &mouse_pos,
         rgis_settings: &rgis_settings,
+        state: &mut state,
     }
     .render();
 }
@@ -156,6 +167,17 @@ fn render_add_layer_window(
         thread_pool: &thread_pool,
         load_geo_json_file_event_writer: &mut load_geo_json_file_event_writer,
         commands: &mut commands,
+    }
+    .render();
+}
+
+fn render_change_crs_window(
+    mut state: ResMut<UiState>,
+    mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
+) {
+    change_crs_window::ChangeCrsWindow {
+        state: &mut state,
+        bevy_egui_ctx: &mut bevy_egui_ctx,
     }
     .render();
 }

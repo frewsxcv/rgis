@@ -71,6 +71,7 @@ fn mouse_motion_system(
             .primary_mut()
             .set_cursor_icon(bevy::window::CursorIcon::Grabbing);
         for event in mouse_motion_event_reader.iter() {
+            // sum up x + y values and send one event
             pan_camera_events.send(rgis_events::PanCameraEvent {
                 // If the mouse is dragging rightward, `delta.x` will be positive. In this case, we
                 // want the map to move right, and the camera to move left. We need to negate the

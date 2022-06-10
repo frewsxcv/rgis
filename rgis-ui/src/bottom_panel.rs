@@ -4,6 +4,7 @@ pub(crate) struct BottomPanel<'a> {
     pub egui_ctx: &'a egui::Context,
     pub mouse_pos: &'a rgis_mouse::MousePos,
     pub rgis_settings: &'a rgis_settings::RgisSettings,
+    pub state: &'a mut crate::UiState,
 }
 
 impl<'a> BottomPanel<'a> {
@@ -30,7 +31,7 @@ impl<'a> BottomPanel<'a> {
                 let button = ui.button("✏");
 
                 if button.clicked() {
-                    bevy::log::error!("CLICKED");
+                    self.state.is_change_crs_window_visible = true;
                 }
 
                 ui.label(format!("🌍 CRS: {}", self.rgis_settings.target_crs));

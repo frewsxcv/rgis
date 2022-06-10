@@ -128,6 +128,7 @@ fn handle_meshes_spawned_events(
 }
 
 fn pan_x(amount: f32, camera_offset: &mut CameraOffset, camera_scale: CameraScale) {
+    // what is the camera scale?
     camera_offset.x += amount * camera_scale.0;
 }
 
