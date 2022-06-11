@@ -12,12 +12,17 @@ impl<'a> ChangeCrsWindow<'a> {
             .open(&mut self.state.is_change_crs_window_visible)
             .anchor(egui::Align2::LEFT_TOP, [5., 5.])
             .show(self.bevy_egui_ctx.ctx_mut(), |ui| {
-                let edit_field = ui.text_edit_singleline(self.text_field_value);
-                if edit_field.changed() {
-                    match geo::algorithm::proj::Proj::new(self.text_field_value) {
-                        Ok(n) => bevy::log::info!("OK: {}", n.def().unwrap()),
-                        Err(e) => bevy::log::error!("CHANGED: {:?}", e),
+                #[cfg(not(target_arch = "wasm32"))]
+                {
+                    let edit_field = ui.text_edit_singleline(self.text_field_value);
+                    if edit_field.changed() {
                     }
+                    ui.label(
+                        match geo::algorithm::proj::Proj::new(self.text_field_value) { // DONT CALL THIS ON EVERY LOOP
+                            Ok(n) => format!("✅ {:?}", n),
+                            Err(e) => format!("❌ {:?}", e),
+                        }
+                    );
                 }
             });
     }

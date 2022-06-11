@@ -15,7 +15,6 @@ bevy = { version = "0.7", default-features = false, features = [
     "wayland",
 ] }
 bevy_egui = "0.14.0"
-geo = { version = "0.20", features = ["use-proj"] }
 rfd = "0.8"
 rgis-layer-id = { path = "../rgis-layer-id" }
 rgis-layers = { path = "../rgis-layers" }
@@ -25,3 +24,6 @@ rgis-mouse = { path = "../rgis-mouse" }
 rgis-settings = { path = "../rgis-settings" }
 rgis-task = { path = "../rgis-task" }
 webbrowser = "0.7"
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+geo = { version = "0.20", features = ["use-proj"] }
