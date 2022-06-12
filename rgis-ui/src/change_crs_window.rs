@@ -15,13 +15,13 @@ impl<'a> ChangeCrsWindow<'a> {
                 #[cfg(not(target_arch = "wasm32"))]
                 {
                     let edit_field = ui.text_edit_singleline(self.text_field_value);
-                    if edit_field.changed() {
-                    }
+                    if edit_field.changed() {}
                     ui.label(
-                        match geo::algorithm::proj::Proj::new(self.text_field_value) { // DONT CALL THIS ON EVERY LOOP
+                        match geo::algorithm::proj::Proj::new(self.text_field_value) {
+                            // DONT CALL THIS ON EVERY LOOP
                             Ok(n) => format!("✅ {:?}", n),
                             Err(e) => format!("❌ {:?}", e),
-                        }
+                        },
                     );
                 }
             });

@@ -58,8 +58,7 @@ impl BuildBevyMeshesContext {
 pub fn build_bevy_meshes<G: BuildBevyMeshes>(
     geo: &G,
     mut ctx: BuildBevyMeshesContext,
-) -> Result<impl Iterator<Item = Mesh>, <G as BuildBevyMeshes>::Error>
-{
+) -> Result<impl Iterator<Item = Mesh>, <G as BuildBevyMeshes>::Error> {
     geo.populate_mesh_builders(&mut ctx)?;
 
     Ok([
@@ -96,10 +95,7 @@ impl BuildBevyMeshes for geo::LineString<f64> {
 impl BuildBevyMeshes for geo::Polygon<f64> {
     type Error = bad::Never;
 
-    fn populate_mesh_builders(
-        &self,
-        ctx: &mut BuildBevyMeshesContext,
-    ) -> Result<(), Self::Error> {
+    fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) -> Result<(), Self::Error> {
         ctx.polygon_mesh_builder
             .add_earcutr_input(polygon_to_earcutr_input(self));
         Ok(())
@@ -109,10 +105,7 @@ impl BuildBevyMeshes for geo::Polygon<f64> {
 impl BuildBevyMeshes for geo::MultiPoint<f64> {
     type Error = num::TryFromIntError;
 
-    fn populate_mesh_builders(
-        &self,
-        ctx: &mut BuildBevyMeshesContext,
-    ) -> Result<(), Self::Error> {
+    fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) -> Result<(), Self::Error> {
         for point in &self.0 {
             point.populate_mesh_builders(ctx)?;
         }
@@ -123,10 +116,7 @@ impl BuildBevyMeshes for geo::MultiPoint<f64> {
 impl BuildBevyMeshes for geo::MultiLineString<f64> {
     type Error = num::TryFromIntError;
 
-    fn populate_mesh_builders(
-        &self,
-        ctx: &mut BuildBevyMeshesContext,
-    ) -> Result<(), Self::Error> {
+    fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) -> Result<(), Self::Error> {
         for line_string in &self.0 {
             line_string.populate_mesh_builders(ctx)?;
         }
@@ -137,10 +127,7 @@ impl BuildBevyMeshes for geo::MultiLineString<f64> {
 impl BuildBevyMeshes for geo::MultiPolygon<f64> {
     type Error = bad::Never;
 
-    fn populate_mesh_builders(
-        &self,
-        ctx: &mut BuildBevyMeshesContext,
-    ) -> Result<(), Self::Error> {
+    fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) -> Result<(), Self::Error> {
         for polygon in &self.0 {
             polygon.populate_mesh_builders(ctx)?;
         }
@@ -159,10 +146,7 @@ impl BuildBevyMeshes for geo::Line<f64> {
 impl BuildBevyMeshes for geo::Triangle<f64> {
     type Error = bad::Never;
 
-    fn populate_mesh_builders(
-        &self,
-        ctx: &mut BuildBevyMeshesContext,
-    ) -> Result<(), Self::Error> {
+    fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) -> Result<(), Self::Error> {
         self.to_polygon().populate_mesh_builders(ctx)
     }
 }
@@ -170,10 +154,7 @@ impl BuildBevyMeshes for geo::Triangle<f64> {
 impl BuildBevyMeshes for geo::Rect<f64> {
     type Error = bad::Never;
 
-    fn populate_mesh_builders(
-        &self,
-        ctx: &mut BuildBevyMeshesContext,
-    ) -> Result<(), Self::Error> {
+    fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) -> Result<(), Self::Error> {
         self.to_polygon().populate_mesh_builders(ctx)
     }
 }
@@ -181,10 +162,7 @@ impl BuildBevyMeshes for geo::Rect<f64> {
 impl BuildBevyMeshes for geo::Geometry<f64> {
     type Error = num::TryFromIntError;
 
-    fn populate_mesh_builders(
-        &self,
-        ctx: &mut BuildBevyMeshesContext,
-    ) -> Result<(), Self::Error> {
+    fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) -> Result<(), Self::Error> {
         match self {
             geo::Geometry::Point(g) => g.populate_mesh_builders(ctx)?,
             geo::Geometry::Line(g) => g.populate_mesh_builders(ctx)?,
@@ -204,10 +182,7 @@ impl BuildBevyMeshes for geo::Geometry<f64> {
 impl BuildBevyMeshes for geo::GeometryCollection<f64> {
     type Error = num::TryFromIntError;
 
-    fn populate_mesh_builders(
-        &self,
-        ctx: &mut BuildBevyMeshesContext,
-    ) -> Result<(), Self::Error> {
+    fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) -> Result<(), Self::Error> {
         for g in self {
             g.populate_mesh_builders(ctx)?;
         }
