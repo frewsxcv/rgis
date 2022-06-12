@@ -100,6 +100,7 @@ fn load_geojson_file_handler(
                 .spawn(&thread_pool, &mut commands);
             }
             rgis_events::LoadGeoJsonFileEvent::FromNetwork { url, crs, name } => {
+                // TODO: this should all happen in a background task
                 let fetched_bytes_sender = fetched_bytes_sender.clone();
                 let request = ehttp::Request::get(url);
                 ehttp::fetch(request, move |result: ehttp::Result<ehttp::Response>| {

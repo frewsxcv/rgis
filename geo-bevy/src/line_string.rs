@@ -1,5 +1,5 @@
 use crate::Vertex;
-use std::error;
+use std::num;
 
 pub struct LineStringMeshBuilder {
     vertices: Vec<Vertex>,
@@ -19,7 +19,7 @@ impl LineStringMeshBuilder {
     pub fn add_line_string(
         &mut self,
         line_string: &geo::LineString<f64>,
-    ) -> Result<(), Box<dyn error::Error>> {
+    ) -> Result<(), num::TryFromIntError> {
         let index_base = self.vertices.len();
         for (i, coord) in line_string.0.iter().enumerate() {
             self.vertices.push([coord.x as f32, coord.y as f32, 0.0f32]);
