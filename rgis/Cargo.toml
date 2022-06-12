@@ -16,7 +16,7 @@ bevy = { version = "0.7", default-features = false, features = [
     "bevy_ui",
     "wayland",
 ] }
-geo = { version = "0.20" }
+geo = "0.21"
 geo-bevy = { path = "../geo-bevy" }
 rgis-camera = { path = "../rgis-camera" }
 rgis-cli = { path = "../rgis-cli" }
