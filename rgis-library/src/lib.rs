@@ -33,6 +33,6 @@ pub const ENTRIES: [LibraryEntry; 6] = [LibraryEntry {
     crs: "EPSG:4326",
 }, LibraryEntry {
     name: "World lakes",
-    url: "https://github.com/simonepri/geo-maps/releases/latest/download/earth-lakes-500m.geo.json",
+    url: "https://raw.githubusercontent.com/simonepri/geo-maps/master/previews/earth-lakes.geo.json",
     crs: "EPSG:4326",
 }];
