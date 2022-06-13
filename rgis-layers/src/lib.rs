@@ -49,7 +49,7 @@ impl Layers {
     // coord is assumed to be projected
     pub fn containing_coord(&self, coord: geo::Coordinate<f64>) -> impl Iterator<Item = &Layer> {
         self.iter_top_to_bottom()
-            .filter(move |layer| layer.contains_coord(&coord))
+            .filter(move |layer| layer.projected_feature.contains(&coord))
     }
 
     // Returns whether the selected layer changed
@@ -196,6 +196,12 @@ pub struct Feature {
     pub bounding_rect: geo::Rect<f64>,
 }
 
+impl Contains<geo::Coordinate<f64>> for Feature {
+    fn contains(&self, coord: &geo::Coordinate<f64>) -> bool {
+        self.bounding_rect.contains(coord) && self.geometry.contains(coord)
+    }
+}
+
 impl Feature {
     fn from_geometry(geometry: geo::Geometry<f64>) -> Result<Self, LayerCreateError> {
         let bounding_rect = geometry
@@ -227,13 +233,6 @@ pub struct Layer {
     pub name: String,
     pub visible: bool,
     pub crs: String,
-}
-
-impl Layer {
-    pub fn contains_coord(&self, coord: &geo::Coordinate<f64>) -> bool {
-        self.projected_feature.bounding_rect.contains(coord)
-            && self.projected_feature.geometry.contains(coord)
-    }
 }
 
 fn colorous_color_to_bevy_color(colorous_color: colorous::Color) -> Color {
