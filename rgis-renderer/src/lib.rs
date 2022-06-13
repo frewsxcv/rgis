@@ -92,7 +92,7 @@ fn spawn_geometry_meshes(
 
     let tl = time_logger::start!("Triangulating and building {} mesh", layer.name);
     for mesh in geo_bevy::build_bevy_meshes(
-        &layer.projected_geometry,
+        &layer.projected_feature.geometry,
         geo_bevy::BuildBevyMeshesContext::new(),
     )? {
         spawn_mesh(mesh, z_index, material.clone(), meshes, commands, layer.id);

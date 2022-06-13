@@ -8,7 +8,7 @@
 use bevy::prelude::*;
 use geo::bounding_rect::BoundingRect;
 use geo::contains::Contains;
-use std::sync;
+use std::{collections, sync};
 
 #[derive(Clone, Debug)]
 pub struct Layers {
@@ -114,9 +114,8 @@ impl Layers {
     pub fn add(&mut self, unassigned_layer: UnassignedLayer) -> rgis_layer_id::LayerId {
         let layer_id = self.next_layer_id();
         let layer = Layer {
-            unprojected_geometry: unassigned_layer.unprojected_geometry,
-            projected_geometry: unassigned_layer.projected_geometry,
-            projected_bounding_rect: unassigned_layer.projected_bounding_rect,
+            unprojected_feature: unassigned_layer.unprojected_feature,
+            projected_feature: unassigned_layer.projected_feature,
             color: unassigned_layer.color,
             metadata: unassigned_layer.metadata,
             name: unassigned_layer.name,
@@ -133,9 +132,8 @@ pub type Metadata = serde_json::Map<String, serde_json::Value>;
 
 #[derive(Debug)]
 pub struct UnassignedLayer {
-    pub unprojected_geometry: geo::Geometry<f64>,
-    pub projected_geometry: geo::Geometry<f64>,
-    pub projected_bounding_rect: geo::Rect<f64>,
+    pub projected_feature: Feature,
+    pub unprojected_feature: Feature,
     pub color: Color,
     pub metadata: Metadata,
     pub name: String,
@@ -179,14 +177,9 @@ impl UnassignedLayer {
         }
         tl.finish();
 
-        let projected_bounding_rect = projected_geometry
-            .bounding_rect()
-            .ok_or(LayerCreateError::BoundingBox)?;
-
         Ok(UnassignedLayer {
-            unprojected_geometry,
-            projected_geometry,
-            projected_bounding_rect,
+            unprojected_feature: Feature::from_geometry(unprojected_geometry)?,
+            projected_feature: Feature::from_geometry(projected_geometry)?,
             color: colorous_color_to_bevy_color(next_colorous_color()),
             metadata: metadata.unwrap_or_else(serde_json::Map::new),
             crs: source_crs.to_string(),
@@ -197,10 +190,37 @@ impl UnassignedLayer {
 }
 
 #[derive(Clone, Debug)]
+pub struct Feature {
+    pub geometry: geo::Geometry<f64>,
+    pub properties: collections::HashMap<(), ()>,
+    pub bounding_rect: geo::Rect<f64>,
+}
+
+impl Feature {
+    fn from_geometry(geometry: geo::Geometry<f64>) -> Result<Self, LayerCreateError> {
+        let bounding_rect = geometry
+            .bounding_rect()
+            .ok_or(LayerCreateError::BoundingBox)?;
+
+        Ok(Feature {
+            geometry,
+            properties: collections::HashMap::new(),
+            bounding_rect,
+        })
+    }
+}
+
+#[derive(Clone, Debug)]
 pub struct Layer {
-    pub unprojected_geometry: geo::Geometry<f64>,
-    pub projected_geometry: geo::Geometry<f64>,
-    pub projected_bounding_rect: geo::Rect<f64>,
+    // {
+    //    name: 'layer name',
+    //    features: {
+    //        <feature uuid> -> feature
+    //     }
+    // }
+    // these should be vecs
+    pub unprojected_feature: Feature,
+    pub projected_feature: Feature,
     pub color: Color,
     pub metadata: Metadata,
     pub id: rgis_layer_id::LayerId,
@@ -211,7 +231,8 @@ pub struct Layer {
 
 impl Layer {
     pub fn contains_coord(&self, coord: &geo::Coordinate<f64>) -> bool {
-        self.projected_bounding_rect.contains(coord) && self.projected_geometry.contains(coord)
+        self.projected_feature.bounding_rect.contains(coord)
+            && self.projected_feature.geometry.contains(coord)
     }
 }
 
