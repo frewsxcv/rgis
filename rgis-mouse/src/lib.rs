@@ -58,6 +58,11 @@ fn screen_coords_to_geo_coords(
     }
 }
 
+const PAN_MOUSE_BUTTONS: [bevy::input::mouse::MouseButton; 2] = [
+    bevy::input::mouse::MouseButton::Left,
+    bevy::input::mouse::MouseButton::Right,
+];
+
 fn mouse_motion_system(
     mut mouse_motion_event_reader: bevy::ecs::event::EventReader<bevy::input::mouse::MouseMotion>,
     mouse_button: Res<bevy::input::Input<bevy::input::mouse::MouseButton>>,
@@ -69,12 +74,9 @@ fn mouse_motion_system(
         windows
             .primary_mut()
             .set_cursor_icon(bevy::window::CursorIcon::Arrow);
-    } else if mouse_button.pressed(bevy::input::mouse::MouseButton::Left)
-        || mouse_button.pressed(bevy::input::mouse::MouseButton::Right)
-    {
-        windows
-            .primary_mut()
-            .set_cursor_icon(bevy::window::CursorIcon::Grabbing);
+    } else if mouse_button.any_pressed(PAN_MOUSE_BUTTONS) {
+        windows.primary_mut().set_cursor_visibility(false);
+        windows.primary_mut().set_cursor_lock_mode(true);
         for event in mouse_motion_event_reader.iter() {
             // sum up x + y values and send one event
             pan_camera_events.send(rgis_events::PanCameraEvent {
@@ -88,6 +90,9 @@ fn mouse_motion_system(
                 y: event.delta.y,
             });
         }
+    } else if mouse_button.any_just_released(PAN_MOUSE_BUTTONS) {
+        windows.primary_mut().set_cursor_visibility(true);
+        windows.primary_mut().set_cursor_lock_mode(false);
     } else {
         windows
             .primary_mut()
