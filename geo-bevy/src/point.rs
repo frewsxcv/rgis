@@ -8,7 +8,6 @@ pub struct PointMeshBuilder {
 
 impl PointMeshBuilder {
     pub fn new() -> Self {
-        // TODO: capacity?
         PointMeshBuilder {
             vertices: vec![],
             indices: vec![],

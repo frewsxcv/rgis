@@ -8,7 +8,6 @@ pub struct LineStringMeshBuilder {
 
 impl LineStringMeshBuilder {
     pub fn new() -> Self {
-        // TODO: capacity?
         LineStringMeshBuilder {
             vertices: vec![],
             indices: vec![],
@@ -21,6 +20,10 @@ impl LineStringMeshBuilder {
         line_string: &geo::LineString<f64>,
     ) -> Result<(), num::TryFromIntError> {
         let index_base = self.vertices.len();
+
+        self.vertices.reserve(self.vertices.len());
+        self.indices.reserve(self.indices.len() * 2);
+
         for (i, coord) in line_string.0.iter().enumerate() {
             self.vertices.push([coord.x as f32, coord.y as f32, 0.0f32]);
             if i != line_string.0.len() - 1 {
