@@ -192,7 +192,7 @@ impl UnassignedLayer {
 #[derive(Clone, Debug)]
 pub struct Feature {
     pub geometry: geo::Geometry<f64>,
-    pub properties: collections::HashMap<(), ()>,
+    pub properties: collections::HashMap<String, String>,
     pub bounding_rect: geo::Rect<f64>,
 }
 
