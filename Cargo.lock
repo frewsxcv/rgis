@@ -2920,6 +2920,7 @@ name = "rgis-mouse"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy_egui",
  "rgis-camera",
  "rgis-events",
 ]

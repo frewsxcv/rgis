@@ -63,8 +63,13 @@ fn mouse_motion_system(
     mouse_button: Res<bevy::input::Input<bevy::input::mouse::MouseButton>>,
     mut pan_camera_events: bevy::ecs::event::EventWriter<rgis_events::PanCameraEvent>,
     mut windows: ResMut<bevy::window::Windows>,
+    mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
 ) {
-    if mouse_button.pressed(bevy::input::mouse::MouseButton::Left)
+    if bevy_egui_ctx.ctx_mut().is_pointer_over_area() {
+        windows
+            .primary_mut()
+            .set_cursor_icon(bevy::window::CursorIcon::Arrow);
+    } else if mouse_button.pressed(bevy::input::mouse::MouseButton::Left)
         || mouse_button.pressed(bevy::input::mouse::MouseButton::Right)
     {
         windows
@@ -83,6 +88,10 @@ fn mouse_motion_system(
                 y: event.delta.y,
             });
         }
+    } else {
+        windows
+            .primary_mut()
+            .set_cursor_icon(bevy::window::CursorIcon::Grab);
     }
 }
 

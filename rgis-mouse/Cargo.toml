@@ -15,5 +15,6 @@ bevy = { version = "0.7", default-features = false, features = [
     "bevy_ui",
     "wayland",
 ] }
+bevy_egui = "0.14"
 rgis-camera = { path = "../rgis-camera" }
 rgis-events = { path = "../rgis-events" }
