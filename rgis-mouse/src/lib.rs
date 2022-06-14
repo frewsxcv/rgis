@@ -81,17 +81,24 @@ fn mouse_motion_system(
                 windows
                     .primary_mut()
                     .set_cursor_icon(bevy::window::CursorIcon::Grabbing);
+                let mut x_sum = 0.;
+                let mut y_sum = 0.;
                 for event in mouse_motion_event_reader.iter() {
+                    // If the mouse is dragging rightward, `delta.x` will be positive. In this case, we
+                    // want the map to move right, and the camera to move left. We need to negate the
+                    // delta X value.
+                    x_sum -= event.delta.x;
+
+                    // If the mouse is dragging upward, `delta.y` will be negative. In this case, we
+                    // want the map to move up, and the camera to move down. We do not need to negate
+                    // the delta Y value.
+                    y_sum += event.delta.y;
+                }
+                if x_sum != 0. && y_sum != 0. {
                     // sum up x + y values and send one event
                     pan_camera_events.send(rgis_events::PanCameraEvent {
-                        // If the mouse is dragging rightward, `delta.x` will be positive. In this case, we
-                        // want the map to move right, and the camera to move left. We need to negate the
-                        // delta X value.
-                        x: -event.delta.x,
-                        // If the mouse is dragging upward, `delta.y` will be negative. In this case, we
-                        // want the map to move up, and the camera to move down. We do not need to negate
-                        // the delta Y value.
-                        y: event.delta.y,
+                        x: x_sum,
+                        y: y_sum,
                     });
                 }
                 return;
