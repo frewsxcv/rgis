@@ -4,6 +4,7 @@ pub(crate) struct TopPanel<'a> {
     pub app_exit_events: &'a mut bevy::ecs::event::Events<bevy::app::AppExit>,
     pub bevy_egui_ctx: &'a mut bevy_egui::EguiContext,
     pub windows: &'a mut bevy::window::Windows,
+    pub app_settings: &'a mut rgis_settings::RgisSettings,
 }
 
 impl<'a> TopPanel<'a> {
@@ -22,6 +23,24 @@ impl<'a> TopPanel<'a> {
                         let _ = webbrowser::open("https://github.com/frewsxcv/rgis");
                     }
                 });
+
+                ui.separator();
+
+                if ui.add_enabled(
+                    self.app_settings.current_tool != rgis_settings::Tool::Pan,
+                    egui::Button::new("🔁 Pan Tool"),
+                ).clicked() {
+                    bevy::log::error!("switching to pan");
+                    self.app_settings.current_tool = rgis_settings::Tool::Pan;
+                }
+
+                if ui.add_enabled(
+                    self.app_settings.current_tool != rgis_settings::Tool::Query,
+                    egui::Button::new("ℹ Query Tool"),
+                ).clicked() {
+                    bevy::log::error!("switching to query");
+                    self.app_settings.current_tool = rgis_settings::Tool::Query;
+                }
             });
         });
     }

@@ -7,6 +7,7 @@
 
 static DEFAULT_TARGET_CRS: &str = "EPSG:3857";
 
+#[derive(PartialEq, Eq)]
 pub enum Tool {
     Pan,
     Query,

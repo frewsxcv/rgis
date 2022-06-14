@@ -79,11 +79,13 @@ fn render_top_panel(
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
     mut app_exit_events: ResMut<bevy::ecs::event::Events<bevy::app::AppExit>>,
     mut windows: ResMut<Windows>,
+    mut app_settings: ResMut<rgis_settings::RgisSettings>,
 ) {
     top_panel::TopPanel {
         bevy_egui_ctx: &mut bevy_egui_ctx,
         app_exit_events: &mut app_exit_events,
         windows: &mut windows,
+        app_settings: &mut app_settings,
     }
     .render();
 }
