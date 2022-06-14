@@ -58,6 +58,8 @@ pub struct MoveLayerEvent(pub rgis_layer_id::LayerId, pub MoveDirection);
 
 pub struct LayerZIndexUpdatedEvent(pub rgis_layer_id::LayerId);
 
+pub struct MapClickedEvent(pub geo::Coordinate<f64>);
+
 // TODO: this can be removed
 #[derive(Debug)]
 pub enum LoadGeoJsonFileEvent {
@@ -147,6 +149,7 @@ impl bevy::app::Plugin for Plugin {
             .add_event::<LayerZIndexUpdatedEvent>()
             .add_event::<DeleteLayerEvent>()
             .add_event::<LayerDeletedEvent>()
-            .add_event::<MeshesSpawnedEvent>();
+            .add_event::<MeshesSpawnedEvent>()
+            .add_event::<MapClickedEvent>();
     }
 }

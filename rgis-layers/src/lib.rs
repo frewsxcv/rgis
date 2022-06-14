@@ -58,10 +58,7 @@ impl Layers {
             let mut iter = self.containing_coord(coord);
             let new_selected_layer = iter.next();
             if let Some(layer) = new_selected_layer {
-                info!("A geometry was clicked: {:?}", layer.metadata);
-            }
-            if iter.next().is_some() {
-                warn!("Multiple layers clicked. Choosing one randomly.");
+                info!("A layer was clicked: {:?}", layer.name);
             }
             new_selected_layer.map(|layer| layer.id)
         };
@@ -117,7 +114,6 @@ impl Layers {
             unprojected_feature: unassigned_layer.unprojected_feature,
             projected_feature: unassigned_layer.projected_feature,
             color: unassigned_layer.color,
-            metadata: unassigned_layer.metadata,
             name: unassigned_layer.name,
             visible: unassigned_layer.visible,
             id: layer_id,
@@ -228,7 +224,6 @@ pub struct Layer {
     pub unprojected_feature: Feature,
     pub projected_feature: Feature,
     pub color: Color,
-    pub metadata: Metadata,
     pub id: rgis_layer_id::LayerId,
     pub name: String,
     pub visible: bool,
@@ -347,12 +342,22 @@ fn handle_move_layer_events(
     }
 }
 
+fn handle_map_clicked_events(
+    mut map_clicked_event_reader: bevy::ecs::event::EventReader<rgis_events::MapClickedEvent>,
+    mut layers: ResMut<Layers>,
+) {
+    for event in map_clicked_event_reader.iter() {
+        layers.set_selected_layer_from_mouse_press(event.0);
+    }
+}
+
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(Layers::new())
             .add_system(handle_toggle_layer_visibility_events)
             .add_system(handle_update_color_events)
             .add_system(handle_move_layer_events)
-            .add_system(handle_delete_layer_events);
+            .add_system(handle_delete_layer_events)
+            .add_system(handle_map_clicked_events);
     }
 }

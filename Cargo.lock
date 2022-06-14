@@ -2857,6 +2857,7 @@ name = "rgis-events"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "geo",
  "rgis-layer-id",
 ]
 
@@ -2921,6 +2922,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_egui",
+ "geo",
  "rgis-camera",
  "rgis-events",
  "rgis-settings",
