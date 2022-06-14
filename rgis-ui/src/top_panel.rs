@@ -30,7 +30,6 @@ impl<'a> TopPanel<'a> {
                     self.app_settings.current_tool != rgis_settings::Tool::Pan,
                     egui::Button::new("🔁 Pan Tool"),
                 ).clicked() {
-                    bevy::log::error!("switching to pan");
                     self.app_settings.current_tool = rgis_settings::Tool::Pan;
                 }
 
@@ -38,7 +37,6 @@ impl<'a> TopPanel<'a> {
                     self.app_settings.current_tool != rgis_settings::Tool::Query,
                     egui::Button::new("ℹ Query Tool"),
                 ).clicked() {
-                    bevy::log::error!("switching to query");
                     self.app_settings.current_tool = rgis_settings::Tool::Query;
                 }
             });

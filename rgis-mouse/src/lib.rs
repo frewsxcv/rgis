@@ -64,6 +64,7 @@ fn mouse_motion_system(
     mut pan_camera_events: bevy::ecs::event::EventWriter<rgis_events::PanCameraEvent>,
     mut windows: ResMut<bevy::window::Windows>,
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
+    rgis_settings: Res<rgis_settings::RgisSettings>,
 ) {
     if bevy_egui_ctx.ctx_mut().is_pointer_over_area() {
         windows
@@ -89,9 +90,13 @@ fn mouse_motion_system(
             });
         }
     } else {
+        let cursor_icon = match rgis_settings.current_tool {
+            rgis_settings::Tool::Pan => bevy::window::CursorIcon::Grab,
+            rgis_settings::Tool::Query => bevy::window::CursorIcon::Crosshair,
+        };
         windows
             .primary_mut()
-            .set_cursor_icon(bevy::window::CursorIcon::Grab);
+            .set_cursor_icon(cursor_icon);
     }
 }
 

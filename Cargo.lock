@@ -2923,6 +2923,7 @@ dependencies = [
  "bevy_egui",
  "rgis-camera",
  "rgis-events",
+ "rgis-settings",
 ]
 
 [[package]]
