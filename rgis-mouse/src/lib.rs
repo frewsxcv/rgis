@@ -18,8 +18,12 @@ fn cursor_moved_system(
     camera_2d: Res<rgis_camera::Camera2d>,
     query: Query<&mut bevy::transform::components::Transform>,
     mut mouse_position: ResMut<MousePos>,
+    mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
 ) {
     if cursor_moved_event_reader.is_empty() {
+        return;
+    }
+    if bevy_egui_ctx.ctx_mut().is_pointer_over_area() {
         return;
     }
     let window = windows.primary();
