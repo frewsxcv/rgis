@@ -112,9 +112,9 @@ impl PanCameraEvent {
 
 #[derive(Debug)]
 pub struct ZoomCameraEvent {
-    // (amount ∈ (1, ∞)) → zoom in
-    // (amount ∈ [1] → no change
-    // (amount ∈ (0, 1)) → zoom out
+    /// * `amount ∈ (1, ∞)` → zoom in
+    /// * `amount ∈ [1]` → no change
+    /// * `amount ∈ (0, 1)` → zoom out
     pub amount: f32,
 }
 
@@ -122,7 +122,7 @@ impl ZoomCameraEvent {
     #[inline]
     pub fn new(amount: f32) -> Self {
         ZoomCameraEvent {
-            amount: 1. + amount / ZOOM_FACTOR, // >1 zooms in, <1 zooms out
+            amount: 1. + amount / ZOOM_FACTOR,
         }
     }
 }
