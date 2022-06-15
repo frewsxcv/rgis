@@ -9,7 +9,8 @@ use bevy::prelude::*;
 #[cfg(not(target_arch = "wasm32"))]
 use std::path;
 
-const ZOOM_AMOUNT: f32 = 1.15; // Larger number will zoom more
+// Magic number used to normalize the host's scroll value.
+const ZOOM_FACTOR: f32 = 500.;
 
 #[derive(Debug)]
 pub struct LayerLoadedEvent(pub rgis_layer_id::LayerId);
@@ -119,16 +120,9 @@ pub struct ZoomCameraEvent {
 
 impl ZoomCameraEvent {
     #[inline]
-    pub fn zoom_in() -> Self {
+    pub fn new(amount: f32) -> Self {
         ZoomCameraEvent {
-            amount: ZOOM_AMOUNT,
-        }
-    }
-
-    #[inline]
-    pub fn zoom_out() -> Self {
-        ZoomCameraEvent {
-            amount: 1. / ZOOM_AMOUNT,
+            amount: 1. + amount / ZOOM_FACTOR, // >1 zooms in, <1 zooms out
         }
     }
 }

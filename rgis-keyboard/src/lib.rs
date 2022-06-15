@@ -36,16 +36,16 @@ fn process_key_code_input_system(
             bevy::input::keyboard::KeyCode::Left => {
                 pan_camera_events.send(rgis_events::PanCameraEvent::left(PAN_AMOUNT));
             }
-            bevy::input::keyboard::KeyCode::Minus => {
-                zoom_camera_events.send(rgis_events::ZoomCameraEvent::zoom_out())
-            }
-            bevy::input::keyboard::KeyCode::Equals => {
-                if keyboard_input.pressed(bevy::input::keyboard::KeyCode::RShift)
-                    || keyboard_input.pressed(bevy::input::keyboard::KeyCode::LShift)
-                {
-                    zoom_camera_events.send(rgis_events::ZoomCameraEvent::zoom_in())
-                }
-            }
+            // bevy::input::keyboard::KeyCode::Minus => {
+            //     zoom_camera_events.send(rgis_events::ZoomCameraEvent::zoom_out())
+            // }
+            // bevy::input::keyboard::KeyCode::Equals => {
+            //     if keyboard_input.pressed(bevy::input::keyboard::KeyCode::RShift)
+            //         || keyboard_input.pressed(bevy::input::keyboard::KeyCode::LShift)
+            //     {
+            //         zoom_camera_events.send(rgis_events::ZoomCameraEvent::zoom_in())
+            //     }
+            // }
             _ => {}
         }
     }
