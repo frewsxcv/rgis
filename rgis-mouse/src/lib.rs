@@ -120,8 +120,12 @@ fn mouse_scroll_system(
     mut mouse_scroll_event_reader: bevy::ecs::event::EventReader<bevy::input::mouse::MouseWheel>,
     mut zoom_camera_events: bevy::ecs::event::EventWriter<rgis_events::ZoomCameraEvent>,
 ) {
+    let mut x = 0.;
     for event in mouse_scroll_event_reader.iter() {
-        zoom_camera_events.send(rgis_events::ZoomCameraEvent::new(event.y));
+        x += event.y;
+    }
+    if x != 0. {
+        zoom_camera_events.send(rgis_events::ZoomCameraEvent::new(x));
     }
 }
 
