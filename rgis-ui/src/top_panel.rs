@@ -26,17 +26,23 @@ impl<'a> TopPanel<'a> {
 
                 ui.separator();
 
-                if ui.add_enabled(
-                    self.app_settings.current_tool != rgis_settings::Tool::Pan,
-                    egui::Button::new("🔁 Pan Tool"),
-                ).clicked() {
+                if ui
+                    .add_enabled(
+                        self.app_settings.current_tool != rgis_settings::Tool::Pan,
+                        egui::Button::new("🔁 Pan Tool"),
+                    )
+                    .clicked()
+                {
                     self.app_settings.current_tool = rgis_settings::Tool::Pan;
                 }
 
-                if ui.add_enabled(
-                    self.app_settings.current_tool != rgis_settings::Tool::Query,
-                    egui::Button::new("ℹ Query Tool"),
-                ).clicked() {
+                if ui
+                    .add_enabled(
+                        self.app_settings.current_tool != rgis_settings::Tool::Query,
+                        egui::Button::new("ℹ Query Tool"),
+                    )
+                    .clicked()
+                {
                     self.app_settings.current_tool = rgis_settings::Tool::Query;
                 }
             });

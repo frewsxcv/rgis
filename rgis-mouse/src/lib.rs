@@ -96,19 +96,15 @@ fn mouse_motion_system(
                 }
                 if x_sum != 0. && y_sum != 0. {
                     // sum up x + y values and send one event
-                    pan_camera_events.send(rgis_events::PanCameraEvent {
-                        x: x_sum,
-                        y: y_sum,
-                    });
+                    pan_camera_events.send(rgis_events::PanCameraEvent { x: x_sum, y: y_sum });
                 }
                 return;
             }
         }
         rgis_settings::Tool::Query => {
             if mouse_button.just_pressed(bevy::input::mouse::MouseButton::Left) {
-                map_clicked_event_writer.send(
-                    rgis_events::MapClickedEvent(mouse_position.projected)
-                )
+                map_clicked_event_writer
+                    .send(rgis_events::MapClickedEvent(mouse_position.projected))
             }
         }
     }
@@ -117,9 +113,7 @@ fn mouse_motion_system(
         rgis_settings::Tool::Pan => bevy::window::CursorIcon::Grab,
         rgis_settings::Tool::Query => bevy::window::CursorIcon::Crosshair,
     };
-    windows
-        .primary_mut()
-        .set_cursor_icon(cursor_icon);
+    windows.primary_mut().set_cursor_icon(cursor_icon);
 }
 
 fn mouse_scroll_system(
