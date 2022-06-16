@@ -39,12 +39,10 @@ pub fn transform(
         )
         .map_err(|_| Error)?;
     let array = js_sys::Array::new_with_length(2);
-    let forward = unsafe {
-        js_sys::Reflect::get(&projector, &"forward".into())
-            .map_err(|_| Error)?
-            .dyn_into::<js_sys::Function>()
-            .map_err(|_| Error)?
-    };
+    let forward = js_sys::Reflect::get(&projector, &"forward".into())
+        .map_err(|_| Error)?
+        .dyn_into::<js_sys::Function>()
+        .map_err(|_| Error)?;
 
     geometry.map_coords_in_place(|geo::Coordinate { x, y }| {
         match in_place((x, y), &forward, &array) {
