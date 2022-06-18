@@ -58,12 +58,13 @@ fn load_geojson_file_handler(
     mut load_event_reader: ResMut<Events<rgis_events::LoadGeoJsonFileEvent>>,
     thread_pool: Res<bevy::tasks::AsyncComputeTaskPool>,
     rgis_settings: Res<rgis_settings::RgisSettings>,
-    fetched_bytes_sender: Res<rgis_network::FetchedFileSender>,
-    fetched_bytes_receiver: Res<rgis_network::FetchedFileReceiver>,
     mut commands: bevy::ecs::system::Commands,
+    mut network_fetch_task_outcome: ResMut<
+        bevy::ecs::event::Events<rgis_task::TaskFinishedEvent<rgis_network::NetworkFetchTask>>,
+    >,
 ) {
-    while let Ok(fetched) = fetched_bytes_receiver.try_recv() {
-        match fetched {
+    for event in network_fetch_task_outcome.drain() {
+        match event.outcome {
             Ok(fetched) => load_event_reader.send(rgis_events::LoadGeoJsonFileEvent::FromBytes {
                 bytes: fetched.bytes,
                 file_name: fetched.name,
@@ -90,7 +91,8 @@ fn load_geojson_file_handler(
                 .spawn(&thread_pool, &mut commands);
             }
             rgis_events::LoadGeoJsonFileEvent::FromNetwork { url, crs, name } => {
-                rgis_network::fetch(url, crs, name, fetched_bytes_sender.clone())
+                rgis_network::NetworkFetchTask { url, crs, name }
+                    .spawn(&thread_pool, &mut commands);
             }
             rgis_events::LoadGeoJsonFileEvent::FromBytes {
                 file_name,
