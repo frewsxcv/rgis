@@ -13,13 +13,6 @@ use std::{io, mem};
 mod geojson;
 
 struct SpawnedLayers(Vec<rgis_layers::UnassignedLayer>);
-
-struct FetchedFile {
-    name: String,
-    bytes: Vec<u8>,
-    crs: String,
-}
-
 enum GeoJsonSource {
     #[cfg(not(target_arch = "wasm32"))]
     Path(std::path::PathBuf),
@@ -60,16 +53,13 @@ impl rgis_task::Task for LoadGeoJsonFileTask {
     }
 }
 
-type FetchedFileSender = async_channel::Sender<Result<FetchedFile, String>>;
-type FetchedFileReceiver = async_channel::Receiver<Result<FetchedFile, String>>;
-
 // System
 fn load_geojson_file_handler(
     mut load_event_reader: ResMut<Events<rgis_events::LoadGeoJsonFileEvent>>,
     thread_pool: Res<bevy::tasks::AsyncComputeTaskPool>,
     rgis_settings: Res<rgis_settings::RgisSettings>,
-    fetched_bytes_sender: Res<FetchedFileSender>,
-    fetched_bytes_receiver: Res<FetchedFileReceiver>,
+    fetched_bytes_sender: Res<rgis_network::FetchedFileSender>,
+    fetched_bytes_receiver: Res<rgis_network::FetchedFileReceiver>,
     mut commands: bevy::ecs::system::Commands,
 ) {
     while let Ok(fetched) = fetched_bytes_receiver.try_recv() {
@@ -100,21 +90,7 @@ fn load_geojson_file_handler(
                 .spawn(&thread_pool, &mut commands);
             }
             rgis_events::LoadGeoJsonFileEvent::FromNetwork { url, crs, name } => {
-                // TODO: this should all happen in a background task
-                let fetched_bytes_sender = fetched_bytes_sender.clone();
-                let request = ehttp::Request::get(url);
-                ehttp::fetch(request, move |result: ehttp::Result<ehttp::Response>| {
-                    if let Err(e) = fetched_bytes_sender.try_send(result.map(|r| FetchedFile {
-                        bytes: r.bytes,
-                        crs,
-                        name,
-                    })) {
-                        bevy::log::error!(
-                            "Failed to send network response to main thread: {:?}",
-                            e
-                        );
-                    }
-                });
+                rgis_network::fetch(url, crs, name, fetched_bytes_sender.clone())
             }
             rgis_events::LoadGeoJsonFileEvent::FromBytes {
                 file_name,
@@ -182,11 +158,7 @@ pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        let (sender2, receiver2): (FetchedFileSender, FetchedFileReceiver) =
-            async_channel::unbounded();
-        app.insert_resource(sender2)
-            .insert_resource(receiver2)
-            .add_plugin(rgis_task::TaskPlugin::<LoadGeoJsonFileTask>::new())
+        app.add_plugin(rgis_task::TaskPlugin::<LoadGeoJsonFileTask>::new())
             .add_system(load_geojson_file_handler)
             .add_system(handle_loaded_layers);
 

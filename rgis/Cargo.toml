@@ -24,6 +24,7 @@ rgis-file-loader = { path = "../rgis-file-loader" }
 rgis-keyboard = { path = "../rgis-keyboard" }
 rgis-layers = { path = "../rgis-layers" }
 rgis-mouse = { path = "../rgis-mouse" }
+rgis-network = { path = "../rgis-network" }
 rgis-renderer = { path = "../rgis-renderer" }
 rgis-settings = { path = "../rgis-settings" }
 rgis-ui = { path = "../rgis-ui" }

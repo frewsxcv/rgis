@@ -42,6 +42,7 @@ pub fn run() {
     .add_plugin(rgis_renderer::Plugin)
     .add_plugin(rgis_mouse::Plugin)
     .add_plugin(rgis_keyboard::Plugin)
+    .add_plugin(rgis_network::Plugin)
     .add_plugin(rgis_camera::Plugin)
     .add_plugin(rgis_events::Plugin)
     .add_plugin(rgis_ui::Plugin)

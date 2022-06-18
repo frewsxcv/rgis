@@ -2827,6 +2827,7 @@ dependencies = [
  "rgis-keyboard",
  "rgis-layers",
  "rgis-mouse",
+ "rgis-network",
  "rgis-renderer",
  "rgis-settings",
  "rgis-ui",
@@ -2865,15 +2866,14 @@ dependencies = [
 name = "rgis-file-loader"
 version = "0.1.0"
 dependencies = [
- "async-channel",
  "bevy",
- "ehttp",
  "geo",
  "geojson",
  "rgis-cli",
  "rgis-events",
  "rgis-layer-id",
  "rgis-layers",
+ "rgis-network",
  "rgis-settings",
  "rgis-task",
  "serde_json",
@@ -2926,6 +2926,15 @@ dependencies = [
  "rgis-camera",
  "rgis-events",
  "rgis-settings",
+]
+
+[[package]]
+name = "rgis-network"
+version = "0.1.0"
+dependencies = [
+ "async-channel",
+ "bevy",
+ "ehttp",
 ]
 
 [[package]]

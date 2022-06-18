@@ -11,6 +11,7 @@ members = [
     "rgis-layers",
     "rgis-library",
     "rgis-mouse",
+    "rgis-network",
     "rgis-renderer",
     "rgis-settings",
     "rgis-task",
