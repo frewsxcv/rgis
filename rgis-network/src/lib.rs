@@ -1,3 +1,10 @@
+#![warn(
+    clippy::unwrap_used,
+    clippy::cast_lossless,
+    clippy::unimplemented,
+    clippy::expect_used
+)]
+
 pub struct FetchedFile {
     pub name: String,
     pub bytes: Vec<u8>,
