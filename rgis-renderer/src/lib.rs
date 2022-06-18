@@ -24,7 +24,10 @@ struct MeshBuildingTask {
 }
 
 impl rgis_task::Task for MeshBuildingTask {
-    type Outcome = (Vec<Mesh>, rgis_layer_id::LayerId);
+    type Outcome = Result<
+        (Vec<Mesh>, rgis_layer_id::LayerId),
+        <geo::Geometry<f64> as geo_bevy::BuildBevyMeshes>::Error,
+    >;
 
     fn name(&self) -> String {
         "Building Bevy meshes".to_string()
@@ -32,15 +35,14 @@ impl rgis_task::Task for MeshBuildingTask {
 
     fn perform(self) -> rgis_task::PerformReturn<Self::Outcome> {
         Box::pin(async move {
-            (
+            Ok((
                 geo_bevy::build_bevy_meshes(
                     &self.geometry,
                     geo_bevy::BuildBevyMeshesContext::new(),
-                )
-                .unwrap()
+                )?
                 .collect::<Vec<Mesh>>(),
                 self.layer_id,
-            )
+            ))
         })
     }
 }
@@ -74,7 +76,7 @@ fn layer_loaded(
 
 fn handle_mesh_building_task_outcome(
     mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
+    mut assets_meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     layers: Res<rgis_layers::Layers>,
     mut meshes_spawned_event_writer: EventWriter<rgis_events::MeshesSpawnedEvent>,
@@ -83,7 +85,15 @@ fn handle_mesh_building_task_outcome(
     >,
 ) {
     for event in mesh_building_task_outcome.drain() {
-        let (layer, z_index) = match layers.get_with_z_index(event.outcome.1) {
+        let (meshes, layer_id) = match event.outcome {
+            Ok(n) => n,
+            Err(e) => {
+                bevy::log::error!("Encountered error when spawning mesh: {}", e);
+                continue;
+            }
+        };
+
+        let (layer, z_index) = match layers.get_with_z_index(layer_id) {
             Some(l) => l,
             None => continue,
         };
@@ -93,17 +103,14 @@ fn handle_mesh_building_task_outcome(
             continue;
         }
 
-        match spawn_geometry_meshes(
-            event.outcome.0,
+        spawn_geometry_meshes(
+            meshes,
             &mut materials,
             layer,
             &mut commands,
-            &mut meshes,
+            &mut assets_meshes,
             z_index,
-        ) {
-            Ok(_) => meshes_spawned_event_writer.send(layer.id.into()),
-            Err(e) => bevy::log::error!("Encountered error when spawning mesh: {}", e),
-        }
+        );
     }
 }
 
@@ -163,7 +170,7 @@ fn spawn_geometry_meshes(
     commands: &mut Commands,
     assets_meshes: &mut Assets<Mesh>,
     z_index: usize,
-) -> Result<(), Box<dyn error::Error>> {
+) {
     let material = materials.add(layer.color.into());
 
     let tl = time_logger::start!("Triangulating and building {} mesh", layer.name);
@@ -178,7 +185,6 @@ fn spawn_geometry_meshes(
         );
     }
     tl.finish();
-    Ok(())
 }
 
 fn handle_layer_became_hidden_event(
