@@ -2949,10 +2949,12 @@ name = "rgis-renderer"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "geo",
  "geo-bevy",
  "rgis-events",
  "rgis-layer-id",
  "rgis-layers",
+ "rgis-task",
  "time-logger",
 ]
 

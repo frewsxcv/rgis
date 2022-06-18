@@ -6,28 +6,101 @@
 )]
 
 use bevy::prelude::*;
+use rgis_task::Task;
 use std::error;
+
+fn geometry_count(geometry: &geo::Geometry<f64>) -> usize {
+    match geometry {
+        geo::Geometry::GeometryCollection(geometries) => {
+            geometries.iter().map(geometry_count).sum()
+        }
+        _ => 1,
+    }
+}
+
+struct MeshBuildingTask {
+    pub layer_id: rgis_layer_id::LayerId,
+    pub geometry: geo::Geometry<f64>,
+}
+
+impl rgis_task::Task for MeshBuildingTask {
+    type Outcome = (Vec<Mesh>, rgis_layer_id::LayerId);
+
+    fn name(&self) -> String {
+        "Building Bevy meshes".to_string()
+    }
+
+    fn perform(self) -> rgis_task::PerformReturn<Self::Outcome> {
+        Box::pin(async move {
+            (
+                geo_bevy::build_bevy_meshes(
+                    &self.geometry,
+                    geo_bevy::BuildBevyMeshesContext::new(),
+                )
+                .unwrap()
+                .collect::<Vec<Mesh>>(),
+                self.layer_id,
+            )
+        })
+    }
+}
 
 // System
 fn layer_loaded(
     mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
     layers: Res<rgis_layers::Layers>,
     mut event_reader: EventReader<rgis_events::LayerLoadedEvent>,
-    mut meshes_spawned_event_writer: EventWriter<rgis_events::MeshesSpawnedEvent>,
+    thread_pool: Res<bevy::tasks::AsyncComputeTaskPool>,
 ) {
     for event in event_reader.iter() {
-        let (layer, z_index) = match layers.get_with_z_index(event.0) {
+        let layer = match layers.get(event.0) {
             Some(l) => l,
             None => continue,
         };
 
+        // TODO: do we need this check?
         if !layer.visible {
             continue;
         }
 
-        match spawn_geometry_meshes(&mut materials, layer, &mut commands, &mut meshes, z_index) {
+        MeshBuildingTask {
+            layer_id: layer.id,
+            // TODO: remove this clone
+            geometry: layer.projected_feature.geometry.clone(),
+        }
+        .spawn(&thread_pool, &mut commands);
+    }
+}
+
+fn handle_mesh_building_task_outcome(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    layers: Res<rgis_layers::Layers>,
+    mut meshes_spawned_event_writer: EventWriter<rgis_events::MeshesSpawnedEvent>,
+    mut mesh_building_task_outcome: ResMut<
+        bevy::ecs::event::Events<rgis_task::TaskFinishedEvent<MeshBuildingTask>>,
+    >,
+) {
+    for event in mesh_building_task_outcome.drain() {
+        let (layer, z_index) = match layers.get_with_z_index(event.outcome.1) {
+            Some(l) => l,
+            None => continue,
+        };
+
+        // TODO: do we need this check?
+        if !layer.visible {
+            continue;
+        }
+
+        match spawn_geometry_meshes(
+            event.outcome.0,
+            &mut materials,
+            layer,
+            &mut commands,
+            &mut meshes,
+            z_index,
+        ) {
             Ok(_) => meshes_spawned_event_writer.send(layer.id.into()),
             Err(e) => bevy::log::error!("Encountered error when spawning mesh: {}", e),
         }
@@ -43,7 +116,9 @@ impl bevy::app::Plugin for Plugin {
             .add_system(handle_layer_became_visible_event)
             .add_system(handle_layer_color_changed_event)
             .add_system(handle_layer_z_index_updated_event)
-            .add_system(handle_layer_deleted_events);
+            .add_system(handle_layer_deleted_events)
+            .add_system(handle_mesh_building_task_outcome)
+            .add_plugin(rgis_task::TaskPlugin::<MeshBuildingTask>::new());
     }
 }
 
@@ -82,20 +157,25 @@ fn handle_layer_deleted_events(
 }
 
 fn spawn_geometry_meshes(
+    meshes: Vec<Mesh>,
     materials: &mut Assets<ColorMaterial>,
     layer: &rgis_layers::Layer,
     commands: &mut Commands,
-    meshes: &mut Assets<Mesh>,
+    assets_meshes: &mut Assets<Mesh>,
     z_index: usize,
 ) -> Result<(), Box<dyn error::Error>> {
     let material = materials.add(layer.color.into());
 
     let tl = time_logger::start!("Triangulating and building {} mesh", layer.name);
-    for mesh in geo_bevy::build_bevy_meshes(
-        &layer.projected_feature.geometry,
-        geo_bevy::BuildBevyMeshesContext::new(),
-    )? {
-        spawn_mesh(mesh, z_index, material.clone(), meshes, commands, layer.id);
+    for mesh in meshes {
+        spawn_mesh(
+            mesh,
+            z_index,
+            material.clone(),
+            assets_meshes,
+            commands,
+            layer.id,
+        );
     }
     tl.finish();
     Ok(())
@@ -146,13 +226,13 @@ fn spawn_mesh(
     mesh: Mesh,
     z_index: usize,
     material: Handle<ColorMaterial>,
-    meshes: &mut Assets<Mesh>,
+    assets_meshes: &mut Assets<Mesh>,
     commands: &mut Commands,
     layer_id: rgis_layer_id::LayerId,
 ) {
     let mmb = bevy::sprite::MaterialMesh2dBundle {
         material,
-        mesh: bevy::sprite::Mesh2dHandle(meshes.add(mesh)),
+        mesh: bevy::sprite::Mesh2dHandle(assets_meshes.add(mesh)),
         transform: Transform::from_xyz(0., 0., z_index as f32),
         ..Default::default()
     };
