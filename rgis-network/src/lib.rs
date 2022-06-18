@@ -11,8 +11,8 @@ pub struct FetchedFile {
     pub crs: String,
 }
 
-type FetchedFileSender = async_channel::Sender<Result<FetchedFile, String>>;
-type FetchedFileReceiver = async_channel::Receiver<Result<FetchedFile, String>>;
+type FetchedFileSender = async_channel::Sender<Result<ehttp::Response, String>>;
+type FetchedFileReceiver = async_channel::Receiver<Result<ehttp::Response, String>>;
 
 pub struct NetworkFetchTask {
     pub url: String,
@@ -31,23 +31,23 @@ impl rgis_task::Task for NetworkFetchTask {
         let (sender, receiver): (FetchedFileSender, FetchedFileReceiver) =
             async_channel::unbounded();
         Box::pin(async move {
-            fetch(self.url, self.crs, self.name, sender);
+            fetch(self.url, sender);
             match receiver.recv().await {
-                Ok(n) => n,
+                Ok(response) => Ok(FetchedFile {
+                    bytes: response?.bytes,
+                    crs: self.crs,
+                    name: self.name,
+                }),
                 Err(e) => Err(e.to_string()),
             }
         })
     }
 }
 
-fn fetch(url: String, crs: String, name: String, fetched_bytes_sender: FetchedFileSender) {
+fn fetch(url: String, fetched_bytes_sender: FetchedFileSender) {
     let request = ehttp::Request::get(url);
     ehttp::fetch(request, move |result: ehttp::Result<ehttp::Response>| {
-        if let Err(e) = fetched_bytes_sender.try_send(result.map(|r| FetchedFile {
-            bytes: r.bytes,
-            crs,
-            name,
-        })) {
+        if let Err(e) = fetched_bytes_sender.try_send(result) {
             bevy::log::error!("Failed to send network response to main thread: {:?}", e);
         }
     });
