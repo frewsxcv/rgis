@@ -32,7 +32,10 @@ impl rgis_task::Task for NetworkFetchTask {
             async_channel::unbounded();
         Box::pin(async move {
             fetch(self.url, self.crs, self.name, sender);
-            receiver.recv().await.unwrap()
+            match receiver.recv().await {
+                Ok(n) => n,
+                Err(e) => Err(e.to_string()),
+            }
         })
     }
 }
