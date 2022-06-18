@@ -21,14 +21,14 @@ pub struct Plugin;
 #[derive(Debug, Default)]
 struct UiState {
     /// Is the 'manage layer' window visible?
-    pub is_manage_layer_window_visible: bool,
+    is_manage_layer_window_visible: bool,
     /// Which layer is the user currently managing.
-    pub managing_layer: Option<rgis_layer_id::LayerId>,
+    managing_layer: Option<rgis_layer_id::LayerId>,
     /// Is the 'add layer' window visible?
-    pub is_add_layer_window_visible: bool,
+    is_add_layer_window_visible: bool,
     /// Is the 'change CRS' window visible?
-    pub is_change_crs_window_visible: bool,
-    pub messages: Vec<String>,
+    is_change_crs_window_visible: bool,
+    messages: Vec<String>,
 }
 
 impl bevy::app::Plugin for Plugin {
