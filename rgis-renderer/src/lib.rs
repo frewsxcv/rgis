@@ -7,7 +7,6 @@
 
 use bevy::prelude::*;
 use rgis_task::Task;
-use std::error;
 
 fn geometry_count(geometry: &geo::Geometry<f64>) -> usize {
     match geometry {
@@ -111,6 +110,8 @@ fn handle_mesh_building_task_outcome(
             &mut assets_meshes,
             z_index,
         );
+
+        meshes_spawned_event_writer.send(layer_id.into());
     }
 }
 
