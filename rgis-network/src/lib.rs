@@ -7,7 +7,7 @@ pub struct FetchedFile {
 pub type FetchedFileSender = async_channel::Sender<Result<FetchedFile, String>>;
 pub type FetchedFileReceiver = async_channel::Receiver<Result<FetchedFile, String>>;
 
-pub fn fetch (url: String, crs: String, name: String, fetched_bytes_sender: FetchedFileSender) {
+pub fn fetch(url: String, crs: String, name: String, fetched_bytes_sender: FetchedFileSender) {
     // TODO: this should all happen in a background task
     let request = ehttp::Request::get(url);
     ehttp::fetch(request, move |result: ehttp::Result<ehttp::Response>| {
@@ -16,13 +16,9 @@ pub fn fetch (url: String, crs: String, name: String, fetched_bytes_sender: Fetc
             crs,
             name,
         })) {
-            bevy::log::error!(
-                "Failed to send network response to main thread: {:?}",
-                e
-            );
+            bevy::log::error!("Failed to send network response to main thread: {:?}", e);
         }
     });
-
 }
 
 pub struct Plugin;
@@ -31,7 +27,6 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut bevy::app::App) {
         let (sender2, receiver2): (FetchedFileSender, FetchedFileReceiver) =
             async_channel::unbounded();
-        app.insert_resource(sender2)
-            .insert_resource(receiver2);
+        app.insert_resource(sender2).insert_resource(receiver2);
     }
 }
