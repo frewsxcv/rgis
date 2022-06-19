@@ -53,12 +53,7 @@ fn layer_loaded(
     mut event_reader: EventReader<rgis_events::LayerLoadedEvent>,
     thread_pool: Res<bevy::tasks::AsyncComputeTaskPool>,
 ) {
-    for event in event_reader.iter() {
-        let layer = match layers.get(event.0) {
-            Some(l) => l,
-            None => continue,
-        };
-
+    for layer in event_reader.iter().flat_map(|event| layers.get(event.0)) {
         // TODO: do we need this check?
         if !layer.visible {
             continue;
