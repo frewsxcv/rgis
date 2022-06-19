@@ -131,6 +131,8 @@ pub struct ChangeCrsEvent{
     pub crs: String,
 }
 
+pub struct CrsChangedEvent;
+
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_event::<LoadGeoJsonFileEvent>()
@@ -149,6 +151,7 @@ impl bevy::app::Plugin for Plugin {
             .add_event::<LayerDeletedEvent>()
             .add_event::<MeshesSpawnedEvent>()
             .add_event::<ChangeCrsEvent>()
+            .add_event::<CrsChangedEvent>()
             .add_event::<MapClickedEvent>();
     }
 }
