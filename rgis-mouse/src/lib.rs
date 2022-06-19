@@ -95,7 +95,6 @@ fn mouse_motion_system(
                     y_sum += event.delta.y;
                 }
                 if x_sum != 0. && y_sum != 0. {
-                    // sum up x + y values and send one event
                     pan_camera_events.send(rgis_events::PanCameraEvent { x: x_sum, y: y_sum });
                 }
                 return;
