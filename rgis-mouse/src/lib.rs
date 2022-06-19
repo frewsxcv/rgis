@@ -121,7 +121,13 @@ fn mouse_scroll_system(
 ) {
     let mut x = 0.;
     for event in mouse_scroll_event_reader.iter() {
-        x += event.y;
+        let y_scroll_amount =
+            if let bevy::input::mouse::MouseScrollUnit::Line = event.unit {
+                event.y * 10.
+            } else {
+                event.y
+            };
+        x += y_scroll_amount;
     }
     if x != 0. {
         zoom_camera_events.send(rgis_events::ZoomCameraEvent::new(x));
