@@ -8,15 +8,6 @@
 use bevy::prelude::*;
 use rgis_task::Task;
 
-fn geometry_count(geometry: &geo::Geometry<f64>) -> usize {
-    match geometry {
-        geo::Geometry::GeometryCollection(geometries) => {
-            geometries.iter().map(geometry_count).sum()
-        }
-        _ => 1,
-    }
-}
-
 struct MeshBuildingTask {
     pub layer_id: rgis_layer_id::LayerId,
     pub geometry: geo::Geometry<f64>,
