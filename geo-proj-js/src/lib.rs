@@ -6,7 +6,7 @@
 )]
 
 use geo::algorithm::map_coords::MapCoordsInPlace;
-use std::{borrow, error, fmt};
+use std::{error, fmt};
 use wasm_bindgen::JsCast;
 
 #[derive(Debug)]
