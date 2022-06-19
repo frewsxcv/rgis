@@ -2963,6 +2963,7 @@ name = "rgis-settings"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "rgis-events",
 ]
 
 [[package]]

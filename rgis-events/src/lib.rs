@@ -127,6 +127,10 @@ impl ZoomCameraEvent {
     }
 }
 
+pub struct ChangeCrsEvent{
+    pub crs: String,
+}
+
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_event::<LoadGeoJsonFileEvent>()
@@ -144,6 +148,7 @@ impl bevy::app::Plugin for Plugin {
             .add_event::<DeleteLayerEvent>()
             .add_event::<LayerDeletedEvent>()
             .add_event::<MeshesSpawnedEvent>()
+            .add_event::<ChangeCrsEvent>()
             .add_event::<MapClickedEvent>();
     }
 }

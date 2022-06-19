@@ -5,6 +5,8 @@
     clippy::expect_used
 )]
 
+mod systems;
+
 static DEFAULT_TARGET_CRS: &str = "EPSG:3857";
 
 #[derive(PartialEq, Eq)]
@@ -25,6 +27,7 @@ impl bevy::prelude::Plugin for Plugin {
         app.insert_resource(RgisSettings {
             target_crs: DEFAULT_TARGET_CRS.into(),
             current_tool: Tool::Pan,
-        });
+        })
+        .add_system(systems::handle_crs_changed_events);
     }
 }

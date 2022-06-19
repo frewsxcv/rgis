@@ -1,12 +1,14 @@
 use bevy_egui::egui;
 
-pub(crate) struct ChangeCrsWindow<'a> {
+pub(crate) struct ChangeCrsWindow<'a, 'w, 's> {
     pub state: &'a mut crate::UiState,
     pub bevy_egui_ctx: &'a mut bevy_egui::EguiContext,
     pub text_field_value: &'a mut String,
+    pub change_crs_event_writer:
+        &'a mut bevy::ecs::event::EventWriter<'w, 's, rgis_events::ChangeCrsEvent>,
 }
 
-impl<'a> ChangeCrsWindow<'a> {
+impl<'a, 'w, 's> ChangeCrsWindow<'a, 'w, 's> {
     pub(crate) fn render(&mut self) {
         egui::Window::new("Change CRS")
             .open(&mut self.state.is_change_crs_window_visible)
@@ -16,13 +18,22 @@ impl<'a> ChangeCrsWindow<'a> {
                 {
                     let edit_field = ui.text_edit_singleline(self.text_field_value);
                     if edit_field.changed() {}
-                    ui.label(
-                        match geo::algorithm::proj::Proj::new(self.text_field_value) {
-                            // DONT CALL THIS ON EVERY LOOP
-                            Ok(n) => format!("✅ {:?}", n),
-                            Err(e) => format!("❌ {:?}", e),
-                        },
-                    );
+                    // DONT CALL THIS ON EVERY LOOP
+                    let proj_result = geo::algorithm::proj::Proj::new(self.text_field_value);
+                    let message = match &proj_result {
+                        Ok(n) => format!("✅ {:?}", n),
+                        Err(e) => format!("❌ {:?}", e),
+                    };
+                    ui.label(message);
+                    if ui
+                        .add_enabled(proj_result.is_ok(), egui::Button::new("Set"))
+                        .clicked()
+                    {
+                        self.change_crs_event_writer
+                            .send(rgis_events::ChangeCrsEvent {
+                                crs: self.text_field_value.clone(),
+                            })
+                    }
                 }
             });
     }

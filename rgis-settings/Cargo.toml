@@ -14,3 +14,4 @@ bevy = { version = "0.7", default-features = false, features = [
     "bevy_ui",
     "wayland",
 ] }
+rgis-events = { path = "../rgis-events" }
