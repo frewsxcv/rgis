@@ -8,7 +8,7 @@
 use bevy::prelude::*;
 use geo::bounding_rect::BoundingRect;
 use geo::contains::Contains;
-use std::{collections, sync};
+use std::{borrow, collections, sync};
 
 #[derive(Clone, Debug)]
 pub struct Layers {
@@ -154,8 +154,8 @@ impl UnassignedLayer {
         geometry: geo::Geometry<f64>,
         name: String,
         metadata: Option<Metadata>,
-        source_crs: &str,
-        target_crs: &str,
+        source_crs: borrow::Cow<str>,
+        target_crs: borrow::Cow<str>,
     ) -> Result<Self, LayerCreateError> {
         let unprojected_geometry = geometry;
 
@@ -164,12 +164,12 @@ impl UnassignedLayer {
         let tl = time_logger::start!("Reprojecting");
         #[cfg(target_arch = "wasm32")]
         {
-            geo_proj_js::transform(&mut projected_geometry, source_crs, target_crs)?;
+            geo_proj_js::transform(&mut projected_geometry, &source_crs, &target_crs)?;
         }
         #[cfg(not(target_arch = "wasm32"))]
         {
             use geo::transform::Transform;
-            projected_geometry.transform_crs_to_crs(source_crs, target_crs)?;
+            projected_geometry.transform_crs_to_crs(&source_crs, &target_crs)?;
         }
         tl.finish();
 
@@ -178,7 +178,7 @@ impl UnassignedLayer {
             projected_feature: Feature::from_geometry(projected_geometry)?,
             color: colorous_color_to_bevy_color(next_colorous_color()),
             metadata: metadata.unwrap_or_else(serde_json::Map::new),
-            crs: source_crs.to_string(),
+            crs: source_crs.into_owned(),
             name,
             visible: true,
         })

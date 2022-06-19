@@ -8,7 +8,7 @@
 use bevy::ecs::event::Events;
 use bevy::prelude::*;
 use rgis_task::Task;
-use std::{io, mem};
+use std::{borrow, io, mem};
 
 mod geojson;
 
@@ -20,6 +20,25 @@ enum GeoJsonSource {
         file_name: String,
         bytes: Vec<u8>,
     },
+}
+
+impl GeoJsonSource {
+    fn load(
+        self,
+        source_crs: borrow::Cow<str>,
+        target_crs: borrow::Cow<str>,
+    ) -> Result<SpawnedLayers, geojson::LoadGeoJsonError> {
+        Ok(SpawnedLayers(match self {
+            #[cfg(not(target_arch = "wasm32"))]
+            GeoJsonSource::Path(path) => geojson::load_from_path(&path, source_crs, target_crs)?,
+            GeoJsonSource::Bytes { file_name, bytes } => geojson::load_from_reader(
+                io::Cursor::new(bytes),
+                file_name,
+                source_crs,
+                target_crs,
+            )?,
+        }))
+    }
 }
 
 struct LoadGeoJsonFileTask {
@@ -37,18 +56,8 @@ impl rgis_task::Task for LoadGeoJsonFileTask {
 
     fn perform(self) -> rgis_task::PerformReturn<Self::Outcome> {
         Box::pin(async move {
-            Ok(SpawnedLayers(match self.geojson_source {
-                #[cfg(not(target_arch = "wasm32"))]
-                GeoJsonSource::Path(path) => {
-                    geojson::load_from_path(&path, &self.source_crs, &self.target_crs)?
-                }
-                GeoJsonSource::Bytes { file_name, bytes } => geojson::load_from_reader(
-                    io::Cursor::new(bytes),
-                    file_name,
-                    &self.source_crs,
-                    &self.target_crs,
-                )?,
-            }))
+            self.geojson_source
+                .load(self.source_crs.into(), self.target_crs.into())
         })
     }
 }

@@ -1,12 +1,12 @@
 #[cfg(not(target_arch = "wasm32"))]
 use std::path;
-use std::{io, iter};
+use std::{borrow, io, iter};
 
 #[cfg(not(target_arch = "wasm32"))]
 pub fn load_from_path(
     geojson_file_path: &path::Path,
-    source_projection: &str,
-    target_projection: &str,
+    source_projection: borrow::Cow<str>,
+    target_projection: borrow::Cow<str>,
 ) -> Result<Vec<rgis_layers::UnassignedLayer>, LoadGeoJsonError> {
     use std::fs;
     let tl = time_logger::start!("Opening file: {:?}", geojson_file_path);
@@ -53,8 +53,8 @@ fn attempt_to_load_with_feature_iterator<R: io::Read>(
 pub fn load_from_reader<R: io::Read + io::Seek>(
     mut reader: R,
     file_name: String,
-    source_projection: &str,
-    target_projection: &str,
+    source_projection: borrow::Cow<str>,
+    target_projection: borrow::Cow<str>,
 ) -> Result<Vec<rgis_layers::UnassignedLayer>, LoadGeoJsonError> {
     let mut iter = geojson::FeatureIterator::new(&mut reader).peekable();
 
