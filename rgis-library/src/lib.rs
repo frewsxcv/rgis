@@ -11,7 +11,7 @@ pub struct LibraryEntry {
     pub crs: &'static str,
 }
 
-pub const ENTRIES: [LibraryEntry; 6] = [LibraryEntry {
+pub const ENTRIES: [LibraryEntry; 7] = [LibraryEntry {
     name: "USA States",
     url: "https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json",
     crs: "EPSG:4326",
@@ -34,5 +34,9 @@ pub const ENTRIES: [LibraryEntry; 6] = [LibraryEntry {
 }, LibraryEntry {
     name: "World lakes",
     url: "https://raw.githubusercontent.com/simonepri/geo-maps/master/previews/earth-lakes.geo.json",
+    crs: "EPSG:4326",
+}, LibraryEntry {
+    name: "Russia",
+    url: "https://raw.githubusercontent.com/hugoledoux/BIGpolygons/master/russia.geojson",
     crs: "EPSG:4326",
 }];
