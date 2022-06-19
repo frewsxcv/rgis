@@ -123,6 +123,8 @@ fn mouse_scroll_system(
     for event in mouse_scroll_event_reader.iter() {
         let y_scroll_amount =
             if let bevy::input::mouse::MouseScrollUnit::Line = event.unit {
+                // Magic number was chosen because it resulted in a reasonable scrolling velocity
+                // with a mouse on macOS.
                 event.y * 10.
             } else {
                 event.y
