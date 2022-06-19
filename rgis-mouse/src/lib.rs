@@ -56,6 +56,7 @@ fn screen_coords_to_geo_coords(
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn mouse_motion_system(
     mut mouse_motion_event_reader: bevy::ecs::event::EventReader<bevy::input::mouse::MouseMotion>,
     mut map_clicked_event_writer: bevy::ecs::event::EventWriter<rgis_events::MapClickedEvent>,
