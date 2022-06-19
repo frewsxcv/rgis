@@ -120,20 +120,17 @@ fn mouse_scroll_system(
     mut mouse_scroll_event_reader: bevy::ecs::event::EventReader<bevy::input::mouse::MouseWheel>,
     mut zoom_camera_events: bevy::ecs::event::EventWriter<rgis_events::ZoomCameraEvent>,
 ) {
-    let mut x = 0.;
-    for event in mouse_scroll_event_reader.iter() {
-        let y_scroll_amount =
-            if let bevy::input::mouse::MouseScrollUnit::Line = event.unit {
-                // Magic number was chosen because it resulted in a reasonable scrolling velocity
-                // with a mouse on macOS.
-                event.y * 10.
-            } else {
-                event.y
-            };
-        x += y_scroll_amount;
-    }
-    if x != 0. {
-        zoom_camera_events.send(rgis_events::ZoomCameraEvent::new(x));
+    let y_amount = mouse_scroll_event_reader.iter().map(|event| {
+        if let bevy::input::mouse::MouseScrollUnit::Line = event.unit {
+            // Magic number was chosen because it resulted in a reasonable scrolling velocity
+            // with a mouse on macOS.
+            event.y * 10.
+        } else {
+            event.y
+        }
+    }).sum();
+    if y_amount != 0. {
+        zoom_camera_events.send(rgis_events::ZoomCameraEvent::new(y_amount));
     }
 }
 
