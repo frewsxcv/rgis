@@ -1,6 +1,6 @@
 use rgis_task::Task;
 
-pub fn handle_layer_created_events(
+fn handle_layer_created_events(
     mut layer_created_event_reader: bevy::ecs::event::EventReader<rgis_events::LayerCreatedEvent>,
     thread_pool: bevy::ecs::system::Res<bevy::tasks::AsyncComputeTaskPool>,
     mut commands: bevy::ecs::system::Commands,
@@ -23,7 +23,7 @@ pub fn handle_layer_created_events(
     }
 }
 
-pub fn handle_reproject_geometry_task_completion_events(
+fn handle_reproject_geometry_task_completion_events(
     mut reproject_geometry_task_outcome_events: bevy::ecs::system::ResMut<
         bevy::ecs::event::Events<rgis_task::TaskFinishedEvent<crate::tasks::ReprojectGeometryTask>>,
     >,
@@ -49,7 +49,7 @@ pub fn handle_reproject_geometry_task_completion_events(
     }
 }
 
-pub fn handle_crs_changed_events(
+fn handle_crs_changed_events(
     mut crs_changed_event_reader: bevy::ecs::event::EventReader<rgis_events::CrsChangedEvent>,
     mut layers: bevy::ecs::system::ResMut<rgis_layers::Layers>,
     rgis_settings: bevy::ecs::system::Res<rgis_settings::RgisSettings>,
@@ -69,4 +69,11 @@ pub fn handle_crs_changed_events(
             .spawn(&thread_pool, &mut commands)
         }
     }
+}
+
+pub fn system_set() -> bevy::ecs::schedule::SystemSet {
+    bevy::ecs::schedule::SystemSet::new()
+        .with_system(handle_layer_created_events)
+        .with_system(handle_reproject_geometry_task_completion_events)
+        .with_system(handle_crs_changed_events)
 }
