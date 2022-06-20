@@ -65,11 +65,6 @@ fn handle_mesh_building_task_outcome(
             None => continue,
         };
 
-        // TODO: do we need this check?
-        if !layer.visible {
-            continue;
-        }
-
         spawn_geometry_meshes(
             meshes,
             &mut materials,
@@ -77,6 +72,7 @@ fn handle_mesh_building_task_outcome(
             &mut commands,
             &mut assets_meshes,
             z_index,
+            layer.visible,
         );
 
         meshes_spawned_event_writer.send(layer_id.into());
@@ -140,6 +136,7 @@ fn spawn_geometry_meshes(
     commands: &mut Commands,
     assets_meshes: &mut Assets<Mesh>,
     z_index: usize,
+    is_visible: bool,
 ) {
     let material = materials.add(layer.color.into());
 
@@ -152,6 +149,7 @@ fn spawn_geometry_meshes(
             assets_meshes,
             commands,
             layer.id,
+            is_visible,
         );
     }
     tl.finish();
@@ -205,11 +203,13 @@ fn spawn_mesh(
     assets_meshes: &mut Assets<Mesh>,
     commands: &mut Commands,
     layer_id: rgis_layer_id::LayerId,
+    is_visible: bool,
 ) {
     let mmb = bevy::sprite::MaterialMesh2dBundle {
         material,
         mesh: bevy::sprite::Mesh2dHandle(assets_meshes.add(mesh)),
         transform: Transform::from_xyz(0., 0., z_index as f32),
+        visibility: bevy::render::view::Visibility { is_visible },
         ..Default::default()
     };
     commands.spawn_bundle(mmb).insert(layer_id);
