@@ -6,36 +6,10 @@
 )]
 
 use bevy::prelude::*;
+
 use rgis_task::Task;
 
-struct MeshBuildingTask {
-    pub layer_id: rgis_layer_id::LayerId,
-    pub geometry: geo::Geometry<f64>,
-}
-
-impl rgis_task::Task for MeshBuildingTask {
-    type Outcome = Result<
-        (Vec<Mesh>, rgis_layer_id::LayerId),
-        <geo::Geometry<f64> as geo_bevy::BuildBevyMeshes>::Error,
-    >;
-
-    fn name(&self) -> String {
-        "Building Bevy meshes".to_string()
-    }
-
-    fn perform(self) -> rgis_task::PerformReturn<Self::Outcome> {
-        Box::pin(async move {
-            Ok((
-                geo_bevy::build_bevy_meshes(
-                    &self.geometry,
-                    geo_bevy::BuildBevyMeshesContext::new(),
-                )?
-                .collect::<Vec<Mesh>>(),
-                self.layer_id,
-            ))
-        })
-    }
-}
+mod tasks;
 
 // System
 fn layer_loaded(
@@ -59,7 +33,7 @@ fn layer_loaded(
             }
         };
 
-        MeshBuildingTask {
+        tasks::MeshBuildingTask {
             layer_id: layer.id,
             geometry: projected_geometry,
         }
@@ -74,7 +48,7 @@ fn handle_mesh_building_task_outcome(
     layers: Res<rgis_layers::Layers>,
     mut meshes_spawned_event_writer: EventWriter<rgis_events::MeshesSpawnedEvent>,
     mut mesh_building_task_outcome: ResMut<
-        bevy::ecs::event::Events<rgis_task::TaskFinishedEvent<MeshBuildingTask>>,
+        bevy::ecs::event::Events<rgis_task::TaskFinishedEvent<tasks::MeshBuildingTask>>,
     >,
 ) {
     for event in mesh_building_task_outcome.drain() {
@@ -121,7 +95,7 @@ impl bevy::app::Plugin for Plugin {
             .add_system(handle_layer_deleted_events)
             .add_system(handle_mesh_building_task_outcome)
             .add_system(handle_crs_changed_events)
-            .add_plugin(rgis_task::TaskPlugin::<MeshBuildingTask>::new());
+            .add_plugin(rgis_task::TaskPlugin::<tasks::MeshBuildingTask>::new());
     }
 }
 
