@@ -1,9 +1,9 @@
 [package]
-name = "rgis-layers"
+name = "rgis-transform"
 version = "0.1.0"
-authors = ["Corey Farwell <coreyf@rwell.org>"]
 edition = "2021"
-publish = false
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 bevy = { version = "0.7", default-features = false, features = [
@@ -14,16 +14,17 @@ bevy = { version = "0.7", default-features = false, features = [
     "bevy_ui",
     "wayland",
 ] }
-colorous = "1"
 rgis-events = { path = "../rgis-events" }
 rgis-layer-id = { path = "../rgis-layer-id" }
+rgis-layers = { path = "../rgis-layers" }
+rgis-settings = { path = "../rgis-settings" }
 rgis-task = { path = "../rgis-task" }
-time-logger = { path = "../time-logger" }
 thiserror = "1"
-serde_json = "1"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 geo = { version = "0.21", features = ["use-proj"] }
+proj = "0.26"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
+geo-proj-js = { path = "../geo-proj-js" }
 geo = "0.21"

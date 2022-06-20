@@ -41,7 +41,7 @@ impl rgis_task::Task for MeshBuildingTask {
 fn layer_loaded(
     mut commands: Commands,
     layers: Res<rgis_layers::Layers>,
-    mut event_reader: EventReader<rgis_events::LayerLoadedEvent>,
+    mut event_reader: EventReader<rgis_events::LayerReprojectedEvent>,
     thread_pool: Res<bevy::tasks::AsyncComputeTaskPool>,
 ) {
     for layer in event_reader.iter().flat_map(|event| layers.get(event.0)) {
@@ -50,10 +50,18 @@ fn layer_loaded(
             continue;
         }
 
+        let projected_geometry = match layer.projected_feature {
+            // TODO: remove this clone
+            Some(ref projected_feature) => projected_feature.geometry.clone(),
+            None => {
+                bevy::log::error!("Expected a layer to have a projected geometry");
+                continue;
+            },
+        };
+
         MeshBuildingTask {
             layer_id: layer.id,
-            // TODO: remove this clone
-            geometry: layer.projected_feature.geometry.clone(),
+            geometry: projected_geometry,
         }
         .spawn(&thread_pool, &mut commands);
     }
@@ -112,6 +120,7 @@ impl bevy::app::Plugin for Plugin {
             .add_system(handle_layer_z_index_updated_event)
             .add_system(handle_layer_deleted_events)
             .add_system(handle_mesh_building_task_outcome)
+            .add_system(handle_crs_changed_events)
             .add_plugin(rgis_task::TaskPlugin::<MeshBuildingTask>::new());
     }
 }
@@ -230,4 +239,19 @@ fn spawn_mesh(
         ..Default::default()
     };
     commands.spawn_bundle(mmb).insert(layer_id);
+}
+
+fn handle_crs_changed_events(
+    mut crs_changed_event_reader: bevy::ecs::event::EventReader<rgis_events::CrsChangedEvent>,
+    query: Query<(&rgis_layer_id::LayerId, Entity), With<Handle<ColorMaterial>>>,
+    mut commands: Commands,
+) {
+    for _ in crs_changed_event_reader.iter() {
+        // FIXME: there's a race condition here where we'll delete newly generated projected geometry
+        // meshes if this gets executed after we project the new geometries. We should add a filter
+        // in here for the old CRS.
+        for (_, entity) in query.iter() {
+            commands.entity(entity).despawn();
+        }
+    }
 }

@@ -2836,6 +2836,7 @@ dependencies = [
  "rgis-network",
  "rgis-renderer",
  "rgis-settings",
+ "rgis-transform",
  "rgis-ui",
  "time-logger",
  "wasm-bindgen",
@@ -2877,8 +2878,6 @@ dependencies = [
  "geojson",
  "rgis-cli",
  "rgis-events",
- "rgis-layer-id",
- "rgis-layers",
  "rgis-network",
  "rgis-settings",
  "rgis-task",
@@ -2909,10 +2908,9 @@ dependencies = [
  "bevy",
  "colorous",
  "geo",
- "geo-proj-js",
- "proj",
  "rgis-events",
  "rgis-layer-id",
+ "rgis-task",
  "serde_json",
  "thiserror",
  "time-logger",
@@ -2972,6 +2970,22 @@ version = "0.1.0"
 dependencies = [
  "async-channel",
  "bevy",
+]
+
+[[package]]
+name = "rgis-transform"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "geo",
+ "geo-proj-js",
+ "proj",
+ "rgis-events",
+ "rgis-layer-id",
+ "rgis-layers",
+ "rgis-settings",
+ "rgis-task",
+ "thiserror",
 ]
 
 [[package]]

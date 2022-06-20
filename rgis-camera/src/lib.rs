@@ -152,11 +152,18 @@ fn center_camera(
             Ok(t) => t,
             Err(_) => continue,
         };
-        let layer_center = layer.projected_feature.bounding_rect.center();
+        let projected_feature = match layer.projected_feature {
+            Some(ref projected_feature) => projected_feature,
+            None => {
+                bevy::log::error!("Expected a layer to have a projected feature");
+                continue;
+            }
+        };
+        let layer_center = projected_feature.bounding_rect.center();
         let window = windows.primary();
         // TODO: this should subtract the topbar, sidebar, and bottombar sizes.
-        let scale = (layer.projected_feature.bounding_rect.width() / f64::from(window.width()))
-            .max(layer.projected_feature.bounding_rect.height() / f64::from(window.height()));
+        let scale = (projected_feature.bounding_rect.width() / f64::from(window.width()))
+            .max(projected_feature.bounding_rect.height() / f64::from(window.height()));
         debug!("Moving camera to look at new layer");
         let camera_offset = CameraOffset {
             x: layer_center.x as f32,

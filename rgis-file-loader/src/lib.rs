@@ -8,65 +8,16 @@
 use bevy::ecs::event::Events;
 use bevy::prelude::*;
 use rgis_task::Task;
-use std::{borrow, io, mem};
+use std::mem;
 
 mod geojson;
+mod tasks;
 
-struct SpawnedLayers(Vec<rgis_layers::UnassignedLayer>);
-enum GeoJsonSource {
-    #[cfg(not(target_arch = "wasm32"))]
-    Path(std::path::PathBuf),
-    Bytes {
-        file_name: String,
-        bytes: Vec<u8>,
-    },
-}
-
-impl GeoJsonSource {
-    fn load(
-        self,
-        source_crs: borrow::Cow<str>,
-        target_crs: borrow::Cow<str>,
-    ) -> Result<SpawnedLayers, geojson::LoadGeoJsonError> {
-        Ok(SpawnedLayers(match self {
-            #[cfg(not(target_arch = "wasm32"))]
-            GeoJsonSource::Path(path) => geojson::load_from_path(&path, source_crs, target_crs)?,
-            GeoJsonSource::Bytes { file_name, bytes } => geojson::load_from_reader(
-                io::Cursor::new(bytes),
-                file_name,
-                source_crs,
-                target_crs,
-            )?,
-        }))
-    }
-}
-
-struct LoadGeoJsonFileTask {
-    geojson_source: GeoJsonSource,
-    source_crs: String,
-    target_crs: String,
-}
-
-impl rgis_task::Task for LoadGeoJsonFileTask {
-    type Outcome = Result<SpawnedLayers, geojson::LoadGeoJsonError>;
-
-    fn name(&self) -> String {
-        "Loading GeoJson file".into()
-    }
-
-    fn perform(self) -> rgis_task::PerformReturn<Self::Outcome> {
-        Box::pin(async move {
-            self.geojson_source
-                .load(self.source_crs.into(), self.target_crs.into())
-        })
-    }
-}
 
 // System
 fn load_geojson_file_handler(
     mut load_event_reader: ResMut<Events<rgis_events::LoadGeoJsonFileEvent>>,
     thread_pool: Res<bevy::tasks::AsyncComputeTaskPool>,
-    rgis_settings: Res<rgis_settings::RgisSettings>,
     mut commands: bevy::ecs::system::Commands,
     mut network_fetch_task_outcome: ResMut<
         bevy::ecs::event::Events<rgis_task::TaskFinishedEvent<rgis_network::NetworkFetchTask>>,
@@ -92,10 +43,15 @@ fn load_geojson_file_handler(
                 path: geojson_file_path,
                 crs,
             } => {
-                LoadGeoJsonFileTask {
-                    geojson_source: GeoJsonSource::Path(geojson_file_path),
+                let name = geojson_file_path
+                    .file_name()
+                    .map(|s| s.to_string_lossy().into_owned())
+                    .unwrap_or_else(|| "<unknown>".to_string());
+
+                tasks::LoadGeoJsonFileTask {
+                    geojson_source: geojson::GeoJsonSource::Path(geojson_file_path),
                     source_crs: crs,
-                    target_crs: rgis_settings.target_crs.clone(),
+                    name,
                 }
                 .spawn(&thread_pool, &mut commands);
             }
@@ -108,10 +64,10 @@ fn load_geojson_file_handler(
                 bytes,
                 crs,
             } => {
-                LoadGeoJsonFileTask {
-                    geojson_source: GeoJsonSource::Bytes { bytes, file_name },
+                tasks::LoadGeoJsonFileTask {
+                    geojson_source: geojson::GeoJsonSource::Bytes(bytes),
                     source_crs: crs,
-                    target_crs: rgis_settings.target_crs.clone(),
+                    name: file_name,
                 }
                 .spawn(&thread_pool, &mut commands);
             }
@@ -119,20 +75,22 @@ fn load_geojson_file_handler(
     }
 }
 
-fn handle_loaded_layers(
-    mut loaded_events: EventWriter<rgis_events::LayerLoadedEvent>,
-    mut layers: ResMut<rgis_layers::Layers>,
-    mut task_finished: ResMut<
-        bevy::ecs::event::Events<rgis_task::TaskFinishedEvent<LoadGeoJsonFileTask>>,
+fn handle_load_geojson_file_task_finished_events(
+    mut create_layer_event_writer: EventWriter<rgis_events::CreateLayerEvent>,
+    mut load_geojson_file_task_finished_events: ResMut<
+        bevy::ecs::event::Events<rgis_task::TaskFinishedEvent<tasks::LoadGeoJsonFileTask>>,
     >,
 ) {
-    for event in task_finished.drain() {
+    for event in load_geojson_file_task_finished_events.drain() {
         match event.outcome {
-            Ok(unassigned_layers) => {
-                for unassigned_layer in unassigned_layers.0 {
-                    let layer_id = layers.add(unassigned_layer);
-                    loaded_events.send(rgis_events::LayerLoadedEvent(layer_id));
-                }
+            Ok(outcome) => {
+                create_layer_event_writer.send(
+                    rgis_events::CreateLayerEvent {
+                        name: outcome.name,
+                        unprojected_geometry: outcome.geometry,
+                        source_crs: outcome.source_crs,
+                    }
+                )
             }
             Err(e) => {
                 bevy::log::error!("Encountered error when loading GeoJSON file: {:?}", e);
@@ -169,9 +127,9 @@ pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(rgis_task::TaskPlugin::<LoadGeoJsonFileTask>::new())
+        app.add_plugin(rgis_task::TaskPlugin::<tasks::LoadGeoJsonFileTask>::new())
             .add_system(load_geojson_file_handler)
-            .add_system(handle_loaded_layers);
+            .add_system(handle_load_geojson_file_task_finished_events);
 
         #[cfg(not(target_arch = "wasm32"))]
         app.add_startup_system(load_layers_from_cli);

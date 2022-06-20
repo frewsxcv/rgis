@@ -16,12 +16,10 @@ bevy = { version = "0.7", default-features = false, features = [
 geo = "0.21"
 geojson = { version = "0.23", features = ["geo-types"] }
 rgis-cli = { path = "../rgis-cli" }
-rgis-layers = { path = "../rgis-layers" }
-rgis-layer-id = { path = "../rgis-layer-id" }
+rgis-events = { path = "../rgis-events" }
 rgis-network = { path = "../rgis-network" }
 rgis-settings = { path = "../rgis-settings" }
 rgis-task = { path = "../rgis-task" }
 serde_json = "1"
 time-logger = { path = "../time-logger" }
 thiserror = "1"
-rgis-events = { path = "../rgis-events" }

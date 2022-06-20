@@ -8,7 +8,7 @@
 use bevy::prelude::*;
 use geo::bounding_rect::BoundingRect;
 use geo::contains::Contains;
-use std::{borrow, collections, sync};
+use std::{collections, sync};
 
 #[derive(Clone, Debug)]
 pub struct Layers {
@@ -48,8 +48,13 @@ impl Layers {
 
     // coord is assumed to be projected
     pub fn containing_coord(&self, coord: geo::Coordinate<f64>) -> impl Iterator<Item = &Layer> {
-        self.iter_top_to_bottom()
-            .filter(move |layer| layer.projected_feature.contains(&coord))
+        self.iter_top_to_bottom().filter(move |layer| {
+            if let Some(ref projected) = layer.projected_feature {
+                projected.contains(&coord)
+            } else {
+                false
+            }
+        })
     }
 
     // Returns whether the selected layer changed
@@ -108,81 +113,43 @@ impl Layers {
         rgis_layer_id::LayerId::new()
     }
 
-    pub fn add(&mut self, unassigned_layer: UnassignedLayer) -> rgis_layer_id::LayerId {
+    fn add(
+        &mut self,
+        unprojected: geo::Geometry<f64>,
+        name: String,
+        source_crs: String,
+    ) -> Result<rgis_layer_id::LayerId, LayerCreateError> {
         let layer_id = self.next_layer_id();
         let layer = Layer {
-            unprojected_feature: unassigned_layer.unprojected_feature,
-            projected_feature: unassigned_layer.projected_feature,
-            color: unassigned_layer.color,
-            name: unassigned_layer.name,
-            visible: unassigned_layer.visible,
+            unprojected_feature: Feature::from_geometry(unprojected)?,
+            projected_feature: None,
+            color: colorous_color_to_bevy_color(next_colorous_color()),
+            name,
+            visible: true,
             id: layer_id,
-            crs: unassigned_layer.crs,
+            crs: source_crs,
         };
         self.data.push(layer);
-        layer_id
+        Ok(layer_id)
+    }
+
+    pub fn clear_projected(&mut self) {
+        for layer in self.data.iter_mut() {
+            layer.projected_feature = None;
+        }
+    }
+
+    pub fn iter(&self) -> impl Iterator<Item = &Layer> {
+        self.data.iter()
     }
 }
 
 pub type Metadata = serde_json::Map<String, serde_json::Value>;
 
-#[derive(Debug)]
-pub struct UnassignedLayer {
-    pub projected_feature: Feature,
-    pub unprojected_feature: Feature,
-    pub color: Color,
-    pub metadata: Metadata,
-    pub name: String,
-    pub visible: bool,
-    pub crs: String,
-}
-
 #[derive(thiserror::Error, Debug)]
 pub enum LayerCreateError {
     #[error("Could not generate bounding box")]
     BoundingBox,
-    #[cfg(target_arch = "wasm32")]
-    #[error("{0}")]
-    GeoProjJs(#[from] geo_proj_js::Error),
-    #[cfg(not(target_arch = "wasm32"))]
-    #[error("{0}")]
-    Proj(#[from] proj::TransformError),
-}
-
-impl UnassignedLayer {
-    pub fn from_geometry(
-        geometry: geo::Geometry<f64>,
-        name: String,
-        metadata: Option<Metadata>,
-        source_crs: borrow::Cow<str>,
-        target_crs: borrow::Cow<str>,
-    ) -> Result<Self, LayerCreateError> {
-        let unprojected_geometry = geometry;
-
-        let mut projected_geometry = unprojected_geometry.clone();
-
-        let tl = time_logger::start!("Reprojecting");
-        #[cfg(target_arch = "wasm32")]
-        {
-            geo_proj_js::transform(&mut projected_geometry, &source_crs, &target_crs)?;
-        }
-        #[cfg(not(target_arch = "wasm32"))]
-        {
-            use geo::transform::Transform;
-            projected_geometry.transform_crs_to_crs(&source_crs, &target_crs)?;
-        }
-        tl.finish();
-
-        Ok(UnassignedLayer {
-            unprojected_feature: Feature::from_geometry(unprojected_geometry)?,
-            projected_feature: Feature::from_geometry(projected_geometry)?,
-            color: colorous_color_to_bevy_color(next_colorous_color()),
-            metadata: metadata.unwrap_or_else(serde_json::Map::new),
-            crs: source_crs.into_owned(),
-            name,
-            visible: true,
-        })
-    }
 }
 
 #[derive(Clone, Debug)]
@@ -199,7 +166,7 @@ impl Contains<geo::Coordinate<f64>> for Feature {
 }
 
 impl Feature {
-    fn from_geometry(geometry: geo::Geometry<f64>) -> Result<Self, LayerCreateError> {
+    pub fn from_geometry(geometry: geo::Geometry<f64>) -> Result<Self, LayerCreateError> {
         let bounding_rect = geometry
             .bounding_rect()
             .ok_or(LayerCreateError::BoundingBox)?;
@@ -222,7 +189,7 @@ pub struct Layer {
     // }
     // these should be vecs
     pub unprojected_feature: Feature,
-    pub projected_feature: Feature,
+    pub projected_feature: Option<Feature>,
     pub color: Color,
     pub id: rgis_layer_id::LayerId,
     pub name: String,
@@ -351,6 +318,19 @@ fn handle_map_clicked_events(
     }
 }
 
+fn handle_create_layer_events(
+    mut create_layer_events: ResMut<bevy::ecs::event::Events<rgis_events::CreateLayerEvent>>,
+    mut layer_created_event_writer: EventWriter<rgis_events::LayerCreatedEvent>,
+    mut layers: ResMut<Layers>,
+) {
+    for event in create_layer_events.drain() {
+        match layers.add(event.unprojected_geometry, event.name, event.source_crs) {
+            Ok(layer_id) => layer_created_event_writer.send(rgis_events::LayerCreatedEvent(layer_id)),
+            Err(e) => bevy::log::error!("Encountered error when creating layer: {:?}", e),
+        }
+    }
+}
+
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(Layers::new())
@@ -358,6 +338,7 @@ impl bevy::app::Plugin for Plugin {
             .add_system(handle_update_color_events)
             .add_system(handle_move_layer_events)
             .add_system(handle_delete_layer_events)
-            .add_system(handle_map_clicked_events);
+            .add_system(handle_map_clicked_events)
+            .add_system(handle_create_layer_events);
     }
 }

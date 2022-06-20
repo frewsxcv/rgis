@@ -13,7 +13,7 @@ use std::path;
 const ZOOM_FACTOR: f32 = 500.;
 
 #[derive(Debug)]
-pub struct LayerLoadedEvent(pub rgis_layer_id::LayerId);
+pub struct LayerCreatedEvent(pub rgis_layer_id::LayerId);
 
 #[derive(Debug)]
 pub struct ToggleLayerVisibilityEvent(pub rgis_layer_id::LayerId);
@@ -133,10 +133,19 @@ pub struct ChangeCrsEvent{
 
 pub struct CrsChangedEvent;
 
+pub struct CreateLayerEvent{
+    pub unprojected_geometry: geo::Geometry<f64>,
+    pub name: String,
+    pub source_crs: String,
+}
+
+pub struct LayerReprojectedEvent(pub rgis_layer_id::LayerId);
+
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_event::<LoadGeoJsonFileEvent>()
-            .add_event::<LayerLoadedEvent>()
+            .add_event::<CreateLayerEvent>()
+            .add_event::<LayerCreatedEvent>()
             .add_event::<ToggleLayerVisibilityEvent>()
             .add_event::<LayerBecameHiddenEvent>()
             .add_event::<LayerBecameVisibleEvent>()
@@ -152,6 +161,7 @@ impl bevy::app::Plugin for Plugin {
             .add_event::<MeshesSpawnedEvent>()
             .add_event::<ChangeCrsEvent>()
             .add_event::<CrsChangedEvent>()
-            .add_event::<MapClickedEvent>();
+            .add_event::<MapClickedEvent>()
+            .add_event::<LayerReprojectedEvent>();
     }
 }
