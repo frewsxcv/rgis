@@ -34,7 +34,13 @@ fn handle_reproject_geometry_task_completion_events(
     rgis_settings: bevy::ecs::system::Res<rgis_settings::RgisSettings>,
 ) {
     for event in reproject_geometry_task_outcome_events.drain() {
-        let outcome = event.outcome.unwrap();
+        let outcome = match event.outcome {
+            Ok(o) => o,
+            Err(e) => {
+                bevy::log::error!("Encountered an error reprojecting geometry: {:?}", e);
+                continue;
+            }
+        };
 
         if outcome.target_crs != rgis_settings.target_crs {
             bevy::log::error!("Encountered a reprojected geometry with a different CRS than the current target CRS");
@@ -46,8 +52,15 @@ fn handle_reproject_geometry_task_completion_events(
             None => continue,
         };
 
-        layer.projected_feature =
-            Some(rgis_layers::Feature::from_geometry(outcome.geometry).unwrap());
+        let feature = match rgis_layers::Feature::from_geometry(outcome.geometry) {
+            Ok(o) => o,
+            Err(e) => {
+                bevy::log::error!("Encountered an error generating a feature: {:?}", e);
+                continue;
+            }
+        };
+
+        layer.projected_feature = Some(feature);
 
         layer_reprojected_event_writer.send(rgis_events::LayerReprojectedEvent(outcome.layer_id));
     }
