@@ -28,9 +28,10 @@ impl<'a> BottomPanel<'a> {
             ui.horizontal(|ui| {
                 // TODO: The ordering is backwards here (the edit button should be specified after)
                 //       Is this from the right_to_left call above?
-                let button = ui.button("✏");
+                let button_response =
+                    ui.add_enabled(cfg!(not(target_arch = "wasm32")), egui::Button::new("✏"));
 
-                if button.clicked() {
+                if button_response.clicked() {
                     self.state.is_change_crs_window_visible = true;
                 }
 
