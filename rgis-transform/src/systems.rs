@@ -54,7 +54,7 @@ fn handle_crs_changed_events(
     thread_pool: bevy::ecs::system::Res<bevy::tasks::AsyncComputeTaskPool>,
     mut commands: bevy::ecs::system::Commands,
 ) {
-    for event in crs_changed_event_reader.iter() {
+    for _ in crs_changed_event_reader.iter() {
         layers.clear_projected();
 
         for layer in layers.iter() {
