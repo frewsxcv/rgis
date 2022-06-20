@@ -31,9 +31,15 @@ fn handle_reproject_geometry_task_completion_events(
     mut layer_reprojected_event_writer: bevy::ecs::event::EventWriter<
         rgis_events::LayerReprojectedEvent,
     >,
+    rgis_settings: bevy::ecs::system::Res<rgis_settings::RgisSettings>,
 ) {
     for event in reproject_geometry_task_outcome_events.drain() {
         let outcome = event.outcome.unwrap();
+
+        if outcome.target_crs != rgis_settings.target_crs {
+            bevy::log::error!("Encountered a reprojected geometry with a different CRS than the current target CRS");
+            continue;
+        }
 
         let layer = match layers.get_mut(outcome.layer_id) {
             Some(l) => l,
