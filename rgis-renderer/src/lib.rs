@@ -56,7 +56,7 @@ fn layer_loaded(
             None => {
                 bevy::log::error!("Expected a layer to have a projected geometry");
                 continue;
-            },
+            }
         };
 
         MeshBuildingTask {

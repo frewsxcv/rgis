@@ -13,7 +13,6 @@ use std::mem;
 mod geojson;
 mod tasks;
 
-
 // System
 fn load_geojson_file_handler(
     mut load_event_reader: ResMut<Events<rgis_events::LoadGeoJsonFileEvent>>,
@@ -83,15 +82,11 @@ fn handle_load_geojson_file_task_finished_events(
 ) {
     for event in load_geojson_file_task_finished_events.drain() {
         match event.outcome {
-            Ok(outcome) => {
-                create_layer_event_writer.send(
-                    rgis_events::CreateLayerEvent {
-                        name: outcome.name,
-                        unprojected_geometry: outcome.geometry,
-                        source_crs: outcome.source_crs,
-                    }
-                )
-            }
+            Ok(outcome) => create_layer_event_writer.send(rgis_events::CreateLayerEvent {
+                name: outcome.name,
+                unprojected_geometry: outcome.geometry,
+                source_crs: outcome.source_crs,
+            }),
             Err(e) => {
                 bevy::log::error!("Encountered error when loading GeoJSON file: {:?}", e);
             }

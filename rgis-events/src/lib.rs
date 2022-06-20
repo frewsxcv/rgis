@@ -127,13 +127,13 @@ impl ZoomCameraEvent {
     }
 }
 
-pub struct ChangeCrsEvent{
+pub struct ChangeCrsEvent {
     pub crs: String,
 }
 
 pub struct CrsChangedEvent;
 
-pub struct CreateLayerEvent{
+pub struct CreateLayerEvent {
     pub unprojected_geometry: geo::Geometry<f64>,
     pub name: String,
     pub source_crs: String,

@@ -37,7 +37,8 @@ impl rgis_task::Task for ReprojectGeometryTask {
             #[cfg(not(target_arch = "wasm32"))]
             {
                 use geo::transform::Transform;
-                self.geometry.transform_crs_to_crs(&self.source_crs, &self.target_crs)?;
+                self.geometry
+                    .transform_crs_to_crs(&self.source_crs, &self.target_crs)?;
             }
 
             Ok(ReprojectGeometryTaskOutcome {

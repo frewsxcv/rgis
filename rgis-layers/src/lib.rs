@@ -325,7 +325,9 @@ fn handle_create_layer_events(
 ) {
     for event in create_layer_events.drain() {
         match layers.add(event.unprojected_geometry, event.name, event.source_crs) {
-            Ok(layer_id) => layer_created_event_writer.send(rgis_events::LayerCreatedEvent(layer_id)),
+            Ok(layer_id) => {
+                layer_created_event_writer.send(rgis_events::LayerCreatedEvent(layer_id))
+            }
             Err(e) => bevy::log::error!("Encountered error when creating layer: {:?}", e),
         }
     }
