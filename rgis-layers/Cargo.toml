@@ -17,8 +17,6 @@ bevy = { version = "0.7", default-features = false, features = [
 colorous = "1"
 rgis-events = { path = "../rgis-events" }
 rgis-layer-id = { path = "../rgis-layer-id" }
-rgis-task = { path = "../rgis-task" }
-time-logger = { path = "../time-logger" }
 thiserror = "1"
 serde_json = "1"
 

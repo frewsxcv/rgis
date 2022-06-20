@@ -2879,7 +2879,6 @@ dependencies = [
  "rgis-cli",
  "rgis-events",
  "rgis-network",
- "rgis-settings",
  "rgis-task",
  "serde_json",
  "thiserror",
@@ -2910,10 +2909,8 @@ dependencies = [
  "geo",
  "rgis-events",
  "rgis-layer-id",
- "rgis-task",
  "serde_json",
  "thiserror",
- "time-logger",
 ]
 
 [[package]]
