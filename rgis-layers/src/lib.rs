@@ -203,7 +203,10 @@ impl Layer {
         match self.projected_feature.as_ref() {
             Some(p) => Some(p),
             None => {
-                bevy::log::error!("Expected layer (id: {:?}) to have a projected feature", self.id);
+                bevy::log::error!(
+                    "Expected layer (id: {:?}) to have a projected feature",
+                    self.id
+                );
                 None
             }
         }

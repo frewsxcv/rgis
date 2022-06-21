@@ -13,8 +13,8 @@ pub struct Plugin;
 impl bevy::prelude::Plugin for Plugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.add_system(check_system)
-            .insert_resource(FinishedTasks{outcomes:vec![]});
-            // .add_event::<TaskFinishedEvent>();
+            .insert_resource(FinishedTasks { outcomes: vec![] });
+        // .add_event::<TaskFinishedEvent>();
     }
 }
 
@@ -85,7 +85,9 @@ pub struct InProgressTask {
 }
 
 #[derive(Component)]
-pub struct InProgressTaskOutcomeReceiver(async_channel::Receiver<Box<dyn std::any::Any + Send + Sync>>);
+pub struct InProgressTaskOutcomeReceiver(
+    async_channel::Receiver<Box<dyn std::any::Any + Send + Sync>>,
+);
 
 pub struct FinishedTasks {
     // TODO: add task ID into result here

@@ -56,5 +56,5 @@ fn fetch(url: String, fetched_bytes_sender: FetchedFileSender) {
 pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
-    fn build(&self, _app: &mut bevy::app::App) { }
+    fn build(&self, _app: &mut bevy::app::App) {}
 }
