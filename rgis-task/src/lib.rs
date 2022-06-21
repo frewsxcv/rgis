@@ -94,12 +94,13 @@ pub struct FinishedTasks {
 
 impl FinishedTasks {
     pub fn take_next<T: Task>(&mut self) -> Option<T::Outcome> {
-        let mut next: Option<usize> = None;
-        for (i, outcome) in self.outcomes.iter_mut().enumerate() {
-            if outcome.is::<T::Outcome>() {
-                next = Some(i);
-            }
-        }
+        let next = self
+            .outcomes
+            .iter_mut()
+            .enumerate()
+            .filter(|(_i, outcome)| outcome.is::<T::Outcome>())
+            .map(|(i, _outcome)| i)
+            .next();
         match next {
             Some(index) => {
                 let x = self.outcomes.remove(index);
