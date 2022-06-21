@@ -79,13 +79,13 @@ fn check_system<T: Task>(
     mut commands: bevy::ecs::system::Commands,
     mut event_writer: bevy::ecs::event::EventWriter<TaskFinishedEvent<T>>,
 ) {
-    for (receiver, entity) in query.iter() {
+    query.for_each(|(receiver, entity)| {
         if let Ok(outcome) = receiver.0.try_recv() {
             bevy::log::info!("Task finished");
             commands.entity(entity).despawn();
             event_writer.send(TaskFinishedEvent { outcome });
         }
-    }
+    })
 }
 
 #[derive(Component)]
