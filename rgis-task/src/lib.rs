@@ -6,7 +6,7 @@
 )]
 
 use bevy::prelude::Component;
-use std::{future, pin};
+use std::{any, future, pin};
 
 pub struct Plugin;
 
@@ -14,7 +14,6 @@ impl bevy::prelude::Plugin for Plugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.add_system(check_system)
             .insert_resource(FinishedTasks { outcomes: vec![] });
-        // .add_event::<TaskFinishedEvent>();
     }
 }
 
@@ -24,8 +23,8 @@ pub type PerformReturn<Output> =
 #[cfg(target_arch = "wasm32")]
 pub type PerformReturn<Output> = pin::Pin<Box<dyn future::Future<Output = Output> + 'static>>;
 
-pub trait Task: Sized + Send + Sync + 'static {
-    type Outcome: std::any::Any + Send + Sync;
+pub trait Task: any::Any + Sized + Send + Sync + 'static {
+    type Outcome: any::Any + Send + Sync;
 
     fn name(&self) -> String;
 
@@ -36,8 +35,7 @@ pub trait Task: Sized + Send + Sync + 'static {
         pool: &bevy::tasks::AsyncComputeTaskPool,
         commands: &mut bevy::ecs::system::Commands,
     ) {
-        // let (sender, receiver) = async_channel::unbounded::<&dyn std::any::Any>();
-        let (sender, receiver) = async_channel::unbounded::<Box<dyn std::any::Any + Send + Sync>>();
+        let (sender, receiver) = async_channel::unbounded::<OutcomePayload>();
 
         let task_name = self.name();
         let in_progress_task = InProgressTask {
@@ -48,7 +46,10 @@ pub trait Task: Sized + Send + Sync + 'static {
             bevy::log::info!("Starting task '{}'", task_name);
             let outcome = self.perform().await;
             bevy::log::info!("Completed task '{}'", task_name);
-            if let Err(e) = sender.send(Box::new(outcome)).await {
+            if let Err(e) = sender
+                .send((any::TypeId::of::<Self>(), Box::new(outcome)))
+                .await
+            {
                 bevy::log::error!(
                     "Failed to send result from task {} back to main thread: {:?}",
                     task_name,
@@ -79,19 +80,19 @@ fn check_system(
     })
 }
 
+// (<task type ID>, <task outcome value>)
+type OutcomePayload = (any::TypeId, Box<dyn any::Any + Send + Sync>);
+
 #[derive(Component)]
 pub struct InProgressTask {
     pub task_name: String,
 }
 
 #[derive(Component)]
-pub struct InProgressTaskOutcomeReceiver(
-    async_channel::Receiver<Box<dyn std::any::Any + Send + Sync>>,
-);
+pub struct InProgressTaskOutcomeReceiver(async_channel::Receiver<OutcomePayload>);
 
 pub struct FinishedTasks {
-    // TODO: add task ID into result here
-    outcomes: Vec<Box<dyn std::any::Any + Send + Sync>>,
+    outcomes: Vec<OutcomePayload>,
 }
 
 impl FinishedTasks {
@@ -100,12 +101,14 @@ impl FinishedTasks {
             .outcomes
             .iter_mut()
             .enumerate()
-            .filter(|(_i, outcome)| outcome.is::<T::Outcome>())
+            .filter(|(_i, (type_id, outcome))| {
+                outcome.is::<T::Outcome>() && any::TypeId::of::<T>() == *type_id
+            })
             .map(|(i, _outcome)| i)
             .next();
         match next {
             Some(index) => {
-                let x = self.outcomes.remove(index);
+                let (_type_id, x) = self.outcomes.remove(index);
                 Some(*x.downcast::<T::Outcome>().unwrap())
             }
             None => None,
