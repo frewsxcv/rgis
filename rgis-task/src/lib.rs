@@ -97,21 +97,15 @@ pub struct FinishedTasks {
 
 impl FinishedTasks {
     pub fn take_next<T: Task>(&mut self) -> Option<T::Outcome> {
-        let next = self
+        let index = self
             .outcomes
             .iter_mut()
             .enumerate()
-            .filter(|(_i, (type_id, outcome))| {
-                outcome.is::<T::Outcome>() && any::TypeId::of::<T>() == *type_id
+            .filter_map(|(i, (type_id, outcome))| {
+                (any::TypeId::of::<T>() == *type_id && outcome.is::<T::Outcome>()).then(|| i)
             })
-            .map(|(i, _outcome)| i)
-            .next();
-        match next {
-            Some(index) => {
-                let (_type_id, x) = self.outcomes.remove(index);
-                Some(*x.downcast::<T::Outcome>().unwrap())
-            }
-            None => None,
-        }
+            .next()?;
+        let (_type_id, x) = self.outcomes.remove(index);
+        Some(*x.downcast::<T::Outcome>().unwrap())
     }
 }
