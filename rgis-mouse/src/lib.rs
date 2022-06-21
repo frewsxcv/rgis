@@ -15,8 +15,7 @@ pub struct MousePos {
 fn cursor_moved_system(
     mut cursor_moved_event_reader: bevy::ecs::event::EventReader<bevy::window::CursorMoved>,
     windows: Res<bevy::window::Windows>,
-    camera_2d: Res<rgis_camera::Camera2d>,
-    query: Query<&mut bevy::transform::components::Transform>,
+    query: Query<&mut bevy::transform::components::Transform, bevy::ecs::query::With<bevy::render::camera::Camera>>,
     mut mouse_position: ResMut<MousePos>,
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
 ) {
@@ -27,10 +26,7 @@ fn cursor_moved_system(
         return;
     }
     let window = windows.primary();
-    let transform = match query.get(camera_2d.0) {
-        Ok(transform) => transform,
-        Err(_) => return,
-    };
+    let transform = query.single();
     if let Some(event) = cursor_moved_event_reader.iter().next_back() {
         mouse_position.projected = screen_coords_to_geo_coords(event.position, transform, window);
     }

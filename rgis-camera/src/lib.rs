@@ -9,21 +9,15 @@ use bevy::prelude::*;
 
 pub struct Plugin;
 
-pub struct Camera2d(pub Entity);
-
-impl FromWorld for Camera2d {
-    fn from_world(world: &mut World) -> Self {
-        let entity = world
-            .spawn()
-            .insert_bundle(OrthographicCameraBundle::new_2d())
-            .id();
-        Camera2d(entity)
-    }
+fn init_camera(mut commands: Commands) {
+    commands
+        .spawn()
+        .insert_bundle(OrthographicCameraBundle::new_2d());
 }
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<Camera2d>()
+        app.add_startup_system(init_camera)
             .add_system(center_camera)
             .add_system(pan_camera_system)
             .add_system(handle_meshes_spawned_events)
@@ -57,16 +51,15 @@ impl CameraOffset {
 
 fn pan_camera_system(
     mut pan_camera_event_reader: bevy::ecs::event::EventReader<rgis_events::PanCameraEvent>,
-    camera_2d: Res<Camera2d>,
-    mut query: Query<&mut Transform>,
+    mut query: Query<
+        &mut bevy::transform::components::Transform,
+        bevy::ecs::query::With<bevy::render::camera::Camera>,
+    >,
 ) {
     if pan_camera_event_reader.is_empty() {
         return;
     }
-    let mut transform = match query.get_mut(camera_2d.0) {
-        Ok(t) => t,
-        Err(_) => return,
-    };
+    let mut transform = query.single_mut();
     let mut camera_offset = CameraOffset {
         x: transform.translation[0],
         y: transform.translation[1],
@@ -92,16 +85,15 @@ fn set_camera_transform(
 
 fn zoom_camera_system(
     mut zoom_camera_event_reader: bevy::ecs::event::EventReader<rgis_events::ZoomCameraEvent>,
-    camera_2d: Res<Camera2d>,
-    mut query: Query<&mut Transform>,
+    mut query: Query<
+        &mut bevy::transform::components::Transform,
+        bevy::ecs::query::With<bevy::render::camera::Camera>,
+    >,
 ) {
     if zoom_camera_event_reader.is_empty() {
         return;
     }
-    let mut transform = match query.get_mut(camera_2d.0) {
-        Ok(t) => t,
-        Err(_) => return,
-    };
+    let mut transform = query.single_mut();
     let camera_offset = CameraOffset {
         x: transform.translation[0],
         y: transform.translation[1],
@@ -143,8 +135,10 @@ fn zoom(amount: f32, camera_scale: &mut CameraScale) {
 fn center_camera(
     layers: Res<rgis_layers::Layers>,
     mut event_reader: EventReader<rgis_events::CenterCameraEvent>,
-    camera_2d: Res<Camera2d>,
-    mut query: Query<&mut Transform>,
+    mut query: Query<
+        &mut bevy::transform::components::Transform,
+        bevy::ecs::query::With<bevy::render::camera::Camera>,
+    >,
     windows: Res<bevy::window::Windows>,
 ) {
     for projected_feature in event_reader
@@ -152,10 +146,7 @@ fn center_camera(
         .filter_map(|event| layers.get(event.0))
         .filter_map(|layer| layer.get_projected_feature_or_log())
     {
-        let mut transform = match query.get_mut(camera_2d.0) {
-            Ok(t) => t,
-            Err(_) => continue,
-        };
+        let mut transform = query.single_mut();
         let layer_center = projected_feature.bounding_rect.center();
         let window = windows.primary();
         // TODO: this should subtract the topbar, sidebar, and bottombar sizes.

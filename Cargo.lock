@@ -2925,7 +2925,6 @@ dependencies = [
  "bevy",
  "bevy_egui",
  "geo",
- "rgis-camera",
  "rgis-events",
  "rgis-settings",
 ]
