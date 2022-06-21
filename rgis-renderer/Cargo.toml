@@ -20,4 +20,3 @@ rgis-events = { path = "../rgis-events" }
 rgis-layer-id = { path = "../rgis-layer-id" }
 rgis-layers = { path = "../rgis-layers" }
 rgis-task = { path = "../rgis-task" }
-time-logger = { path = "../time-logger" }
