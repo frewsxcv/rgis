@@ -88,6 +88,18 @@ pub struct InProgressTask {
     pub task_name: String,
 }
 
+#[derive(bevy::ecs::system::SystemParam)]
+pub struct TaskSpawner<'w, 's> {
+    thread_pool: bevy::ecs::system::Res<'w, bevy::tasks::AsyncComputeTaskPool>,
+    commands: bevy::ecs::system::Commands<'w, 's>,
+}
+
+impl<'w, 's> TaskSpawner<'w, 's> {
+    pub fn spawn<T: Task>(&mut self, task: T) {
+        task.spawn(&self.thread_pool, &mut self.commands)
+    }
+}
+
 #[derive(Component)]
 pub struct InProgressTaskOutcomeReceiver(async_channel::Receiver<OutcomePayload>);
 

@@ -157,15 +157,13 @@ fn render_add_layer_window(
     mut load_geo_json_file_event_writer: bevy::ecs::event::EventWriter<
         rgis_events::LoadGeoJsonFileEvent,
     >,
-    thread_pool: Res<bevy::tasks::AsyncComputeTaskPool>,
-    mut commands: bevy::ecs::system::Commands,
+    mut task_spawner: rgis_task::TaskSpawner,
 ) {
     add_layer_window::AddLayerWindow {
         state: &mut state,
         bevy_egui_ctx: &mut bevy_egui_ctx,
-        thread_pool: &thread_pool,
+        task_spawner: &mut task_spawner,
         load_geo_json_file_event_writer: &mut load_geo_json_file_event_writer,
-        commands: &mut commands,
     }
     .render();
 }

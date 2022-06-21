@@ -7,7 +7,6 @@
 
 use bevy::ecs::event::Events;
 use bevy::prelude::*;
-use rgis_task::Task;
 use std::mem;
 
 mod geojson;
@@ -16,8 +15,7 @@ mod tasks;
 // System
 fn load_geojson_file_handler(
     mut load_event_reader: ResMut<Events<rgis_events::LoadGeoJsonFileEvent>>,
-    thread_pool: Res<bevy::tasks::AsyncComputeTaskPool>,
-    mut commands: bevy::ecs::system::Commands,
+    mut task_spawner: rgis_task::TaskSpawner,
     mut finished_tasks: ResMut<rgis_task::FinishedTasks>,
 ) {
     while let Some(outcome) = finished_tasks.take_next::<rgis_network::NetworkFetchTask>() {
@@ -45,28 +43,25 @@ fn load_geojson_file_handler(
                     .map(|s| s.to_string_lossy().into_owned())
                     .unwrap_or_else(|| "<unknown>".to_string());
 
-                tasks::LoadGeoJsonFileTask {
+                task_spawner.spawn(tasks::LoadGeoJsonFileTask {
                     geojson_source: geojson::GeoJsonSource::Path(geojson_file_path),
                     source_crs: crs,
                     name,
-                }
-                .spawn(&thread_pool, &mut commands);
+                })
             }
             rgis_events::LoadGeoJsonFileEvent::FromNetwork { url, crs, name } => {
-                rgis_network::NetworkFetchTask { url, crs, name }
-                    .spawn(&thread_pool, &mut commands);
+                task_spawner.spawn(rgis_network::NetworkFetchTask { url, crs, name })
             }
             rgis_events::LoadGeoJsonFileEvent::FromBytes {
                 file_name,
                 bytes,
                 crs,
             } => {
-                tasks::LoadGeoJsonFileTask {
+                task_spawner.spawn(tasks::LoadGeoJsonFileTask {
                     geojson_source: geojson::GeoJsonSource::Bytes(bytes),
                     source_crs: crs,
                     name: file_name,
-                }
-                .spawn(&thread_pool, &mut commands);
+                })
             }
         }
     }

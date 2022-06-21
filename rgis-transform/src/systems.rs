@@ -1,11 +1,8 @@
-use rgis_task::Task;
-
 fn handle_layer_created_events(
     mut layer_created_event_reader: bevy::ecs::event::EventReader<rgis_events::LayerCreatedEvent>,
-    thread_pool: bevy::ecs::system::Res<bevy::tasks::AsyncComputeTaskPool>,
-    mut commands: bevy::ecs::system::Commands,
     layers: bevy::ecs::system::Res<rgis_layers::Layers>,
     rgis_settings: bevy::ecs::system::Res<rgis_settings::RgisSettings>,
+    mut task_spawner: rgis_task::TaskSpawner,
 ) {
     for event in layer_created_event_reader.iter() {
         let layer = match layers.get(event.0) {
@@ -13,13 +10,12 @@ fn handle_layer_created_events(
             None => continue,
         };
 
-        crate::tasks::ReprojectGeometryTask {
+        task_spawner.spawn(crate::tasks::ReprojectGeometryTask {
             geometry: layer.unprojected_feature.geometry.clone(),
             layer_id: event.0,
             source_crs: layer.crs.clone(),
             target_crs: rgis_settings.target_crs.clone(),
-        }
-        .spawn(&thread_pool, &mut commands)
+        })
     }
 }
 
@@ -68,20 +64,18 @@ fn handle_crs_changed_events(
     mut crs_changed_event_reader: bevy::ecs::event::EventReader<rgis_events::CrsChangedEvent>,
     mut layers: bevy::ecs::system::ResMut<rgis_layers::Layers>,
     rgis_settings: bevy::ecs::system::Res<rgis_settings::RgisSettings>,
-    thread_pool: bevy::ecs::system::Res<bevy::tasks::AsyncComputeTaskPool>,
-    mut commands: bevy::ecs::system::Commands,
+    mut task_spawner: rgis_task::TaskSpawner,
 ) {
     for _ in crs_changed_event_reader.iter() {
         layers.clear_projected();
 
         for layer in layers.iter() {
-            crate::tasks::ReprojectGeometryTask {
+            task_spawner.spawn(crate::tasks::ReprojectGeometryTask {
                 geometry: layer.unprojected_feature.geometry.clone(),
                 layer_id: layer.id,
                 source_crs: layer.crs.clone(),
                 target_crs: rgis_settings.target_crs.clone(),
-            }
-            .spawn(&thread_pool, &mut commands)
+            })
         }
     }
 }

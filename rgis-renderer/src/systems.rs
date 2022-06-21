@@ -1,13 +1,11 @@
 use bevy::prelude::*;
-use rgis_task::Task;
 
 use crate::tasks::MeshBuildingTask;
 
 fn layer_loaded(
-    mut commands: Commands,
     layers: Res<rgis_layers::Layers>,
     mut event_reader: EventReader<rgis_events::LayerReprojectedEvent>,
-    thread_pool: Res<bevy::tasks::AsyncComputeTaskPool>,
+    mut task_spawner: rgis_task::TaskSpawner,
 ) {
     for layer in event_reader.iter().flat_map(|event| layers.get(event.0)) {
         // TODO: do we need this check?
@@ -24,11 +22,10 @@ fn layer_loaded(
             }
         };
 
-        crate::tasks::MeshBuildingTask {
+        task_spawner.spawn(crate::tasks::MeshBuildingTask {
             layer_id: layer.id,
             geometry: projected_geometry,
-        }
-        .spawn(&thread_pool, &mut commands);
+        })
     }
 }
 
