@@ -42,7 +42,6 @@ impl bevy::app::Plugin for Plugin {
                 messages: vec![],
             })
             .add_system(handle_open_file_task)
-            .add_plugin(rgis_task::TaskPlugin::<add_layer_window::OpenFileTask>::new())
             .add_system(render_message_window.label("message_window"))
             .add_system_set(
                 SystemSet::new()
@@ -121,14 +120,12 @@ fn render_side_panel(
 }
 
 fn handle_open_file_task(
-    mut events: ResMut<
-        bevy::ecs::event::Events<rgis_task::TaskFinishedEvent<add_layer_window::OpenFileTask>>,
-    >,
+    mut finished_tasks: ResMut<rgis_task::FinishedTasks>,
     mut load_geo_json_file_events: bevy::ecs::event::EventWriter<rgis_events::LoadGeoJsonFileEvent>,
     mut state: ResMut<UiState>,
 ) {
-    for event in events.drain() {
-        if let Some(outcome) = event.outcome {
+    while let Some(outcome) = finished_tasks.take_next::<add_layer_window::OpenFileTask>() {
+        if let Some(outcome) = outcome {
             load_geo_json_file_events.send(rgis_events::LoadGeoJsonFileEvent::FromBytes {
                 file_name: outcome.0,
                 bytes: outcome.1,

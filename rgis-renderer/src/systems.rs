@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 use rgis_task::Task;
 
+use crate::tasks::MeshBuildingTask;
+
 fn layer_loaded(
     mut commands: Commands,
     layers: Res<rgis_layers::Layers>,
@@ -36,12 +38,10 @@ fn handle_mesh_building_task_outcome(
     mut materials: ResMut<Assets<ColorMaterial>>,
     layers: Res<rgis_layers::Layers>,
     mut meshes_spawned_event_writer: EventWriter<rgis_events::MeshesSpawnedEvent>,
-    mut mesh_building_task_outcome: ResMut<
-        bevy::ecs::event::Events<rgis_task::TaskFinishedEvent<crate::tasks::MeshBuildingTask>>,
-    >,
+    mut finished_tasks: ResMut<rgis_task::FinishedTasks>,
 ) {
-    for event in mesh_building_task_outcome.drain() {
-        let (meshes, layer_id) = match event.outcome {
+    while let Some(outcome) = finished_tasks.take_next::<MeshBuildingTask>() {
+        let (meshes, layer_id) = match outcome {
             Ok(n) => n,
             Err(e) => {
                 bevy::log::error!("Encountered error when spawning mesh: {}", e);

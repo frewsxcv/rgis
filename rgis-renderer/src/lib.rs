@@ -14,8 +14,7 @@ pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(systems::system_set())
-            .add_plugin(rgis_task::TaskPlugin::<tasks::MeshBuildingTask>::new());
+        app.add_system_set(systems::system_set());
     }
 }
 

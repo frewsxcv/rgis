@@ -24,17 +24,15 @@ fn handle_layer_created_events(
 }
 
 fn handle_reproject_geometry_task_completion_events(
-    mut reproject_geometry_task_outcome_events: bevy::ecs::system::ResMut<
-        bevy::ecs::event::Events<rgis_task::TaskFinishedEvent<crate::tasks::ReprojectGeometryTask>>,
-    >,
+    mut finished_tasks: bevy::ecs::system::ResMut<rgis_task::FinishedTasks>,
     mut layers: bevy::ecs::system::ResMut<rgis_layers::Layers>,
     mut layer_reprojected_event_writer: bevy::ecs::event::EventWriter<
         rgis_events::LayerReprojectedEvent,
     >,
     rgis_settings: bevy::ecs::system::Res<rgis_settings::RgisSettings>,
 ) {
-    for event in reproject_geometry_task_outcome_events.drain() {
-        let outcome = match event.outcome {
+    while let Some(outcome) = finished_tasks.take_next::<crate::tasks::ReprojectGeometryTask>() {
+        let outcome = match outcome {
             Ok(o) => o,
             Err(e) => {
                 bevy::log::error!("Encountered an error reprojecting geometry: {:?}", e);

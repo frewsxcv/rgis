@@ -56,7 +56,5 @@ fn fetch(url: String, fetched_bytes_sender: FetchedFileSender) {
 pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
-    fn build(&self, app: &mut bevy::app::App) {
-        app.add_plugin(rgis_task::TaskPlugin::<NetworkFetchTask>::new());
-    }
+    fn build(&self, _app: &mut bevy::app::App) { }
 }

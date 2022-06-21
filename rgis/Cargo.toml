@@ -27,6 +27,7 @@ rgis-mouse = { path = "../rgis-mouse" }
 rgis-network = { path = "../rgis-network" }
 rgis-renderer = { path = "../rgis-renderer" }
 rgis-settings = { path = "../rgis-settings" }
+rgis-task = { path = "../rgis-task" }
 rgis-transform = { path = "../rgis-transform" }
 rgis-ui = { path = "../rgis-ui" }
 time-logger = { path = "../time-logger" }

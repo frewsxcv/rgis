@@ -18,12 +18,10 @@ fn load_geojson_file_handler(
     mut load_event_reader: ResMut<Events<rgis_events::LoadGeoJsonFileEvent>>,
     thread_pool: Res<bevy::tasks::AsyncComputeTaskPool>,
     mut commands: bevy::ecs::system::Commands,
-    mut network_fetch_task_outcome: ResMut<
-        bevy::ecs::event::Events<rgis_task::TaskFinishedEvent<rgis_network::NetworkFetchTask>>,
-    >,
+    mut finished_tasks: ResMut<rgis_task::FinishedTasks>,
 ) {
-    for event in network_fetch_task_outcome.drain() {
-        match event.outcome {
+    while let Some(outcome) = finished_tasks.take_next::<rgis_network::NetworkFetchTask>() {
+        match outcome {
             Ok(fetched) => load_event_reader.send(rgis_events::LoadGeoJsonFileEvent::FromBytes {
                 bytes: fetched.bytes,
                 file_name: fetched.name,
@@ -75,13 +73,11 @@ fn load_geojson_file_handler(
 }
 
 fn handle_load_geojson_file_task_finished_events(
+    mut finished_tasks: ResMut<rgis_task::FinishedTasks>,
     mut create_layer_event_writer: EventWriter<rgis_events::CreateLayerEvent>,
-    mut load_geojson_file_task_finished_events: ResMut<
-        bevy::ecs::event::Events<rgis_task::TaskFinishedEvent<tasks::LoadGeoJsonFileTask>>,
-    >,
 ) {
-    for event in load_geojson_file_task_finished_events.drain() {
-        match event.outcome {
+    while let Some(outcome) = finished_tasks.take_next::<tasks::LoadGeoJsonFileTask>() {
+        match outcome {
             Ok(outcome) => create_layer_event_writer.send(rgis_events::CreateLayerEvent {
                 name: outcome.name,
                 unprojected_geometry: outcome.geometry,
@@ -122,8 +118,7 @@ pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(rgis_task::TaskPlugin::<tasks::LoadGeoJsonFileTask>::new())
-            .add_system(load_geojson_file_handler)
+        app.add_system(load_geojson_file_handler)
             .add_system(handle_load_geojson_file_task_finished_events);
 
         #[cfg(not(target_arch = "wasm32"))]

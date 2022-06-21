@@ -2836,6 +2836,7 @@ dependencies = [
  "rgis-network",
  "rgis-renderer",
  "rgis-settings",
+ "rgis-task",
  "rgis-transform",
  "rgis-ui",
  "time-logger",
