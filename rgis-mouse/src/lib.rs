@@ -15,7 +15,10 @@ pub struct MousePos {
 fn cursor_moved_system(
     mut cursor_moved_event_reader: bevy::ecs::event::EventReader<bevy::window::CursorMoved>,
     windows: Res<bevy::window::Windows>,
-    query: Query<&mut bevy::transform::components::Transform, bevy::ecs::query::With<bevy::render::camera::Camera>>,
+    query: Query<
+        &mut bevy::transform::components::Transform,
+        bevy::ecs::query::With<bevy::render::camera::Camera>,
+    >,
     mut mouse_position: ResMut<MousePos>,
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
 ) {

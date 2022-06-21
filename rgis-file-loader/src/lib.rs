@@ -56,13 +56,11 @@ fn load_geojson_file_handler(
                 file_name,
                 bytes,
                 crs,
-            } => {
-                task_spawner.spawn(tasks::LoadGeoJsonFileTask {
-                    geojson_source: geojson::GeoJsonSource::Bytes(bytes),
-                    source_crs: crs,
-                    name: file_name,
-                })
-            }
+            } => task_spawner.spawn(tasks::LoadGeoJsonFileTask {
+                geojson_source: geojson::GeoJsonSource::Bytes(bytes),
+                source_crs: crs,
+                name: file_name,
+            }),
         }
     }
 }
