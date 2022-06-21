@@ -30,7 +30,6 @@ fn spawn_geometry_meshes(
 ) {
     let material = materials.add(layer.color.into());
 
-    let tl = time_logger::start!("Triangulating and building {} mesh", layer.name);
     for mesh in meshes {
         spawn_mesh(
             mesh,
@@ -42,7 +41,6 @@ fn spawn_geometry_meshes(
             is_visible,
         );
     }
-    tl.finish();
 }
 
 fn spawn_mesh(
