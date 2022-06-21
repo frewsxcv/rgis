@@ -39,13 +39,14 @@ pub trait Task: any::Any + Sized + Send + Sync + 'static {
 
         let task_name = self.name();
         let in_progress_task = InProgressTask {
-            task_name: task_name.clone(),
+            name: task_name.clone(),
+            recv: receiver,
         };
 
         pool.spawn(async move {
             bevy::log::info!("Starting task '{}'", task_name);
             let outcome = self.perform().await;
-            bevy::log::info!("Completed task '{}'", task_name);
+            bevy::log::info!("Completed task '{}'", task_name); // TODO: add timing
             if let Err(e) = sender
                 .send((any::TypeId::of::<Self>(), Box::new(outcome)))
                 .await
@@ -59,20 +60,17 @@ pub trait Task: any::Any + Sized + Send + Sync + 'static {
         })
         .detach();
 
-        commands
-            .spawn()
-            .insert(in_progress_task)
-            .insert(InProgressTaskOutcomeReceiver(receiver));
+        commands.spawn().insert(in_progress_task);
     }
 }
 
 fn check_system(
-    query: bevy::ecs::system::Query<(&InProgressTaskOutcomeReceiver, bevy::ecs::entity::Entity)>,
+    query: bevy::ecs::system::Query<(&InProgressTask, bevy::ecs::entity::Entity)>,
     mut commands: bevy::ecs::system::Commands,
     mut finished_tasks: bevy::ecs::system::ResMut<FinishedTasks>,
 ) {
     query.for_each(|(receiver, entity)| {
-        if let Ok(outcome) = receiver.0.try_recv() {
+        if let Ok(outcome) = receiver.recv.try_recv() {
             bevy::log::info!("Task finished");
             commands.entity(entity).despawn();
             finished_tasks.outcomes.push(outcome);
@@ -82,11 +80,6 @@ fn check_system(
 
 // (<task type ID>, <task outcome value>)
 type OutcomePayload = (any::TypeId, Box<dyn any::Any + Send + Sync>);
-
-#[derive(Component)]
-pub struct InProgressTask {
-    pub task_name: String,
-}
 
 #[derive(bevy::ecs::system::SystemParam)]
 pub struct TaskSpawner<'w, 's> {
@@ -101,7 +94,10 @@ impl<'w, 's> TaskSpawner<'w, 's> {
 }
 
 #[derive(Component)]
-pub struct InProgressTaskOutcomeReceiver(async_channel::Receiver<OutcomePayload>);
+pub struct InProgressTask {
+    pub name: String,
+    recv: async_channel::Receiver<OutcomePayload>,
+}
 
 pub struct FinishedTasks {
     outcomes: Vec<OutcomePayload>,
