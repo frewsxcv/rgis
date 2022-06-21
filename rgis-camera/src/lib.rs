@@ -147,17 +147,14 @@ fn center_camera(
     mut query: Query<&mut Transform>,
     windows: Res<bevy::window::Windows>,
 ) {
-    for layer in event_reader.iter().filter_map(|event| layers.get(event.0)) {
+    for projected_feature in event_reader
+        .iter()
+        .filter_map(|event| layers.get(event.0))
+        .filter_map(|layer| layer.get_projected_feature_or_log())
+    {
         let mut transform = match query.get_mut(camera_2d.0) {
             Ok(t) => t,
             Err(_) => continue,
-        };
-        let projected_feature = match layer.projected_feature {
-            Some(ref projected_feature) => projected_feature,
-            None => {
-                bevy::log::error!("Expected a layer to have a projected feature");
-                continue;
-            }
         };
         let layer_center = projected_feature.bounding_rect.center();
         let window = windows.primary();

@@ -197,6 +197,19 @@ pub struct Layer {
     pub crs: String,
 }
 
+impl Layer {
+    #[inline]
+    pub fn get_projected_feature_or_log(&self) -> Option<&Feature> {
+        match self.projected_feature.as_ref() {
+            Some(p) => Some(p),
+            None => {
+                bevy::log::error!("Expected layer (id: {:?}) to have a projected feature", self.id);
+                None
+            }
+        }
+    }
+}
+
 fn colorous_color_to_bevy_color(colorous_color: colorous::Color) -> Color {
     Color::rgb_u8(colorous_color.r, colorous_color.g, colorous_color.b)
 }
