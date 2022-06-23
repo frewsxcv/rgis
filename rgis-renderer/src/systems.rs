@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use crate::tasks::MeshBuildingTask;
 
-macro_rules! skip_fail {
+macro_rules! skip_err {
     ($res:expr, $str:literal) => {
         match $res {
             Ok(val) => val,
@@ -53,7 +53,7 @@ fn handle_mesh_building_task_outcome(
     mut finished_tasks: ResMut<rgis_task::FinishedTasks>,
 ) {
     while let Some(outcome) = finished_tasks.take_next::<MeshBuildingTask>() {
-        let (meshes, layer_id) = skip_fail!(outcome, "Encountered error when spawning mesh: {}");
+        let (meshes, layer_id) = skip_err!(outcome, "Encountered error when spawning mesh: {}");
         let (layer, z_index) =
             skip_none!(layers.get_with_z_index(layer_id), "Could not find layer");
 
