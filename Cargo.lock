@@ -1654,6 +1654,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "geo-features"
+version = "0.1.0"
+dependencies = [
+ "geo",
+]
+
+[[package]]
 name = "geo-proj-js"
 version = "0.1.0"
 dependencies = [
@@ -2908,6 +2915,7 @@ dependencies = [
  "bevy",
  "colorous",
  "geo",
+ "geo-features",
  "rgis-events",
  "rgis-layer-id",
  "serde_json",
@@ -2974,6 +2982,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "geo",
+ "geo-features",
  "geo-proj-js",
  "proj",
  "proj-sys",

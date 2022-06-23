@@ -6,9 +6,8 @@
 )]
 
 use bevy::prelude::*;
-use geo::bounding_rect::BoundingRect;
 use geo::contains::Contains;
-use std::{collections, sync};
+use std::sync;
 
 #[derive(Clone, Debug)]
 pub struct Layers {
@@ -121,10 +120,10 @@ impl Layers {
         unprojected: geo::Geometry<f64>,
         name: String,
         source_crs: String,
-    ) -> Result<rgis_layer_id::LayerId, LayerCreateError> {
+    ) -> Result<rgis_layer_id::LayerId, geo_features::BoundingBoxError> {
         let layer_id = self.next_layer_id();
         let layer = Layer {
-            unprojected_feature: FeatureCollection::from_geometry(unprojected)?,
+            unprojected_feature: geo_features::FeatureCollection::from_geometry(unprojected)?,
             projected_feature: None,
             color: colorous_color_to_bevy_color(next_colorous_color()),
             name,
@@ -149,39 +148,6 @@ impl Layers {
 
 pub type Metadata = serde_json::Map<String, serde_json::Value>;
 
-#[derive(thiserror::Error, Debug)]
-pub enum LayerCreateError {
-    #[error("Could not generate bounding box")]
-    BoundingBox,
-}
-
-#[derive(Clone, Debug)]
-pub struct Feature {
-    pub geometry: geo::Geometry<f64>,
-    pub properties: collections::HashMap<String, String>,
-    pub bounding_rect: geo::Rect<f64>,
-}
-
-impl Contains<geo::Coordinate<f64>> for Feature {
-    fn contains(&self, coord: &geo::Coordinate<f64>) -> bool {
-        self.bounding_rect.contains(coord) && self.geometry.contains(coord)
-    }
-}
-
-impl Feature {
-    pub fn from_geometry(geometry: geo::Geometry<f64>) -> Result<Self, LayerCreateError> {
-        let bounding_rect = geometry
-            .bounding_rect()
-            .ok_or(LayerCreateError::BoundingBox)?;
-
-        Ok(Feature {
-            geometry,
-            properties: collections::HashMap::new(),
-            bounding_rect,
-        })
-    }
-}
-
 #[derive(Clone, Debug)]
 pub struct Layer {
     // {
@@ -191,8 +157,8 @@ pub struct Layer {
     //     }
     // }
     // these should be vecs
-    pub unprojected_feature: FeatureCollection,
-    pub projected_feature: Option<FeatureCollection>,
+    pub unprojected_feature: geo_features::FeatureCollection,
+    pub projected_feature: Option<geo_features::FeatureCollection>,
     pub color: Color,
     pub id: rgis_layer_id::LayerId,
     pub name: String,
@@ -200,40 +166,9 @@ pub struct Layer {
     pub crs: String,
 }
 
-#[derive(Clone, Debug)]
-pub struct FeatureCollection {
-    pub features: Vec<Feature>,
-    pub bounding_rect: geo::Rect<f64>,
-}
-
-impl FeatureCollection {
-    pub fn from_geometry(geometry: geo::Geometry<f64>) -> Result<Self, LayerCreateError> {
-        let bounding_rect = geometry
-            .bounding_rect()
-            .ok_or(LayerCreateError::BoundingBox)?;
-        Ok(FeatureCollection {
-            features: vec![Feature::from_geometry(geometry)?],
-            bounding_rect,
-        })
-    }
-
-    pub fn to_geometry_collection(&self) -> geo::GeometryCollection<f64> {
-        geo::GeometryCollection(
-            self.features
-                .iter()
-                .map(|f| f.geometry.clone())
-                .collect::<Vec<_>>(),
-        )
-    }
-
-    pub fn bounding_rect(&self) -> geo::Rect<f64> {
-        todo!()
-    }
-}
-
 impl Layer {
     #[inline]
-    pub fn get_projected_feature_or_log(&self) -> Option<&FeatureCollection> {
+    pub fn get_projected_feature_or_log(&self) -> Option<&geo_features::FeatureCollection> {
         match self.projected_feature.as_ref() {
             Some(p) => Some(p),
             None => {

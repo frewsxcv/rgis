@@ -48,7 +48,7 @@ fn handle_reproject_geometry_task_completion_events(
             None => continue,
         };
 
-        let feature = match rgis_layers::FeatureCollection::from_geometry(outcome.geometry) {
+        let feature = match geo_features::FeatureCollection::from_geometry(outcome.geometry) {
             Ok(o) => o,
             Err(e) => {
                 bevy::log::error!("Encountered an error generating a feature: {:?}", e);

@@ -15,6 +15,7 @@ bevy = { version = "0.7", default-features = false, features = [
     "wayland",
 ] }
 colorous = "1"
+geo-features = { path = "../geo-features" }
 rgis-events = { path = "../rgis-events" }
 rgis-layer-id = { path = "../rgis-layer-id" }
 thiserror = "1"
