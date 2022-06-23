@@ -6,7 +6,7 @@
 )]
 
 use bevy::prelude::Component;
-use std::{any, future, pin};
+use std::{any, future, pin, time};
 
 pub struct Plugin;
 
@@ -44,9 +44,10 @@ pub trait Task: any::Any + Sized + Send + Sync + 'static {
         };
 
         pool.spawn(async move {
+            let instant = time::Instant::now();
             bevy::log::info!("Starting task '{}'", task_name);
             let outcome = self.perform().await;
-            bevy::log::info!("Completed task '{}'", task_name); // TODO: add timing
+            bevy::log::info!("Completed task '{}' in {:?}", task_name, instant.elapsed());
             if let Err(e) = sender
                 .send((any::TypeId::of::<Self>(), Box::new(outcome)))
                 .await
