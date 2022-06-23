@@ -1,4 +1,4 @@
-use geo::{Contains, BoundingRect};
+use geo::{BoundingRect, Contains};
 use std::collections;
 
 #[derive(Clone, Debug)]
@@ -10,9 +10,7 @@ pub struct Feature {
 
 impl Feature {
     pub fn from_geometry(geometry: geo::Geometry<f64>) -> Result<Self, BoundingBoxError> {
-        let bounding_rect = geometry
-            .bounding_rect()
-            .ok_or(BoundingBoxError)?;
+        let bounding_rect = geometry.bounding_rect().ok_or(BoundingBoxError)?;
 
         Ok(Feature {
             geometry,
@@ -39,9 +37,7 @@ pub struct BoundingBoxError;
 
 impl FeatureCollection {
     pub fn from_geometry(geometry: geo::Geometry<f64>) -> Result<Self, BoundingBoxError> {
-        let bounding_rect = geometry
-            .bounding_rect()
-            .ok_or(BoundingBoxError)?;
+        let bounding_rect = geometry.bounding_rect().ok_or(BoundingBoxError)?;
         Ok(FeatureCollection {
             features: vec![Feature::from_geometry(geometry)?],
             bounding_rect,
@@ -59,6 +55,8 @@ impl FeatureCollection {
 
     pub fn bounding_rect(&self) -> Result<geo::Rect<f64>, BoundingBoxError> {
         // TODO: audit performance
-        self.to_geometry_collection().bounding_rect().ok_or(BoundingBoxError)
+        self.to_geometry_collection()
+            .bounding_rect()
+            .ok_or(BoundingBoxError)
     }
 }
