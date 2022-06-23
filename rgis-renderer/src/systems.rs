@@ -8,13 +8,7 @@ fn layer_loaded(
     mut task_spawner: rgis_task::TaskSpawner,
 ) {
     for layer in event_reader.iter().flat_map(|event| layers.get(event.0)) {
-        // TODO: do we need this check?
-        if !layer.visible {
-            continue;
-        }
-
         let projected_geometry = match layer.projected_feature {
-            // TODO: remove this clone
             Some(ref projected_feature) => projected_feature.geometry.clone(),
             None => {
                 bevy::log::error!("Expected a layer to have a projected geometry");
