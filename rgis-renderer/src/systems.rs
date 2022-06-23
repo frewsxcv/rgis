@@ -2,23 +2,44 @@ use bevy::prelude::*;
 
 use crate::tasks::MeshBuildingTask;
 
+macro_rules! skip_fail {
+    ($res:expr, $str:literal) => {
+        match $res {
+            Ok(val) => val,
+            Err(error) => {
+                bevy::log::error!($str, error);
+                continue;
+            }
+        }
+    };
+}
+
+macro_rules! skip_none {
+    ($res:expr, $str:literal) => {
+        match $res {
+            Some(val) => val,
+            None => {
+                bevy::log::error!($str);
+                continue;
+            }
+        }
+    };
+}
+
 fn layer_loaded(
     layers: Res<rgis_layers::Layers>,
     mut event_reader: EventReader<rgis_events::LayerReprojectedEvent>,
     mut task_spawner: rgis_task::TaskSpawner,
 ) {
     for layer in event_reader.iter().flat_map(|event| layers.get(event.0)) {
-        let projected_geometry = match layer.projected_feature {
-            Some(ref projected_feature) => projected_feature.geometry.clone(),
-            None => {
-                bevy::log::error!("Expected a layer to have a projected geometry");
-                continue;
-            }
-        };
+        let projected_feature = skip_none!(
+            layer.projected_feature.as_ref(),
+            "Expected a layer to have a projected geometry"
+        );
 
         task_spawner.spawn(crate::tasks::MeshBuildingTask {
             layer_id: layer.id,
-            geometry: projected_geometry,
+            geometry: projected_feature.geometry.clone(),
         })
     }
 }
@@ -32,18 +53,9 @@ fn handle_mesh_building_task_outcome(
     mut finished_tasks: ResMut<rgis_task::FinishedTasks>,
 ) {
     while let Some(outcome) = finished_tasks.take_next::<MeshBuildingTask>() {
-        let (meshes, layer_id) = match outcome {
-            Ok(n) => n,
-            Err(e) => {
-                bevy::log::error!("Encountered error when spawning mesh: {}", e);
-                continue;
-            }
-        };
-
-        let (layer, z_index) = match layers.get_with_z_index(layer_id) {
-            Some(l) => l,
-            None => continue,
-        };
+        let (meshes, layer_id) = skip_fail!(outcome, "Encountered error when spawning mesh: {}");
+        let (layer, z_index) =
+            skip_none!(layers.get_with_z_index(layer_id), "Could not find layer");
 
         crate::spawn_geometry_meshes(
             meshes,
@@ -67,10 +79,7 @@ fn handle_layer_z_index_updated_event(
     layers: Res<rgis_layers::Layers>,
 ) {
     for event in layer_z_index_updated_event_reader.iter() {
-        let (_, z_index) = match layers.get_with_z_index(event.0) {
-            Some(l) => l,
-            None => continue,
-        };
+        let (_, z_index) = skip_none!(layers.get_with_z_index(event.0), "Could not find layer");
 
         for mut transform in query
             .iter_mut()
