@@ -39,7 +39,7 @@ fn layer_loaded(
 
         task_spawner.spawn(crate::tasks::MeshBuildingTask {
             layer_id: layer.id,
-            geometry: projected_feature.geometry.clone(),
+            geometry: geo::Geometry::GeometryCollection(projected_feature.to_geometry_collection()),
         })
     }
 }

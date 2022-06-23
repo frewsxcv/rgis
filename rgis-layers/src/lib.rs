@@ -50,10 +50,13 @@ impl Layers {
     pub fn containing_coord(&self, coord: geo::Coordinate<f64>) -> impl Iterator<Item = &Layer> {
         self.iter_top_to_bottom().filter(move |layer| {
             if let Some(ref projected) = layer.projected_feature {
-                projected.contains(&coord)
-            } else {
-                false
+                for feature in &projected.features {
+                    if feature.contains(&coord) {
+                        return true;
+                    }
+                }
             }
+            false
         })
     }
 
@@ -121,7 +124,7 @@ impl Layers {
     ) -> Result<rgis_layer_id::LayerId, LayerCreateError> {
         let layer_id = self.next_layer_id();
         let layer = Layer {
-            unprojected_feature: Feature::from_geometry(unprojected)?,
+            unprojected_feature: FeatureCollection::from_geometry(unprojected)?,
             projected_feature: None,
             color: colorous_color_to_bevy_color(next_colorous_color()),
             name,
@@ -188,8 +191,8 @@ pub struct Layer {
     //     }
     // }
     // these should be vecs
-    pub unprojected_feature: Feature,
-    pub projected_feature: Option<Feature>,
+    pub unprojected_feature: FeatureCollection,
+    pub projected_feature: Option<FeatureCollection>,
     pub color: Color,
     pub id: rgis_layer_id::LayerId,
     pub name: String,
@@ -197,9 +200,40 @@ pub struct Layer {
     pub crs: String,
 }
 
+#[derive(Clone, Debug)]
+pub struct FeatureCollection {
+    pub features: Vec<Feature>,
+    pub bounding_rect: geo::Rect<f64>,
+}
+
+impl FeatureCollection {
+    pub fn from_geometry(geometry: geo::Geometry<f64>) -> Result<Self, LayerCreateError> {
+        let bounding_rect = geometry
+            .bounding_rect()
+            .ok_or(LayerCreateError::BoundingBox)?;
+        Ok(FeatureCollection {
+            features: vec![Feature::from_geometry(geometry)?],
+            bounding_rect,
+        })
+    }
+
+    pub fn to_geometry_collection(&self) -> geo::GeometryCollection<f64> {
+        geo::GeometryCollection(
+            self.features
+                .iter()
+                .map(|f| f.geometry.clone())
+                .collect::<Vec<_>>(),
+        )
+    }
+
+    pub fn bounding_rect(&self) -> geo::Rect<f64> {
+        todo!()
+    }
+}
+
 impl Layer {
     #[inline]
-    pub fn get_projected_feature_or_log(&self) -> Option<&Feature> {
+    pub fn get_projected_feature_or_log(&self) -> Option<&FeatureCollection> {
         match self.projected_feature.as_ref() {
             Some(p) => Some(p),
             None => {
