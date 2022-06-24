@@ -61,9 +61,9 @@ impl Layers {
 
     pub fn feature_from_click(&self, coord: geo::Coordinate<f64>) -> Option<&geo_features::Feature> {
         for layer in self.iter_top_to_bottom() {
-            for feature in &layer.projected_feature.as_ref()?.features {
-                if feature.contains(&coord) {
-                    return Some(feature);
+            for (i, projected_feature) in layer.projected_feature.as_ref()?.features.iter().enumerate() {
+                if projected_feature.contains(&coord) {
+                    return Some(&layer.unprojected_feature.features[i]);
                 }
             }
         }
@@ -312,11 +312,6 @@ fn handle_map_clicked_events(
     mut layers: ResMut<Layers>,
 ) {
     for event in map_clicked_event_reader.iter() {
-        for layer in layers.iter_top_to_bottom() {
-            for feature in &layer.projected_feature.as_ref().unwrap().features {
-                println!("feature properties: {:?}", feature.properties);
-            }
-        }
         if let Some(feature) = layers.feature_from_click(event.0) {
             println!("Metadata: {:?}", feature.properties);
         }

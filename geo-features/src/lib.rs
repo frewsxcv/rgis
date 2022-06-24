@@ -22,6 +22,11 @@ impl Feature {
             bounding_rect,
         })
     }
+
+    pub fn recalculate_bounding_rect(&mut self) -> Result<(), BoundingRectError> {
+        self.bounding_rect = self.geometry.bounding_rect().ok_or(BoundingRectError)?;
+        Ok(())
+    }
 }
 
 impl Contains<geo::Coordinate<f64>> for Feature {
@@ -48,14 +53,9 @@ impl FeatureCollection {
     }
 
     pub fn from_features(features: Vec<Feature>) -> Self {
-        assert!(!features.is_empty());
-        let mut bounding_rect = features[0].bounding_rect;
-        for feature in &features[1..] {
-            bounding_rect = rect_merge(bounding_rect, feature.bounding_rect);
-        }
         FeatureCollection {
+            bounding_rect: bounding_rect_from_features(&features),
             features,
-            bounding_rect,
         }
     }
 
@@ -74,6 +74,20 @@ impl FeatureCollection {
             .bounding_rect()
             .ok_or(BoundingRectError)
     }
+
+    pub fn recalculate_bounding_rect(&mut self) -> Result<(), BoundingRectError> {
+        self.bounding_rect = bounding_rect_from_features(&self.features);
+        Ok(())
+    }
+}
+
+fn bounding_rect_from_features(features: &[Feature]) -> geo::Rect<f64> {
+    assert!(!features.is_empty());
+    let mut bounding_rect = features[0].bounding_rect;
+    for feature in &features[1..] {
+        bounding_rect = rect_merge(bounding_rect, feature.bounding_rect);
+    }
+    bounding_rect
 }
 
 fn rect_merge<T: geo::CoordFloat>(a: geo::Rect<T>, b: geo::Rect<T>) -> geo::Rect<T> {
