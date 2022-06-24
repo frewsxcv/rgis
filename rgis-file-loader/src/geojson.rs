@@ -8,8 +8,10 @@ pub enum GeoJsonSource {
     Bytes(Vec<u8>),
 }
 
-impl GeoJsonSource {
-    pub fn load(self) -> Result<geo::Geometry<f64>, LoadGeoJsonError> {
+impl crate::FileLoader for GeoJsonSource {
+    type Error = LoadGeoJsonError;
+
+    fn load(self) -> Result<geo_features::FeatureCollection, Self::Error> {
         Ok(match self {
             #[cfg(not(target_arch = "wasm32"))]
             GeoJsonSource::Path(path) => load_from_path(&path)?,
@@ -19,7 +21,9 @@ impl GeoJsonSource {
 }
 
 #[cfg(not(target_arch = "wasm32"))]
-fn load_from_path(geojson_file_path: &path::Path) -> Result<geo::Geometry<f64>, LoadGeoJsonError> {
+fn load_from_path(
+    geojson_file_path: &path::Path,
+) -> Result<geo_features::FeatureCollection, LoadGeoJsonError> {
     use std::fs;
     let tl = time_logger::start!("Opening file: {:?}", geojson_file_path);
     let reader = io::BufReader::new(fs::File::open(&geojson_file_path)?);
@@ -40,48 +44,82 @@ pub enum LoadGeoJsonError {
 
 fn attempt_to_load_with_feature_iterator<R: io::Read>(
     iter: iter::Peekable<geojson::FeatureIterator<R>>,
-) -> Result<geo::GeometryCollection<f64>, LoadGeoJsonError> {
+) -> Result<geo_features::FeatureCollection, LoadGeoJsonError> {
     let tl = time_logger::start!("Parsing file and converting to geo-types");
-    let mut geo_geometry_collection: geo::GeometryCollection<f64>;
-    geo_geometry_collection = geo::GeometryCollection::default();
+    let mut features: Vec<geo_features::Feature> = vec![];
     for feature_result in iter {
         let feature = feature_result?;
-        if let Some(geometry) = feature.geometry {
-            geo_geometry_collection.0.push(geometry.try_into()?);
-        }
+        features.push(geojson_feature_to_geo_feature(feature)?);
     }
     tl.finish();
-    Ok(geo_geometry_collection)
+    Ok(geo_features::FeatureCollection::from_features(features))
 }
 
 fn load_from_reader<R: io::Read + io::Seek>(
     mut reader: R,
-) -> Result<geo::Geometry<f64>, LoadGeoJsonError> {
+) -> Result<geo_features::FeatureCollection, LoadGeoJsonError> {
     let mut iter = geojson::FeatureIterator::new(&mut reader).peekable();
 
-    let mut geo_geometry_collection: Option<geo::GeometryCollection<f64>> = None;
-
     if iter.peek().is_some() {
-        if let Ok(g) = attempt_to_load_with_feature_iterator(iter) {
-            geo_geometry_collection = Some(g);
+        if let Ok(feature_collection) = attempt_to_load_with_feature_iterator(iter) {
+            return Ok(feature_collection);
         } else {
             reader.rewind()?;
         }
     }
 
-    let geo_geometry_collection = match geo_geometry_collection {
-        Some(g) => g,
-        None => {
-            let tl = time_logger::start!("Parsing file");
-            let geojson: geojson::GeoJson = serde_json::from_reader(reader)?;
-            tl.finish();
+    let tl = time_logger::start!("Parsing file");
+    let geojson: geojson::GeoJson = serde_json::from_reader(reader)?;
+    tl.finish();
 
-            let tl = time_logger::start!("Converting to geo-types");
-            let geo_geometry_collection = geojson::quick_collection(&geojson)?;
-            tl.finish();
-            geo_geometry_collection
+    let tl = time_logger::start!("Converting to geo-types");
+    let feature_collection = match geojson {
+        geojson::GeoJson::Geometry(g) => geojson_geometry_to_geo_feature_collection(g)?,
+        geojson::GeoJson::Feature(f) => geojson_feature_to_geo_feature_collection(f)?,
+        geojson::GeoJson::FeatureCollection(fc) => {
+            geojson_feature_collection_to_geo_feature_collection(fc)?
         }
     };
+    tl.finish();
 
-    Ok(geo::Geometry::GeometryCollection(geo_geometry_collection))
+    Ok(feature_collection)
+}
+
+fn geojson_geometry_to_geo_feature_collection(
+    geojson_geometry: geojson::Geometry,
+) -> Result<geo_features::FeatureCollection, LoadGeoJsonError> {
+    let geo_geometry: geo::Geometry<f64> = geojson_geometry.try_into()?;
+    let feature = geo_features::Feature::from_geometry(geo_geometry, Default::default()).unwrap();
+    Ok(geo_features::FeatureCollection::from_feature(feature))
+}
+
+fn geojson_feature_to_geo_feature(
+    geojson_feature: geojson::Feature,
+) -> Result<geo_features::Feature, LoadGeoJsonError> {
+    let geo_geometry: geo::Geometry<f64> = geojson_feature.geometry.unwrap().try_into()?;
+    let properties = geojson_feature
+        .properties
+        .unwrap_or_default()
+        .iter()
+        .map(|(k, v)| (k.clone(), v.to_string()))
+        .collect();
+    Ok(geo_features::Feature::from_geometry(geo_geometry, properties).unwrap())
+}
+
+fn geojson_feature_to_geo_feature_collection(
+    geojson_feature: geojson::Feature,
+) -> Result<geo_features::FeatureCollection, LoadGeoJsonError> {
+    Ok(geo_features::FeatureCollection::from_feature(
+        geojson_feature_to_geo_feature(geojson_feature)?,
+    ))
+}
+
+fn geojson_feature_collection_to_geo_feature_collection(
+    geojson_feature_collection: geojson::FeatureCollection,
+) -> Result<geo_features::FeatureCollection, LoadGeoJsonError> {
+    let mut features: Vec<geo_features::Feature> = vec![];
+    for geojson_feature in geojson_feature_collection.features {
+        features.push(geojson_feature_to_geo_feature(geojson_feature)?);
+    }
+    Ok(geo_features::FeatureCollection::from_features(features))
 }

@@ -59,7 +59,19 @@ impl Layers {
         })
     }
 
+    pub fn feature_from_click(&self, coord: geo::Coordinate<f64>) -> Option<&geo_features::Feature> {
+        for layer in self.iter_top_to_bottom() {
+            for feature in &layer.projected_feature.as_ref()?.features {
+                if feature.contains(&coord) {
+                    return Some(feature);
+                }
+            }
+        }
+        None
+    }
+
     // Returns whether the selected layer changed
+    /*
     pub fn set_selected_layer_from_mouse_press(&mut self, coord: geo::Coordinate<f64>) -> bool {
         let selected_layer_id = {
             let mut iter = self.containing_coord(coord);
@@ -75,6 +87,7 @@ impl Layers {
 
         prev_selected_layer_id != self.selected_layer_id
     }
+    */
 
     fn get_index(&self, layer_id: rgis_layer_id::LayerId) -> Option<usize> {
         self.data.iter().position(|entry| entry.id == layer_id)
@@ -117,13 +130,13 @@ impl Layers {
 
     fn add(
         &mut self,
-        unprojected: geo::Geometry<f64>,
+        unprojected: geo_features::FeatureCollection,
         name: String,
         source_crs: String,
-    ) -> Result<rgis_layer_id::LayerId, geo_features::BoundingBoxError> {
+    ) -> Result<rgis_layer_id::LayerId, geo_features::BoundingRectError> {
         let layer_id = self.next_layer_id();
         let layer = Layer {
-            unprojected_feature: geo_features::FeatureCollection::from_geometry(unprojected)?,
+            unprojected_feature: unprojected,
             projected_feature: None,
             color: colorous_color_to_bevy_color(next_colorous_color()),
             name,
@@ -299,7 +312,14 @@ fn handle_map_clicked_events(
     mut layers: ResMut<Layers>,
 ) {
     for event in map_clicked_event_reader.iter() {
-        layers.set_selected_layer_from_mouse_press(event.0);
+        for layer in layers.iter_top_to_bottom() {
+            for feature in &layer.projected_feature.as_ref().unwrap().features {
+                println!("feature properties: {:?}", feature.properties);
+            }
+        }
+        if let Some(feature) = layers.feature_from_click(event.0) {
+            println!("Metadata: {:?}", feature.properties);
+        }
     }
 }
 

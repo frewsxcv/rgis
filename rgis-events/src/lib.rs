@@ -134,7 +134,7 @@ pub struct ChangeCrsEvent {
 pub struct CrsChangedEvent;
 
 pub struct CreateLayerEvent {
-    pub unprojected_geometry: geo::Geometry<f64>,
+    pub unprojected_geometry: geo_features::FeatureCollection,
     pub name: String,
     pub source_crs: String,
 }

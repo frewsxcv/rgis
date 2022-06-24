@@ -48,13 +48,17 @@ fn handle_reproject_geometry_task_completion_events(
             None => continue,
         };
 
-        let feature = match geo_features::FeatureCollection::from_geometry(outcome.geometry) {
+        let feature = geo_features::FeatureCollection::from_feature(
+            geo_features::Feature::from_geometry(outcome.geometry, Default::default()).unwrap(),
+        );
+        /*
             Ok(o) => o,
             Err(e) => {
                 bevy::log::error!("Encountered an error generating a feature: {:?}", e);
                 continue;
             }
         };
+        */
 
         layer.projected_feature = Some(feature);
 
