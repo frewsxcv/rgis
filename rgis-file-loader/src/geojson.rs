@@ -100,10 +100,20 @@ fn geojson_feature_to_geo_feature(
     let properties = geojson_feature
         .properties
         .unwrap_or_default()
-        .iter()
-        .map(|(k, v)| (k.clone(), v.to_string()))
+        .into_iter()
+        .map(|(k, v)| (k, serde_json_value_to_geo_features_value(v)))
         .collect();
     Ok(geo_features::Feature::from_geometry(geo_geometry, properties).unwrap())
+}
+
+fn serde_json_value_to_geo_features_value(v: serde_json::Value) -> geo_features::Value {
+    match v {
+        serde_json::Value::Bool(b) => geo_features::Value::Boolean(b),
+        serde_json::Value::Number(n) => geo_features::Value::Number(n.as_f64().unwrap()),
+        serde_json::Value::String(s) => geo_features::Value::String(s),
+        serde_json::Value::Null => geo_features::Value::Null,
+        n => geo_features::Value::String(n.to_string()),
+    }
 }
 
 fn geojson_feature_to_geo_feature_collection(

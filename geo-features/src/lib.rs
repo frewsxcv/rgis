@@ -4,15 +4,22 @@ use std::collections;
 #[derive(Clone, Debug)]
 pub struct Feature {
     pub geometry: geo::Geometry<f64>,
-    // TODO: this should allow for non-string values
-    pub properties: collections::HashMap<String, String>,
+    pub properties: collections::HashMap<String, Value>,
     pub bounding_rect: geo::Rect<f64>,
+}
+
+#[derive(Clone, Debug)]
+pub enum Value {
+    String(String),
+    Number(f64),
+    Boolean(bool),
+    Null,
 }
 
 impl Feature {
     pub fn from_geometry(
         geometry: geo::Geometry<f64>,
-        properties: collections::HashMap<String, String>,
+        properties: collections::HashMap<String, Value>,
     ) -> Result<Self, BoundingRectError> {
         let bounding_rect = geometry.bounding_rect().ok_or(BoundingRectError)?;
 

@@ -2,7 +2,6 @@ use bevy::ecs::event::Events;
 use bevy::prelude::*;
 use std::mem;
 
-// System
 fn load_geojson_file_handler(
     mut load_event_reader: ResMut<Events<rgis_events::LoadGeoJsonFileEvent>>,
     mut task_spawner: rgis_task::TaskSpawner,
