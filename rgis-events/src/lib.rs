@@ -133,6 +133,8 @@ pub struct ChangeCrsEvent {
 
 pub struct CrsChangedEvent;
 
+pub struct RenderMessageEvent(pub String);
+
 pub struct CreateLayerEvent {
     pub unprojected_geometry: geo_features::FeatureCollection,
     pub name: String,
@@ -162,6 +164,7 @@ impl bevy::app::Plugin for Plugin {
             .add_event::<ChangeCrsEvent>()
             .add_event::<CrsChangedEvent>()
             .add_event::<MapClickedEvent>()
+            .add_event::<RenderMessageEvent>()
             .add_event::<LayerReprojectedEvent>();
     }
 }

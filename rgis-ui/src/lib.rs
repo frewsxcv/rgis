@@ -28,7 +28,8 @@ struct UiState {
     is_add_layer_window_visible: bool,
     /// Is the 'change CRS' window visible?
     is_change_crs_window_visible: bool,
-    messages: Vec<String>,
+    is_message_window_visible: bool,
+    message: Option<String>,
 }
 
 impl bevy::app::Plugin for Plugin {
@@ -39,9 +40,11 @@ impl bevy::app::Plugin for Plugin {
                 managing_layer: None,
                 is_add_layer_window_visible: true,
                 is_change_crs_window_visible: false,
-                messages: vec![],
+                is_message_window_visible: false,
+                message: None,
             })
             .add_system(handle_open_file_task)
+            .add_system(handle_render_message_event)
             .add_system(render_message_window.label("message_window"))
             .add_system_set(
                 SystemSet::new()
@@ -87,6 +90,16 @@ fn render_top_panel(
         app_settings: &mut app_settings,
     }
     .render();
+}
+
+fn handle_render_message_event(
+    mut render_message_events: ResMut<bevy::ecs::event::Events<rgis_events::RenderMessageEvent>>,
+    mut state: ResMut<UiState>,
+) {
+    for event in render_message_events.drain() {
+        state.message = Some(event.0);
+        state.is_message_window_visible = true;
+    }
 }
 
 fn render_bottom_panel(

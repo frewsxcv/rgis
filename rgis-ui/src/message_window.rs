@@ -7,10 +7,13 @@ pub(crate) struct MessageWindow<'a> {
 
 impl<'a> MessageWindow<'a> {
     pub(crate) fn render(&mut self) {
-        if let Some(message) = self.state.messages.pop() {
+        if !self.state.is_message_window_visible && self.state.message.is_some() {
+            self.state.message = None;
+        }
+        if let Some(ref message) = self.state.message {
             egui::Window::new("Message Window")
                 .id(egui::Id::new("Message window"))
-                .open(&mut true)
+                .open(&mut self.state.is_message_window_visible)
                 .anchor(egui::Align2::CENTER_CENTER, [0., 0.])
                 .show(self.bevy_egui_ctx.ctx_mut(), |ui| {
                     ui.label(message);
