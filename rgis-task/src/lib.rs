@@ -44,7 +44,7 @@ pub trait Task: any::Any + Sized + Send + Sync + 'static {
         };
 
         pool.spawn(async move {
-            let instant = time::Instant::now();
+            let instant = instant::Instant::now();
             bevy::log::info!("Starting task '{}'", task_name);
             let outcome = self.perform().await;
             bevy::log::info!("Completed task '{}' in {:?}", task_name, instant.elapsed());
