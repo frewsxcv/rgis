@@ -4,7 +4,7 @@ use std::{collections, fmt};
 #[derive(Clone, Debug)]
 pub struct Feature {
     pub geometry: geo::Geometry,
-    pub properties: collections::HashMap<String, Value>,
+    pub properties: Properties,
     pub bounding_rect: geo::Rect,
 }
 
@@ -16,10 +16,12 @@ pub enum Value {
     Null,
 }
 
+pub type Properties = collections::HashMap<String, Value>;
+
 impl Feature {
     pub fn from_geometry(
         geometry: geo::Geometry,
-        properties: collections::HashMap<String, Value>,
+        properties: Properties,
     ) -> Result<Self, BoundingRectError> {
         let bounding_rect = geometry.bounding_rect().ok_or(BoundingRectError)?;
 

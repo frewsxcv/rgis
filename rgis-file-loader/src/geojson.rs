@@ -1,6 +1,6 @@
 #[cfg(not(target_arch = "wasm32"))]
 use std::path;
-use std::{io, iter};
+use std::{error, fmt, io, iter};
 
 pub enum GeoJsonSource {
     #[cfg(not(target_arch = "wasm32"))]
@@ -42,6 +42,8 @@ pub enum LoadGeoJsonError {
     SerdeJson(#[from] serde_json::Error),
     #[error("{0}")]
     BoundingRect(#[from] geo_features::BoundingRectError),
+    #[error("{0}")]
+    JsonNumberToFloat(#[from] JsonNumberToFloatError)
 }
 
 fn attempt_to_load_with_feature_iterator<R: io::Read>(
@@ -103,22 +105,37 @@ fn geojson_feature_to_geo_feature(
         .properties
         .unwrap_or_default()
         .into_iter()
-        .map(|(k, v)| (k, serde_json_value_to_geo_features_value(v)))
-        .collect();
+        .map(|(k, v)| serde_json_value_to_geo_features_value(v).map(|v| (k, v)))
+        .collect::<Result<geo_features::Properties, JsonNumberToFloatError>>()?;
     Ok(geo_features::Feature::from_geometry(
         geo_geometry,
         properties,
     )?)
 }
 
-fn serde_json_value_to_geo_features_value(v: serde_json::Value) -> geo_features::Value {
-    match v {
+#[derive(Debug)]
+pub struct JsonNumberToFloatError;
+
+impl fmt::Display for JsonNumberToFloatError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "could not convert JSON number to f64")
+    }
+}
+
+impl error::Error for JsonNumberToFloatError {}
+
+fn serde_json_value_to_geo_features_value(
+    v: serde_json::Value,
+) -> Result<geo_features::Value, JsonNumberToFloatError> {
+    Ok(match v {
         serde_json::Value::Bool(b) => geo_features::Value::Boolean(b),
-        serde_json::Value::Number(n) => geo_features::Value::Number(n.as_f64().unwrap()),
+        serde_json::Value::Number(n) => {
+            geo_features::Value::Number(n.as_f64().ok_or(JsonNumberToFloatError)?)
+        }
         serde_json::Value::String(s) => geo_features::Value::String(s),
         serde_json::Value::Null => geo_features::Value::Null,
         n => geo_features::Value::String(n.to_string()),
-    }
+    })
 }
 
 fn geojson_feature_to_geo_feature_collection(
