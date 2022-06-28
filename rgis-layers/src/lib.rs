@@ -59,10 +59,7 @@ impl Layers {
         })
     }
 
-    pub fn feature_from_click(
-        &self,
-        coord: geo::Coordinate,
-    ) -> Option<&geo_features::Feature> {
+    pub fn feature_from_click(&self, coord: geo::Coordinate) -> Option<&geo_features::Feature> {
         for layer in self.iter_top_to_bottom() {
             for (i, projected_feature) in layer
                 .projected_feature
