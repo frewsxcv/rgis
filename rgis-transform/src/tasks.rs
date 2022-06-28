@@ -6,6 +6,8 @@ pub enum TransformError {
     #[cfg(not(target_arch = "wasm32"))]
     #[error("{0}")]
     Proj(#[from] geo::algorithm::proj::TransformError),
+    #[error("{0}")]
+    BoundingRect(#[from] geo_features::BoundingRectError),
 }
 
 pub struct ReprojectGeometryTask {
@@ -47,10 +49,10 @@ impl rgis_task::Task for ReprojectGeometryTask {
                         .transform_crs_to_crs(&self.source_crs, &self.target_crs)?;
                 }
 
-                feature.recalculate_bounding_rect().unwrap();
+                feature.recalculate_bounding_rect()?;
             }
 
-            self.feature_collection.recalculate_bounding_rect().unwrap();
+            self.feature_collection.recalculate_bounding_rect()?;
 
             Ok(ReprojectGeometryTaskOutcome {
                 feature_collection: self.feature_collection,
