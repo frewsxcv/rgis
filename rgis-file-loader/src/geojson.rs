@@ -43,7 +43,7 @@ pub enum LoadGeoJsonError {
     #[error("{0}")]
     BoundingRect(#[from] geo_features::BoundingRectError),
     #[error("{0}")]
-    JsonNumberToFloat(#[from] JsonNumberToFloatError)
+    JsonNumberToFloat(#[from] JsonNumberToFloatError),
 }
 
 fn attempt_to_load_with_feature_iterator<R: io::Read>(
