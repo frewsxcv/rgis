@@ -15,4 +15,5 @@ bevy = { version = "0.7", default-features = false, features = [
     "wayland",
 ] }
 geo = "0.21"
+geo-features = { path = "../geo-features" }
 rgis-layer-id = { path = "../rgis-layer-id" }

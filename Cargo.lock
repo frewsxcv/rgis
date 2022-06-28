@@ -2874,6 +2874,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "geo",
+ "geo-features",
  "rgis-layer-id",
 ]
 
@@ -2883,6 +2884,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "geo",
+ "geo-features",
  "geojson",
  "rgis-cli",
  "rgis-events",

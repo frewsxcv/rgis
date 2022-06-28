@@ -1,3 +1,5 @@
+use crate::FileLoader;
+
 pub struct LoadGeoJsonFileTask {
     pub geojson_source: crate::geojson::GeoJsonSource,
     pub name: String,
@@ -5,7 +7,7 @@ pub struct LoadGeoJsonFileTask {
 }
 
 pub struct LoadGeoJsonFileTaskOutcome {
-    pub geometry: geo::Geometry<f64>,
+    pub geometry: geo_features::FeatureCollection,
     pub name: String,
     pub source_crs: String,
 }
