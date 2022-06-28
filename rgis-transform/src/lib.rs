@@ -18,6 +18,7 @@ impl bevy::app::Plugin for Plugin {
 }
 
 fn set_proj_log_level() {
+    #[cfg(not(target_arch = "wasm32"))]
     unsafe {
         proj_sys::proj_log_level(std::ptr::null_mut(), proj_sys::PJ_LOG_LEVEL_PJ_LOG_NONE);
     }
