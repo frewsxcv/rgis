@@ -17,7 +17,7 @@ impl LineStringMeshBuilder {
     /// Call for `add_earcutr_input` for each polygon you want to add to the mesh.
     pub fn add_line_string(
         &mut self,
-        line_string: &geo::LineString<f64>,
+        line_string: &geo::LineString,
     ) -> Result<(), num::TryFromIntError> {
         let index_base = self.vertices.len();
 

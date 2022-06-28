@@ -15,7 +15,7 @@ impl PointMeshBuilder {
     }
 
     /// Call for `add_earcutr_input` for each polygon you want to add to the mesh.
-    pub fn add_point(&mut self, point: &geo::Point<f64>) -> Result<(), num::TryFromIntError> {
+    pub fn add_point(&mut self, point: &geo::Point) -> Result<(), num::TryFromIntError> {
         let index_base = self.vertices.len();
         self.vertices
             .push([point.x() as f32, point.y() as f32, 0.0f32]);

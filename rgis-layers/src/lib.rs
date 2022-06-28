@@ -46,7 +46,7 @@ impl Layers {
     }
 
     // coord is assumed to be projected
-    pub fn containing_coord(&self, coord: geo::Coordinate<f64>) -> impl Iterator<Item = &Layer> {
+    pub fn containing_coord(&self, coord: geo::Coordinate) -> impl Iterator<Item = &Layer> {
         self.iter_top_to_bottom().filter(move |layer| {
             if let Some(ref projected) = layer.projected_feature {
                 for feature in &projected.features {
@@ -61,7 +61,7 @@ impl Layers {
 
     pub fn feature_from_click(
         &self,
-        coord: geo::Coordinate<f64>,
+        coord: geo::Coordinate,
     ) -> Option<&geo_features::Feature> {
         for layer in self.iter_top_to_bottom() {
             for (i, projected_feature) in layer
@@ -81,7 +81,7 @@ impl Layers {
 
     // Returns whether the selected layer changed
     /*
-    pub fn set_selected_layer_from_mouse_press(&mut self, coord: geo::Coordinate<f64>) -> bool {
+    pub fn set_selected_layer_from_mouse_press(&mut self, coord: geo::Coordinate) -> bool {
         let selected_layer_id = {
             let mut iter = self.containing_coord(coord);
             let new_selected_layer = iter.next();

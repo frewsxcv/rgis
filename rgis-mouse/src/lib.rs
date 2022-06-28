@@ -9,7 +9,7 @@ use bevy::ecs::system::{Query, Res, ResMut};
 
 #[derive(Copy, Clone)]
 pub struct MousePos {
-    pub projected: geo::Coordinate<f64>,
+    pub projected: geo::Coordinate,
 }
 
 fn cursor_moved_system(
@@ -39,7 +39,7 @@ fn screen_coords_to_geo_coords(
     screen_coords: bevy::prelude::Vec2,
     transform: &bevy::transform::components::Transform,
     window: &bevy::prelude::Window,
-) -> geo::Coordinate<f64> {
+) -> geo::Coordinate {
     let size = bevy::math::Vec2::new(window.width() as f32, window.height() as f32);
 
     // the default orthographic projection is in pixels from the center;

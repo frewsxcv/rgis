@@ -3,9 +3,9 @@ use std::collections;
 
 #[derive(Clone, Debug)]
 pub struct Feature {
-    pub geometry: geo::Geometry<f64>,
+    pub geometry: geo::Geometry,
     pub properties: collections::HashMap<String, Value>,
-    pub bounding_rect: geo::Rect<f64>,
+    pub bounding_rect: geo::Rect,
 }
 
 #[derive(Clone, Debug)]
@@ -18,7 +18,7 @@ pub enum Value {
 
 impl Feature {
     pub fn from_geometry(
-        geometry: geo::Geometry<f64>,
+        geometry: geo::Geometry,
         properties: collections::HashMap<String, Value>,
     ) -> Result<Self, BoundingRectError> {
         let bounding_rect = geometry.bounding_rect().ok_or(BoundingRectError)?;
@@ -36,8 +36,8 @@ impl Feature {
     }
 }
 
-impl Contains<geo::Coordinate<f64>> for Feature {
-    fn contains(&self, coord: &geo::Coordinate<f64>) -> bool {
+impl Contains<geo::Coordinate> for Feature {
+    fn contains(&self, coord: &geo::Coordinate) -> bool {
         self.bounding_rect.contains(coord) && self.geometry.contains(coord)
     }
 }
@@ -45,7 +45,7 @@ impl Contains<geo::Coordinate<f64>> for Feature {
 #[derive(Clone, Debug)]
 pub struct FeatureCollection {
     pub features: Vec<Feature>,
-    pub bounding_rect: geo::Rect<f64>,
+    pub bounding_rect: geo::Rect,
 }
 
 #[derive(Debug)]
@@ -66,7 +66,7 @@ impl FeatureCollection {
         }
     }
 
-    pub fn to_geometry_collection(&self) -> geo::GeometryCollection<f64> {
+    pub fn to_geometry_collection(&self) -> geo::GeometryCollection {
         geo::GeometryCollection(
             self.features
                 .iter()
@@ -75,7 +75,7 @@ impl FeatureCollection {
         )
     }
 
-    pub fn bounding_rect(&self) -> Result<geo::Rect<f64>, BoundingRectError> {
+    pub fn bounding_rect(&self) -> Result<geo::Rect, BoundingRectError> {
         // TODO: audit performance
         self.to_geometry_collection()
             .bounding_rect()
@@ -88,7 +88,7 @@ impl FeatureCollection {
     }
 }
 
-fn bounding_rect_from_features(features: &[Feature]) -> geo::Rect<f64> {
+fn bounding_rect_from_features(features: &[Feature]) -> geo::Rect {
     assert!(!features.is_empty());
     let mut bounding_rect = features[0].bounding_rect;
     for feature in &features[1..] {

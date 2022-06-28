@@ -1619,9 +1619,9 @@ dependencies = [
 
 [[package]]
 name = "geo"
-version = "0.21.0"
+version = "0.22.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "20f1cd8cc66ae5c52a2b9328e3562adde921b203a10d6ea0ac24c349de4c42c4"
+checksum = "6f9a9248b7d4f0168bbf24d66d1cf6f11f49949abe44f8b8c15657dafd067cd0"
 dependencies = [
  "float_next_after",
  "geo-types",
@@ -2667,9 +2667,9 @@ checksum = "2f61dcf0b917cd75d4521d7343d1ffff3d1583054133c9b5cbea3375c703c40d"
 
 [[package]]
 name = "proj"
-version = "0.26.0"
+version = "0.27.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "edc1004266e35da94b85f69b93a59b6eb23da55c5c9d68a7b305e272ccd28548"
+checksum = "07f0b7c202d7fc3c2cc7da3667141a041e4a0700ed7f6948ca0ddbfb3f0c6ff4"
 dependencies = [
  "geo-types",
  "libc",
@@ -2977,7 +2977,6 @@ dependencies = [
  "geo",
  "geo-features",
  "geo-proj-js",
- "proj",
  "proj-sys",
  "rgis-events",
  "rgis-layer-id",

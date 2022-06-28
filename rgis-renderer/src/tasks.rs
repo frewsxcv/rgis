@@ -1,12 +1,12 @@
 pub struct MeshBuildingTask {
     pub layer_id: rgis_layer_id::LayerId,
-    pub geometry: geo::Geometry<f64>,
+    pub geometry: geo::Geometry,
 }
 
 impl rgis_task::Task for MeshBuildingTask {
     type Outcome = Result<
         (Vec<bevy::render::mesh::Mesh>, rgis_layer_id::LayerId),
-        <geo::Geometry<f64> as geo_bevy::BuildBevyMeshes>::Error,
+        <geo::Geometry as geo_bevy::BuildBevyMeshes>::Error,
     >;
 
     fn name(&self) -> String {

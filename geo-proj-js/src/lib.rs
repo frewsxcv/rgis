@@ -21,7 +21,7 @@ impl fmt::Display for Error {
 impl error::Error for Error {}
 
 pub fn transform(
-    geometry: &mut geo::Geometry<f64>,
+    geometry: &mut geo::Geometry,
     source_crs: &str,
     target_crs: &str,
 ) -> Result<(), Error> {
@@ -63,7 +63,7 @@ fn in_place(
     (x, y): (f64, f64),
     forward: &js_sys::Function,
     array: &js_sys::Array,
-) -> Result<geo::Coordinate<f64>, Error> {
+) -> Result<geo::Coordinate, Error> {
     array.set(0, wasm_bindgen::JsValue::from_f64(x));
     array.set(1, wasm_bindgen::JsValue::from_f64(y));
     let result = forward

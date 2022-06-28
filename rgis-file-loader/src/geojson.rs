@@ -88,7 +88,7 @@ fn load_from_reader<R: io::Read + io::Seek>(
 fn geojson_geometry_to_geo_feature_collection(
     geojson_geometry: geojson::Geometry,
 ) -> Result<geo_features::FeatureCollection, LoadGeoJsonError> {
-    let geo_geometry: geo::Geometry<f64> = geojson_geometry.try_into()?;
+    let geo_geometry: geo::Geometry = geojson_geometry.try_into()?;
     let feature = geo_features::Feature::from_geometry(geo_geometry, Default::default()).unwrap();
     Ok(geo_features::FeatureCollection::from_feature(feature))
 }
@@ -96,7 +96,7 @@ fn geojson_geometry_to_geo_feature_collection(
 fn geojson_feature_to_geo_feature(
     geojson_feature: geojson::Feature,
 ) -> Result<geo_features::Feature, LoadGeoJsonError> {
-    let geo_geometry: geo::Geometry<f64> = geojson_feature.geometry.unwrap().try_into()?;
+    let geo_geometry: geo::Geometry = geojson_feature.geometry.unwrap().try_into()?;
     let properties = geojson_feature
         .properties
         .unwrap_or_default()

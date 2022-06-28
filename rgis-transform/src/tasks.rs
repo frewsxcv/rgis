@@ -5,7 +5,7 @@ pub enum TransformError {
     GeoProjJs(#[from] geo_proj_js::Error),
     #[cfg(not(target_arch = "wasm32"))]
     #[error("{0}")]
-    Proj(#[from] proj::TransformError),
+    Proj(#[from] geo::algorithm::proj::TransformError),
 }
 
 pub struct ReprojectGeometryTask {

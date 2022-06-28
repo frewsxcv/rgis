@@ -76,7 +76,7 @@ pub trait BuildBevyMeshes {
     fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) -> Result<(), Self::Error>;
 }
 
-impl BuildBevyMeshes for geo::Point<f64> {
+impl BuildBevyMeshes for geo::Point {
     type Error = num::TryFromIntError;
 
     fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) -> Result<(), Self::Error> {
@@ -84,7 +84,7 @@ impl BuildBevyMeshes for geo::Point<f64> {
     }
 }
 
-impl BuildBevyMeshes for geo::LineString<f64> {
+impl BuildBevyMeshes for geo::LineString {
     type Error = num::TryFromIntError;
 
     fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) -> Result<(), Self::Error> {
@@ -92,7 +92,7 @@ impl BuildBevyMeshes for geo::LineString<f64> {
     }
 }
 
-impl BuildBevyMeshes for geo::Polygon<f64> {
+impl BuildBevyMeshes for geo::Polygon {
     type Error = bad::Never;
 
     fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) -> Result<(), Self::Error> {
@@ -102,7 +102,7 @@ impl BuildBevyMeshes for geo::Polygon<f64> {
     }
 }
 
-impl BuildBevyMeshes for geo::MultiPoint<f64> {
+impl BuildBevyMeshes for geo::MultiPoint {
     type Error = num::TryFromIntError;
 
     fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) -> Result<(), Self::Error> {
@@ -113,7 +113,7 @@ impl BuildBevyMeshes for geo::MultiPoint<f64> {
     }
 }
 
-impl BuildBevyMeshes for geo::MultiLineString<f64> {
+impl BuildBevyMeshes for geo::MultiLineString {
     type Error = num::TryFromIntError;
 
     fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) -> Result<(), Self::Error> {
@@ -124,7 +124,7 @@ impl BuildBevyMeshes for geo::MultiLineString<f64> {
     }
 }
 
-impl BuildBevyMeshes for geo::MultiPolygon<f64> {
+impl BuildBevyMeshes for geo::MultiPolygon {
     type Error = bad::Never;
 
     fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) -> Result<(), Self::Error> {
@@ -135,7 +135,7 @@ impl BuildBevyMeshes for geo::MultiPolygon<f64> {
     }
 }
 
-impl BuildBevyMeshes for geo::Line<f64> {
+impl BuildBevyMeshes for geo::Line {
     type Error = num::TryFromIntError;
 
     fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) -> Result<(), Self::Error> {
@@ -143,7 +143,7 @@ impl BuildBevyMeshes for geo::Line<f64> {
     }
 }
 
-impl BuildBevyMeshes for geo::Triangle<f64> {
+impl BuildBevyMeshes for geo::Triangle {
     type Error = bad::Never;
 
     fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) -> Result<(), Self::Error> {
@@ -151,7 +151,7 @@ impl BuildBevyMeshes for geo::Triangle<f64> {
     }
 }
 
-impl BuildBevyMeshes for geo::Rect<f64> {
+impl BuildBevyMeshes for geo::Rect {
     type Error = bad::Never;
 
     fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) -> Result<(), Self::Error> {
@@ -159,7 +159,7 @@ impl BuildBevyMeshes for geo::Rect<f64> {
     }
 }
 
-impl BuildBevyMeshes for geo::Geometry<f64> {
+impl BuildBevyMeshes for geo::Geometry {
     type Error = num::TryFromIntError;
 
     fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) -> Result<(), Self::Error> {
@@ -179,7 +179,7 @@ impl BuildBevyMeshes for geo::Geometry<f64> {
     }
 }
 
-impl BuildBevyMeshes for geo::GeometryCollection<f64> {
+impl BuildBevyMeshes for geo::GeometryCollection {
     type Error = num::TryFromIntError;
 
     fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) -> Result<(), Self::Error> {
@@ -190,7 +190,7 @@ impl BuildBevyMeshes for geo::GeometryCollection<f64> {
     }
 }
 
-fn polygon_to_earcutr_input(polygon: &geo::Polygon<f64>) -> bevy_earcutr::EarcutrInput {
+fn polygon_to_earcutr_input(polygon: &geo::Polygon) -> bevy_earcutr::EarcutrInput {
     let mut vertices = Vec::with_capacity(polygon.coords_count() * 2);
     let mut interior_indices = Vec::with_capacity(polygon.interiors().len());
 
@@ -207,7 +207,7 @@ fn polygon_to_earcutr_input(polygon: &geo::Polygon<f64>) -> bevy_earcutr::Earcut
     }
 }
 
-fn flat_line_string_coords_2(line_string: &geo::LineString<f64>, vertices: &mut Vec<f64>) {
+fn flat_line_string_coords_2(line_string: &geo::LineString, vertices: &mut Vec<f64>) {
     for coord in &line_string.0 {
         vertices.push(coord.x);
         vertices.push(coord.y);

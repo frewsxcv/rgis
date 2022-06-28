@@ -59,7 +59,7 @@ pub struct MoveLayerEvent(pub rgis_layer_id::LayerId, pub MoveDirection);
 
 pub struct LayerZIndexUpdatedEvent(pub rgis_layer_id::LayerId);
 
-pub struct MapClickedEvent(pub geo::Coordinate<f64>);
+pub struct MapClickedEvent(pub geo::Coordinate);
 
 // TODO: this can be removed
 #[derive(Debug)]
