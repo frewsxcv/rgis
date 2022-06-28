@@ -40,6 +40,8 @@ pub enum LoadGeoJsonError {
     Io(#[from] io::Error),
     #[error("{0}")]
     SerdeJson(#[from] serde_json::Error),
+    #[error("{0}")]
+    BoundingRect(#[from] geo_features::BoundingRectError),
 }
 
 fn attempt_to_load_with_feature_iterator<R: io::Read>(
@@ -89,7 +91,7 @@ fn geojson_geometry_to_geo_feature_collection(
     geojson_geometry: geojson::Geometry,
 ) -> Result<geo_features::FeatureCollection, LoadGeoJsonError> {
     let geo_geometry: geo::Geometry = geojson_geometry.try_into()?;
-    let feature = geo_features::Feature::from_geometry(geo_geometry, Default::default()).unwrap();
+    let feature = geo_features::Feature::from_geometry(geo_geometry, Default::default())?;
     Ok(geo_features::FeatureCollection::from_feature(feature))
 }
 
@@ -103,7 +105,7 @@ fn geojson_feature_to_geo_feature(
         .into_iter()
         .map(|(k, v)| (k, serde_json_value_to_geo_features_value(v)))
         .collect();
-    Ok(geo_features::Feature::from_geometry(geo_geometry, properties).unwrap())
+    Ok(geo_features::Feature::from_geometry(geo_geometry, properties)?)
 }
 
 fn serde_json_value_to_geo_features_value(v: serde_json::Value) -> geo_features::Value {

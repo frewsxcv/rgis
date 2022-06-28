@@ -1,5 +1,5 @@
 use geo::{BoundingRect, Contains};
-use std::collections;
+use std::{collections, fmt};
 
 #[derive(Clone, Debug)]
 pub struct Feature {
@@ -50,6 +50,14 @@ pub struct FeatureCollection {
 
 #[derive(Debug)]
 pub struct BoundingRectError;
+
+impl fmt::Display for BoundingRectError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "could not generate bounding rect")
+    }
+}
+
+impl std::error::Error for BoundingRectError {}
 
 impl FeatureCollection {
     pub fn from_feature(feature: Feature) -> Self {
