@@ -1,13 +1,14 @@
 use bevy_egui::egui;
 
-pub(crate) struct BottomPanel<'a> {
+pub(crate) struct BottomPanel<'a, 'w, 's> {
     pub egui_ctx: &'a egui::Context,
     pub mouse_pos: &'a rgis_mouse::MousePos,
     pub rgis_settings: &'a rgis_settings::RgisSettings,
-    pub state: &'a mut crate::UiState,
+    pub open_change_crs_window_event_writer:
+        &'a mut bevy::ecs::event::EventWriter<'w, 's, rgis_events::OpenChangeCrsWindow>,
 }
 
-impl<'a> BottomPanel<'a> {
+impl<'a, 'w, 's> BottomPanel<'a, 'w, 's> {
     pub(crate) fn render(&mut self) {
         let inner_response = egui::TopBottomPanel::bottom("bottom").show(self.egui_ctx, |ui| {
             ui.horizontal(|ui| {
@@ -32,7 +33,7 @@ impl<'a> BottomPanel<'a> {
                     ui.add_enabled(cfg!(not(target_arch = "wasm32")), egui::Button::new("✏"));
 
                 if button_response.clicked() {
-                    self.state.is_change_crs_window_visible = true;
+                    self.open_change_crs_window_event_writer.send_default();
                 }
 
                 ui.label(format!("🌍 CRS: {}", self.rgis_settings.target_crs));

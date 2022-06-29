@@ -61,6 +61,9 @@ pub struct LayerZIndexUpdatedEvent(pub rgis_layer_id::LayerId);
 
 pub struct MapClickedEvent(pub geo::Coordinate);
 
+#[derive(Default)]
+pub struct OpenChangeCrsWindow;
+
 // TODO: this can be removed
 #[derive(Debug)]
 pub enum LoadGeoJsonFileEvent {
@@ -165,6 +168,7 @@ impl bevy::app::Plugin for Plugin {
             .add_event::<CrsChangedEvent>()
             .add_event::<MapClickedEvent>()
             .add_event::<RenderMessageEvent>()
+            .add_event::<OpenChangeCrsWindow>()
             .add_event::<LayerReprojectedEvent>();
     }
 }

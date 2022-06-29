@@ -18,6 +18,7 @@ mod top_panel;
 
 pub struct Plugin;
 
+// TODO: most of these could be moved to individual Local or Res
 #[derive(Debug, Default)]
 struct UiState {
     /// Is the 'manage layer' window visible?
@@ -26,8 +27,6 @@ struct UiState {
     managing_layer: Option<rgis_layer_id::LayerId>,
     /// Is the 'add layer' window visible?
     is_add_layer_window_visible: bool,
-    /// Is the 'change CRS' window visible?
-    is_change_crs_window_visible: bool,
     is_message_window_visible: bool,
     message: Option<String>,
 }
@@ -37,9 +36,8 @@ impl bevy::app::Plugin for Plugin {
         app.add_plugin(bevy_egui::EguiPlugin)
             .insert_resource(UiState {
                 is_manage_layer_window_visible: false,
-                managing_layer: None,
                 is_add_layer_window_visible: true,
-                is_change_crs_window_visible: false,
+                managing_layer: None,
                 is_message_window_visible: false,
                 message: None,
             })
@@ -103,16 +101,16 @@ fn handle_render_message_event(
 }
 
 fn render_bottom_panel(
-    mut state: ResMut<UiState>,
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
     mouse_pos: Res<rgis_mouse::MousePos>,
     rgis_settings: Res<rgis_settings::RgisSettings>,
+    mut open_change_crs_window_event_writer: bevy::ecs::event::EventWriter<rgis_events::OpenChangeCrsWindow>,
 ) {
     bottom_panel::BottomPanel {
         egui_ctx: bevy_egui_ctx.ctx_mut(),
         mouse_pos: &mouse_pos,
         rgis_settings: &rgis_settings,
-        state: &mut state,
+        open_change_crs_window_event_writer: &mut open_change_crs_window_event_writer,
     }
     .render();
 }
@@ -182,13 +180,18 @@ fn render_add_layer_window(
 }
 
 fn render_change_crs_window(
-    mut state: ResMut<UiState>,
+    mut is_visible: Local<bool>,
+    mut open_change_crs_window_event_reader: bevy::ecs::event::EventReader<rgis_events::OpenChangeCrsWindow>,
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
     mut text_field_value: Local<String>,
     mut change_crs_event_writer: bevy::ecs::event::EventWriter<rgis_events::ChangeCrsEvent>,
 ) {
+    if open_change_crs_window_event_reader.iter().next().is_some() {
+        *is_visible = true;
+    }
+
     change_crs_window::ChangeCrsWindow {
-        state: &mut state,
+        is_visible: &mut is_visible,
         bevy_egui_ctx: &mut bevy_egui_ctx,
         text_field_value: &mut text_field_value,
         change_crs_event_writer: &mut change_crs_event_writer,

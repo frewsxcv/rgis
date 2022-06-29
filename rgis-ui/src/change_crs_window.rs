@@ -1,7 +1,7 @@
 use bevy_egui::egui;
 
 pub(crate) struct ChangeCrsWindow<'a, 'w, 's> {
-    pub state: &'a mut crate::UiState,
+    pub is_visible: &'a mut bool,
     pub bevy_egui_ctx: &'a mut bevy_egui::EguiContext,
     pub text_field_value: &'a mut String,
     pub change_crs_event_writer:
@@ -11,7 +11,7 @@ pub(crate) struct ChangeCrsWindow<'a, 'w, 's> {
 impl<'a, 'w, 's> ChangeCrsWindow<'a, 'w, 's> {
     pub(crate) fn render(&mut self) {
         egui::Window::new("Change CRS")
-            .open(&mut self.state.is_change_crs_window_visible)
+            .open(self.is_visible)
             .anchor(egui::Align2::LEFT_TOP, [5., 5.])
             .show(self.bevy_egui_ctx.ctx_mut(), |ui| {
                 #[cfg(not(target_arch = "wasm32"))]
