@@ -72,10 +72,11 @@ pub fn build_bevy_meshes<G: BuildBevyMeshes>(
     Ok([
         ctx.point_mesh_builder.build(color),
         ctx.line_string_mesh_builder.build(color),
-        ctx.polygon_mesh_builder.build().map(|mesh| {
-            PreparedMesh { mesh, color }
-        }),
-        ctx.polygon_border_mesh_builder.build(bevy_render::color::Color::BLACK),
+        ctx.polygon_mesh_builder
+            .build()
+            .map(|mesh| PreparedMesh { mesh, color }),
+        ctx.polygon_border_mesh_builder
+            .build(bevy_render::color::Color::BLACK),
     ]
     .into_iter()
     .flatten())
@@ -109,7 +110,8 @@ impl BuildBevyMeshes for geo::Polygon {
     fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) -> Result<(), Self::Error> {
         ctx.polygon_mesh_builder
             .add_earcutr_input(polygon_to_earcutr_input(self));
-        ctx.polygon_border_mesh_builder.add_line_string(self.exterior())?;
+        ctx.polygon_border_mesh_builder
+            .add_line_string(self.exterior())?;
         for interior in self.interiors() {
             ctx.polygon_border_mesh_builder.add_line_string(interior)?;
         }
