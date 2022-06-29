@@ -115,6 +115,10 @@ impl FinishedTasks {
             })
             .next()?;
         let (_type_id, x) = self.outcomes.remove(index);
-        Some(*x.downcast::<T::Outcome>().unwrap())
+        let outcome = x.downcast::<T::Outcome>();
+        if outcome.is_err() {
+            bevy::log::error!("encountered unexpected task result type");
+        }
+        outcome.map(|n| *n).ok()
     }
 }
