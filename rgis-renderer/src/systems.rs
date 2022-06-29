@@ -39,6 +39,7 @@ fn layer_loaded(
 
         task_spawner.spawn(crate::tasks::MeshBuildingTask {
             layer_id: layer.id,
+            color: layer.color.into(),
             geometry: geo::Geometry::GeometryCollection(projected_feature.to_geometry_collection()),
         })
     }
@@ -60,7 +61,7 @@ fn handle_mesh_building_task_outcome(
         crate::spawn_geometry_meshes(
             meshes,
             &mut materials,
-            layer,
+            layer.id,
             &mut commands,
             &mut assets_meshes,
             z_index,

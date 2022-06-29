@@ -1,11 +1,12 @@
 pub struct MeshBuildingTask {
     pub layer_id: rgis_layer_id::LayerId,
+    pub color: bevy::render::color::Color,
     pub geometry: geo::Geometry,
 }
 
 impl rgis_task::Task for MeshBuildingTask {
     type Outcome = Result<
-        (Vec<bevy::render::mesh::Mesh>, rgis_layer_id::LayerId),
+        (Vec<geo_bevy::PreparedMesh>, rgis_layer_id::LayerId),
         <geo::Geometry as geo_bevy::BuildBevyMeshes>::Error,
     >;
 
@@ -18,9 +19,10 @@ impl rgis_task::Task for MeshBuildingTask {
             Ok((
                 geo_bevy::build_bevy_meshes(
                     &self.geometry,
+                    self.color,
                     geo_bevy::BuildBevyMeshesContext::new(),
                 )?
-                .collect::<Vec<bevy::render::mesh::Mesh>>(),
+                .collect::<Vec<_>>(),
                 self.layer_id,
             ))
         })

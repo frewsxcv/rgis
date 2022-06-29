@@ -34,15 +34,18 @@ impl LineStringMeshBuilder {
         Ok(())
     }
 
-    pub fn build(self) -> Option<bevy_render::prelude::Mesh> {
+    pub fn build(self, color: bevy_render::color::Color) -> Option<crate::PreparedMesh> {
         if self.vertices.is_empty() {
             None
         } else {
-            Some(crate::build_mesh_from_vertices(
-                bevy_render::render_resource::PrimitiveTopology::LineList,
-                self.vertices,
-                self.indices,
-            ))
+            Some(crate::PreparedMesh {
+                mesh: crate::build_mesh_from_vertices(
+                    bevy_render::render_resource::PrimitiveTopology::LineList,
+                    self.vertices,
+                    self.indices,
+                ),
+                color,
+            })
         }
     }
 }

@@ -19,24 +19,24 @@ impl bevy::app::Plugin for Plugin {
 }
 
 fn spawn_geometry_meshes(
-    meshes: Vec<Mesh>,
+    prepared_meshes: Vec<geo_bevy::PreparedMesh>,
     materials: &mut Assets<ColorMaterial>,
-    layer: &rgis_layers::Layer,
+    layer_id: rgis_layer_id::LayerId,
     commands: &mut Commands,
     assets_meshes: &mut Assets<Mesh>,
     z_index: usize,
     is_visible: bool,
 ) {
-    let material = materials.add(layer.color.into());
+    for prepared_mesh in prepared_meshes {
+        let material = materials.add(prepared_mesh.color.into());
 
-    for mesh in meshes {
         spawn_mesh(
-            mesh,
+            prepared_mesh.mesh,
             z_index,
             material.clone(),
             assets_meshes,
             commands,
-            layer.id,
+            layer_id,
             is_visible,
         );
     }

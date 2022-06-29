@@ -12,6 +12,11 @@ use std::{error, num};
 mod line_string;
 mod point;
 
+pub struct PreparedMesh {
+    pub mesh: Mesh,
+    pub color: Color,
+}
+
 type Vertex = [f32; 3]; // [x, y, z]
 
 fn build_mesh_from_vertices(
@@ -37,6 +42,7 @@ pub struct BuildBevyMeshesContext {
     point_mesh_builder: point::PointMeshBuilder,
     line_string_mesh_builder: line_string::LineStringMeshBuilder,
     polygon_mesh_builder: bevy_earcutr::PolygonMeshBuilder,
+    polygon_border_mesh_builder: line_string::LineStringMeshBuilder,
 }
 
 impl Default for BuildBevyMeshesContext {
@@ -51,20 +57,25 @@ impl BuildBevyMeshesContext {
             point_mesh_builder: point::PointMeshBuilder::new(),
             line_string_mesh_builder: line_string::LineStringMeshBuilder::new(),
             polygon_mesh_builder: bevy_earcutr::PolygonMeshBuilder::new(),
+            polygon_border_mesh_builder: line_string::LineStringMeshBuilder::new(),
         }
     }
 }
 
 pub fn build_bevy_meshes<G: BuildBevyMeshes>(
     geo: &G,
+    color: bevy_render::color::Color,
     mut ctx: BuildBevyMeshesContext,
-) -> Result<impl Iterator<Item = Mesh>, <G as BuildBevyMeshes>::Error> {
+) -> Result<impl Iterator<Item = PreparedMesh>, <G as BuildBevyMeshes>::Error> {
     geo.populate_mesh_builders(&mut ctx)?;
 
     Ok([
-        ctx.point_mesh_builder.build(),
-        ctx.line_string_mesh_builder.build(),
-        ctx.polygon_mesh_builder.build(),
+        ctx.point_mesh_builder.build(color),
+        ctx.line_string_mesh_builder.build(color),
+        ctx.polygon_mesh_builder.build().map(|mesh| {
+            PreparedMesh { mesh, color }
+        }),
+        ctx.polygon_border_mesh_builder.build(bevy_render::color::Color::BLACK),
     ]
     .into_iter()
     .flatten())
@@ -93,11 +104,15 @@ impl BuildBevyMeshes for geo::LineString {
 }
 
 impl BuildBevyMeshes for geo::Polygon {
-    type Error = bad::Never;
+    type Error = num::TryFromIntError;
 
     fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) -> Result<(), Self::Error> {
         ctx.polygon_mesh_builder
             .add_earcutr_input(polygon_to_earcutr_input(self));
+        ctx.polygon_border_mesh_builder.add_line_string(self.exterior())?;
+        for interior in self.interiors() {
+            ctx.polygon_border_mesh_builder.add_line_string(interior)?;
+        }
         Ok(())
     }
 }
@@ -125,7 +140,7 @@ impl BuildBevyMeshes for geo::MultiLineString {
 }
 
 impl BuildBevyMeshes for geo::MultiPolygon {
-    type Error = bad::Never;
+    type Error = num::TryFromIntError;
 
     fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) -> Result<(), Self::Error> {
         for polygon in &self.0 {
@@ -144,7 +159,7 @@ impl BuildBevyMeshes for geo::Line {
 }
 
 impl BuildBevyMeshes for geo::Triangle {
-    type Error = bad::Never;
+    type Error = num::TryFromIntError;
 
     fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) -> Result<(), Self::Error> {
         self.to_polygon().populate_mesh_builders(ctx)
@@ -152,7 +167,7 @@ impl BuildBevyMeshes for geo::Triangle {
 }
 
 impl BuildBevyMeshes for geo::Rect {
-    type Error = bad::Never;
+    type Error = num::TryFromIntError;
 
     fn populate_mesh_builders(&self, ctx: &mut BuildBevyMeshesContext) -> Result<(), Self::Error> {
         self.to_polygon().populate_mesh_builders(ctx)
