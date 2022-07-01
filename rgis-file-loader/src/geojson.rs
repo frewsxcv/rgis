@@ -149,9 +149,10 @@ fn geojson_feature_to_geo_feature_collection(
 fn geojson_feature_collection_to_geo_feature_collection(
     geojson_feature_collection: geojson::FeatureCollection,
 ) -> Result<geo_features::FeatureCollection, LoadGeoJsonError> {
-    let mut features: Vec<geo_features::Feature> = vec![];
-    for geojson_feature in geojson_feature_collection.features {
-        features.push(geojson_feature_to_geo_feature(geojson_feature)?);
-    }
+    let features = geojson_feature_collection
+        .features
+        .into_iter()
+        .map(geojson_feature_to_geo_feature)
+        .collect::<Result<_, _>>()?;
     Ok(geo_features::FeatureCollection::from_features(features))
 }
