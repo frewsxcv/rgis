@@ -105,6 +105,7 @@ pub struct FinishedTasks {
 }
 
 impl FinishedTasks {
+    #[inline]
     pub fn take_next<T: Task>(&mut self) -> Option<T::Outcome> {
         let index = self
             .outcomes
