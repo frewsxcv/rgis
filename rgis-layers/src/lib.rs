@@ -168,13 +168,6 @@ pub type Metadata = serde_json::Map<String, serde_json::Value>;
 
 #[derive(Clone, Debug)]
 pub struct Layer {
-    // {
-    //    name: 'layer name',
-    //    features: {
-    //        <feature uuid> -> feature
-    //     }
-    // }
-    // these should be vecs
     pub unprojected_feature_collection: geo_features::FeatureCollection,
     pub projected_feature_collection: Option<geo_features::FeatureCollection>,
     pub color: Color,
