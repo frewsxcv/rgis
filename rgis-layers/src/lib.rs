@@ -49,7 +49,7 @@ impl Layers {
     // coord is assumed to be projected
     pub fn containing_coord(&self, coord: geo::Coordinate) -> impl Iterator<Item = &Layer> {
         self.iter_top_to_bottom()
-            .filter(move |layer| match layer.projected_feature {
+            .filter(move |layer| match layer.projected_feature_collection {
                 Some(ref projected) => projected
                     .features
                     .iter()
@@ -61,14 +61,14 @@ impl Layers {
     pub fn feature_from_click(&self, coord: geo::Coordinate) -> Option<&geo_features::Feature> {
         for layer in self.iter_top_to_bottom() {
             for (i, projected_feature) in layer
-                .projected_feature
+                .projected_feature_collection
                 .as_ref()?
                 .features
                 .iter()
                 .enumerate()
             {
                 if projected_feature.contains(&coord) {
-                    return Some(&layer.unprojected_feature.features[i]);
+                    return Some(&layer.unprojected_feature_collection.features[i]);
                 }
             }
         }
@@ -141,8 +141,8 @@ impl Layers {
     ) -> Result<rgis_layer_id::LayerId, geo_features::BoundingRectError> {
         let layer_id = self.next_layer_id();
         let layer = Layer {
-            unprojected_feature: unprojected,
-            projected_feature: None,
+            unprojected_feature_collection: unprojected,
+            projected_feature_collection: None,
             color: colorous_color_to_bevy_color(next_colorous_color()),
             name,
             visible: true,
@@ -155,7 +155,7 @@ impl Layers {
 
     pub fn clear_projected(&mut self) {
         for layer in self.data.iter_mut() {
-            layer.projected_feature = None;
+            layer.projected_feature_collection = None;
         }
     }
 
@@ -175,8 +175,8 @@ pub struct Layer {
     //     }
     // }
     // these should be vecs
-    pub unprojected_feature: geo_features::FeatureCollection,
-    pub projected_feature: Option<geo_features::FeatureCollection>,
+    pub unprojected_feature_collection: geo_features::FeatureCollection,
+    pub projected_feature_collection: Option<geo_features::FeatureCollection>,
     pub color: Color,
     pub id: rgis_layer_id::LayerId,
     pub name: String,
@@ -187,7 +187,7 @@ pub struct Layer {
 impl Layer {
     #[inline]
     pub fn get_projected_feature_or_log(&self) -> Option<&geo_features::FeatureCollection> {
-        match self.projected_feature.as_ref() {
+        match self.projected_feature_collection.as_ref() {
             Some(p) => Some(p),
             None => {
                 bevy::log::error!(

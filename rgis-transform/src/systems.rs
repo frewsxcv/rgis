@@ -11,7 +11,7 @@ fn handle_layer_created_events(
         };
 
         task_spawner.spawn(crate::tasks::ReprojectGeometryTask {
-            feature_collection: layer.unprojected_feature.clone(),
+            feature_collection: layer.unprojected_feature_collection.clone(),
             layer_id: event.0,
             source_crs: layer.crs.clone(),
             target_crs: rgis_settings.target_crs.clone(),
@@ -46,7 +46,7 @@ fn handle_reproject_geometry_task_completion_events(
             None => continue,
         };
 
-        layer.projected_feature = Some(outcome.feature_collection);
+        layer.projected_feature_collection = Some(outcome.feature_collection);
 
         layer_reprojected_event_writer.send(rgis_events::LayerReprojectedEvent(outcome.layer_id));
     }
@@ -63,7 +63,7 @@ fn handle_crs_changed_events(
 
         for layer in layers.iter() {
             task_spawner.spawn(crate::tasks::ReprojectGeometryTask {
-                feature_collection: layer.unprojected_feature.clone(),
+                feature_collection: layer.unprojected_feature_collection.clone(),
                 layer_id: layer.id,
                 source_crs: layer.crs.clone(),
                 target_crs: rgis_settings.target_crs.clone(),

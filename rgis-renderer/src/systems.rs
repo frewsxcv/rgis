@@ -33,7 +33,7 @@ fn layer_loaded(
 ) {
     for layer in event_reader.iter().flat_map(|event| layers.get(event.0)) {
         let projected_feature = skip_none!(
-            layer.projected_feature.as_ref(),
+            layer.projected_feature_collection.as_ref(),
             "Expected a layer to have a projected geometry"
         );
 

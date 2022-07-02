@@ -105,7 +105,9 @@ fn render_bottom_panel(
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
     mouse_pos: Res<rgis_mouse::MousePos>,
     rgis_settings: Res<rgis_settings::RgisSettings>,
-    mut open_change_crs_window_event_writer: bevy::ecs::event::EventWriter<rgis_events::OpenChangeCrsWindow>,
+    mut open_change_crs_window_event_writer: bevy::ecs::event::EventWriter<
+        rgis_events::OpenChangeCrsWindow,
+    >,
 ) {
     bottom_panel::BottomPanel {
         egui_ctx: bevy_egui_ctx.ctx_mut(),
@@ -182,7 +184,9 @@ fn render_add_layer_window(
 
 fn render_change_crs_window(
     mut is_visible: Local<bool>,
-    mut open_change_crs_window_event_reader: bevy::ecs::event::EventReader<rgis_events::OpenChangeCrsWindow>,
+    mut open_change_crs_window_event_reader: bevy::ecs::event::EventReader<
+        rgis_events::OpenChangeCrsWindow,
+    >,
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
     mut text_field_value: Local<String>,
     mut change_crs_event_writer: bevy::ecs::event::EventWriter<rgis_events::ChangeCrsEvent>,
