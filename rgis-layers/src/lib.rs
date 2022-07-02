@@ -60,21 +60,45 @@ impl Layers {
             })
     }
 
-    pub fn feature_from_click(&self, coord: geo::Coordinate) -> Option<&geo_features::Feature> {
-        for layer in self.iter_top_to_bottom() {
-            for (i, projected_feature) in layer
+    fn feature_collections_iter(&self) -> impl Iterator<Item = FeatureCollectionsIterItem> {
+        self.iter_top_to_bottom().flat_map(|layer| {
+            layer
                 .projected_feature_collection
-                .as_ref()?
-                .features
-                .iter()
-                .enumerate()
-            {
-                if projected_feature.contains(&coord) {
-                    return Some(&layer.unprojected_feature_collection.features[i]);
-                }
-            }
-        }
-        None
+                .as_ref()
+                .map(|projected| FeatureCollectionsIterItem {
+                    unprojected: &layer.unprojected_feature_collection,
+                    projected,
+                })
+        })
+    }
+
+    fn features_iter(&self) -> impl Iterator<Item = FeaturesIterItem> {
+        self.feature_collections_iter().flat_map(
+            |FeatureCollectionsIterItem {
+                 projected,
+                 unprojected,
+             }| {
+                unprojected
+                    .features
+                    .iter()
+                    .zip(projected.features.iter())
+                    .map(|(unprojected, projected)| FeaturesIterItem {
+                        projected,
+                        unprojected,
+                    })
+            },
+        )
+    }
+
+    pub fn feature_from_click(&self, coord: geo::Coordinate) -> Option<&geo_features::Feature> {
+        self.features_iter()
+            .filter_map(
+                |FeaturesIterItem {
+                     projected,
+                     unprojected,
+                 }| { projected.contains(&coord).then(|| unprojected) },
+            )
+            .next()
     }
 
     // Returns whether the selected layer changed
@@ -217,4 +241,14 @@ impl bevy::app::Plugin for Plugin {
         app.insert_resource(Layers::new())
             .add_system_set(systems::system_set());
     }
+}
+
+struct FeatureCollectionsIterItem<'a> {
+    projected: &'a geo_features::FeatureCollection,
+    unprojected: &'a geo_features::FeatureCollection,
+}
+
+struct FeaturesIterItem<'a> {
+    projected: &'a geo_features::Feature,
+    unprojected: &'a geo_features::Feature,
 }
