@@ -48,16 +48,14 @@ impl Layers {
 
     // coord is assumed to be projected
     pub fn containing_coord(&self, coord: geo::Coordinate) -> impl Iterator<Item = &Layer> {
-        self.iter_top_to_bottom().filter(move |layer| {
-            if let Some(ref projected) = layer.projected_feature {
-                for feature in &projected.features {
-                    if feature.contains(&coord) {
-                        return true;
-                    }
-                }
-            }
-            false
-        })
+        self.iter_top_to_bottom()
+            .filter(move |layer| match layer.projected_feature {
+                Some(ref projected) => projected
+                    .features
+                    .iter()
+                    .any(|feature| feature.contains(&coord)),
+                None => false,
+            })
     }
 
     pub fn feature_from_click(&self, coord: geo::Coordinate) -> Option<&geo_features::Feature> {
