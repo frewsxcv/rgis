@@ -86,10 +86,11 @@ impl FeatureCollection {
     }
 
     pub fn bounding_rect(&self) -> Result<geo::Rect, BoundingRectError> {
-        // TODO: audit performance
-        self.to_geometry_collection()
-            .bounding_rect()
-            .ok_or(BoundingRectError)
+        rect_merge_many(
+            self.features
+                .iter()
+                .filter_map(|feature| feature.geometry.bounding_rect()),
+        )
     }
 
     pub fn recalculate_bounding_rect(&mut self) -> Result<(), BoundingRectError> {
@@ -98,6 +99,7 @@ impl FeatureCollection {
     }
 }
 
+// TODO: this assumes features[0] exists. is that okay?
 fn bounding_rect_from_features(features: &[Feature]) -> geo::Rect {
     assert!(!features.is_empty());
     let mut bounding_rect = features[0].bounding_rect;
@@ -105,6 +107,17 @@ fn bounding_rect_from_features(features: &[Feature]) -> geo::Rect {
         bounding_rect = rect_merge(bounding_rect, feature.bounding_rect);
     }
     bounding_rect
+}
+
+// TODO: this assumes the iterator has one item. is that okay?
+fn rect_merge_many<T: geo::CoordFloat>(
+    mut iter: impl Iterator<Item = geo::Rect<T>>,
+) -> Result<geo::Rect<T>, BoundingRectError> {
+    let mut acc = iter.next().ok_or(BoundingRectError)?;
+    for next in iter {
+        acc = rect_merge(acc, next);
+    }
+    Ok(acc)
 }
 
 fn rect_merge<T: geo::CoordFloat>(a: geo::Rect<T>, b: geo::Rect<T>) -> geo::Rect<T> {
