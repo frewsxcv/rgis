@@ -92,12 +92,8 @@ impl Layers {
 
     pub fn feature_from_click(&self, coord: geo::Coordinate) -> Option<&geo_features::Feature> {
         self.features_iter()
-            .filter_map(
-                |FeaturesIterItem {
-                     projected,
-                     unprojected,
-                 }| { projected.contains(&coord).then(|| unprojected) },
-            )
+            .filter(|item| item.projected.contains(&coord))
+            .map(|item| item.unprojected)
             .next()
     }
 
