@@ -21,7 +21,12 @@ impl<'a, 'w, 's> ChangeCrsWindow<'a, 'w, 's> {
                     // DONT CALL THIS ON EVERY LOOP
                     let proj_result = geo::algorithm::proj::Proj::new(self.text_field_value);
                     let message = match &proj_result {
-                        Ok(n) => format!("✅ {:?}", n),
+                        Ok(n) => format!(
+                            "✅ {}",
+                            n.proj_info()
+                                .description
+                                .unwrap_or_else(|| self.text_field_value.to_string())
+                        ),
                         Err(e) => format!("❌ {:?}", e),
                     };
                     ui.label(message);
