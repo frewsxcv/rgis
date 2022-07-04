@@ -112,9 +112,10 @@ impl FinishedTasks {
             .outcomes
             .iter_mut()
             .enumerate()
-            .filter_map(|(i, (type_id, outcome))| {
-                (any::TypeId::of::<T>() == *type_id && outcome.is::<T::Outcome>()).then(|| i)
+            .filter(|(_i, (type_id, outcome))| {
+                (any::TypeId::of::<T>() == *type_id && outcome.is::<T::Outcome>())
             })
+            .map(|(i, _)| i)
             .next()?;
         let (_type_id, x) = self.outcomes.remove(index);
         let outcome = x.downcast::<T::Outcome>();
