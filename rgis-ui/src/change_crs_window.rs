@@ -18,7 +18,7 @@ impl<'a, 'w, 's> ChangeCrsWindow<'a, 'w, 's> {
                 {
                     let edit_field = ui.text_edit_singleline(self.text_field_value);
                     if edit_field.changed() {}
-                    // DONT CALL THIS ON EVERY LOOP
+                    // TODO: DONT CALL THIS ON EVERY LOOP
                     let proj_result = geo::algorithm::proj::Proj::new(self.text_field_value);
                     let message = match &proj_result {
                         Ok(n) => format!(
