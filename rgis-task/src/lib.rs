@@ -113,7 +113,7 @@ impl FinishedTasks {
             .iter_mut()
             .enumerate()
             .filter(|(_i, (type_id, outcome))| {
-                (any::TypeId::of::<T>() == *type_id && outcome.is::<T::Outcome>())
+                any::TypeId::of::<T>() == *type_id && outcome.is::<T::Outcome>()
             })
             .map(|(i, _)| i)
             .next()?;
