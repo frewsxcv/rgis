@@ -4,7 +4,7 @@ A lightweight job framework for Bevy.
 
 ## Getting started
 
-Defining a task:
+Defining a job:
 
 ```rust
 pub struct FetchRequestJob {
