@@ -39,7 +39,7 @@ pub trait Task: any::Any + Sized + Send + Sync + 'static {
         let (sender, receiver) = async_channel::unbounded::<OutcomePayload>();
 
         let task_name = self.name();
-        let in_progress_task = InProgressTask {
+        let in_progress_task = InProgressJob {
             name: task_name.clone(),
             recv: receiver,
         };
@@ -67,7 +67,7 @@ pub trait Task: any::Any + Sized + Send + Sync + 'static {
 }
 
 fn check_system(
-    query: bevy::ecs::system::Query<(&InProgressTask, bevy::ecs::entity::Entity)>,
+    query: bevy::ecs::system::Query<(&InProgressJob, bevy::ecs::entity::Entity)>,
     mut commands: bevy::ecs::system::Commands,
     mut finished_tasks: bevy::ecs::system::ResMut<FinishedJobs>,
 ) {
@@ -96,7 +96,7 @@ impl<'w, 's> JobSpawner<'w, 's> {
 }
 
 #[derive(Component)]
-pub struct InProgressTask {
+pub struct InProgressJob {
     pub name: String,
     recv: async_channel::Receiver<OutcomePayload>,
 }

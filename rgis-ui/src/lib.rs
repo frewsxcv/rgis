@@ -216,7 +216,7 @@ fn render_message_window(
 }
 
 fn render_in_progress(
-    query: Query<&bevy_jobs::InProgressTask>,
+    query: Query<&bevy_jobs::InProgressJob>,
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
 ) {
     let mut task_name_iter = query.iter().map(|task| &task.name).peekable();
