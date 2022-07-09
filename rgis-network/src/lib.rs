@@ -21,7 +21,7 @@ pub struct NetworkFetchTask {
     pub name: String,
 }
 
-impl bevy_jobs::Task for NetworkFetchTask {
+impl bevy_jobs::Job for NetworkFetchTask {
     type Outcome = Result<FetchedFile, String>;
 
     fn name(&self) -> String {

@@ -4,7 +4,7 @@ pub struct MeshBuildingTask {
     pub geometry: geo::Geometry,
 }
 
-impl bevy_jobs::Task for MeshBuildingTask {
+impl bevy_jobs::Job for MeshBuildingTask {
     type Outcome = Result<
         (Vec<geo_bevy::PreparedMesh>, rgis_layer_id::LayerId),
         <geo::Geometry as geo_bevy::BuildBevyMeshes>::Error,

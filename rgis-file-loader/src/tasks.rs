@@ -12,7 +12,7 @@ pub struct LoadGeoJsonFileTaskOutcome {
     pub source_crs: String,
 }
 
-impl bevy_jobs::Task for LoadGeoJsonFileTask {
+impl bevy_jobs::Job for LoadGeoJsonFileTask {
     type Outcome = Result<LoadGeoJsonFileTaskOutcome, crate::geojson::LoadGeoJsonError>;
 
     fn name(&self) -> String {

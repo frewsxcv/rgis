@@ -24,7 +24,7 @@ pub type PerformReturn<Output> =
 #[cfg(target_arch = "wasm32")]
 pub type PerformReturn<Output> = pin::Pin<Box<dyn future::Future<Output = Output> + 'static>>;
 
-pub trait Task: any::Any + Sized + Send + Sync + 'static {
+pub trait Job: any::Any + Sized + Send + Sync + 'static {
     type Outcome: any::Any + Send + Sync;
 
     fn name(&self) -> String;
@@ -90,7 +90,7 @@ pub struct TaskSpawner<'w, 's> {
 }
 
 impl<'w, 's> TaskSpawner<'w, 's> {
-    pub fn spawn<T: Task>(&mut self, task: T) {
+    pub fn spawn<T: Job>(&mut self, task: T) {
         task.spawn(&self.thread_pool, &mut self.commands)
     }
 }
@@ -107,7 +107,7 @@ pub struct FinishedTasks {
 
 impl FinishedTasks {
     #[inline]
-    pub fn take_next<T: Task>(&mut self) -> Option<T::Outcome> {
+    pub fn take_next<T: Job>(&mut self) -> Option<T::Outcome> {
         let index = self
             .outcomes
             .iter_mut()

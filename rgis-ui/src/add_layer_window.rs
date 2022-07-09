@@ -2,7 +2,7 @@ use bevy_egui::egui;
 
 pub struct OpenFileTask;
 
-impl bevy_jobs::Task for OpenFileTask {
+impl bevy_jobs::Job for OpenFileTask {
     type Outcome = Option<(String, Vec<u8>)>;
 
     fn name(&self) -> String {

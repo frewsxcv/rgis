@@ -23,7 +23,7 @@ pub struct ReprojectGeometryTaskOutcome {
     pub target_crs: String,
 }
 
-impl bevy_jobs::Task for ReprojectGeometryTask {
+impl bevy_jobs::Job for ReprojectGeometryTask {
     type Outcome = Result<ReprojectGeometryTaskOutcome, TransformError>;
 
     fn name(&self) -> String {
