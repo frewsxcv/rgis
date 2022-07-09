@@ -114,7 +114,7 @@ pub struct FinishedJobs<'w, 's> {
 
 pub struct JobOutcomePayloads(Vec<JobOutcomePayload>);
 
-impl<'w, 's: 'w> FinishedJobs<'w, 's> {
+impl<'w, 's> FinishedJobs<'w, 's> {
     #[inline]
     pub fn take_next<J: Job>(&mut self) -> Option<J::Outcome> {
         let index = self
