@@ -19,4 +19,4 @@ geo-bevy = { path = "../geo-bevy" }
 rgis-events = { path = "../rgis-events" }
 rgis-layer-id = { path = "../rgis-layer-id" }
 rgis-layers = { path = "../rgis-layers" }
-rgis-task = { path = "../rgis-task" }
+bevy-jobs = { path = "../bevy-jobs" }

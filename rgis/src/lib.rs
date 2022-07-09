@@ -46,7 +46,7 @@ pub fn run() {
     .add_plugin(rgis_network::Plugin)
     .add_plugin(rgis_camera::Plugin)
     .add_plugin(rgis_events::Plugin)
-    .add_plugin(rgis_task::Plugin)
+    .add_plugin(bevy_jobs::Plugin)
     .add_plugin(rgis_transform::Plugin)
     .add_plugin(rgis_ui::Plugin)
     .add_plugin(rgis_settings::Plugin)

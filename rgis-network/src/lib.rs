@@ -21,14 +21,14 @@ pub struct NetworkFetchTask {
     pub name: String,
 }
 
-impl rgis_task::Task for NetworkFetchTask {
+impl bevy_jobs::Task for NetworkFetchTask {
     type Outcome = Result<FetchedFile, String>;
 
     fn name(&self) -> String {
         format!("Fetching '{}'", self.name)
     }
 
-    fn perform(self) -> rgis_task::PerformReturn<Self::Outcome> {
+    fn perform(self) -> bevy_jobs::PerformReturn<Self::Outcome> {
         let (sender, receiver): (FetchedFileSender, FetchedFileReceiver) =
             async_channel::unbounded();
         Box::pin(async move {

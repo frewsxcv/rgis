@@ -134,7 +134,7 @@ fn render_side_panel(
 }
 
 fn handle_open_file_task(
-    mut finished_tasks: ResMut<rgis_task::FinishedTasks>,
+    mut finished_tasks: ResMut<bevy_jobs::FinishedTasks>,
     mut load_geo_json_file_events: bevy::ecs::event::EventWriter<rgis_events::LoadGeoJsonFileEvent>,
     mut state: ResMut<UiState>,
 ) {
@@ -171,7 +171,7 @@ fn render_add_layer_window(
     mut load_geo_json_file_event_writer: bevy::ecs::event::EventWriter<
         rgis_events::LoadGeoJsonFileEvent,
     >,
-    mut task_spawner: rgis_task::TaskSpawner,
+    mut task_spawner: bevy_jobs::TaskSpawner,
 ) {
     add_layer_window::AddLayerWindow {
         state: &mut state,
@@ -216,7 +216,7 @@ fn render_message_window(
 }
 
 fn render_in_progress(
-    query: Query<&rgis_task::InProgressTask>,
+    query: Query<&bevy_jobs::InProgressTask>,
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
 ) {
     let mut task_name_iter = query.iter().map(|task| &task.name).peekable();

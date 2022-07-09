@@ -23,14 +23,14 @@ pub struct ReprojectGeometryTaskOutcome {
     pub target_crs: String,
 }
 
-impl rgis_task::Task for ReprojectGeometryTask {
+impl bevy_jobs::Task for ReprojectGeometryTask {
     type Outcome = Result<ReprojectGeometryTaskOutcome, TransformError>;
 
     fn name(&self) -> String {
         "Projecting layer".to_string()
     }
 
-    fn perform(mut self) -> rgis_task::PerformReturn<Self::Outcome> {
+    fn perform(mut self) -> bevy_jobs::PerformReturn<Self::Outcome> {
         Box::pin(async move {
             for feature in self.feature_collection.features.iter_mut() {
                 #[cfg(target_arch = "wasm32")]

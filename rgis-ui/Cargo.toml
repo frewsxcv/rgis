@@ -22,7 +22,7 @@ rgis-library = { path = "../rgis-library" }
 rgis-events = { path = "../rgis-events" }
 rgis-mouse = { path = "../rgis-mouse" }
 rgis-settings = { path = "../rgis-settings" }
-rgis-task = { path = "../rgis-task" }
+bevy-jobs = { path = "../bevy-jobs" }
 webbrowser = "0.7"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]

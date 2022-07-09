@@ -12,14 +12,14 @@ pub struct LoadGeoJsonFileTaskOutcome {
     pub source_crs: String,
 }
 
-impl rgis_task::Task for LoadGeoJsonFileTask {
+impl bevy_jobs::Task for LoadGeoJsonFileTask {
     type Outcome = Result<LoadGeoJsonFileTaskOutcome, crate::geojson::LoadGeoJsonError>;
 
     fn name(&self) -> String {
         "Loading GeoJson file".into()
     }
 
-    fn perform(self) -> rgis_task::PerformReturn<Self::Outcome> {
+    fn perform(self) -> bevy_jobs::PerformReturn<Self::Outcome> {
         Box::pin(async move {
             Ok(LoadGeoJsonFileTaskOutcome {
                 geometry: self.geojson_source.load()?,

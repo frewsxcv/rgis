@@ -15,4 +15,4 @@ bevy = { version = "0.7", default-features = false, features = [
     "wayland",
 ] }
 ehttp = "0.2"
-rgis-task = { path = "../rgis-task" }
+bevy-jobs = { path = "../bevy-jobs" }

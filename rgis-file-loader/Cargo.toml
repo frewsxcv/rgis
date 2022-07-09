@@ -19,7 +19,7 @@ geojson = { version = "0.23", features = ["geo-types"] }
 rgis-cli = { path = "../rgis-cli" }
 rgis-events = { path = "../rgis-events" }
 rgis-network = { path = "../rgis-network" }
-rgis-task = { path = "../rgis-task" }
+bevy-jobs = { path = "../bevy-jobs" }
 serde_json = "1"
 time-logger = { path = "../time-logger" }
 thiserror = "1"

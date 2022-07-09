@@ -2,14 +2,14 @@ use bevy_egui::egui;
 
 pub struct OpenFileTask;
 
-impl rgis_task::Task for OpenFileTask {
+impl bevy_jobs::Task for OpenFileTask {
     type Outcome = Option<(String, Vec<u8>)>;
 
     fn name(&self) -> String {
         "Opening file".into()
     }
 
-    fn perform(self) -> rgis_task::PerformReturn<Self::Outcome> {
+    fn perform(self) -> bevy_jobs::PerformReturn<Self::Outcome> {
         Box::pin(async move {
             let task = rfd::AsyncFileDialog::new().pick_file();
             let file_handle = task.await?;
@@ -25,7 +25,7 @@ pub(crate) struct AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
     pub bevy_egui_ctx: &'a mut bevy_egui::EguiContext,
     pub load_geo_json_file_event_writer:
         &'a mut bevy::ecs::event::EventWriter<'w1, 's1, rgis_events::LoadGeoJsonFileEvent>,
-    pub task_spawner: &'a mut rgis_task::TaskSpawner<'w2, 's2>,
+    pub task_spawner: &'a mut bevy_jobs::TaskSpawner<'w2, 's2>,
 }
 
 impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {

@@ -4,8 +4,8 @@ use std::mem;
 
 fn load_geojson_file_handler(
     mut load_event_reader: ResMut<Events<rgis_events::LoadGeoJsonFileEvent>>,
-    mut task_spawner: rgis_task::TaskSpawner,
-    mut finished_tasks: ResMut<rgis_task::FinishedTasks>,
+    mut task_spawner: bevy_jobs::TaskSpawner,
+    mut finished_tasks: ResMut<bevy_jobs::FinishedTasks>,
 ) {
     while let Some(outcome) = finished_tasks.take_next::<rgis_network::NetworkFetchTask>() {
         match outcome {
@@ -55,7 +55,7 @@ fn load_geojson_file_handler(
 }
 
 fn handle_load_geojson_file_task_finished_events(
-    mut finished_tasks: ResMut<rgis_task::FinishedTasks>,
+    mut finished_tasks: ResMut<bevy_jobs::FinishedTasks>,
     mut create_layer_event_writer: EventWriter<rgis_events::CreateLayerEvent>,
 ) {
     while let Some(outcome) = finished_tasks.take_next::<crate::tasks::LoadGeoJsonFileTask>() {

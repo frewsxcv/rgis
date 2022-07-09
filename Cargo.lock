@@ -153,9 +153,9 @@ dependencies = [
 
 [[package]]
 name = "async-task"
-version = "4.2.0"
+version = "4.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "30696a84d817107fc028e049980e09d5e140e8da8f1caeb17e8e950658a3cea9"
+checksum = "7a40729d2133846d9ed0ea60a8b9541bccddab49cd30f0715a1da672fe9a2524"
 
 [[package]]
 name = "atk-sys"
@@ -260,6 +260,15 @@ checksum = "fdc096c7c3e0243b96b12f220a5bead350f5fdcc7e546b4c37f228d5075bdf21"
 dependencies = [
  "bevy_render",
  "earcutr",
+]
+
+[[package]]
+name = "bevy-jobs"
+version = "0.1.0"
+dependencies = [
+ "async-channel",
+ "bevy",
+ "instant",
 ]
 
 [[package]]
@@ -1619,9 +1628,9 @@ dependencies = [
 
 [[package]]
 name = "geo"
-version = "0.22.0"
+version = "0.22.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6f9a9248b7d4f0168bbf24d66d1cf6f11f49949abe44f8b8c15657dafd067cd0"
+checksum = "f0943f2fcf1e21429a6d3a9842308ee363a6d9018fda475c47c564156d44eef3"
 dependencies = [
  "float_next_after",
  "geo-types",
@@ -1886,15 +1895,15 @@ dependencies = [
 
 [[package]]
 name = "hashbrown"
-version = "0.12.1"
+version = "0.12.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "db0d4cf898abf0081f964436dc980e96670a0f36863e4b83aaacdb65c9d7ccc3"
+checksum = "607c8a29735385251a339424dd462993c0fed8fa09d378f259377df08c126022"
 
 [[package]]
 name = "heapless"
-version = "0.7.14"
+version = "0.7.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "065681e99f9ef7e0e813702a0326aedbcbbde7db5e55f097aedd1bf50b9dca43"
+checksum = "9f6733da246dc2af610133c8be0667170fd68e8ca5630936b520300eee8846f9"
 dependencies = [
  "atomic-polyfill",
  "hash32",
@@ -1986,7 +1995,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "10a35a97730320ffe8e2d410b5d3b69279b98d2c14bdb8b70ea89ecf7888d41e"
 dependencies = [
  "autocfg",
- "hashbrown 0.12.1",
+ "hashbrown 0.12.2",
 ]
 
 [[package]]
@@ -2500,9 +2509,9 @@ dependencies = [
 
 [[package]]
 name = "once_cell"
-version = "1.12.0"
+version = "1.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7709cef83f0c1f58f666e746a08b21e0085f7440fa6a29cc194d68aac97a4225"
+checksum = "18a6dbe30758c9f83eb00cbea4ac95966305f5a7772f3f42ebfc7fc7eddbd8e1"
 
 [[package]]
 name = "os_str_bytes"
@@ -2768,9 +2777,9 @@ dependencies = [
 
 [[package]]
 name = "regex"
-version = "1.5.6"
+version = "1.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d83f127d94bdbcda4c8cc2e50f6f84f4b611f69c902699ca385a39c3a75f9ff1"
+checksum = "4c4eb3267174b8c6c2f654116623910a0fef09c4753f8dd83db29c48a0df988b"
 dependencies = [
  "aho-corasick",
  "memchr",
@@ -2788,9 +2797,9 @@ dependencies = [
 
 [[package]]
 name = "regex-syntax"
-version = "0.6.26"
+version = "0.6.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "49b3de9ec5dc0a3417da371aab17d729997c15010e7fd24ff707773a33bddb64"
+checksum = "a3f87b73ce11b1619a3c6332f45341e0047173771e8b8b73f87bfeefb7b56244"
 
 [[package]]
 name = "renderdoc-sys"
@@ -2827,6 +2836,7 @@ name = "rgis"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy-jobs",
  "bevy-web-resizer",
  "geo",
  "geo-bevy",
@@ -2840,7 +2850,6 @@ dependencies = [
  "rgis-network",
  "rgis-renderer",
  "rgis-settings",
- "rgis-task",
  "rgis-transform",
  "rgis-ui",
  "time-logger",
@@ -2880,13 +2889,13 @@ name = "rgis-file-loader"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy-jobs",
  "geo",
  "geo-features",
  "geojson",
  "rgis-cli",
  "rgis-events",
  "rgis-network",
- "rgis-task",
  "serde_json",
  "thiserror",
  "time-logger",
@@ -2942,8 +2951,8 @@ version = "0.1.0"
 dependencies = [
  "async-channel",
  "bevy",
+ "bevy-jobs",
  "ehttp",
- "rgis-task",
 ]
 
 [[package]]
@@ -2951,12 +2960,12 @@ name = "rgis-renderer"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy-jobs",
  "geo",
  "geo-bevy",
  "rgis-events",
  "rgis-layer-id",
  "rgis-layers",
- "rgis-task",
 ]
 
 [[package]]
@@ -2968,19 +2977,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "rgis-task"
-version = "0.1.0"
-dependencies = [
- "async-channel",
- "bevy",
- "instant",
-]
-
-[[package]]
 name = "rgis-transform"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy-jobs",
  "geo",
  "geo-features",
  "geo-proj-js",
@@ -2989,7 +2990,6 @@ dependencies = [
  "rgis-layer-id",
  "rgis-layers",
  "rgis-settings",
- "rgis-task",
  "thiserror",
 ]
 
@@ -2998,6 +2998,7 @@ name = "rgis-ui"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy-jobs",
  "bevy_egui",
  "geo",
  "rfd",
@@ -3007,7 +3008,6 @@ dependencies = [
  "rgis-library",
  "rgis-mouse",
  "rgis-settings",
- "rgis-task",
  "webbrowser",
 ]
 

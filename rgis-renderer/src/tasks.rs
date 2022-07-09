@@ -4,7 +4,7 @@ pub struct MeshBuildingTask {
     pub geometry: geo::Geometry,
 }
 
-impl rgis_task::Task for MeshBuildingTask {
+impl bevy_jobs::Task for MeshBuildingTask {
     type Outcome = Result<
         (Vec<geo_bevy::PreparedMesh>, rgis_layer_id::LayerId),
         <geo::Geometry as geo_bevy::BuildBevyMeshes>::Error,
@@ -14,7 +14,7 @@ impl rgis_task::Task for MeshBuildingTask {
         "Building Bevy meshes".to_string()
     }
 
-    fn perform(self) -> rgis_task::PerformReturn<Self::Outcome> {
+    fn perform(self) -> bevy_jobs::PerformReturn<Self::Outcome> {
         Box::pin(async move {
             Ok((
                 geo_bevy::build_bevy_meshes(
