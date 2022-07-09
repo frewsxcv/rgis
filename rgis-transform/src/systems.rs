@@ -2,7 +2,7 @@ fn handle_layer_created_events(
     mut layer_created_event_reader: bevy::ecs::event::EventReader<rgis_events::LayerCreatedEvent>,
     layers: bevy::ecs::system::Res<rgis_layers::Layers>,
     rgis_settings: bevy::ecs::system::Res<rgis_settings::RgisSettings>,
-    mut task_spawner: bevy_jobs::TaskSpawner,
+    mut task_spawner: bevy_jobs::JobSpawner,
 ) {
     for event in layer_created_event_reader.iter() {
         let layer = match layers.get(event.0) {
@@ -20,7 +20,7 @@ fn handle_layer_created_events(
 }
 
 fn handle_reproject_geometry_task_completion_events(
-    mut finished_tasks: bevy::ecs::system::ResMut<bevy_jobs::FinishedTasks>,
+    mut finished_tasks: bevy::ecs::system::ResMut<bevy_jobs::FinishedJobs>,
     mut layers: bevy::ecs::system::ResMut<rgis_layers::Layers>,
     mut layer_reprojected_event_writer: bevy::ecs::event::EventWriter<
         rgis_events::LayerReprojectedEvent,
@@ -56,7 +56,7 @@ fn handle_crs_changed_events(
     mut crs_changed_event_reader: bevy::ecs::event::EventReader<rgis_events::CrsChangedEvent>,
     mut layers: bevy::ecs::system::ResMut<rgis_layers::Layers>,
     rgis_settings: bevy::ecs::system::Res<rgis_settings::RgisSettings>,
-    mut task_spawner: bevy_jobs::TaskSpawner,
+    mut task_spawner: bevy_jobs::JobSpawner,
 ) {
     for _ in crs_changed_event_reader.iter() {
         layers.clear_projected();

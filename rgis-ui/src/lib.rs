@@ -134,7 +134,7 @@ fn render_side_panel(
 }
 
 fn handle_open_file_task(
-    mut finished_tasks: ResMut<bevy_jobs::FinishedTasks>,
+    mut finished_tasks: ResMut<bevy_jobs::FinishedJobs>,
     mut load_geo_json_file_events: bevy::ecs::event::EventWriter<rgis_events::LoadGeoJsonFileEvent>,
     mut state: ResMut<UiState>,
 ) {
@@ -171,7 +171,7 @@ fn render_add_layer_window(
     mut load_geo_json_file_event_writer: bevy::ecs::event::EventWriter<
         rgis_events::LoadGeoJsonFileEvent,
     >,
-    mut task_spawner: bevy_jobs::TaskSpawner,
+    mut task_spawner: bevy_jobs::JobSpawner,
 ) {
     add_layer_window::AddLayerWindow {
         state: &mut state,

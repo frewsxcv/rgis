@@ -29,7 +29,7 @@ macro_rules! skip_none {
 fn layer_loaded(
     layers: Res<rgis_layers::Layers>,
     mut event_reader: EventReader<rgis_events::LayerReprojectedEvent>,
-    mut task_spawner: bevy_jobs::TaskSpawner,
+    mut task_spawner: bevy_jobs::JobSpawner,
 ) {
     for layer in event_reader.iter().flat_map(|event| layers.get(event.0)) {
         let projected_feature = skip_none!(
@@ -51,7 +51,7 @@ fn handle_mesh_building_task_outcome(
     mut materials: ResMut<Assets<ColorMaterial>>,
     layers: Res<rgis_layers::Layers>,
     mut meshes_spawned_event_writer: EventWriter<rgis_events::MeshesSpawnedEvent>,
-    mut finished_tasks: ResMut<bevy_jobs::FinishedTasks>,
+    mut finished_tasks: ResMut<bevy_jobs::FinishedJobs>,
 ) {
     while let Some(outcome) = finished_tasks.take_next::<MeshBuildingTask>() {
         let (meshes, layer_id) = skip_err!(outcome, "Encountered error when spawning mesh: {}");

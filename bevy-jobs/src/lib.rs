@@ -14,13 +14,12 @@ pub struct Plugin;
 impl bevy::prelude::Plugin for Plugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.add_system(check_system)
-            .insert_resource(FinishedTasks { outcomes: vec![] });
+            .insert_resource(FinishedJobs { outcomes: vec![] });
     }
 }
 
 #[cfg(not(target_arch = "wasm32"))]
-pub type AsyncReturn<Output> =
-    pin::Pin<Box<dyn future::Future<Output = Output> + Send + 'static>>;
+pub type AsyncReturn<Output> = pin::Pin<Box<dyn future::Future<Output = Output> + Send + 'static>>;
 #[cfg(target_arch = "wasm32")]
 pub type AsyncReturn<Output> = pin::Pin<Box<dyn future::Future<Output = Output> + 'static>>;
 
@@ -36,7 +35,7 @@ pub trait Job: any::Any + Sized + Send + Sync + 'static {
         pool: &bevy::tasks::AsyncComputeTaskPool,
         commands: &mut bevy::ecs::system::Commands,
     ) {
-        let (sender, receiver) = async_channel::unbounded::<OutcomePayload>();
+        let (sender, receiver) = async_channel::unbounded::<TaskOutcomePayload>();
 
         let task_name = self.name();
         let in_progress_task = InProgressTask {
@@ -50,7 +49,10 @@ pub trait Job: any::Any + Sized + Send + Sync + 'static {
             let outcome = self.perform().await;
             bevy::log::info!("Completed task '{}' in {:?}", task_name, instant.elapsed());
             if let Err(e) = sender
-                .send((any::TypeId::of::<Self>(), Box::new(outcome)))
+                .send(TaskOutcomePayload {
+                    task_outcome_type_id: any::TypeId::of::<Self>(),
+                    task_outcome: Box::new(outcome),
+                })
                 .await
             {
                 bevy::log::error!(
@@ -69,7 +71,7 @@ pub trait Job: any::Any + Sized + Send + Sync + 'static {
 fn check_system(
     query: bevy::ecs::system::Query<(&InProgressTask, bevy::ecs::entity::Entity)>,
     mut commands: bevy::ecs::system::Commands,
-    mut finished_tasks: bevy::ecs::system::ResMut<FinishedTasks>,
+    mut finished_tasks: bevy::ecs::system::ResMut<FinishedJobs>,
 ) {
     query.for_each(|(receiver, entity)| {
         if let Ok(outcome) = receiver.recv.try_recv() {
@@ -80,16 +82,18 @@ fn check_system(
     })
 }
 
-// (<task type ID>, <task outcome value>)
-type OutcomePayload = (any::TypeId, Box<dyn any::Any + Send + Sync>);
+struct TaskOutcomePayload {
+    task_outcome_type_id: any::TypeId,
+    task_outcome: Box<dyn any::Any + Send + Sync>,
+}
 
 #[derive(bevy::ecs::system::SystemParam)]
-pub struct TaskSpawner<'w, 's> {
+pub struct JobSpawner<'w, 's> {
     thread_pool: bevy::ecs::system::Res<'w, bevy::tasks::AsyncComputeTaskPool>,
     commands: bevy::ecs::system::Commands<'w, 's>,
 }
 
-impl<'w, 's> TaskSpawner<'w, 's> {
+impl<'w, 's> JobSpawner<'w, 's> {
     pub fn spawn<T: Job>(&mut self, task: T) {
         task.spawn(&self.thread_pool, &mut self.commands)
     }
@@ -98,27 +102,28 @@ impl<'w, 's> TaskSpawner<'w, 's> {
 #[derive(Component)]
 pub struct InProgressTask {
     pub name: String,
-    recv: async_channel::Receiver<OutcomePayload>,
+    recv: async_channel::Receiver<TaskOutcomePayload>,
 }
 
-pub struct FinishedTasks {
-    outcomes: Vec<OutcomePayload>,
+pub struct FinishedJobs {
+    outcomes: Vec<TaskOutcomePayload>,
 }
 
-impl FinishedTasks {
+impl FinishedJobs {
     #[inline]
     pub fn take_next<T: Job>(&mut self) -> Option<T::Outcome> {
         let index = self
             .outcomes
             .iter_mut()
             .enumerate()
-            .filter(|(_i, (type_id, outcome))| {
-                any::TypeId::of::<T>() == *type_id && outcome.is::<T::Outcome>()
+            .filter(|(_i, outcome_payload)| {
+                any::TypeId::of::<T>() == outcome_payload.task_outcome_type_id
+                    && outcome_payload.task_outcome.is::<T::Outcome>()
             })
             .map(|(i, _)| i)
             .next()?;
-        let (_type_id, x) = self.outcomes.remove(index);
-        let outcome = x.downcast::<T::Outcome>();
+        let outcome_payload = self.outcomes.remove(index);
+        let outcome = outcome_payload.task_outcome.downcast::<T::Outcome>();
         if outcome.is_err() {
             bevy::log::error!("encountered unexpected task result type");
         }

@@ -14,7 +14,7 @@ pub struct Plugin;
 impl bevy::prelude::Plugin for Plugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.add_system(check_system)
-            .insert_resource(FinishedTasks { outcomes: vec![] });
+            .insert_resource(FinishedJobs { outcomes: vec![] });
     }
 }
 
@@ -69,7 +69,7 @@ pub trait Task: any::Any + Sized + Send + Sync + 'static {
 fn check_system(
     query: bevy::ecs::system::Query<(&InProgressTask, bevy::ecs::entity::Entity)>,
     mut commands: bevy::ecs::system::Commands,
-    mut finished_tasks: bevy::ecs::system::ResMut<FinishedTasks>,
+    mut finished_tasks: bevy::ecs::system::ResMut<FinishedJobs>,
 ) {
     query.for_each(|(receiver, entity)| {
         if let Ok(outcome) = receiver.recv.try_recv() {
@@ -84,12 +84,12 @@ fn check_system(
 type OutcomePayload = (any::TypeId, Box<dyn any::Any + Send + Sync>);
 
 #[derive(bevy::ecs::system::SystemParam)]
-pub struct TaskSpawner<'w, 's> {
+pub struct JobSpawner<'w, 's> {
     thread_pool: bevy::ecs::system::Res<'w, bevy::tasks::AsyncComputeTaskPool>,
     commands: bevy::ecs::system::Commands<'w, 's>,
 }
 
-impl<'w, 's> TaskSpawner<'w, 's> {
+impl<'w, 's> JobSpawner<'w, 's> {
     pub fn spawn<T: Task>(&mut self, task: T) {
         task.spawn(&self.thread_pool, &mut self.commands)
     }
@@ -101,11 +101,11 @@ pub struct InProgressTask {
     recv: async_channel::Receiver<OutcomePayload>,
 }
 
-pub struct FinishedTasks {
+pub struct FinishedJobs {
     outcomes: Vec<OutcomePayload>,
 }
 
-impl FinishedTasks {
+impl FinishedJobs {
     #[inline]
     pub fn take_next<T: Task>(&mut self) -> Option<T::Outcome> {
         let index = self
