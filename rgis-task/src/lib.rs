@@ -101,6 +101,7 @@ pub struct InProgressJob {
     recv: async_channel::Receiver<OutcomePayload>,
 }
 
+#[derive(bevy::ecs::system::SystemParam)]
 pub struct FinishedJobs {
     outcomes: Vec<OutcomePayload>,
 }

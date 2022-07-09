@@ -134,7 +134,7 @@ fn render_side_panel(
 }
 
 fn handle_open_file_task(
-    mut finished_tasks: ResMut<bevy_jobs::FinishedJobs>,
+    mut finished_tasks: bevy_jobs::FinishedJobs,
     mut load_geo_json_file_events: bevy::ecs::event::EventWriter<rgis_events::LoadGeoJsonFileEvent>,
     mut state: ResMut<UiState>,
 ) {

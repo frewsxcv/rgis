@@ -14,7 +14,7 @@ pub struct Plugin;
 impl bevy::prelude::Plugin for Plugin {
     fn build(&self, app: &mut bevy::prelude::App) {
         app.add_system(check_system)
-            .insert_resource(FinishedJobs { outcomes: vec![] });
+            .insert_resource(JobOutcomePayloads(vec![]));
     }
 }
 
@@ -35,7 +35,7 @@ pub trait Job: any::Any + Sized + Send + Sync + 'static {
         pool: &bevy::tasks::AsyncComputeTaskPool,
         commands: &mut bevy::ecs::system::Commands,
     ) {
-        let (sender, receiver) = async_channel::unbounded::<TaskOutcomePayload>();
+        let (sender, receiver) = async_channel::unbounded::<JobOutcomePayload>();
 
         let task_name = self.name();
         let in_progress_task = InProgressJob {
@@ -49,7 +49,7 @@ pub trait Job: any::Any + Sized + Send + Sync + 'static {
             let outcome = self.perform().await;
             bevy::log::info!("Completed task '{}' in {:?}", task_name, instant.elapsed());
             if let Err(e) = sender
-                .send(TaskOutcomePayload {
+                .send(JobOutcomePayload {
                     task_outcome_type_id: any::TypeId::of::<Self>(),
                     task_outcome: Box::new(outcome),
                 })
@@ -71,18 +71,18 @@ pub trait Job: any::Any + Sized + Send + Sync + 'static {
 fn check_system(
     query: bevy::ecs::system::Query<(&InProgressJob, bevy::ecs::entity::Entity)>,
     mut commands: bevy::ecs::system::Commands,
-    mut finished_tasks: bevy::ecs::system::ResMut<FinishedJobs>,
+    mut finished_tasks: FinishedJobs,
 ) {
     query.for_each(|(receiver, entity)| {
         if let Ok(outcome) = receiver.recv.try_recv() {
-            bevy::log::info!("Task finished");
+            bevy::log::info!("Job finished");
             commands.entity(entity).despawn();
-            finished_tasks.outcomes.push(outcome);
+            finished_tasks.outcomes.0.push(outcome);
         }
     })
 }
 
-struct TaskOutcomePayload {
+struct JobOutcomePayload {
     task_outcome_type_id: any::TypeId,
     task_outcome: Box<dyn any::Any + Send + Sync>,
 }
@@ -102,18 +102,24 @@ impl<'w, 's> JobSpawner<'w, 's> {
 #[derive(Component)]
 pub struct InProgressJob {
     pub name: String,
-    recv: async_channel::Receiver<TaskOutcomePayload>,
+    recv: async_channel::Receiver<JobOutcomePayload>,
 }
 
-pub struct FinishedJobs {
-    outcomes: Vec<TaskOutcomePayload>,
+#[derive(bevy::ecs::system::SystemParam)]
+pub struct FinishedJobs<'w, 's> {
+    outcomes: bevy::ecs::system::ResMut<'w, JobOutcomePayloads>,
+    #[system_param(ignore)]
+    phantom_data: std::marker::PhantomData<&'s ()>,
 }
 
-impl FinishedJobs {
+pub struct JobOutcomePayloads(Vec<JobOutcomePayload>);
+
+impl<'w, 's> FinishedJobs<'w, 's> {
     #[inline]
     pub fn take_next<T: Job>(&mut self) -> Option<T::Outcome> {
         let index = self
             .outcomes
+            .0
             .iter_mut()
             .enumerate()
             .filter(|(_i, outcome_payload)| {
@@ -122,7 +128,7 @@ impl FinishedJobs {
             })
             .map(|(i, _)| i)
             .next()?;
-        let outcome_payload = self.outcomes.remove(index);
+        let outcome_payload = self.outcomes.0.remove(index);
         let outcome = outcome_payload.task_outcome.downcast::<T::Outcome>();
         if outcome.is_err() {
             bevy::log::error!("encountered unexpected task result type");

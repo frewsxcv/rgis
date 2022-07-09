@@ -51,7 +51,7 @@ fn handle_mesh_building_task_outcome(
     mut materials: ResMut<Assets<ColorMaterial>>,
     layers: Res<rgis_layers::Layers>,
     mut meshes_spawned_event_writer: EventWriter<rgis_events::MeshesSpawnedEvent>,
-    mut finished_tasks: ResMut<bevy_jobs::FinishedJobs>,
+    mut finished_tasks: bevy_jobs::FinishedJobs,
 ) {
     while let Some(outcome) = finished_tasks.take_next::<MeshBuildingTask>() {
         let (meshes, layer_id) = skip_err!(outcome, "Encountered error when spawning mesh: {}");

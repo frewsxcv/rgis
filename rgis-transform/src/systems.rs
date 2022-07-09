@@ -20,7 +20,7 @@ fn handle_layer_created_events(
 }
 
 fn handle_reproject_geometry_task_completion_events(
-    mut finished_tasks: bevy::ecs::system::ResMut<bevy_jobs::FinishedJobs>,
+    mut finished_tasks: bevy_jobs::FinishedJobs,
     mut layers: bevy::ecs::system::ResMut<rgis_layers::Layers>,
     mut layer_reprojected_event_writer: bevy::ecs::event::EventWriter<
         rgis_events::LayerReprojectedEvent,

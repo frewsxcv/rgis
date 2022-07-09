@@ -42,7 +42,7 @@ Fetching job results from a system:
 
 ```rust
 fn some_result_system(
-    mut finished_tasks: ResMut<bevy_jobs::FinishedJobs>,
+    mut finished_tasks: bevy_jobs::FinishedJobs,
 ) {
     while let Some(result) = finished_tasks.take_next::<FetchRequestJob>() {
         // ...
