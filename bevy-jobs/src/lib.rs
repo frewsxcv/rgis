@@ -37,54 +37,54 @@ pub trait Job: any::Any + Sized + Send + Sync + 'static {
     ) {
         let (sender, receiver) = async_channel::unbounded::<JobOutcomePayload>();
 
-        let task_name = self.name();
-        let in_progress_task = InProgressJob {
-            name: task_name.clone(),
+        let job_name = self.name();
+        let in_progress_job = InProgressJob {
+            name: job_name.clone(),
             recv: receiver,
         };
 
         pool.spawn(async move {
             let instant = instant::Instant::now();
-            bevy::log::info!("Starting task '{}'", task_name);
+            bevy::log::info!("Starting job '{}'", job_name);
             let outcome = self.perform().await;
-            bevy::log::info!("Completed task '{}' in {:?}", task_name, instant.elapsed());
+            bevy::log::info!("Completed job '{}' in {:?}", job_name, instant.elapsed());
             if let Err(e) = sender
                 .send(JobOutcomePayload {
-                    task_outcome_type_id: any::TypeId::of::<Self>(),
-                    task_outcome: Box::new(outcome),
+                    job_outcome_type_id: any::TypeId::of::<Self>(),
+                    job_outcome: Box::new(outcome),
                 })
                 .await
             {
                 bevy::log::error!(
-                    "Failed to send result from task {} back to main thread: {:?}",
-                    task_name,
+                    "Failed to send result from job {} back to main thread: {:?}",
+                    job_name,
                     e
                 );
             }
         })
         .detach();
 
-        commands.spawn().insert(in_progress_task);
+        commands.spawn().insert(in_progress_job);
     }
 }
 
 fn check_system(
     query: bevy::ecs::system::Query<(&InProgressJob, bevy::ecs::entity::Entity)>,
     mut commands: bevy::ecs::system::Commands,
-    mut finished_tasks: FinishedJobs,
+    mut finished_jobs: FinishedJobs,
 ) {
     query.for_each(|(receiver, entity)| {
         if let Ok(outcome) = receiver.recv.try_recv() {
             bevy::log::info!("Job finished");
             commands.entity(entity).despawn();
-            finished_tasks.outcomes.0.push(outcome);
+            finished_jobs.outcomes.0.push(outcome);
         }
     })
 }
 
 struct JobOutcomePayload {
-    task_outcome_type_id: any::TypeId,
-    task_outcome: Box<dyn any::Any + Send + Sync>,
+    job_outcome_type_id: any::TypeId,
+    job_outcome: Box<dyn any::Any + Send + Sync>,
 }
 
 #[derive(bevy::ecs::system::SystemParam)]
@@ -94,8 +94,8 @@ pub struct JobSpawner<'w, 's> {
 }
 
 impl<'w, 's> JobSpawner<'w, 's> {
-    pub fn spawn<T: Job>(&mut self, task: T) {
-        task.spawn(&self.thread_pool, &mut self.commands)
+    pub fn spawn<J: Job>(&mut self, job: J) {
+        job.spawn(&self.thread_pool, &mut self.commands)
     }
 }
 
@@ -114,24 +114,24 @@ pub struct FinishedJobs<'w, 's> {
 
 pub struct JobOutcomePayloads(Vec<JobOutcomePayload>);
 
-impl<'w, 's> FinishedJobs<'w, 's> {
+impl<'w, 's: 'w> FinishedJobs<'w, 's> {
     #[inline]
-    pub fn take_next<T: Job>(&mut self) -> Option<T::Outcome> {
+    pub fn take_next<J: Job>(&mut self) -> Option<J::Outcome> {
         let index = self
             .outcomes
             .0
             .iter_mut()
             .enumerate()
             .filter(|(_i, outcome_payload)| {
-                any::TypeId::of::<T>() == outcome_payload.task_outcome_type_id
-                    && outcome_payload.task_outcome.is::<T::Outcome>()
+                any::TypeId::of::<J>() == outcome_payload.job_outcome_type_id
+                    && outcome_payload.job_outcome.is::<J::Outcome>()
             })
             .map(|(i, _)| i)
             .next()?;
         let outcome_payload = self.outcomes.0.remove(index);
-        let outcome = outcome_payload.task_outcome.downcast::<T::Outcome>();
+        let outcome = outcome_payload.job_outcome.downcast::<J::Outcome>();
         if outcome.is_err() {
-            bevy::log::error!("encountered unexpected task result type");
+            bevy::log::error!("encountered unexpected job result type");
         }
         outcome.map(|n| *n).ok()
     }
