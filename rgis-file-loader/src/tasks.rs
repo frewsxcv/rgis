@@ -19,7 +19,7 @@ impl bevy_jobs::Job for LoadGeoJsonFileTask {
         "Loading GeoJson file".into()
     }
 
-    fn perform(self) -> bevy_jobs::PerformReturn<Self::Outcome> {
+    fn perform(self) -> bevy_jobs::AsyncReturn<Self::Outcome> {
         Box::pin(async move {
             Ok(LoadGeoJsonFileTaskOutcome {
                 geometry: self.geojson_source.load()?,

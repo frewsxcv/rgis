@@ -19,17 +19,17 @@ impl bevy::prelude::Plugin for Plugin {
 }
 
 #[cfg(not(target_arch = "wasm32"))]
-pub type PerformReturn<Output> =
+pub type AsyncReturn<Output> =
     pin::Pin<Box<dyn future::Future<Output = Output> + Send + 'static>>;
 #[cfg(target_arch = "wasm32")]
-pub type PerformReturn<Output> = pin::Pin<Box<dyn future::Future<Output = Output> + 'static>>;
+pub type AsyncReturn<Output> = pin::Pin<Box<dyn future::Future<Output = Output> + 'static>>;
 
 pub trait Job: any::Any + Sized + Send + Sync + 'static {
     type Outcome: any::Any + Send + Sync;
 
     fn name(&self) -> String;
 
-    fn perform(self) -> PerformReturn<Self::Outcome>;
+    fn perform(self) -> AsyncReturn<Self::Outcome>;
 
     fn spawn(
         self,

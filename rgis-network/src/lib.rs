@@ -28,7 +28,7 @@ impl bevy_jobs::Job for NetworkFetchTask {
         format!("Fetching '{}'", self.name)
     }
 
-    fn perform(self) -> bevy_jobs::PerformReturn<Self::Outcome> {
+    fn perform(self) -> bevy_jobs::AsyncReturn<Self::Outcome> {
         let (sender, receiver): (FetchedFileSender, FetchedFileReceiver) =
             async_channel::unbounded();
         Box::pin(async move {

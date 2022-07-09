@@ -30,7 +30,7 @@ impl bevy_jobs::Job for ReprojectGeometryTask {
         "Projecting layer".to_string()
     }
 
-    fn perform(mut self) -> bevy_jobs::PerformReturn<Self::Outcome> {
+    fn perform(mut self) -> bevy_jobs::AsyncReturn<Self::Outcome> {
         Box::pin(async move {
             for feature in self.feature_collection.features.iter_mut() {
                 #[cfg(target_arch = "wasm32")]
