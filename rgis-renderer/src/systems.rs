@@ -86,7 +86,7 @@ fn handle_layer_z_index_updated_event(
             .iter_mut()
             .filter_map(|(i, transform)| (*i == event.0).then(|| transform))
         {
-            transform.translation[2] = z_index as f32;
+            transform.translation.as_mut()[2] = z_index as f32;
         }
     }
 }
