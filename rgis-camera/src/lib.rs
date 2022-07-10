@@ -62,8 +62,8 @@ fn pan_camera_system(
     }
     let mut transform = query.single_mut();
     let mut camera_offset = CameraOffset {
-        x: transform.translation[0],
-        y: transform.translation[1],
+        x: transform.translation.as_ref()[0],
+        y: transform.translation.as_ref()[1],
     };
     let camera_scale = CameraScale(transform.scale[0]);
 
