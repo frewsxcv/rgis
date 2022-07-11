@@ -65,7 +65,7 @@ fn pan_camera_system(
         x: transform.translation.as_ref()[0],
         y: transform.translation.as_ref()[1],
     };
-    let camera_scale = CameraScale(transform.scale[0]);
+    let camera_scale = CameraScale(transform.scale.as_ref()[0]);
 
     for event in pan_camera_event_reader.iter() {
         pan_x(event.x, &mut camera_offset, camera_scale);
@@ -96,10 +96,10 @@ fn zoom_camera_system(
     }
     let mut transform = query.single_mut();
     let camera_offset = CameraOffset {
-        x: transform.translation[0],
-        y: transform.translation[1],
+        x: transform.translation.as_ref()[0],
+        y: transform.translation.as_ref()[1],
     };
-    let mut camera_scale = CameraScale(transform.scale[0]);
+    let mut camera_scale = CameraScale(transform.scale.as_ref()[0]);
     for event in zoom_camera_event_reader.iter() {
         zoom(event.amount, &mut camera_scale);
 
