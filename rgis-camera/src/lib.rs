@@ -34,6 +34,10 @@ impl CameraScale {
         CameraScale(transform.scale.as_ref()[0])
     }
 
+    fn zoom(&mut self, amount: f32) {
+        self.0 /= amount;
+    }
+
     fn to_transform_scale_vec(self) -> Vec3 {
         Vec3::new(self.0, self.0, 1.)
     }
@@ -53,6 +57,14 @@ impl CameraOffset {
         }
     }
 
+    fn pan_x(&mut self, amount: f32, camera_scale: CameraScale) {
+        // what is the camera scale?
+        self.x += amount * camera_scale.0;
+    }
+
+    fn pan_y(&mut self, amount: f32, camera_scale: CameraScale) {
+        self.y += amount * camera_scale.0;
+    }
 
     fn to_transform_translation_vec(self) -> Vec3 {
         Vec3::new(
@@ -77,8 +89,8 @@ fn pan_camera_system(
     let camera_scale = CameraScale::from_transform(&transform);
 
     for event in pan_camera_event_reader.iter() {
-        pan_x(event.x, &mut camera_offset, camera_scale);
-        pan_y(event.y, &mut camera_offset, camera_scale);
+        camera_offset.pan_x(event.x, camera_scale);
+        camera_offset.pan_y(event.y, camera_scale);
         set_camera_transform(&mut transform, camera_offset, camera_scale);
     }
 }
@@ -107,7 +119,7 @@ fn zoom_camera_system(
     let camera_offset = CameraOffset::from_transform(&transform);
     let mut camera_scale = CameraScale::from_transform(&transform);
     for event in zoom_camera_event_reader.iter() {
-        zoom(event.amount, &mut camera_scale);
+        camera_scale.zoom(event.amount);
 
         set_camera_transform(&mut transform, camera_offset, camera_scale);
     }
@@ -124,19 +136,6 @@ fn handle_meshes_spawned_events(
             *has_moved = true;
         }
     }
-}
-
-fn pan_x(amount: f32, camera_offset: &mut CameraOffset, camera_scale: CameraScale) {
-    // what is the camera scale?
-    camera_offset.x += amount * camera_scale.0;
-}
-
-fn pan_y(amount: f32, camera_offset: &mut CameraOffset, camera_scale: CameraScale) {
-    camera_offset.y += amount * camera_scale.0;
-}
-
-fn zoom(amount: f32, camera_scale: &mut CameraScale) {
-    camera_scale.0 /= amount;
 }
 
 fn center_camera(
