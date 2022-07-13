@@ -30,6 +30,10 @@ impl bevy::app::Plugin for Plugin {
 struct CameraScale(pub f32);
 
 impl CameraScale {
+    fn from_transform(transform: &Transform) -> Self {
+        CameraScale(transform.scale.as_ref()[0])
+    }
+
     fn to_transform_scale_vec(self) -> Vec3 {
         Vec3::new(self.0, self.0, 1.)
     }
@@ -42,6 +46,14 @@ struct CameraOffset {
 }
 
 impl CameraOffset {
+    fn from_transform(transform: &Transform) -> Self {
+        CameraOffset {
+            x: transform.translation.as_ref()[0],
+            y: transform.translation.as_ref()[1],
+        }
+    }
+
+
     fn to_transform_translation_vec(self) -> Vec3 {
         Vec3::new(
             self.x, self.y,
@@ -61,11 +73,8 @@ fn pan_camera_system(
         return;
     }
     let mut transform = query.single_mut();
-    let mut camera_offset = CameraOffset {
-        x: transform.translation.as_ref()[0],
-        y: transform.translation.as_ref()[1],
-    };
-    let camera_scale = CameraScale(transform.scale.as_ref()[0]);
+    let mut camera_offset = CameraOffset::from_transform(&transform);
+    let camera_scale = CameraScale::from_transform(&transform);
 
     for event in pan_camera_event_reader.iter() {
         pan_x(event.x, &mut camera_offset, camera_scale);
@@ -95,11 +104,8 @@ fn zoom_camera_system(
         return;
     }
     let mut transform = query.single_mut();
-    let camera_offset = CameraOffset {
-        x: transform.translation.as_ref()[0],
-        y: transform.translation.as_ref()[1],
-    };
-    let mut camera_scale = CameraScale(transform.scale.as_ref()[0]);
+    let camera_offset = CameraOffset::from_transform(&transform);
+    let mut camera_scale = CameraScale::from_transform(&transform);
     for event in zoom_camera_event_reader.iter() {
         zoom(event.amount, &mut camera_scale);
 
