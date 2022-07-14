@@ -34,8 +34,9 @@ fn load_from_path(
 
 #[derive(thiserror::Error, Debug)]
 pub enum LoadGeoJsonError {
+    // https://github.com/georust/geojson/issues/197
     #[error("{0}")]
-    GeoJson(#[from] geojson::Error),
+    GeoJson(#[from] Box<geojson::Error>),
     #[error("{0}")]
     Io(#[from] io::Error),
     #[error("{0}")]
@@ -98,7 +99,9 @@ fn geojson_to_geo_feature_collection(
 fn geojson_geometry_to_geo_feature_collection(
     geojson_geometry: geojson::Geometry,
 ) -> Result<geo_features::FeatureCollection, LoadGeoJsonError> {
-    let geo_geometry: geo::Geometry = geojson_geometry.try_into()?;
+    let geo_geometry: geo::Geometry = geojson_geometry
+        .try_into()
+        .map_err(Box::new)?;
     let feature = geo_features::Feature::from_geometry(geo_geometry, Default::default())?;
     Ok(geo_features::FeatureCollection::from_feature(feature))
 }
@@ -106,7 +109,11 @@ fn geojson_geometry_to_geo_feature_collection(
 fn geojson_feature_to_geo_feature(
     geojson_feature: geojson::Feature,
 ) -> Result<geo_features::Feature, LoadGeoJsonError> {
-    let geo_geometry: geo::Geometry = geojson_feature.geometry.unwrap().try_into()?;
+    let geo_geometry: geo::Geometry = geojson_feature
+        .geometry
+        .unwrap()
+        .try_into()
+        .map_err(Box::new)?;
     let properties = geojson_feature
         .properties
         .unwrap_or_default()
