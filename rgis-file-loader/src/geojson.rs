@@ -99,9 +99,7 @@ fn geojson_to_geo_feature_collection(
 fn geojson_geometry_to_geo_feature_collection(
     geojson_geometry: geojson::Geometry,
 ) -> Result<geo_features::FeatureCollection, LoadGeoJsonError> {
-    let geo_geometry: geo::Geometry = geojson_geometry
-        .try_into()
-        .map_err(Box::new)?;
+    let geo_geometry: geo::Geometry = geojson_geometry.try_into().map_err(Box::new)?;
     let feature = geo_features::Feature::from_geometry(geo_geometry, Default::default())?;
     Ok(geo_features::FeatureCollection::from_feature(feature))
 }
