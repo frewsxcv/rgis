@@ -77,16 +77,22 @@ fn load_from_reader<R: io::Read + io::Seek>(
     tl.finish();
 
     let tl = time_logger::start!("Converting to geo-types");
-    let feature_collection = match geojson {
+    let feature_collection = geojson_to_geo_feature_collection(geojson)?;
+    tl.finish();
+
+    Ok(feature_collection)
+}
+
+fn geojson_to_geo_feature_collection(
+    geojson: geojson::GeoJson,
+) -> Result<geo_features::FeatureCollection, LoadGeoJsonError> {
+    Ok(match geojson {
         geojson::GeoJson::Geometry(g) => geojson_geometry_to_geo_feature_collection(g)?,
         geojson::GeoJson::Feature(f) => geojson_feature_to_geo_feature_collection(f)?,
         geojson::GeoJson::FeatureCollection(fc) => {
             geojson_feature_collection_to_geo_feature_collection(fc)?
         }
-    };
-    tl.finish();
-
-    Ok(feature_collection)
+    })
 }
 
 fn geojson_geometry_to_geo_feature_collection(
