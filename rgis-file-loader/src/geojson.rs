@@ -100,18 +100,17 @@ fn geojson_geometry_to_geo_feature_collection(
     geojson_geometry: geojson::Geometry,
 ) -> Result<geo_features::FeatureCollection, LoadGeoJsonError> {
     let geo_geometry: geo::Geometry = geojson_geometry.try_into().map_err(Box::new)?;
-    let feature = geo_features::Feature::from_geometry(geo_geometry, Default::default())?;
+    let feature = geo_features::Feature::from_geometry(Some(geo_geometry), Default::default())?;
     Ok(geo_features::FeatureCollection::from_feature(feature))
 }
 
 fn geojson_feature_to_geo_feature(
     geojson_feature: geojson::Feature,
 ) -> Result<geo_features::Feature, LoadGeoJsonError> {
-    let geo_geometry: geo::Geometry = geojson_feature
+    let geo_geometry: Option<geo::Geometry> = geojson_feature
         .geometry
-        .unwrap()
-        .try_into()
-        .map_err(Box::new)?;
+        .map(|geometry| geometry.try_into().map_err(Box::new))
+        .transpose()?;
     let properties = geojson_feature
         .properties
         .unwrap_or_default()

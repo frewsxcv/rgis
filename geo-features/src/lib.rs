@@ -11,7 +11,7 @@ use std::{collections, fmt};
 
 #[derive(Clone, Debug)]
 pub struct Feature {
-    pub geometry: geo::Geometry,
+    pub geometry: Option<geo::Geometry>,
     pub properties: Properties,
     pub bounding_rect: geo::Rect,
 }
@@ -28,10 +28,13 @@ pub type Properties = collections::HashMap<String, Value>;
 
 impl Feature {
     pub fn from_geometry(
-        geometry: geo::Geometry,
+        geometry: Option<geo::Geometry>,
         properties: Properties,
     ) -> Result<Self, BoundingRectError> {
-        let bounding_rect = geometry.bounding_rect().ok_or(BoundingRectError)?;
+        let bounding_rect = geometry
+            .as_ref()
+            .and_then(|geometry| geometry.bounding_rect())
+            .ok_or(BoundingRectError)?;
 
         Ok(Feature {
             geometry,
@@ -41,14 +44,23 @@ impl Feature {
     }
 
     pub fn recalculate_bounding_rect(&mut self) -> Result<(), BoundingRectError> {
-        self.bounding_rect = self.geometry.bounding_rect().ok_or(BoundingRectError)?;
+        self.bounding_rect = self
+            .geometry
+            .as_ref()
+            .and_then(|geometry| geometry.bounding_rect())
+            .ok_or(BoundingRectError)?;
         Ok(())
     }
 }
 
 impl Contains<geo::Coordinate> for Feature {
     fn contains(&self, coord: &geo::Coordinate) -> bool {
-        self.bounding_rect.contains(coord) && self.geometry.contains(coord)
+        self.bounding_rect.contains(coord)
+            && self
+                .geometry
+                .as_ref()
+                .map(|geometry| geometry.contains(coord))
+                .unwrap_or(false)
     }
 }
 
@@ -88,7 +100,7 @@ impl FeatureCollection {
         geo::GeometryCollection(
             self.features
                 .iter()
-                .map(|f| f.geometry.clone())
+                .filter_map(|f| f.geometry.clone())
                 .collect::<Vec<_>>(),
         )
     }
@@ -97,7 +109,8 @@ impl FeatureCollection {
         rect_merge_many(
             self.features
                 .iter()
-                .filter_map(|feature| feature.geometry.bounding_rect()),
+                .filter_map(|feature| feature.geometry.as_ref())
+                .filter_map(|geometry| geometry.bounding_rect()),
         )
     }
 

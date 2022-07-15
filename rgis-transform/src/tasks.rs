@@ -33,20 +33,16 @@ impl bevy_jobs::Job for ReprojectGeometryTask {
     fn perform(mut self) -> bevy_jobs::AsyncReturn<Self::Outcome> {
         Box::pin(async move {
             for feature in self.feature_collection.features.iter_mut() {
-                #[cfg(target_arch = "wasm32")]
-                {
-                    geo_proj_js::transform(
-                        &mut feature.geometry,
-                        &self.source_crs,
-                        &self.target_crs,
-                    )?;
-                }
-                #[cfg(not(target_arch = "wasm32"))]
-                {
-                    use geo::transform::Transform;
-                    feature
-                        .geometry
-                        .transform_crs_to_crs(&self.source_crs, &self.target_crs)?;
+                if let Some(geometry) = &mut feature.geometry {
+                    #[cfg(target_arch = "wasm32")]
+                    {
+                        geo_proj_js::transform(geometry, &self.source_crs, &self.target_crs)?;
+                    }
+                    #[cfg(not(target_arch = "wasm32"))]
+                    {
+                        use geo::transform::Transform;
+                        geometry.transform_crs_to_crs(&self.source_crs, &self.target_crs)?;
+                    }
                 }
 
                 feature.recalculate_bounding_rect()?;
