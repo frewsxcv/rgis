@@ -91,8 +91,8 @@ fn pan_camera_system(
     for event in pan_camera_event_reader.iter() {
         camera_offset.pan_x(event.x, camera_scale);
         camera_offset.pan_y(event.y, camera_scale);
-        set_camera_transform(&mut transform, camera_offset, camera_scale);
     }
+    set_camera_transform(&mut transform, camera_offset, camera_scale);
 }
 
 fn set_camera_transform(
@@ -120,9 +120,8 @@ fn zoom_camera_system(
     let mut camera_scale = CameraScale::from_transform(&transform);
     for event in zoom_camera_event_reader.iter() {
         camera_scale.zoom(event.amount);
-
-        set_camera_transform(&mut transform, camera_offset, camera_scale);
     }
+    set_camera_transform(&mut transform, camera_offset, camera_scale);
 }
 
 fn handle_meshes_spawned_events(
