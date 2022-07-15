@@ -222,6 +222,7 @@ fn colorous_color_to_bevy_color(colorous_color: colorous::Color) -> Color {
 const COLORS: [colorous::Color; 10] = colorous::CATEGORY10;
 
 fn next_colorous_color() -> colorous::Color {
+    #[allow(clippy::indexing_slicing)]
     COLORS[next_color_index()]
 }
 
