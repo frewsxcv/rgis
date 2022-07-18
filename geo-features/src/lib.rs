@@ -13,7 +13,7 @@ use std::{collections, fmt};
 pub struct Feature {
     pub geometry: Option<geo::Geometry>,
     pub properties: Properties,
-    pub bounding_rect: geo::Rect,
+    pub bounding_rect: Option<geo::Rect>,
 }
 
 #[derive(Clone, Debug)]
@@ -33,8 +33,7 @@ impl Feature {
     ) -> Result<Self, BoundingRectError> {
         let bounding_rect = geometry
             .as_ref()
-            .and_then(|geometry| geometry.bounding_rect())
-            .ok_or(BoundingRectError)?;
+            .and_then(|geometry| geometry.bounding_rect());
 
         Ok(Feature {
             geometry,
@@ -47,15 +46,17 @@ impl Feature {
         self.bounding_rect = self
             .geometry
             .as_ref()
-            .and_then(|geometry| geometry.bounding_rect())
-            .ok_or(BoundingRectError)?;
+            .and_then(|geometry| geometry.bounding_rect());
         Ok(())
     }
 }
 
 impl Contains<geo::Coordinate> for Feature {
     fn contains(&self, coord: &geo::Coordinate) -> bool {
-        self.bounding_rect.contains(coord)
+        self.bounding_rect
+            .as_ref()
+            .map(|bounding_rect| bounding_rect.contains(coord))
+            .unwrap_or(false)
             && self
                 .geometry
                 .as_ref()
@@ -67,7 +68,7 @@ impl Contains<geo::Coordinate> for Feature {
 #[derive(Clone, Debug)]
 pub struct FeatureCollection {
     pub features: Vec<Feature>,
-    pub bounding_rect: geo::Rect,
+    pub bounding_rect: Option<geo::Rect>,
 }
 
 #[derive(Debug)]
@@ -120,12 +121,10 @@ impl FeatureCollection {
     }
 }
 
-// TODO: this assumes features[0] exists. is that okay?
-fn bounding_rect_from_features(features: &[Feature]) -> geo::Rect {
-    assert!(!features.is_empty());
-    let mut bounding_rect = features[0].bounding_rect;
-    for feature in &features[1..] {
-        bounding_rect = rect_merge(bounding_rect, feature.bounding_rect);
+fn bounding_rect_from_features(features: &[Feature]) -> Option<geo::Rect> {
+    let mut bounding_rect = None;
+    for feature in features.iter() {
+        bounding_rect = option_rect_merge(bounding_rect, feature.bounding_rect);
     }
     bounding_rect
 }
@@ -139,6 +138,18 @@ fn rect_merge_many<T: geo::CoordFloat>(
         acc = rect_merge(acc, next);
     }
     Ok(acc)
+}
+
+fn option_rect_merge<T: geo::CoordFloat>(
+    a: Option<geo::Rect<T>>,
+    b: Option<geo::Rect<T>>,
+) -> Option<geo::Rect<T>> {
+    match (a, b) {
+        (Some(a), Some(b)) => Some(rect_merge(a, b)),
+        (Some(a), None) => Some(a),
+        (None, Some(b)) => Some(b),
+        (None, None) => None,
+    }
 }
 
 fn rect_merge<T: geo::CoordFloat>(a: geo::Rect<T>, b: geo::Rect<T>) -> geo::Rect<T> {

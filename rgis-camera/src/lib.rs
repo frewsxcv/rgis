@@ -152,11 +152,15 @@ fn center_camera(
         .filter_map(|layer| layer.get_projected_feature_or_log())
     {
         let mut transform = query.single_mut();
-        let layer_center = projected_feature.bounding_rect.center();
+        let bounding_rect = match projected_feature.bounding_rect {
+            Some(b) => b,
+            None => continue,
+        };
+        let layer_center = bounding_rect.center();
         let window = windows.primary();
         // TODO: this should subtract the topbar, sidebar, and bottombar sizes.
-        let scale = (projected_feature.bounding_rect.width() / f64::from(window.width()))
-            .max(projected_feature.bounding_rect.height() / f64::from(window.height()));
+        let scale = (bounding_rect.width() / f64::from(window.width()))
+            .max(bounding_rect.height() / f64::from(window.height()));
         debug!("Moving camera to look at new layer");
         let camera_offset = CameraOffset {
             x: layer_center.x as f32,
