@@ -2861,6 +2861,7 @@ name = "rgis-camera"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "geo",
  "rgis-events",
  "rgis-layers",
 ]

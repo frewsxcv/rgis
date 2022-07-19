@@ -50,6 +50,13 @@ struct CameraOffset {
 }
 
 impl CameraOffset {
+    fn from_coord(coord: geo::Coordinate) -> Self {
+        CameraOffset {
+            x: coord.x as f32,
+            y: coord.y as f32,
+        }
+    }
+
     fn from_transform(transform: &Transform) -> Self {
         CameraOffset {
             x: transform.translation.as_ref()[0],
@@ -162,10 +169,7 @@ fn center_camera(
         let scale = (bounding_rect.width() / f64::from(window.width()))
             .max(bounding_rect.height() / f64::from(window.height()));
         debug!("Moving camera to look at new layer");
-        let camera_offset = CameraOffset {
-            x: layer_center.x as f32,
-            y: layer_center.y as f32,
-        };
+        let camera_offset = CameraOffset::from_coord(layer_center);
         let camera_scale = CameraScale(scale as f32);
         set_camera_transform(&mut transform, camera_offset, camera_scale);
     }
