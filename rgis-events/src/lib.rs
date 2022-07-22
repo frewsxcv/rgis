@@ -65,7 +65,6 @@ pub struct MapClickedEvent(pub geo::Coordinate);
 #[derive(Default)]
 pub struct OpenChangeCrsWindow;
 
-// TODO: this can be removed
 #[derive(Debug)]
 pub enum LoadGeoJsonFileEvent {
     #[cfg(not(target_arch = "wasm32"))]
