@@ -59,7 +59,6 @@ impl bevy::app::Plugin for Plugin {
             .add_system(handle_render_feature_properties_event)
             .add_system(handle_render_message_event)
             .add_system(render_message_window.label("message_window"))
-            .add_system(render_feature_properties_window.label("feature_properties_window"))
             .add_system_set(
                 SystemSet::new()
                     .label("top_bottom_panels")
@@ -85,6 +84,11 @@ impl bevy::app::Plugin for Plugin {
             .add_system(
                 render_change_crs_window
                     .label("change_crs_window")
+                    .after("add_layer_window"),
+            )
+            .add_system(
+                render_feature_properties_window
+                    .label("feature_properties_window")
                     .after("add_layer_window"),
             )
             .add_system(render_in_progress.after("top_bottom_panels"));
