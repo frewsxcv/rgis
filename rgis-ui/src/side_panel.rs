@@ -15,6 +15,7 @@ pub struct Events<'w, 's> {
 pub(crate) struct SidePanel<'a, 'w, 's> {
     pub egui_ctx: &'a egui::Context,
     pub state: &'a mut crate::UiState,
+    pub manage_layer_window_state: &'a mut crate::ManageLayerWindowState,
     pub layers: &'a rgis_layers::Layers,
     pub events: &'a mut Events<'w, 's>,
 }
@@ -73,8 +74,8 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
                 .id_source(layer.id) // Instead of using the layer name as the ID (which is not unique), use the layer ID
                 .show(ui, |ui| {
                     if ui.button("✏ Manage").clicked() {
-                        self.state.is_manage_layer_window_visible = true;
-                        self.state.managing_layer = Some(layer.id);
+                        self.manage_layer_window_state.is_visible = true;
+                        self.manage_layer_window_state.layer_id = Some(layer.id);
                     }
 
                     if ui

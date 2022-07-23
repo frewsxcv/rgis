@@ -1,7 +1,7 @@
 use bevy_egui::egui;
 
 pub(crate) struct ManageLayerWindow<'a> {
-    pub state: &'a mut crate::UiState,
+    pub state: &'a mut crate::ManageLayerWindowState,
     pub layers: &'a rgis_layers::Layers,
     pub bevy_egui_ctx: &'a mut bevy_egui::EguiContext,
     pub color_events: &'a mut bevy::ecs::event::Events<rgis_events::UpdateLayerColorEvent>,
@@ -10,8 +10,8 @@ pub(crate) struct ManageLayerWindow<'a> {
 impl<'a> ManageLayerWindow<'a> {
     pub(crate) fn render(&mut self) {
         let layer_id = match (
-            self.state.is_manage_layer_window_visible,
-            self.state.managing_layer,
+            self.state.is_visible,
+            self.state.layer_id,
         ) {
             (true, Some(layer_id)) => layer_id,
             _ => return,
@@ -23,12 +23,12 @@ impl<'a> ManageLayerWindow<'a> {
                     "Could not find layer with ID {:?}, closing manage layer window",
                     layer_id
                 );
-                self.state.is_manage_layer_window_visible = false;
+                self.state.is_visible = false;
                 return;
             }
         };
         egui::Window::new("Manage Layer")
-            .open(&mut self.state.is_manage_layer_window_visible)
+            .open(&mut self.state.is_visible)
             .show(self.bevy_egui_ctx.ctx_mut(), |ui| {
                 egui::Grid::new("manage_layer_window_grid")
                     .num_columns(2)

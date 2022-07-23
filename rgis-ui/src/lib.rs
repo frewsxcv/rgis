@@ -23,14 +23,15 @@ pub struct Plugin;
 // TODO: most of these could be moved to individual Local or Res
 #[derive(Debug, Default)]
 struct UiState {
-    /// Is the 'manage layer' window visible?
-    is_manage_layer_window_visible: bool,
-    /// Which layer is the user currently managing.
-    managing_layer: Option<rgis_layer_id::LayerId>,
     /// Is the 'add layer' window visible?
     is_add_layer_window_visible: bool,
     is_message_window_visible: bool,
     message: Option<String>,
+}
+
+pub struct ManageLayerWindowState {
+    layer_id: Option<rgis_layer_id::LayerId>,
+    is_visible: bool,
 }
 
 pub struct FeaturePropertiesWindowState {
@@ -42,11 +43,13 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(bevy_egui::EguiPlugin)
             .insert_resource(UiState {
-                is_manage_layer_window_visible: false,
                 is_add_layer_window_visible: true,
-                managing_layer: None,
                 is_message_window_visible: false,
                 message: None,
+            })
+            .insert_resource(ManageLayerWindowState {
+                is_visible: false,
+                layer_id: None,
             })
             .insert_resource(FeaturePropertiesWindowState {
                 is_visible: false,
@@ -144,6 +147,7 @@ fn render_bottom_panel(
 
 fn render_side_panel(
     mut state: ResMut<UiState>,
+    mut manage_layer_window_state: ResMut<ManageLayerWindowState>,
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
     layers: Res<rgis_layers::Layers>,
     mut events: side_panel::Events,
@@ -151,6 +155,7 @@ fn render_side_panel(
     side_panel::SidePanel {
         egui_ctx: bevy_egui_ctx.ctx_mut(),
         state: &mut state,
+        manage_layer_window_state: &mut manage_layer_window_state,
         layers: &layers,
         events: &mut events,
     }
@@ -175,7 +180,7 @@ fn handle_open_file_task(
 }
 
 fn render_manage_layer_window(
-    mut state: ResMut<UiState>,
+    mut state: ResMut<ManageLayerWindowState>,
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
     layers: Res<rgis_layers::Layers>,
     mut color_events: ResMut<bevy::ecs::event::Events<rgis_events::UpdateLayerColorEvent>>,
