@@ -104,7 +104,9 @@ fn render_top_panel(
 }
 
 fn handle_render_feature_properties_event(
-    mut render_message_events: ResMut<bevy::ecs::event::Events<rgis_events::RenderFeaturePropertiesEvent>>,
+    mut render_message_events: ResMut<
+        bevy::ecs::event::Events<rgis_events::RenderFeaturePropertiesEvent>,
+    >,
     mut state: ResMut<FeaturePropertiesWindowState>,
 ) {
     if let Some(event) = render_message_events.drain().last() {
