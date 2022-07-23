@@ -84,7 +84,7 @@ fn handle_layer_z_index_updated_event(
 
         for mut transform in query
             .iter_mut()
-            .filter_map(|(i, transform)| (*i == event.0).then(|| transform))
+            .filter_map(|(i, transform)| (*i == event.0).then_some(transform))
         {
             transform.translation.as_mut()[2] = z_index as f32;
         }
