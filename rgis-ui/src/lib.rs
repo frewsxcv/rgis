@@ -12,6 +12,7 @@ use bevy_egui::egui;
 mod add_layer_window;
 mod bottom_panel;
 mod change_crs_window;
+mod feature_properties_window;
 mod manage_layer_window;
 mod message_window;
 mod side_panel;
@@ -32,6 +33,11 @@ struct UiState {
     message: Option<String>,
 }
 
+pub struct FeaturePropertiesWindowState {
+    properties: Option<geo_features::Properties>,
+    is_visible: bool,
+}
+
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(bevy_egui::EguiPlugin)
@@ -42,9 +48,15 @@ impl bevy::app::Plugin for Plugin {
                 is_message_window_visible: false,
                 message: None,
             })
+            .insert_resource(FeaturePropertiesWindowState {
+                is_visible: false,
+                properties: None,
+            })
             .add_system(handle_open_file_task)
+            .add_system(handle_render_feature_properties_event)
             .add_system(handle_render_message_event)
             .add_system(render_message_window.label("message_window"))
+            .add_system(render_feature_properties_window.label("feature_properties_window"))
             .add_system_set(
                 SystemSet::new()
                     .label("top_bottom_panels")
@@ -91,11 +103,21 @@ fn render_top_panel(
     .render();
 }
 
+fn handle_render_feature_properties_event(
+    mut render_message_events: ResMut<bevy::ecs::event::Events<rgis_events::RenderFeaturePropertiesEvent>>,
+    mut state: ResMut<FeaturePropertiesWindowState>,
+) {
+    if let Some(event) = render_message_events.drain().last() {
+        state.is_visible = true;
+        state.properties = Some(event.0);
+    }
+}
+
 fn handle_render_message_event(
     mut render_message_events: ResMut<bevy::ecs::event::Events<rgis_events::RenderMessageEvent>>,
     mut state: ResMut<UiState>,
 ) {
-    for event in render_message_events.drain() {
+    if let Some(event) = render_message_events.drain().last() {
         state.message = Some(event.0);
         state.is_message_window_visible = true;
     }
@@ -200,6 +222,17 @@ fn render_change_crs_window(
         bevy_egui_ctx: &mut bevy_egui_ctx,
         text_field_value: &mut text_field_value,
         change_crs_event_writer: &mut change_crs_event_writer,
+    }
+    .render();
+}
+
+fn render_feature_properties_window(
+    mut state: ResMut<FeaturePropertiesWindowState>,
+    mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
+) {
+    feature_properties_window::FeaturePropertiesWindow {
+        state: &mut state,
+        bevy_egui_ctx: &mut bevy_egui_ctx,
     }
     .render();
 }

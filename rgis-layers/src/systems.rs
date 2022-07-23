@@ -97,15 +97,16 @@ fn handle_move_layer_events(
 
 fn handle_map_clicked_events(
     mut map_clicked_event_reader: bevy::ecs::event::EventReader<rgis_events::MapClickedEvent>,
-    mut render_message_event_writer: bevy::ecs::event::EventWriter<rgis_events::RenderMessageEvent>,
+    mut render_message_event_writer: bevy::ecs::event::EventWriter<
+        rgis_events::RenderFeaturePropertiesEvent,
+    >,
     layers: Res<crate::Layers>,
 ) {
     for event in map_clicked_event_reader.iter() {
         if let Some(feature) = layers.feature_from_click(event.0) {
-            render_message_event_writer.send(rgis_events::RenderMessageEvent(format!(
-                "{:?}",
-                feature.properties
-            )));
+            render_message_event_writer.send(rgis_events::RenderFeaturePropertiesEvent(
+                feature.properties.clone(),
+            ));
         }
     }
 }

@@ -3002,6 +3002,7 @@ dependencies = [
  "bevy-jobs",
  "bevy_egui",
  "geo",
+ "geo-features",
  "rfd",
  "rgis-events",
  "rgis-layer-id",
