@@ -9,10 +9,7 @@ pub(crate) struct ManageLayerWindow<'a> {
 
 impl<'a> ManageLayerWindow<'a> {
     pub(crate) fn render(&mut self) {
-        let layer_id = match (
-            self.state.is_visible,
-            self.state.layer_id,
-        ) {
+        let layer_id = match (self.state.is_visible, self.state.layer_id) {
             (true, Some(layer_id)) => layer_id,
             _ => return,
         };
