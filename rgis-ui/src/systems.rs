@@ -15,11 +15,11 @@ fn handle_render_feature_properties_event(
 
 fn handle_render_message_event(
     mut render_message_events: ResMut<bevy::ecs::event::Events<rgis_events::RenderMessageEvent>>,
-    mut state: ResMut<crate::UiState>,
+    mut state: ResMut<crate::MessageWindowState>,
 ) {
     if let Some(event) = render_message_events.drain().last() {
         state.message = Some(event.0);
-        state.is_message_window_visible = true;
+        state.is_visible = true;
     }
 }
 
@@ -41,7 +41,7 @@ fn render_bottom_panel(
 }
 
 fn render_side_panel(
-    mut state: ResMut<crate::UiState>,
+    mut state: ResMut<crate::AddLayerWindowState>,
     mut manage_layer_window_state: ResMut<crate::ManageLayerWindowState>, // TODO: change this to Local?
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
     layers: Res<rgis_layers::Layers>,
@@ -60,7 +60,7 @@ fn render_side_panel(
 fn handle_open_file_task(
     mut finished_tasks: bevy_jobs::FinishedJobs,
     mut load_geo_json_file_events: bevy::ecs::event::EventWriter<rgis_events::LoadGeoJsonFileEvent>,
-    mut state: ResMut<crate::UiState>, // TODO: change this to Local?
+    mut state: ResMut<crate::AddLayerWindowState>, // TODO: change this to Local?
 ) {
     while let Some(outcome) = finished_tasks.take_next::<crate::add_layer_window::OpenFileTask>() {
         if let Some(outcome) = outcome {
@@ -69,7 +69,7 @@ fn handle_open_file_task(
                 bytes: outcome.1,
                 crs: "EPSG:4326".into(),
             });
-            state.is_add_layer_window_visible = false;
+            state.is_visible = false;
         }
     }
 }
@@ -90,7 +90,7 @@ fn render_manage_layer_window(
 }
 
 fn render_add_layer_window(
-    mut state: ResMut<crate::UiState>, // TODO: change this to Local?
+    mut state: ResMut<crate::AddLayerWindowState>, // TODO: change this to Local?
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
     mut load_geo_json_file_event_writer: bevy::ecs::event::EventWriter<
         rgis_events::LoadGeoJsonFileEvent,
@@ -140,7 +140,7 @@ fn render_feature_properties_window(
 }
 
 fn render_message_window(
-    mut state: ResMut<crate::UiState>, // TODO: change this to Local?
+    mut state: ResMut<crate::MessageWindowState>, // TODO: change this to Local?
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
 ) {
     crate::message_window::MessageWindow {

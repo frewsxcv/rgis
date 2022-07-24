@@ -14,7 +14,7 @@ pub struct Events<'w, 's> {
 
 pub(crate) struct SidePanel<'a, 'w, 's> {
     pub egui_ctx: &'a egui::Context,
-    pub state: &'a mut crate::UiState,
+    pub state: &'a mut crate::AddLayerWindowState,
     pub manage_layer_window_state: &'a mut crate::ManageLayerWindowState,
     pub layers: &'a rgis_layers::Layers,
     pub events: &'a mut Events<'w, 's>,
@@ -49,9 +49,9 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
     }
 
     fn render_add_layer_button(&mut self, ui: &mut egui::Ui) {
-        ui.add_enabled_ui(!self.state.is_add_layer_window_visible, |ui| {
+        ui.add_enabled_ui(!self.state.is_visible, |ui| {
             if ui.button("➕ Add Layer").clicked() {
-                self.state.is_add_layer_window_visible = true;
+                self.state.is_visible = true;
             }
         });
     }

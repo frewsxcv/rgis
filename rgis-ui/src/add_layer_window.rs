@@ -21,7 +21,7 @@ impl bevy_jobs::Job for OpenFileTask {
 }
 
 pub(crate) struct AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
-    pub state: &'a mut crate::UiState,
+    pub state: &'a mut crate::AddLayerWindowState,
     pub bevy_egui_ctx: &'a mut bevy_egui::EguiContext,
     pub load_geo_json_file_event_writer:
         &'a mut bevy::ecs::event::EventWriter<'w1, 's1, rgis_events::LoadGeoJsonFileEvent>,
@@ -31,7 +31,7 @@ pub(crate) struct AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
 impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
     pub(crate) fn render(&mut self) {
         egui::Window::new("Add Layer")
-            .open(&mut self.state.is_add_layer_window_visible)
+            .open(&mut self.state.is_visible)
             .anchor(egui::Align2::LEFT_TOP, [5., 5.])
             .show(self.bevy_egui_ctx.ctx_mut(), |ui| {
                 if ui.button("Add GeoJSON Layer").clicked() {
