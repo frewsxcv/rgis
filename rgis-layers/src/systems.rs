@@ -1,15 +1,9 @@
 use bevy::prelude::*;
 
 fn handle_toggle_layer_visibility_events(
-    mut toggle_layer_visibility_event_reader: bevy::ecs::event::EventReader<
-        rgis_events::ToggleLayerVisibilityEvent,
-    >,
-    mut layer_became_visible_event_writer: bevy::ecs::event::EventWriter<
-        rgis_events::LayerBecameVisibleEvent,
-    >,
-    mut layer_became_hidden_event_writer: bevy::ecs::event::EventWriter<
-        rgis_events::LayerBecameHiddenEvent,
-    >,
+    mut toggle_layer_visibility_event_reader: EventReader<rgis_events::ToggleLayerVisibilityEvent>,
+    mut layer_became_visible_event_writer: EventWriter<rgis_events::LayerBecameVisibleEvent>,
+    mut layer_became_hidden_event_writer: EventWriter<rgis_events::LayerBecameHiddenEvent>,
     mut layers: ResMut<crate::Layers>,
 ) {
     for event in toggle_layer_visibility_event_reader.iter() {
@@ -30,8 +24,8 @@ fn handle_toggle_layer_visibility_events(
 }
 
 fn handle_update_color_events(
-    mut update_events: bevy::ecs::event::EventReader<rgis_events::UpdateLayerColorEvent>,
-    mut updated_events: bevy::ecs::event::EventWriter<rgis_events::LayerColorUpdatedEvent>,
+    mut update_events: EventReader<rgis_events::UpdateLayerColorEvent>,
+    mut updated_events: EventWriter<rgis_events::LayerColorUpdatedEvent>,
     mut layers: ResMut<crate::Layers>,
 ) {
     for event in update_events.iter() {
@@ -48,8 +42,8 @@ fn handle_update_color_events(
 }
 
 fn handle_delete_layer_events(
-    mut delete_layer_event_reader: bevy::ecs::event::EventReader<rgis_events::DeleteLayerEvent>,
-    mut layer_deleted_event_writer: bevy::ecs::event::EventWriter<rgis_events::LayerDeletedEvent>,
+    mut delete_layer_event_reader: EventReader<rgis_events::DeleteLayerEvent>,
+    mut layer_deleted_event_writer: EventWriter<rgis_events::LayerDeletedEvent>,
     mut layers: ResMut<crate::Layers>,
 ) {
     for event in delete_layer_event_reader.iter() {
@@ -59,10 +53,8 @@ fn handle_delete_layer_events(
 }
 
 fn handle_move_layer_events(
-    mut move_layer_event_reader: bevy::ecs::event::EventReader<rgis_events::MoveLayerEvent>,
-    mut layer_z_index_updated_event_writer: bevy::ecs::event::EventWriter<
-        rgis_events::LayerZIndexUpdatedEvent,
-    >,
+    mut move_layer_event_reader: EventReader<rgis_events::MoveLayerEvent>,
+    mut layer_z_index_updated_event_writer: EventWriter<rgis_events::LayerZIndexUpdatedEvent>,
     mut layers: ResMut<crate::Layers>,
 ) {
     for event in move_layer_event_reader.iter() {
@@ -96,10 +88,8 @@ fn handle_move_layer_events(
 }
 
 fn handle_map_clicked_events(
-    mut map_clicked_event_reader: bevy::ecs::event::EventReader<rgis_events::MapClickedEvent>,
-    mut render_message_event_writer: bevy::ecs::event::EventWriter<
-        rgis_events::RenderFeaturePropertiesEvent,
-    >,
+    mut map_clicked_event_reader: EventReader<rgis_events::MapClickedEvent>,
+    mut render_message_event_writer: EventWriter<rgis_events::RenderFeaturePropertiesEvent>,
     layers: Res<crate::Layers>,
 ) {
     for event in map_clicked_event_reader.iter() {
