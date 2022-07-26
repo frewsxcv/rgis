@@ -2864,6 +2864,7 @@ dependencies = [
  "geo",
  "rgis-events",
  "rgis-layers",
+ "rgis-ui",
 ]
 
 [[package]]

@@ -5,11 +5,12 @@ pub(crate) struct TopPanel<'a> {
     pub bevy_egui_ctx: &'a mut bevy_egui::EguiContext,
     pub windows: &'a mut bevy::window::Windows,
     pub app_settings: &'a mut rgis_settings::RgisSettings,
+    pub top_panel_height: &'a mut crate::TopPanelHeight,
 }
 
 impl<'a> TopPanel<'a> {
     pub(crate) fn render(&mut self) {
-        egui::TopBottomPanel::top("top_panel").show(self.bevy_egui_ctx.ctx_mut(), |ui| {
+        let inner_response = egui::TopBottomPanel::top("top_panel").show(self.bevy_egui_ctx.ctx_mut(), |ui| {
             ui.horizontal(|ui| {
                 ui.label("rgis");
                 ui.menu_button("File", |ui| {
@@ -47,6 +48,8 @@ impl<'a> TopPanel<'a> {
                 }
             });
         });
+
+        self.top_panel_height.0 = inner_response.response.rect.height();
     }
 }
 

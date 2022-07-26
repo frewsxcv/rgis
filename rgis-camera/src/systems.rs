@@ -65,6 +65,7 @@ fn zoom_camera_system(
     for event in zoom_camera_event_reader.iter() {
         camera_scale.zoom(event.amount);
     }
+    // TODO: change camera offset
     set_camera_transform(&mut transform, camera_offset, camera_scale);
 }
 
@@ -89,6 +90,9 @@ fn center_camera(
         bevy::ecs::query::With<bevy::render::camera::Camera>,
     >,
     windows: Res<bevy::window::Windows>,
+    side_panel_width: Res<rgis_ui::SidePanelWidth>,
+    top_panel_height: Res<rgis_ui::TopPanelHeight>,
+    bottom_panel_height: Res<rgis_ui::BottomPanelHeight>,
 ) {
     for projected_feature in event_reader
         .iter()
@@ -102,12 +106,23 @@ fn center_camera(
         };
         let layer_center = bounding_rect.center();
         let window = windows.primary();
-        // TODO: this should subtract the topbar, sidebar, and bottombar sizes.
-        let scale = (bounding_rect.width() / f64::from(window.width()))
-            .max(bounding_rect.height() / f64::from(window.height()));
+
+        let canvas_size = bevy::math::Size::new(
+            f64::from(window.width() - side_panel_width.0),
+            f64::from(window.height() - top_panel_height.0 - bottom_panel_height.0),
+        );
+
+        let scale = determine_scale(bounding_rect, canvas_size);
         debug!("Moving camera to look at new layer");
-        let camera_offset = crate::CameraOffset::from_coord(layer_center);
+
         let camera_scale = crate::CameraScale(scale as f32);
+        let mut camera_offset = crate::CameraOffset::from_coord(layer_center);
+        camera_offset.pan_x(-side_panel_width.0 / 2., camera_scale);
+        camera_offset.pan_y((top_panel_height.0 - bottom_panel_height.0) / 2., camera_scale);
         set_camera_transform(&mut transform, camera_offset, camera_scale);
     }
+}
+
+fn determine_scale(bounding_rect: geo::Rect, canvas_size: bevy::math::Size<f64>) -> f64 {
+    (bounding_rect.width() / canvas_size.width).max(bounding_rect.height() / canvas_size.height)
 }

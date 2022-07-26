@@ -20,6 +20,12 @@ mod top_panel;
 
 pub struct Plugin;
 
+pub struct SidePanelWidth(pub f32);
+
+pub struct TopPanelHeight(pub f32);
+
+pub struct BottomPanelHeight(pub f32);
+
 #[derive(Default)]
 pub struct AddLayerWindowState {
     is_visible: bool,
@@ -49,7 +55,10 @@ impl bevy::app::Plugin for Plugin {
             .insert_resource(AddLayerWindowState { is_visible: true })
             .insert_resource(MessageWindowState::default())
             .insert_resource(ManageLayerWindowState::default())
-            .insert_resource(FeaturePropertiesWindowState::default());
+            .insert_resource(FeaturePropertiesWindowState::default())
+            .insert_resource(TopPanelHeight(0.))
+            .insert_resource(BottomPanelHeight(0.))
+            .insert_resource(SidePanelWidth(0.));
 
         for system_set in systems::system_sets() {
             app.add_system_set(system_set);

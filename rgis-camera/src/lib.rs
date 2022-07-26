@@ -37,7 +37,9 @@ impl CameraScale {
 
 #[derive(Clone, Copy)]
 struct CameraOffset {
+    /// Units: world coordinates
     pub x: f32,
+    /// Units: world coordinates
     pub y: f32,
 }
 

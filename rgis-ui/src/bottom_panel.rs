@@ -6,6 +6,7 @@ pub(crate) struct BottomPanel<'a, 'w, 's> {
     pub rgis_settings: &'a rgis_settings::RgisSettings,
     pub open_change_crs_window_event_writer:
         &'a mut bevy::ecs::event::EventWriter<'w, 's, rgis_events::OpenChangeCrsWindow>,
+    pub bottom_panel_height: &'a mut crate::BottomPanelHeight,
 }
 
 impl<'a, 'w, 's> BottomPanel<'a, 'w, 's> {
@@ -18,10 +19,7 @@ impl<'a, 'w, 's> BottomPanel<'a, 'w, 's> {
                 });
             });
         });
-        if inner_response.response.changed() {
-            println!("resized");
-            // set height of resource?
-        }
+        self.bottom_panel_height.0 = inner_response.response.rect.height();
     }
 
     fn render_crs(&mut self, ui: &mut egui::Ui) {

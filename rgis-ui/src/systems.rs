@@ -30,12 +30,14 @@ fn render_bottom_panel(
     mut open_change_crs_window_event_writer: bevy::ecs::event::EventWriter<
         rgis_events::OpenChangeCrsWindow,
     >,
+    mut bottom_panel_height: ResMut<crate::BottomPanelHeight>,
 ) {
     crate::bottom_panel::BottomPanel {
         egui_ctx: bevy_egui_ctx.ctx_mut(),
         mouse_pos: &mouse_pos,
         rgis_settings: &rgis_settings,
         open_change_crs_window_event_writer: &mut open_change_crs_window_event_writer,
+        bottom_panel_height: &mut bottom_panel_height,
     }
     .render();
 }
@@ -46,6 +48,7 @@ fn render_side_panel(
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
     layers: Res<rgis_layers::Layers>,
     mut events: crate::side_panel::Events,
+    mut side_panel_width: ResMut<crate::SidePanelWidth>,
 ) {
     crate::side_panel::SidePanel {
         egui_ctx: bevy_egui_ctx.ctx_mut(),
@@ -53,6 +56,7 @@ fn render_side_panel(
         manage_layer_window_state: &mut manage_layer_window_state,
         layers: &layers,
         events: &mut events,
+        side_panel_width: &mut side_panel_width,
     }
     .render();
 }
@@ -179,12 +183,14 @@ fn render_top_panel(
     mut app_exit_events: ResMut<bevy::ecs::event::Events<bevy::app::AppExit>>,
     mut windows: ResMut<Windows>,
     mut app_settings: ResMut<rgis_settings::RgisSettings>,
+    mut top_panel_height: ResMut<crate::TopPanelHeight>,
 ) {
     crate::top_panel::TopPanel {
         bevy_egui_ctx: &mut bevy_egui_ctx,
         app_exit_events: &mut app_exit_events,
         windows: &mut windows,
         app_settings: &mut app_settings,
+        top_panel_height: &mut top_panel_height,
     }
     .render();
 }

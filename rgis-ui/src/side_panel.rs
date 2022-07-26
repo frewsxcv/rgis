@@ -18,6 +18,7 @@ pub(crate) struct SidePanel<'a, 'w, 's> {
     pub manage_layer_window_state: &'a mut crate::ManageLayerWindowState,
     pub layers: &'a rgis_layers::Layers,
     pub events: &'a mut Events<'w, 's>,
+    pub side_panel_width: &'a mut crate::SidePanelWidth,
 }
 
 impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
@@ -28,10 +29,7 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
             self.render_layers_window(ui);
         });
 
-        if inner_response.response.changed() {
-            bevy::log::error!("resized");
-            // set height of resource?
-        }
+        self.side_panel_width.0 = inner_response.response.rect.width();
     }
 
     fn render_layers_window(&mut self, ui: &mut egui::Ui) {
