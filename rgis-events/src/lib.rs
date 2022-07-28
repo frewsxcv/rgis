@@ -141,6 +141,7 @@ pub struct RenderMessageEvent(pub String);
 pub struct RenderFeaturePropertiesEvent(pub geo_features::Properties);
 
 pub struct CreateLayerEvent {
+    // TODO: there should be an option to pass a projected geometry instead of an unprojected geometry
     pub unprojected_geometry: geo_features::FeatureCollection,
     pub name: String,
     pub source_crs: String,

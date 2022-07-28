@@ -83,6 +83,11 @@ impl fmt::Display for BoundingRectError {
 impl std::error::Error for BoundingRectError {}
 
 impl FeatureCollection {
+    pub fn from_geometry(geometry: geo::Geometry) -> Result<Self, BoundingRectError> {
+        let feature = Feature::from_geometry(Some(geometry), Default::default())?;
+        Ok(Self::from_feature(feature))
+    }
+
     pub fn from_feature(feature: Feature) -> Self {
         FeatureCollection {
             bounding_rect: feature.bounding_rect,
