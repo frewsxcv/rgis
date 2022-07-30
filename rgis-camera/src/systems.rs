@@ -15,7 +15,7 @@ pub fn startup_system_set() -> bevy::ecs::schedule::SystemSet {
 fn init_camera(mut commands: Commands) {
     commands
         .spawn()
-        .insert_bundle(OrthographicCameraBundle::new_2d());
+        .insert_bundle(Camera2dBundle::default());
 }
 
 fn pan_camera_system(
@@ -107,7 +107,7 @@ fn center_camera(
         let layer_center = bounding_rect.center();
         let window = windows.primary();
 
-        let canvas_size = bevy::math::Size::new(
+        let canvas_size = bevy::ui::Size::new(
             f64::from(window.width() - side_panel_width.0),
             f64::from(window.height() - top_panel_height.0 - bottom_panel_height.0),
         );
@@ -123,6 +123,6 @@ fn center_camera(
     }
 }
 
-fn determine_scale(bounding_rect: geo::Rect, canvas_size: bevy::math::Size<f64>) -> f64 {
+fn determine_scale(bounding_rect: geo::Rect, canvas_size: bevy::ui::Size<f64>) -> f64 {
     (bounding_rect.width() / canvas_size.width).max(bounding_rect.height() / canvas_size.height)
 }

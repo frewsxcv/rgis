@@ -7,7 +7,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bevy = { version = "0.7", default-features = false, features = [
+bevy = { version = "0.8", default-features = false, features = [
     "bevy_winit",
     "bevy_core_pipeline",
     "bevy_render",
@@ -15,7 +15,7 @@ bevy = { version = "0.7", default-features = false, features = [
     "bevy_ui",
     "wayland",
 ] }
-bevy_egui = "0.14"
+bevy_egui = "0.15"
 geo = "0.22"
 rgis-events = { path = "../rgis-events" }
 rgis-settings = { path = "../rgis-settings" }

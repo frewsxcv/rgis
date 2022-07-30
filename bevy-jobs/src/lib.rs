@@ -32,7 +32,6 @@ pub trait Job: any::Any + Sized + Send + Sync + 'static {
 
     fn spawn(
         self,
-        pool: &bevy::tasks::AsyncComputeTaskPool,
         commands: &mut bevy::ecs::system::Commands,
     ) {
         let (sender, receiver) = async_channel::unbounded::<JobOutcomePayload>();
@@ -43,7 +42,7 @@ pub trait Job: any::Any + Sized + Send + Sync + 'static {
             recv: receiver,
         };
 
-        pool.spawn(async move {
+        bevy::tasks::AsyncComputeTaskPool::get().spawn(async move {
             let instant = instant::Instant::now();
             bevy::log::info!("Starting job '{}'", job_name);
             let outcome = self.perform().await;
@@ -89,13 +88,12 @@ struct JobOutcomePayload {
 
 #[derive(bevy::ecs::system::SystemParam)]
 pub struct JobSpawner<'w, 's> {
-    thread_pool: bevy::ecs::system::Res<'w, bevy::tasks::AsyncComputeTaskPool>,
     commands: bevy::ecs::system::Commands<'w, 's>,
 }
 
 impl<'w, 's> JobSpawner<'w, 's> {
     pub fn spawn<J: Job>(&mut self, job: J) {
-        job.spawn(&self.thread_pool, &mut self.commands)
+        job.spawn(&mut self.commands)
     }
 }
 

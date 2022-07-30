@@ -6,7 +6,7 @@
     clippy::expect_used
 )]
 
-use bevy::{core_pipeline::ClearColor, prelude::*};
+use bevy::{core_pipeline::clear_color::ClearColor, prelude::*};
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
 
