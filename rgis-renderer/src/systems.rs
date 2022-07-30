@@ -153,7 +153,7 @@ fn handle_crs_changed_events(
         // FIXME: there's a race condition here where we'll delete newly generated projected geometry
         // meshes if this gets executed after we project the new geometries. We should add a filter
         // in here for the old CRS.
-        for (_, entity) in query.iter() {
+        for (_, entity) in &query {
             commands.entity(entity).despawn();
         }
     }

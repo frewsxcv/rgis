@@ -56,7 +56,7 @@ Querying in-progress jobs:
 fn render_in_progress(
     query: Query<&bevy_jobs::InProgressJob>,
 ) {
-    for job in query.iter() {
+    for job in &query {
         println!("Job '{}' is running", job.name);
     }
 }
