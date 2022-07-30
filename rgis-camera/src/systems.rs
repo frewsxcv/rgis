@@ -13,9 +13,7 @@ pub fn startup_system_set() -> bevy::ecs::schedule::SystemSet {
 }
 
 fn init_camera(mut commands: Commands) {
-    commands
-        .spawn()
-        .insert_bundle(Camera2dBundle::default());
+    commands.spawn().insert_bundle(Camera2dBundle::default());
 }
 
 fn pan_camera_system(
@@ -118,7 +116,10 @@ fn center_camera(
         let camera_scale = crate::CameraScale(scale as f32);
         let mut camera_offset = crate::CameraOffset::from_coord(layer_center);
         camera_offset.pan_x(-side_panel_width.0 / 2., camera_scale);
-        camera_offset.pan_y((top_panel_height.0 - bottom_panel_height.0) / 2., camera_scale);
+        camera_offset.pan_y(
+            (top_panel_height.0 - bottom_panel_height.0) / 2.,
+            camera_scale,
+        );
         set_camera_transform(&mut transform, camera_offset, camera_scale);
     }
 }

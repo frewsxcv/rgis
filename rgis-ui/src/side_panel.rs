@@ -10,9 +10,7 @@ pub struct Events<'w, 's> {
         bevy::ecs::event::EventWriter<'w, 's, rgis_events::CenterCameraEvent>,
     delete_layer_event_writer: bevy::ecs::event::EventWriter<'w, 's, rgis_events::DeleteLayerEvent>,
     move_layer_event_writer: bevy::ecs::event::EventWriter<'w, 's, rgis_events::MoveLayerEvent>,
-    create_layer_event_writer: bevy::ecs::event::EventWriter<'w, 's,
-        rgis_events::CreateLayerEvent,
-    >,
+    create_layer_event_writer: bevy::ecs::event::EventWriter<'w, 's, rgis_events::CreateLayerEvent>,
 }
 
 pub(crate) struct SidePanel<'a, 'w, 's> {
@@ -122,13 +120,19 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
                     }
 
                     if ui.button("⚙ Generate bounding rect").clicked() {
-                        if let Ok(bounding_rect) = layer.unprojected_feature_collection.bounding_rect() {
-                            if let Ok(feature_collection) = geo_features::FeatureCollection::from_geometry(bounding_rect.into()) {
-                                self.events.create_layer_event_writer.send(rgis_events::CreateLayerEvent {
-                                    unprojected_geometry: feature_collection, // todo
-                                    name: "Bounding rect".into(), // todo
-                                    source_crs: layer.crs.clone(),
-                                });
+                        if let Ok(bounding_rect) =
+                            layer.unprojected_feature_collection.bounding_rect()
+                        {
+                            if let Ok(feature_collection) =
+                                geo_features::FeatureCollection::from_geometry(bounding_rect.into())
+                            {
+                                self.events.create_layer_event_writer.send(
+                                    rgis_events::CreateLayerEvent {
+                                        unprojected_geometry: feature_collection, // todo
+                                        name: "Bounding rect".into(),             // todo
+                                        source_crs: layer.crs.clone(),
+                                    },
+                                );
                             }
                         }
                     }

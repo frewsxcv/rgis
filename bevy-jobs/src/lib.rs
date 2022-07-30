@@ -30,10 +30,7 @@ pub trait Job: any::Any + Sized + Send + Sync + 'static {
 
     fn perform(self) -> AsyncReturn<Self::Outcome>;
 
-    fn spawn(
-        self,
-        commands: &mut bevy::ecs::system::Commands,
-    ) {
+    fn spawn(self, commands: &mut bevy::ecs::system::Commands) {
         let (sender, receiver) = async_channel::unbounded::<JobOutcomePayload>();
 
         let job_name = self.name();
@@ -42,26 +39,27 @@ pub trait Job: any::Any + Sized + Send + Sync + 'static {
             recv: receiver,
         };
 
-        bevy::tasks::AsyncComputeTaskPool::get().spawn(async move {
-            let instant = instant::Instant::now();
-            bevy::log::info!("Starting job '{}'", job_name);
-            let outcome = self.perform().await;
-            bevy::log::info!("Completed job '{}' in {:?}", job_name, instant.elapsed());
-            if let Err(e) = sender
-                .send(JobOutcomePayload {
-                    job_outcome_type_id: any::TypeId::of::<Self>(),
-                    job_outcome: Box::new(outcome),
-                })
-                .await
-            {
-                bevy::log::error!(
-                    "Failed to send result from job {} back to main thread: {:?}",
-                    job_name,
-                    e
-                );
-            }
-        })
-        .detach();
+        bevy::tasks::AsyncComputeTaskPool::get()
+            .spawn(async move {
+                let instant = instant::Instant::now();
+                bevy::log::info!("Starting job '{}'", job_name);
+                let outcome = self.perform().await;
+                bevy::log::info!("Completed job '{}' in {:?}", job_name, instant.elapsed());
+                if let Err(e) = sender
+                    .send(JobOutcomePayload {
+                        job_outcome_type_id: any::TypeId::of::<Self>(),
+                        job_outcome: Box::new(outcome),
+                    })
+                    .await
+                {
+                    bevy::log::error!(
+                        "Failed to send result from job {} back to main thread: {:?}",
+                        job_name,
+                        e
+                    );
+                }
+            })
+            .detach();
 
         commands.spawn().insert(in_progress_job);
     }

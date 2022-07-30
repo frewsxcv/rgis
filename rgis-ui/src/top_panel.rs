@@ -10,44 +10,45 @@ pub(crate) struct TopPanel<'a> {
 
 impl<'a> TopPanel<'a> {
     pub(crate) fn render(&mut self) {
-        let inner_response = egui::TopBottomPanel::top("top_panel").show(self.bevy_egui_ctx.ctx_mut(), |ui| {
-            ui.horizontal(|ui| {
-                ui.label("rgis");
-                ui.menu_button("File", |ui| {
-                    render_exit_button(self.app_exit_events, ui);
-                });
-                ui.menu_button("View", |ui| {
-                    render_full_screen_button(self.windows, ui);
-                });
-                ui.menu_button("Help", |ui| {
-                    if ui.button("Source code").clicked() {
-                        let _ = webbrowser::open("https://github.com/frewsxcv/rgis");
+        let inner_response =
+            egui::TopBottomPanel::top("top_panel").show(self.bevy_egui_ctx.ctx_mut(), |ui| {
+                ui.horizontal(|ui| {
+                    ui.label("rgis");
+                    ui.menu_button("File", |ui| {
+                        render_exit_button(self.app_exit_events, ui);
+                    });
+                    ui.menu_button("View", |ui| {
+                        render_full_screen_button(self.windows, ui);
+                    });
+                    ui.menu_button("Help", |ui| {
+                        if ui.button("Source code").clicked() {
+                            let _ = webbrowser::open("https://github.com/frewsxcv/rgis");
+                        }
+                    });
+
+                    ui.separator();
+
+                    if ui
+                        .add_enabled(
+                            self.app_settings.current_tool != rgis_settings::Tool::Pan,
+                            egui::Button::new("🔁 Pan Tool"),
+                        )
+                        .clicked()
+                    {
+                        self.app_settings.current_tool = rgis_settings::Tool::Pan;
+                    }
+
+                    if ui
+                        .add_enabled(
+                            self.app_settings.current_tool != rgis_settings::Tool::Query,
+                            egui::Button::new("ℹ Query Tool"),
+                        )
+                        .clicked()
+                    {
+                        self.app_settings.current_tool = rgis_settings::Tool::Query;
                     }
                 });
-
-                ui.separator();
-
-                if ui
-                    .add_enabled(
-                        self.app_settings.current_tool != rgis_settings::Tool::Pan,
-                        egui::Button::new("🔁 Pan Tool"),
-                    )
-                    .clicked()
-                {
-                    self.app_settings.current_tool = rgis_settings::Tool::Pan;
-                }
-
-                if ui
-                    .add_enabled(
-                        self.app_settings.current_tool != rgis_settings::Tool::Query,
-                        egui::Button::new("ℹ Query Tool"),
-                    )
-                    .clicked()
-                {
-                    self.app_settings.current_tool = rgis_settings::Tool::Query;
-                }
             });
-        });
 
         self.top_panel_height.0 = inner_response.response.rect.height();
     }
