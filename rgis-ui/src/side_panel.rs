@@ -137,6 +137,21 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
                         }
                     }
 
+                    if ui.button("⚙ Generate convex hull").clicked() {
+                        let hull = layer.unprojected_feature_collection.convex_hull();
+                        if let Ok(feature_collection) =
+                            geo_features::FeatureCollection::from_geometry(hull.into())
+                        {
+                            self.events.create_layer_event_writer.send(
+                                rgis_events::CreateLayerEvent {
+                                    unprojected_geometry: feature_collection, // todo
+                                    name: "Convex hull".into(),               // todo
+                                    source_crs: layer.crs.clone(),
+                                },
+                            );
+                        }
+                    }
+
                     if ui.button("❌ Remove").clicked() {
                         self.events
                             .delete_layer_event_writer

@@ -6,7 +6,7 @@
     clippy::expect_used
 )]
 
-use geo::{BoundingRect, Contains};
+use geo::{BoundingRect, Contains, ConvexHull};
 use std::{collections, fmt};
 
 #[derive(Clone, Debug)]
@@ -118,6 +118,15 @@ impl FeatureCollection {
                 .filter_map(|feature| feature.geometry.as_ref())
                 .filter_map(|geometry| geometry.bounding_rect()),
         )
+    }
+
+    pub fn convex_hull(&self) -> geo::Polygon {
+        self.to_geometry_collection().convex_hull()
+        // let mut hulls = vec![];
+        // for feature in &self.features {
+        //     hulls.push(feature.geometry.as_ref().unwrap().convex_hull());
+        // }
+        // geo::MultiPolygon::new(hulls)
     }
 
     pub fn recalculate_bounding_rect(&mut self) -> Result<(), BoundingRectError> {
