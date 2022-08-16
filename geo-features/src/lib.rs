@@ -136,22 +136,18 @@ impl FeatureCollection {
 }
 
 fn bounding_rect_from_features(features: &[Feature]) -> Option<geo::Rect> {
-    let mut bounding_rect = None;
-    for feature in features.iter() {
-        bounding_rect = option_rect_merge(bounding_rect, feature.bounding_rect);
-    }
-    bounding_rect
+    features
+        .iter()
+        .map(|feature| feature.bounding_rect)
+        .fold(None, option_rect_merge)
 }
 
 // TODO: this assumes the iterator has one item. is that okay?
 fn rect_merge_many<T: geo::CoordFloat>(
     mut iter: impl Iterator<Item = geo::Rect<T>>,
 ) -> Result<geo::Rect<T>, BoundingRectError> {
-    let mut acc = iter.next().ok_or(BoundingRectError)?;
-    for next in iter {
-        acc = rect_merge(acc, next);
-    }
-    Ok(acc)
+    let first = iter.next().ok_or(BoundingRectError)?;
+    Ok(iter.fold(first, rect_merge))
 }
 
 fn option_rect_merge<T: geo::CoordFloat>(
