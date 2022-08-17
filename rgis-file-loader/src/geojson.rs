@@ -151,18 +151,17 @@ fn serde_json_value_to_geo_features_value(
 fn geojson_feature_to_geo_feature_collection(
     geojson_feature: geojson::Feature,
 ) -> Result<geo_features::FeatureCollection, LoadGeoJsonError> {
-    Ok(geo_features::FeatureCollection::from_feature(
-        geojson_feature_to_geo_feature(geojson_feature)?,
-    ))
+    geojson_feature_to_geo_feature(geojson_feature)
+        .map(geo_features::FeatureCollection::from_feature)
 }
 
 fn geojson_feature_collection_to_geo_feature_collection(
     geojson_feature_collection: geojson::FeatureCollection,
 ) -> Result<geo_features::FeatureCollection, LoadGeoJsonError> {
-    let features = geojson_feature_collection
+    geojson_feature_collection
         .features
         .into_iter()
         .map(geojson_feature_to_geo_feature)
-        .collect::<Result<_, _>>()?;
-    Ok(geo_features::FeatureCollection::from_features(features))
+        .collect::<Result<Vec<geo_features::Feature>, LoadGeoJsonError>>()
+        .map(geo_features::FeatureCollection::from_features)
 }
