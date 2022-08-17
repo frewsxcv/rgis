@@ -100,27 +100,30 @@ fn geojson_geometry_to_geo_feature_collection(
     geojson_geometry: geojson::Geometry,
 ) -> Result<geo_features::FeatureCollection, LoadGeoJsonError> {
     let geo_geometry: geo::Geometry = geojson_geometry.try_into().map_err(Box::new)?;
-    let feature = geo_features::Feature::from_geometry(Some(geo_geometry), Default::default())?;
+    let feature = geo_features::FeatureBuilder::new()
+        .with_geometry(geo_geometry)
+        .build()?;
     Ok(geo_features::FeatureCollection::from_feature(feature))
 }
 
 fn geojson_feature_to_geo_feature(
     geojson_feature: geojson::Feature,
 ) -> Result<geo_features::Feature, LoadGeoJsonError> {
-    let geo_geometry: Option<geo::Geometry> = geojson_feature
-        .geometry
-        .map(|geometry| geometry.try_into().map_err(Box::new))
-        .transpose()?;
     let properties = geojson_feature
         .properties
         .unwrap_or_default()
         .into_iter()
         .map(|(k, v)| serde_json_value_to_geo_features_value(v).map(|v| (k, v)))
         .collect::<Result<geo_features::Properties, JsonNumberToFloatError>>()?;
-    Ok(geo_features::Feature::from_geometry(
-        geo_geometry,
-        properties,
-    )?)
+    let mut feature_builder = geo_features::FeatureBuilder::new().with_properties(properties);
+    if let Some(geo_geometry) = geojson_feature
+        .geometry
+        .map(|geometry| geometry.try_into().map_err(Box::new))
+        .transpose()?
+    {
+        feature_builder = feature_builder.with_geometry(geo_geometry);
+    }
+    Ok(feature_builder.build()?)
 }
 
 #[derive(Debug)]

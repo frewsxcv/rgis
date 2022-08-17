@@ -9,7 +9,40 @@
 use geo::{BoundingRect, Contains, ConvexHull};
 use std::{collections, fmt};
 
-#[derive(Clone, Debug)]
+#[derive(Default)]
+pub struct FeatureBuilder {
+    geometry: Option<geo::Geometry>,
+    properties: Properties,
+}
+
+impl FeatureBuilder {
+    pub fn new() -> Self {
+        FeatureBuilder {
+            ..Default::default()
+        }
+    }
+
+    pub fn with_geometry(self, geometry: geo::Geometry) -> Self {
+        FeatureBuilder { geometry: Some(geometry), ..self }
+    }
+
+    pub fn with_properties(self, properties: Properties) -> Self {
+        FeatureBuilder { properties, ..self }
+    }
+
+    pub fn build(self) -> Result<Feature, BoundingRectError> {
+        let bounding_rect = self.geometry
+            .as_ref()
+            .and_then(|geometry| geometry.bounding_rect());
+        Ok(Feature {
+            geometry: self.geometry,
+            properties: self.properties,
+            bounding_rect,
+        })
+    }
+}
+
+#[derive(Clone, Debug, Default)]
 pub struct Feature {
     pub geometry: Option<geo::Geometry>,
     pub properties: Properties,
@@ -27,21 +60,6 @@ pub enum Value {
 pub type Properties = collections::HashMap<String, Value>;
 
 impl Feature {
-    pub fn from_geometry(
-        geometry: Option<geo::Geometry>,
-        properties: Properties,
-    ) -> Result<Self, BoundingRectError> {
-        let bounding_rect = geometry
-            .as_ref()
-            .and_then(|geometry| geometry.bounding_rect());
-
-        Ok(Feature {
-            geometry,
-            properties,
-            bounding_rect,
-        })
-    }
-
     pub fn recalculate_bounding_rect(&mut self) -> Result<(), BoundingRectError> {
         self.bounding_rect = self
             .geometry
@@ -84,7 +102,7 @@ impl std::error::Error for BoundingRectError {}
 
 impl FeatureCollection {
     pub fn from_geometry(geometry: geo::Geometry) -> Result<Self, BoundingRectError> {
-        let feature = Feature::from_geometry(Some(geometry), Default::default())?;
+        let feature = FeatureBuilder::new().with_geometry(geometry).build()?;
         Ok(Self::from_feature(feature))
     }
 
