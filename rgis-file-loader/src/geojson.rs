@@ -107,14 +107,9 @@ fn geojson_geometry_to_geo_feature_collection(
 }
 
 fn geojson_feature_to_geo_feature(
-    geojson_feature: geojson::Feature,
+    mut geojson_feature: geojson::Feature,
 ) -> Result<geo_features::Feature, LoadGeoJsonError> {
-    let properties = geojson_feature
-        .properties
-        .unwrap_or_default()
-        .into_iter()
-        .map(|(k, v)| serde_json_value_to_geo_features_value(v).map(|v| (k, v)))
-        .collect::<Result<geo_features::Properties, JsonNumberToFloatError>>()?;
+    let properties = geojson_feature_properties_to_geo_features_properties(&mut geojson_feature)?;
     let mut feature_builder = geo_features::FeatureBuilder::new().with_properties(properties);
     if let Some(geo_geometry) = geojson_feature
         .geometry
@@ -124,6 +119,19 @@ fn geojson_feature_to_geo_feature(
         feature_builder = feature_builder.with_geometry(geo_geometry);
     }
     Ok(feature_builder.build()?)
+}
+
+fn geojson_feature_properties_to_geo_features_properties(
+    geojson_feature: &mut geojson::Feature,
+) -> Result<geo_features::Properties, JsonNumberToFloatError> {
+    let properties = match geojson_feature.properties.take() {
+        Some(p) => p,
+        None => return Ok(Default::default()),
+    };
+    properties
+        .into_iter()
+        .map(|(k, v)| serde_json_value_to_geo_features_value(v).map(|v| (k, v)))
+        .collect::<Result<geo_features::Properties, JsonNumberToFloatError>>()
 }
 
 #[derive(Debug)]
