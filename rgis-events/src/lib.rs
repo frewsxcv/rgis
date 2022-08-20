@@ -125,7 +125,8 @@ impl ZoomCameraEvent {
     #[inline]
     pub fn new(amount: f32) -> Self {
         ZoomCameraEvent {
-            amount: 1. + amount / ZOOM_FACTOR,
+            // Don't let amount be negative, so add `max`
+            amount: (1. + amount / ZOOM_FACTOR).max(0.),
         }
     }
 }
