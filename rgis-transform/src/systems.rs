@@ -58,7 +58,7 @@ fn handle_crs_changed_events(
     rgis_settings: bevy::ecs::system::Res<rgis_settings::RgisSettings>,
     mut task_spawner: bevy_jobs::JobSpawner,
 ) {
-    for _ in crs_changed_event_reader.iter() {
+    if crs_changed_event_reader.next().is_some() {
         layers.clear_projected();
 
         for layer in layers.iter() {
