@@ -199,39 +199,19 @@ pub fn system_sets() -> [SystemSet; 2] {
     [
         SystemSet::new()
             .label("top_bottom_panels")
-            .after("message_window")
+            .after(render_message_window)
             .with_system(render_top_panel)
             .with_system(render_bottom_panel),
         SystemSet::new()
             .with_system(handle_open_file_task)
             .with_system(handle_render_feature_properties_event)
             .with_system(handle_render_message_event)
-            .with_system(render_message_window.label("message_window"))
-            .with_system(
-                render_side_panel
-                    .label("side_panel")
-                    .after("top_bottom_panels"),
-            )
-            .with_system(
-                render_manage_layer_window
-                    .label("manage_layer_window")
-                    .after("side_panel"),
-            )
-            .with_system(
-                render_add_layer_window
-                    .label("add_layer_window")
-                    .after("manage_layer_window"),
-            )
-            .with_system(
-                render_change_crs_window
-                    .label("change_crs_window")
-                    .after("add_layer_window"),
-            )
-            .with_system(
-                render_feature_properties_window
-                    .label("feature_properties_window")
-                    .after("add_layer_window"),
-            )
+            .with_system(render_message_window)
+            .with_system(render_side_panel.after("top_bottom_panels"))
+            .with_system(render_manage_layer_window.after(render_side_panel))
+            .with_system(render_add_layer_window.after(render_manage_layer_window))
+            .with_system(render_change_crs_window.after(render_add_layer_window))
+            .with_system(render_feature_properties_window.after(render_add_layer_window))
             .with_system(render_in_progress.after("top_bottom_panels")),
     ]
 }
