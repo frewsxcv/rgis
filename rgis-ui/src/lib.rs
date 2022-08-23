@@ -27,11 +27,6 @@ pub struct TopPanelHeight(pub f32);
 pub struct BottomPanelHeight(pub f32);
 
 #[derive(Default)]
-pub struct AddLayerWindowState {
-    is_visible: bool,
-}
-
-#[derive(Default)]
 pub struct MessageWindowState {
     is_visible: bool,
     message: Option<String>,
@@ -52,7 +47,7 @@ pub struct FeaturePropertiesWindowState {
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(bevy_egui::EguiPlugin)
-            .insert_resource(AddLayerWindowState { is_visible: true })
+            .insert_resource(add_layer_window::SelectedFile(None))
             .insert_resource(MessageWindowState::default())
             .insert_resource(ManageLayerWindowState::default())
             .insert_resource(FeaturePropertiesWindowState::default())

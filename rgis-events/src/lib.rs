@@ -150,6 +150,12 @@ pub struct CreateLayerEvent {
 
 pub struct LayerReprojectedEvent(pub rgis_layer_id::LayerId);
 
+#[derive(Default)]
+pub struct ShowAddLayerWindow;
+
+#[derive(Default)]
+pub struct HideAddLayerWindow;
+
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_event::<LoadGeoJsonFileEvent>()
@@ -174,6 +180,8 @@ impl bevy::app::Plugin for Plugin {
             .add_event::<RenderMessageEvent>()
             .add_event::<RenderFeaturePropertiesEvent>()
             .add_event::<OpenChangeCrsWindow>()
+            .add_event::<ShowAddLayerWindow>()
+            .add_event::<HideAddLayerWindow>()
             .add_event::<LayerReprojectedEvent>();
     }
 }

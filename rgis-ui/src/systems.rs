@@ -43,7 +43,6 @@ fn render_bottom_panel(
 }
 
 fn render_side_panel(
-    mut state: ResMut<crate::AddLayerWindowState>,
     mut manage_layer_window_state: ResMut<crate::ManageLayerWindowState>, // TODO: change this to Local?
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
     layers: Res<rgis_layers::Layers>,
@@ -52,7 +51,6 @@ fn render_side_panel(
 ) {
     crate::side_panel::SidePanel {
         egui_ctx: bevy_egui_ctx.ctx_mut(),
-        state: &mut state,
         manage_layer_window_state: &mut manage_layer_window_state,
         layers: &layers,
         events: &mut events,
@@ -63,17 +61,11 @@ fn render_side_panel(
 
 fn handle_open_file_task(
     mut finished_tasks: bevy_jobs::FinishedJobs,
-    mut load_geo_json_file_events: bevy::ecs::event::EventWriter<rgis_events::LoadGeoJsonFileEvent>,
-    mut state: ResMut<crate::AddLayerWindowState>, // TODO: change this to Local?
+    mut selected_file: ResMut<crate::add_layer_window::SelectedFile>,
 ) {
     while let Some(outcome) = finished_tasks.take_next::<crate::add_layer_window::OpenFileTask>() {
         if let Some(outcome) = outcome {
-            load_geo_json_file_events.send(rgis_events::LoadGeoJsonFileEvent::FromBytes {
-                file_name: outcome.0,
-                bytes: outcome.1,
-                crs: "EPSG:4326".into(),
-            });
-            state.is_visible = false;
+            selected_file.0 = Some(outcome);
         }
     }
 }
@@ -94,18 +86,29 @@ fn render_manage_layer_window(
 }
 
 fn render_add_layer_window(
-    mut state: ResMut<crate::AddLayerWindowState>, // TODO: change this to Local?
+    mut is_visible: Local<bool>,
+    mut selected_file: ResMut<crate::add_layer_window::SelectedFile>,
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
-    mut load_geo_json_file_event_writer: bevy::ecs::event::EventWriter<
-        rgis_events::LoadGeoJsonFileEvent,
-    >,
     mut task_spawner: bevy_jobs::JobSpawner,
+    mut state: Local<crate::add_layer_window::State>,
+    mut events: crate::add_layer_window::Events,
 ) {
+    if !events.show_add_layer_window_event_reader.is_empty() {
+        *is_visible = true;
+    }
+
+    if !events.hide_add_layer_window_events.is_empty() {
+        state.reset();
+        *is_visible = false;
+    }
+
     crate::add_layer_window::AddLayerWindow {
         state: &mut state,
+        selected_file: &mut selected_file,
+        is_visible: &mut is_visible,
         bevy_egui_ctx: &mut bevy_egui_ctx,
         task_spawner: &mut task_spawner,
-        load_geo_json_file_event_writer: &mut load_geo_json_file_event_writer,
+        events: &mut events,
     }
     .render();
 }

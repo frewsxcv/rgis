@@ -1,9 +1,20 @@
 use bevy_egui::egui;
+use std::mem;
+
+#[derive(bevy::ecs::system::SystemParam)]
+pub struct Events<'w, 's> {
+    pub load_geo_json_file_event_writer:
+        bevy::ecs::event::EventWriter<'w, 's, rgis_events::LoadGeoJsonFileEvent>,
+    pub show_add_layer_window_event_reader:
+        bevy::ecs::event::EventReader<'w, 's, rgis_events::ShowAddLayerWindow>,
+    pub hide_add_layer_window_events:
+        bevy::ecs::system::ResMut<'w, bevy::ecs::event::Events<rgis_events::HideAddLayerWindow>>,
+}
 
 pub struct OpenFileTask;
 
 impl bevy_jobs::Job for OpenFileTask {
-    type Outcome = Option<(String, Vec<u8>)>;
+    type Outcome = Option<OpenedFile>;
 
     fn name(&self) -> String {
         "Opening file".into()
@@ -15,38 +26,160 @@ impl bevy_jobs::Job for OpenFileTask {
             let file_handle = task.await?;
             let file_name = file_handle.file_name();
             let bytes = file_handle.read().await;
-            Some((file_name, bytes))
+            Some(OpenedFile { file_name, bytes })
         })
     }
 }
 
 pub(crate) struct AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
-    pub state: &'a mut crate::AddLayerWindowState,
+    pub state: &'a mut State,
+    pub is_visible: &'a mut bool,
+    pub selected_file: &'a mut SelectedFile,
     pub bevy_egui_ctx: &'a mut bevy_egui::EguiContext,
-    pub load_geo_json_file_event_writer:
-        &'a mut bevy::ecs::event::EventWriter<'w1, 's1, rgis_events::LoadGeoJsonFileEvent>,
-    pub task_spawner: &'a mut bevy_jobs::JobSpawner<'w2, 's2>,
+    pub task_spawner: &'a mut bevy_jobs::JobSpawner<'w1, 's1>,
+    pub events: &'a mut Events<'w2, 's2>,
+}
+
+#[derive(PartialEq, Eq, Default)]
+enum Source {
+    #[default]
+    Unselected,
+    Library,
+    File,
+    Text,
+}
+
+#[derive(Default)]
+pub struct State {
+    pub text_edit_contents: String,
+    selected_source: Source,
+    selected_format: Format,
+}
+
+#[derive(Default)]
+pub struct SelectedFile(pub Option<OpenedFile>);
+
+impl State {
+    pub fn reset(&mut self) {
+        self.text_edit_contents = String::new();
+        self.selected_source = Source::Unselected;
+        self.selected_format = Format::Unselected;
+    }
+}
+
+pub struct OpenedFile {
+    bytes: Vec<u8>,
+    file_name: String,
+}
+
+#[derive(PartialEq, Eq, Default)]
+enum Format {
+    #[default]
+    Unselected,
+    GeoJson,
 }
 
 impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
     pub(crate) fn render(&mut self) {
         egui::Window::new("Add Layer")
-            .open(&mut self.state.is_visible)
+            .open(self.is_visible)
             .anchor(egui::Align2::LEFT_TOP, [5., 5.])
             .show(self.bevy_egui_ctx.ctx_mut(), |ui| {
-                if ui.button("Add GeoJSON Layer").clicked() {
-                    self.task_spawner.spawn(OpenFileTask);
+                ui.label("Layer source:");
+
+                ui.radio_value(&mut self.state.selected_source, Source::Library, "Library");
+                ui.radio_value(&mut self.state.selected_source, Source::File, "File");
+                ui.radio_value(&mut self.state.selected_source, Source::Text, "Text");
+
+                if self.state.selected_source == Source::Unselected {
+                    return;
                 }
+
                 ui.separator();
-                for entry in rgis_library::ENTRIES {
-                    if ui.button(format!("Add '{}' Layer", entry.name)).clicked() {
-                        self.load_geo_json_file_event_writer.send(
-                            rgis_events::LoadGeoJsonFileEvent::FromNetwork {
-                                name: entry.name.into(),
-                                url: entry.url.into(),
-                                crs: entry.crs.into(),
+
+                if self.state.selected_source == Source::Library {
+                    for entry in rgis_library::ENTRIES {
+                        if ui.button(format!("Add '{}' Layer", entry.name)).clicked() {
+                            self.events.load_geo_json_file_event_writer.send(
+                                rgis_events::LoadGeoJsonFileEvent::FromNetwork {
+                                    name: entry.name.into(),
+                                    url: entry.url.into(),
+                                    crs: entry.crs.into(),
+                                },
+                            );
+                            self.events.hide_add_layer_window_events.send_default();
+                        }
+                    }
+                    return;
+                }
+
+                if self.state.selected_source == Source::File
+                    || self.state.selected_source == Source::Text
+                {
+                    ui.label("Format:");
+
+                    ui.radio_value(&mut self.state.selected_format, Format::GeoJson, "GeoJSON");
+                }
+
+                if self.state.selected_format == Format::Unselected {
+                    return;
+                }
+
+                ui.separator();
+
+                if self.state.selected_source == Source::File {
+                    ui.label("Select file:");
+
+                    if ui.button("📄 Select file").clicked() {
+                        self.task_spawner.spawn(OpenFileTask);
+                    }
+
+                    if let Some(loaded_file) = &self.selected_file.0 {
+                        ui.label(format!("Selected file: {}", loaded_file.file_name));
+
+                        ui.separator();
+
+                        if ui.button("Add layer").clicked() {
+                            let loaded_file = self.selected_file.0.take().unwrap();
+                            self.events.load_geo_json_file_event_writer.send(
+                                rgis_events::LoadGeoJsonFileEvent::FromBytes {
+                                    file_name: loaded_file.file_name,
+                                    bytes: loaded_file.bytes,
+                                    crs: "EPSG:4326".into(),
+                                },
+                            );
+                            self.events.hide_add_layer_window_events.send_default();
+                            self.state.reset();
+                        }
+                    }
+                } else if self.state.selected_source == Source::Text {
+                    ui.label("Input text:");
+
+                    egui::ScrollArea::vertical()
+                        .max_height(300.)
+                        .show(ui, |ui| {
+                            egui::widgets::TextEdit::multiline(&mut self.state.text_edit_contents)
+                                .code_editor()
+                                .hint_text(
+                                    "{\n  \"type\": \"FeatureCollection\",\n  \"features\": []\n}",
+                                )
+                                .show(ui);
+                        });
+
+                    ui.separator();
+
+                    if !self.state.text_edit_contents.is_empty() && ui.button("Add layer").clicked()
+                    {
+                        let new = mem::take(&mut self.state.text_edit_contents);
+                        self.events.load_geo_json_file_event_writer.send(
+                            rgis_events::LoadGeoJsonFileEvent::FromBytes {
+                                file_name: "Inputted file".into(),
+                                bytes: new.into_bytes(),
+                                crs: "EPSG:4326".into(),
                             },
-                        )
+                        );
+                        self.events.hide_add_layer_window_events.send_default();
+                        self.state.reset();
                     }
                 }
             });
