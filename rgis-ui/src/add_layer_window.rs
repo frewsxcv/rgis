@@ -170,10 +170,10 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                                 .show(ui);
                         });
 
-                    ui.separator();
-
                     if !self.state.text_edit_contents.is_empty() && ui.button("Add layer").clicked()
                     {
+                        ui.separator();
+
                         let new = mem::take(&mut self.state.text_edit_contents);
                         self.events.load_geo_json_file_event_writer.send(
                             rgis_events::LoadGeoJsonFileEvent::FromBytes {
