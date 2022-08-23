@@ -138,23 +138,28 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                         self.task_spawner.spawn(OpenFileTask);
                     }
 
+                    let submittable = self.selected_file.0.is_some();
+
                     if let Some(loaded_file) = &self.selected_file.0 {
                         ui.label(format!("Selected file: {}", loaded_file.file_name));
+                    }
 
-                        ui.separator();
+                    ui.separator();
 
-                        if ui.button("Add layer").clicked() {
-                            let loaded_file = self.selected_file.0.take().unwrap();
-                            self.events.load_geo_json_file_event_writer.send(
-                                rgis_events::LoadGeoJsonFileEvent::FromBytes {
-                                    file_name: loaded_file.file_name,
-                                    bytes: loaded_file.bytes,
-                                    crs: "EPSG:4326".into(),
-                                },
-                            );
-                            self.events.hide_add_layer_window_events.send_default();
-                            self.state.reset();
-                        }
+                    if ui
+                        .add_enabled(submittable, egui::Button::new("Add layer"))
+                        .clicked()
+                    {
+                        let loaded_file = self.selected_file.0.take().unwrap();
+                        self.events.load_geo_json_file_event_writer.send(
+                            rgis_events::LoadGeoJsonFileEvent::FromBytes {
+                                file_name: loaded_file.file_name,
+                                bytes: loaded_file.bytes,
+                                crs: "EPSG:4326".into(),
+                            },
+                        );
+                        self.events.hide_add_layer_window_events.send_default();
+                        self.state.reset();
                     }
                 } else if self.state.selected_source == Source::Text {
                     ui.label("Input text:");
@@ -170,10 +175,14 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                                 .show(ui);
                         });
 
-                    if !self.state.text_edit_contents.is_empty() && ui.button("Add layer").clicked()
-                    {
-                        ui.separator();
+                    let submittable = !self.state.text_edit_contents.is_empty();
 
+                    ui.separator();
+
+                    if ui
+                        .add_enabled(submittable, egui::Button::new("Add layer"))
+                        .clicked()
+                    {
                         let new = mem::take(&mut self.state.text_edit_contents);
                         self.events.load_geo_json_file_event_writer.send(
                             rgis_events::LoadGeoJsonFileEvent::FromBytes {
