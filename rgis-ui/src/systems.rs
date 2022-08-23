@@ -85,8 +85,16 @@ fn render_manage_layer_window(
     .render();
 }
 
+struct IsVisible(bool);
+
+impl Default for IsVisible {
+    fn default() -> Self {
+        IsVisible(true)
+    }
+}
+
 fn render_add_layer_window(
-    mut is_visible: Local<bool>,
+    mut is_visible: Local<IsVisible>,
     mut selected_file: ResMut<crate::add_layer_window::SelectedFile>,
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
     mut task_spawner: bevy_jobs::JobSpawner,
@@ -94,18 +102,18 @@ fn render_add_layer_window(
     mut events: crate::add_layer_window::Events,
 ) {
     if !events.show_add_layer_window_event_reader.is_empty() {
-        *is_visible = true;
+        is_visible.0 = true;
     }
 
     if !events.hide_add_layer_window_events.is_empty() {
         state.reset();
-        *is_visible = false;
+        is_visible.0 = false;
     }
 
     crate::add_layer_window::AddLayerWindow {
         state: &mut state,
         selected_file: &mut selected_file,
-        is_visible: &mut is_visible,
+        is_visible: &mut is_visible.0,
         bevy_egui_ctx: &mut bevy_egui_ctx,
         task_spawner: &mut task_spawner,
         events: &mut events,
