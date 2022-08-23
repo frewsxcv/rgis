@@ -81,6 +81,10 @@ enum Format {
 
 impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
     pub(crate) fn render(&mut self) {
+        if !*self.is_visible {
+            return;
+        }
+
         egui::Window::new("Add Layer")
             .open(self.is_visible)
             .anchor(egui::Align2::LEFT_TOP, [5., 5.])
@@ -183,5 +187,10 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                     }
                 }
             });
+
+        // If the user closes the window, reset the state.
+        if !*self.is_visible {
+            self.state.reset();
+        }
     }
 }
