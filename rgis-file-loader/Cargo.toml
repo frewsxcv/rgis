@@ -13,7 +13,7 @@ bevy = { version = "0.8", default-features = false, features = [
     "bevy_ui",
     "wayland",
 ] }
-geo = "0.22"
+geo = "0.23"
 geo-features = { path = "../geo-features" }
 geojson = { version = "0.23", features = ["geo-types"] }
 geozero = "0.9"

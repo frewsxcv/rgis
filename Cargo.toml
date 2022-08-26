@@ -22,8 +22,5 @@ members = [
 ]
 resolver = "2"
 
-[patch.crates-io]
-geo = { git = "https://github.com/georust/geo.git" }
-
 [profile.release]
 debug = true

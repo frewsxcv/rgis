@@ -23,9 +23,9 @@ bevy-jobs = { path = "../bevy-jobs" }
 thiserror = "1"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-geo = { version = "0.22", features = ["use-proj"] }
+geo = { version = "0.23", features = ["use-proj"] }
 proj-sys = "0.23"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 geo-proj-js = { path = "../geo-proj-js" }
-geo = "0.22"
+geo = "0.23"
