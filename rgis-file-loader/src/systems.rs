@@ -32,8 +32,8 @@ fn load_geojson_file_handler(
                     .map(|s| s.to_string_lossy().into_owned())
                     .unwrap_or_else(|| "<unknown>".to_string());
 
-                task_spawner.spawn(crate::tasks::LoadGeoJsonFileTask {
-                    geojson_source: crate::geojson::GeoJsonSource::Path(geojson_file_path),
+                task_spawner.spawn(crate::tasks::LoadFileJob {
+                    file_loader: crate::geojson::GeoJsonSource::Path(geojson_file_path),
                     source_crs: crs,
                     name,
                 })
@@ -45,8 +45,8 @@ fn load_geojson_file_handler(
                 file_name,
                 bytes,
                 crs,
-            } => task_spawner.spawn(crate::tasks::LoadGeoJsonFileTask {
-                geojson_source: crate::geojson::GeoJsonSource::Bytes(bytes),
+            } => task_spawner.spawn(crate::tasks::LoadFileJob {
+                file_loader: crate::geojson::GeoJsonSource::Bytes(bytes),
                 source_crs: crs,
                 name: file_name,
             }),
@@ -58,7 +58,9 @@ fn handle_load_geojson_file_task_finished_events(
     mut finished_tasks: bevy_jobs::FinishedJobs,
     mut create_layer_event_writer: EventWriter<rgis_events::CreateLayerEvent>,
 ) {
-    while let Some(outcome) = finished_tasks.take_next::<crate::tasks::LoadGeoJsonFileTask>() {
+    while let Some(outcome) =
+        finished_tasks.take_next::<crate::tasks::LoadFileJob<crate::geojson::GeoJsonSource>>()
+    {
         match outcome {
             Ok(outcome) => create_layer_event_writer.send(rgis_events::CreateLayerEvent {
                 name: outcome.name,

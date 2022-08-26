@@ -11,8 +11,9 @@ use bevy::prelude::*;
 mod geojson;
 mod systems;
 mod tasks;
+mod wkt;
 
-trait FileLoader {
+pub trait FileLoader {
     type Error;
 
     fn load(self) -> Result<geo_features::FeatureCollection, Self::Error>;

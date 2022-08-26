@@ -23,7 +23,10 @@ impl FeatureBuilder {
     }
 
     pub fn with_geometry(self, geometry: geo::Geometry) -> Self {
-        FeatureBuilder { geometry: Some(geometry), ..self }
+        FeatureBuilder {
+            geometry: Some(geometry),
+            ..self
+        }
     }
 
     pub fn with_properties(self, properties: Properties) -> Self {
@@ -31,7 +34,8 @@ impl FeatureBuilder {
     }
 
     pub fn build(self) -> Result<Feature, BoundingRectError> {
-        let bounding_rect = self.geometry
+        let bounding_rect = self
+            .geometry
             .as_ref()
             .and_then(|geometry| geometry.bounding_rect());
         Ok(Feature {

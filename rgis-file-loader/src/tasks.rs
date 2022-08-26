@@ -1,28 +1,29 @@
-use crate::FileLoader;
-
-pub struct LoadGeoJsonFileTask {
-    pub geojson_source: crate::geojson::GeoJsonSource,
+pub struct LoadFileJob<F: crate::FileLoader> {
+    pub file_loader: F,
     pub name: String,
     pub source_crs: String,
 }
 
-pub struct LoadGeoJsonFileTaskOutcome {
+pub struct LoadFileJobOutcome {
     pub geometry: geo_features::FeatureCollection,
     pub name: String,
     pub source_crs: String,
 }
 
-impl bevy_jobs::Job for LoadGeoJsonFileTask {
-    type Outcome = Result<LoadGeoJsonFileTaskOutcome, crate::geojson::LoadGeoJsonError>;
+impl<F: crate::FileLoader + Sync + Send + 'static> bevy_jobs::Job for LoadFileJob<F>
+where
+    <F as crate::FileLoader>::Error: Send + Sync + 'static,
+{
+    type Outcome = Result<LoadFileJobOutcome, F::Error>;
 
     fn name(&self) -> String {
-        "Loading GeoJson file".into()
+        "Loading FIXME FIXME GeoJson file".into()
     }
 
     fn perform(self) -> bevy_jobs::AsyncReturn<Self::Outcome> {
         Box::pin(async move {
-            Ok(LoadGeoJsonFileTaskOutcome {
-                geometry: self.geojson_source.load()?,
+            Ok(LoadFileJobOutcome {
+                geometry: self.file_loader.load()?,
                 name: self.name,
                 source_crs: self.source_crs,
             })

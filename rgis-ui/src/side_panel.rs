@@ -11,7 +11,8 @@ pub struct Events<'w, 's> {
     delete_layer_event_writer: bevy::ecs::event::EventWriter<'w, 's, rgis_events::DeleteLayerEvent>,
     move_layer_event_writer: bevy::ecs::event::EventWriter<'w, 's, rgis_events::MoveLayerEvent>,
     create_layer_event_writer: bevy::ecs::event::EventWriter<'w, 's, rgis_events::CreateLayerEvent>,
-    show_add_layer_window_event_writer: bevy::ecs::event::EventWriter<'w, 's, rgis_events::ShowAddLayerWindow>,
+    show_add_layer_window_event_writer:
+        bevy::ecs::event::EventWriter<'w, 's, rgis_events::ShowAddLayerWindow>,
 }
 
 pub(crate) struct SidePanel<'a, 'w, 's> {
@@ -49,7 +50,9 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
 
     fn render_add_layer_button(&mut self, ui: &mut egui::Ui) {
         if ui.button("➕ Add Layer").clicked() {
-            self.events.show_add_layer_window_event_writer.send_default();
+            self.events
+                .show_add_layer_window_event_writer
+                .send_default();
         }
     }
 
