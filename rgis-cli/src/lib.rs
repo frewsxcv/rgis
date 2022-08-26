@@ -7,8 +7,7 @@
 )]
 
 use clap::{Arg, Command};
-use std::io::{self, Read};
-use std::{error, path};
+use std::error;
 
 static DEFAULT_SOURCE_SRS: &str = "EPSG:4326";
 static DEFAULT_MSAA: &str = "4";
@@ -18,9 +17,6 @@ type MsaaSampleCount = u32;
 #[derive(Clone)]
 pub struct Values {
     pub msaa_sample_count: MsaaSampleCount,
-    pub geojson_files: Vec<path::PathBuf>,
-    pub geojson_stdin_bytes: Option<Vec<u8>>,
-    pub source_crs: String,
 }
 
 pub fn run() -> Result<Values, Box<dyn error::Error>> {
@@ -52,29 +48,11 @@ pub fn run() -> Result<Values, Box<dyn error::Error>> {
         .arg(Arg::new("GEOJSON FILE").multiple_occurrences(true))
         .get_matches();
 
-    let geojson_stdin_bytes = if atty::isnt(atty::Stream::Stdin) {
-        let mut bytes = vec![];
-        io::stdin().read_to_end(&mut bytes)?;
-        Some(bytes)
-    } else {
-        None
-    };
-
     Ok(Values {
-        geojson_files: matches
-            .values_of("GEOJSON FILE")
-            .unwrap_or_default()
-            .map(|s| path::PathBuf::from(s.to_owned()))
-            .collect(),
-        source_crs: matches
-            .value_of("SOURCE SRS")
-            .ok_or("Could not fetch source SRS from clap")?
-            .to_owned(),
         msaa_sample_count: matches
             .value_of("MSAA SAMPLE COUNT")
             .ok_or("Could not fetch MSAA sample count from clap")?
             .parse()?,
-        geojson_stdin_bytes,
     })
 }
 

@@ -1,6 +1,5 @@
 use bevy::ecs::event::Events;
 use bevy::prelude::*;
-use std::mem;
 
 fn load_geojson_file_handler(
     mut load_event_reader: ResMut<Events<rgis_events::LoadGeoJsonFileEvent>>,
@@ -71,30 +70,6 @@ fn handle_load_geojson_file_task_finished_events(
                 bevy::log::error!("Encountered error when loading GeoJSON file: {:?}", e);
             }
         }
-    }
-}
-
-#[cfg(not(target_arch = "wasm32"))]
-pub fn load_layers_from_cli(
-    mut cli_values: ResMut<rgis_cli::Values>,
-    mut events: EventWriter<rgis_events::LoadGeoJsonFileEvent>,
-) {
-    if let Some(geojson_stdin_bytes) = cli_values.geojson_stdin_bytes.take() {
-        events.send(rgis_events::LoadGeoJsonFileEvent::FromBytes {
-            bytes: geojson_stdin_bytes,
-            crs: cli_values.source_crs.clone(),
-            file_name: "Standard input".into(),
-        })
-    }
-    for geojson_file_path in mem::take(&mut cli_values.geojson_files) {
-        debug!(
-            "sending LoadGeoJsonFile event: {}",
-            &geojson_file_path.display(),
-        );
-        events.send(rgis_events::LoadGeoJsonFileEvent::FromPath {
-            path: geojson_file_path,
-            crs: cli_values.source_crs.clone(),
-        });
     }
 }
 
