@@ -15,7 +15,7 @@ bevy = { version = "0.8", default-features = false, features = [
     "bevy_ui",
     "wayland",
 ] }
-bevy_egui = "0.15"
+bevy_egui = "0.16"
 geo = "0.23"
 rgis-events = { path = "../rgis-events" }
 rgis-settings = { path = "../rgis-settings" }

@@ -13,7 +13,7 @@ impl<'a, 'w, 's> BottomPanel<'a, 'w, 's> {
     pub(crate) fn render(&mut self) {
         let inner_response = egui::TopBottomPanel::bottom("bottom").show(self.egui_ctx, |ui| {
             ui.horizontal(|ui| {
-                ui.with_layout(egui::Layout::right_to_left(), |ui| {
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                     self.render_crs(ui);
                     self.render_mouse_position(ui);
                 });
