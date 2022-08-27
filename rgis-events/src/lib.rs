@@ -7,8 +7,6 @@
 )]
 
 use bevy::prelude::*;
-#[cfg(not(target_arch = "wasm32"))]
-use std::path;
 
 // Magic number used to normalize the host's scroll value.
 const ZOOM_FACTOR: f32 = 500.;
@@ -67,8 +65,6 @@ pub struct OpenChangeCrsWindow;
 
 #[derive(Debug)]
 pub enum LoadGeoJsonFileEvent {
-    #[cfg(not(target_arch = "wasm32"))]
-    FromPath { path: path::PathBuf, crs: String },
     FromNetwork {
         name: String,
         url: String,

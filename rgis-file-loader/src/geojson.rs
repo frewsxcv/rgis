@@ -1,35 +1,15 @@
-#[cfg(not(target_arch = "wasm32"))]
-use std::path;
 use std::{error, fmt, io, iter};
 
-pub enum GeoJsonSource {
-    #[cfg(not(target_arch = "wasm32"))]
-    Path(std::path::PathBuf),
-    Bytes(Vec<u8>),
+pub struct GeoJsonSource {
+    pub bytes: Vec<u8>,
 }
 
 impl crate::FileLoader for GeoJsonSource {
     type Error = LoadGeoJsonError;
 
     fn load(self) -> Result<geo_features::FeatureCollection, Self::Error> {
-        Ok(match self {
-            #[cfg(not(target_arch = "wasm32"))]
-            GeoJsonSource::Path(path) => load_from_path(&path)?,
-            GeoJsonSource::Bytes(bytes) => load_from_reader(io::Cursor::new(bytes))?,
-        })
+        load_from_reader(io::Cursor::new(self.bytes))
     }
-}
-
-#[cfg(not(target_arch = "wasm32"))]
-fn load_from_path(
-    geojson_file_path: &path::Path,
-) -> Result<geo_features::FeatureCollection, LoadGeoJsonError> {
-    use std::fs;
-    let tl = time_logger::start!("Opening file: {:?}", geojson_file_path);
-    let reader = io::BufReader::new(fs::File::open(&geojson_file_path)?);
-    tl.finish();
-
-    load_from_reader(reader)
 }
 
 #[derive(thiserror::Error, Debug)]

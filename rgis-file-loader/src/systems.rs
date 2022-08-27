@@ -21,22 +21,6 @@ fn load_geojson_file_handler(
 
     for event in load_event_reader.drain() {
         match event {
-            #[cfg(not(target_arch = "wasm32"))]
-            rgis_events::LoadGeoJsonFileEvent::FromPath {
-                path: geojson_file_path,
-                crs,
-            } => {
-                let name = geojson_file_path
-                    .file_name()
-                    .map(|s| s.to_string_lossy().into_owned())
-                    .unwrap_or_else(|| "<unknown>".to_string());
-
-                task_spawner.spawn(crate::tasks::LoadFileJob {
-                    file_loader: crate::geojson::GeoJsonSource::Path(geojson_file_path),
-                    source_crs: crs,
-                    name,
-                })
-            }
             rgis_events::LoadGeoJsonFileEvent::FromNetwork { url, crs, name } => {
                 task_spawner.spawn(rgis_network::NetworkFetchTask { url, crs, name })
             }
@@ -45,7 +29,7 @@ fn load_geojson_file_handler(
                 bytes,
                 crs,
             } => task_spawner.spawn(crate::tasks::LoadFileJob {
-                file_loader: crate::geojson::GeoJsonSource::Bytes(bytes),
+                file_loader: crate::geojson::GeoJsonSource { bytes },
                 source_crs: crs,
                 name: file_name,
             }),
