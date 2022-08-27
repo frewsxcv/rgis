@@ -9,7 +9,6 @@
 use clap::{Arg, Command};
 use std::error;
 
-static DEFAULT_SOURCE_SRS: &str = "EPSG:4326";
 static DEFAULT_MSAA: &str = "4";
 
 type MsaaSampleCount = u32;
@@ -38,14 +37,6 @@ pub fn run() -> Result<Values, Box<dyn error::Error>> {
                 })
                 .takes_value(true),
         )
-        .arg(
-            Arg::new("SOURCE SRS")
-                .long("--source-srs")
-                .default_value(DEFAULT_SOURCE_SRS)
-                .help("SRS of input files")
-                .takes_value(true),
-        )
-        .arg(Arg::new("GEOJSON FILE").multiple_occurrences(true))
         .get_matches();
 
     Ok(Values {
