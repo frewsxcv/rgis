@@ -72,11 +72,12 @@ pub struct OpenedFile {
     file_name: String,
 }
 
-#[derive(PartialEq, Eq, Default)]
+#[derive(Clone, Copy, PartialEq, Eq, Default)]
 enum Format {
     #[default]
     Unselected,
     GeoJson,
+    Wkt,
 }
 
 impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
@@ -123,6 +124,7 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                     ui.label("Format:");
 
                     ui.radio_value(&mut self.state.selected_format, Format::GeoJson, "GeoJSON");
+                    ui.radio_value(&mut self.state.selected_format, Format::Wkt, "WKT");
                 }
 
                 if self.state.selected_format == Format::Unselected {
@@ -169,9 +171,7 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                         .show(ui, |ui| {
                             egui::widgets::TextEdit::multiline(&mut self.state.text_edit_contents)
                                 .code_editor()
-                                .hint_text(
-                                    "{\n  \"type\": \"FeatureCollection\",\n  \"features\": []\n}",
-                                )
+                                .hint_text(hint_text(self.state.selected_format))
                                 .show(ui);
                         });
 
@@ -201,5 +201,13 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
         if !*self.is_visible {
             self.state.reset();
         }
+    }
+}
+
+fn hint_text(format: Format) -> &'static str {
+    match format {
+        Format::Unselected => "",
+        Format::GeoJson => "{\n  \"type\": \"FeatureCollection\",\n  \"features\": []\n}",
+        Format::Wkt => "LINESTRING (30 10, 10 30, 40 40)",
     }
 }

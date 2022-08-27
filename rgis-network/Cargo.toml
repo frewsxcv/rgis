@@ -15,4 +15,4 @@ bevy = { version = "0.8", default-features = false, features = [
     "wayland",
 ] }
 ehttp = "0.2"
-bevy-jobs = { path = "../bevy-jobs" }
+bevy_jobs = { git = "https://github.com/frewsxcv/bevy_jobs" }

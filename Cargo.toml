@@ -15,7 +15,6 @@ members = [
     "rgis-network",
     "rgis-renderer",
     "rgis-settings",
-    "bevy-jobs",
     "rgis-ui",
     "rgis",
     "time-logger",

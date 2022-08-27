@@ -27,7 +27,7 @@ rgis-mouse = { path = "../rgis-mouse" }
 rgis-network = { path = "../rgis-network" }
 rgis-renderer = { path = "../rgis-renderer" }
 rgis-settings = { path = "../rgis-settings" }
-bevy-jobs = { path = "../bevy-jobs" }
+bevy_jobs = { git = "https://github.com/frewsxcv/bevy_jobs" }
 rgis-transform = { path = "../rgis-transform" }
 rgis-ui = { path = "../rgis-ui" }
 time-logger = { path = "../time-logger" }
