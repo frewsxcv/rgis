@@ -3073,10 +3073,8 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_jobs",
- "geo",
  "geo-features",
  "geo-file-loader",
- "rgis-cli",
  "rgis-events",
  "rgis-network",
  "serde_json",

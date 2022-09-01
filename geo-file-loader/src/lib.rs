@@ -12,5 +12,7 @@ pub mod wkt;
 pub trait FileLoader {
     type Error;
 
+    const FILE_TYPE_NAME: &'static str;
+
     fn load(self) -> Result<geo_features::FeatureCollection, Self::Error>;
 }

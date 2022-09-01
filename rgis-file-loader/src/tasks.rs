@@ -17,7 +17,7 @@ where
     type Outcome = Result<LoadFileJobOutcome, F::Error>;
 
     fn name(&self) -> String {
-        "Loading FIXME FIXME GeoJson file".into()
+        format!("Loading {} file", F::FILE_TYPE_NAME)
     }
 
     fn perform(self) -> bevy_jobs::AsyncReturn<Self::Outcome> {

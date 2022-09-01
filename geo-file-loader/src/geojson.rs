@@ -9,6 +9,8 @@ pub struct GeoJsonSource {
 impl crate::FileLoader for GeoJsonSource {
     type Error = LoadGeoJsonError;
 
+    const FILE_TYPE_NAME: &'static str = "GeoJSON";
+
     fn load(self) -> Result<geo_features::FeatureCollection, Self::Error> {
         load_from_reader(io::Cursor::new(self.bytes))
     }
