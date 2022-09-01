@@ -9,6 +9,6 @@ time-logger = { path = "../time-logger" }
 geo = "0.23"
 geo-features = { path = "../geo-features" }
 geojson = { version = "0.23", features = ["geo-types"] }
-geozero = "0.9"
+# geozero = "0.9"
 serde_json = "1"
 thiserror = "1"
