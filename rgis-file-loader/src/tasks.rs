@@ -1,4 +1,4 @@
-pub struct LoadFileJob<F: crate::FileLoader> {
+pub struct LoadFileJob<F: geo_file_loader::FileLoader> {
     pub file_loader: F,
     pub name: String,
     pub source_crs: String,
@@ -10,9 +10,9 @@ pub struct LoadFileJobOutcome {
     pub source_crs: String,
 }
 
-impl<F: crate::FileLoader + Sync + Send + 'static> bevy_jobs::Job for LoadFileJob<F>
+impl<F: geo_file_loader::FileLoader + Sync + Send + 'static> bevy_jobs::Job for LoadFileJob<F>
 where
-    <F as crate::FileLoader>::Error: Send + Sync + 'static,
+    <F as geo_file_loader::FileLoader>::Error: Send + Sync + 'static,
 {
     type Outcome = Result<LoadFileJobOutcome, F::Error>;
 

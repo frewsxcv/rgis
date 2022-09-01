@@ -1731,6 +1731,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "geo-file-loader"
+version = "0.1.0"
+dependencies = [
+ "geo",
+ "geo-features",
+ "geojson",
+ "geozero",
+ "serde_json",
+ "thiserror",
+ "time-logger",
+]
+
+[[package]]
 name = "geo-proj-js"
 version = "0.1.0"
 dependencies = [
@@ -3062,8 +3075,7 @@ dependencies = [
  "bevy_jobs",
  "geo",
  "geo-features",
- "geojson",
- "geozero",
+ "geo-file-loader",
  "rgis-cli",
  "rgis-events",
  "rgis-network",

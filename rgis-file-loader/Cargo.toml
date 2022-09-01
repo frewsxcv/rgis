@@ -15,8 +15,7 @@ bevy = { version = "0.8", default-features = false, features = [
 ] }
 geo = "0.23"
 geo-features = { path = "../geo-features" }
-geojson = { version = "0.23", features = ["geo-types"] }
-geozero = "0.9"
+geo-file-loader = { path = "../geo-file-loader" }
 rgis-cli = { path = "../rgis-cli" }
 rgis-events = { path = "../rgis-events" }
 rgis-network = { path = "../rgis-network" }

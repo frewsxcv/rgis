@@ -8,16 +8,8 @@
 
 use bevy::prelude::*;
 
-mod geojson;
 mod systems;
 mod tasks;
-mod wkt;
-
-pub trait FileLoader {
-    type Error;
-
-    fn load(self) -> Result<geo_features::FeatureCollection, Self::Error>;
-}
 
 pub struct Plugin;
 
