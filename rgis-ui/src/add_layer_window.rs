@@ -8,6 +8,11 @@ pub struct Events<'w, 's> {
         's,
         rgis_events::LoadFileEvent<geo_file_loader::GeoJsonSource>,
     >,
+    pub load_wkt_file_event_writer: bevy::ecs::event::EventWriter<
+        'w,
+        's,
+        rgis_events::LoadFileEvent<geo_file_loader::WktSource>,
+    >,
     pub show_add_layer_window_event_reader:
         bevy::ecs::event::EventReader<'w, 's, rgis_events::ShowAddLayerWindow>,
     pub hide_add_layer_window_events:
@@ -155,21 +160,32 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                         .add_enabled(submittable, egui::Button::new("Add layer"))
                         .clicked()
                     {
+                        let loaded_file = self.selected_file.0.take().unwrap();
                         match self.state.selected_format {
-                            Format::GeoJson => {}
-                            Format::Wkt => {}
+                            Format::GeoJson => {
+                                self.events.load_geo_json_file_event_writer.send(
+                                    rgis_events::LoadFileEvent::FromBytes {
+                                        file_name: loaded_file.file_name,
+                                        file_loader: geo_file_loader::GeoJsonSource {
+                                            bytes: loaded_file.bytes,
+                                        },
+                                        crs: "EPSG:4326".into(),
+                                    },
+                                );
+                            }
+                            Format::Wkt => {
+                                self.events.load_wkt_file_event_writer.send(
+                                    rgis_events::LoadFileEvent::FromBytes {
+                                        file_name: loaded_file.file_name,
+                                        file_loader: geo_file_loader::WktSource {
+                                            bytes: loaded_file.bytes,
+                                        },
+                                        crs: "EPSG:4326".into(),
+                                    },
+                                );
+                            }
                             Format::Unselected => {}
                         }
-                        let loaded_file = self.selected_file.0.take().unwrap();
-                        self.events.load_geo_json_file_event_writer.send(
-                            rgis_events::LoadFileEvent::FromBytes {
-                                file_name: loaded_file.file_name,
-                                file_loader: geo_file_loader::GeoJsonSource {
-                                    bytes: loaded_file.bytes,
-                                },
-                                crs: "EPSG:4326".into(),
-                            },
-                        );
                         self.events.hide_add_layer_window_events.send_default();
                         self.state.reset();
                     }
@@ -194,15 +210,31 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                         .clicked()
                     {
                         let new = mem::take(&mut self.state.text_edit_contents);
-                        self.events.load_geo_json_file_event_writer.send(
-                            rgis_events::LoadFileEvent::FromBytes {
-                                file_name: "Inputted file".into(),
-                                file_loader: geo_file_loader::GeoJsonSource {
-                                    bytes: new.into_bytes(),
-                                },
-                                crs: "EPSG:4326".into(),
-                            },
-                        );
+                        match self.state.selected_format {
+                            Format::GeoJson => {
+                                self.events.load_geo_json_file_event_writer.send(
+                                    rgis_events::LoadFileEvent::FromBytes {
+                                        file_name: "Inputted file".into(),
+                                        file_loader: geo_file_loader::GeoJsonSource {
+                                            bytes: new.into_bytes(),
+                                        },
+                                        crs: "EPSG:4326".into(),
+                                    },
+                                );
+                            }
+                            Format::Wkt => {
+                                self.events.load_wkt_file_event_writer.send(
+                                    rgis_events::LoadFileEvent::FromBytes {
+                                        file_name: "Inputted file".into(),
+                                        file_loader: geo_file_loader::WktSource {
+                                            bytes: new.into_bytes(),
+                                        },
+                                        crs: "EPSG:4326".into(),
+                                    },
+                                );
+                            }
+                            Format::Unselected => {}
+                        }
                         self.events.hide_add_layer_window_events.send_default();
                         self.state.reset();
                     }

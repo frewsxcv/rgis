@@ -3,7 +3,7 @@ use std::io;
 use geozero::GeozeroDatasource;
 
 pub struct WktSource {
-    bytes: Vec<u8>,
+    pub bytes: Vec<u8>,
 }
 
 impl crate::FileLoader for WktSource {

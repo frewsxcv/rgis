@@ -39,12 +39,14 @@ fn load_file_handler<F: geo_file_loader::FileLoader + Send + Sync + 'static>(
     }
 }
 
-fn handle_load_file_task_finished_events(
+fn handle_load_file_task_finished_events<F: geo_file_loader::FileLoader + Send + Sync + 'static>(
     mut finished_tasks: bevy_jobs::FinishedJobs,
     mut create_layer_event_writer: EventWriter<rgis_events::CreateLayerEvent>,
-) {
+) where
+    <F as geo_file_loader::FileLoader>::Error: Send + Sync + 'static,
+{
     while let Some(outcome) =
-        finished_tasks.take_next::<crate::tasks::LoadFileJob<geo_file_loader::GeoJsonSource>>()
+        finished_tasks.take_next::<crate::tasks::LoadFileJob<F>>()
     {
         match outcome {
             Ok(outcome) => create_layer_event_writer.send(rgis_events::CreateLayerEvent {
@@ -53,7 +55,7 @@ fn handle_load_file_task_finished_events(
                 source_crs: outcome.source_crs,
             }),
             Err(e) => {
-                bevy::log::error!("Encountered error when loading GeoJSON file: {:?}", e);
+                bevy::log::error!("Encountered error when loading file: {:?}", e);
             }
         }
     }
@@ -63,5 +65,6 @@ pub fn system_set() -> SystemSet {
     SystemSet::new()
         .with_system(load_file_handler::<geo_file_loader::GeoJsonSource>)
         .with_system(load_file_handler::<geo_file_loader::WktSource>)
-        .with_system(handle_load_file_task_finished_events)
+        .with_system(handle_load_file_task_finished_events::<geo_file_loader::GeoJsonSource>)
+        .with_system(handle_load_file_task_finished_events::<geo_file_loader::WktSource>)
 }

@@ -6,6 +6,8 @@
     clippy::expect_used
 )]
 
+use std::fmt;
+
 mod geojson;
 mod wkt;
 
@@ -13,7 +15,7 @@ pub use crate::geojson::GeoJsonSource;
 pub use crate::wkt::WktSource;
 
 pub trait FileLoader {
-    type Error;
+    type Error: fmt::Debug;
 
     const FILE_TYPE_NAME: &'static str;
 
