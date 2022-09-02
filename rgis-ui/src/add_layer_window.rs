@@ -3,8 +3,11 @@ use std::mem;
 
 #[derive(bevy::ecs::system::SystemParam)]
 pub struct Events<'w, 's> {
-    pub load_geo_json_file_event_writer:
-        bevy::ecs::event::EventWriter<'w, 's, rgis_events::LoadGeoJsonFileEvent>,
+    pub load_geo_json_file_event_writer: bevy::ecs::event::EventWriter<
+        'w,
+        's,
+        rgis_events::LoadFileEvent<geo_file_loader::GeoJsonSource>,
+    >,
     pub show_add_layer_window_event_reader:
         bevy::ecs::event::EventReader<'w, 's, rgis_events::ShowAddLayerWindow>,
     pub hide_add_layer_window_events:
@@ -106,7 +109,7 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                     for entry in rgis_library::ENTRIES {
                         if ui.button(format!("Add '{}' Layer", entry.name)).clicked() {
                             self.events.load_geo_json_file_event_writer.send(
-                                rgis_events::LoadGeoJsonFileEvent::FromNetwork {
+                                rgis_events::LoadFileEvent::FromNetwork {
                                     name: entry.name.into(),
                                     url: entry.url.into(),
                                     crs: entry.crs.into(),
@@ -152,11 +155,18 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                         .add_enabled(submittable, egui::Button::new("Add layer"))
                         .clicked()
                     {
+                        match self.state.selected_format {
+                            Format::GeoJson => {}
+                            Format::Wkt => {}
+                            Format::Unselected => {}
+                        }
                         let loaded_file = self.selected_file.0.take().unwrap();
                         self.events.load_geo_json_file_event_writer.send(
-                            rgis_events::LoadGeoJsonFileEvent::FromBytes {
+                            rgis_events::LoadFileEvent::FromBytes {
                                 file_name: loaded_file.file_name,
-                                bytes: loaded_file.bytes,
+                                file_loader: geo_file_loader::GeoJsonSource {
+                                    bytes: loaded_file.bytes,
+                                },
                                 crs: "EPSG:4326".into(),
                             },
                         );
@@ -185,9 +195,11 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                     {
                         let new = mem::take(&mut self.state.text_edit_contents);
                         self.events.load_geo_json_file_event_writer.send(
-                            rgis_events::LoadGeoJsonFileEvent::FromBytes {
+                            rgis_events::LoadFileEvent::FromBytes {
                                 file_name: "Inputted file".into(),
-                                bytes: new.into_bytes(),
+                                file_loader: geo_file_loader::GeoJsonSource {
+                                    bytes: new.into_bytes(),
+                                },
                                 crs: "EPSG:4326".into(),
                             },
                         );

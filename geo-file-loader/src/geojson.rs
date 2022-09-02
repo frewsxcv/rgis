@@ -11,6 +11,10 @@ impl crate::FileLoader for GeoJsonSource {
 
     const FILE_TYPE_NAME: &'static str = "GeoJSON";
 
+    fn from_bytes(bytes: Vec<u8>) -> Self {
+        GeoJsonSource { bytes }
+    }
+
     fn load(self) -> Result<geo_features::FeatureCollection, Self::Error> {
         load_from_reader(io::Cursor::new(self.bytes))
     }

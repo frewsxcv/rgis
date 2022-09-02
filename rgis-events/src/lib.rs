@@ -64,7 +64,7 @@ pub struct MapClickedEvent(pub geo::Coordinate);
 pub struct OpenChangeCrsWindow;
 
 #[derive(Debug)]
-pub enum LoadGeoJsonFileEvent {
+pub enum LoadFileEvent<F: geo_file_loader::FileLoader> {
     FromNetwork {
         name: String,
         url: String,
@@ -72,7 +72,7 @@ pub enum LoadGeoJsonFileEvent {
     },
     FromBytes {
         file_name: String,
-        bytes: Vec<u8>,
+        file_loader: F,
         crs: String,
     },
 }
@@ -154,7 +154,8 @@ pub struct HideAddLayerWindow;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<LoadGeoJsonFileEvent>()
+        app.add_event::<LoadFileEvent<geo_file_loader::GeoJsonSource>>()
+            .add_event::<LoadFileEvent<geo_file_loader::WktSource>>()
             .add_event::<CreateLayerEvent>()
             .add_event::<LayerCreatedEvent>()
             .add_event::<ToggleLayerVisibilityEvent>()

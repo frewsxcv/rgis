@@ -1,15 +1,17 @@
 use bevy::ecs::event::Events;
 use bevy::prelude::*;
 
-fn load_geojson_file_handler(
-    mut load_event_reader: ResMut<Events<rgis_events::LoadGeoJsonFileEvent>>,
+fn load_file_handler<F: geo_file_loader::FileLoader + Send + Sync + 'static>(
+    mut load_event_reader: ResMut<Events<rgis_events::LoadFileEvent<F>>>,
     mut task_spawner: bevy_jobs::JobSpawner,
     mut finished_tasks: bevy_jobs::FinishedJobs,
-) {
+) where
+    <F as geo_file_loader::FileLoader>::Error: Send + Sync + 'static,
+{
     while let Some(outcome) = finished_tasks.take_next::<rgis_network::NetworkFetchTask>() {
         match outcome {
-            Ok(fetched) => load_event_reader.send(rgis_events::LoadGeoJsonFileEvent::FromBytes {
-                bytes: fetched.bytes,
+            Ok(fetched) => load_event_reader.send(rgis_events::LoadFileEvent::FromBytes {
+                file_loader: F::from_bytes(fetched.bytes),
                 file_name: fetched.name,
                 crs: fetched.crs,
             }),
@@ -21,15 +23,15 @@ fn load_geojson_file_handler(
 
     for event in load_event_reader.drain() {
         match event {
-            rgis_events::LoadGeoJsonFileEvent::FromNetwork { url, crs, name } => {
+            rgis_events::LoadFileEvent::FromNetwork { url, crs, name } => {
                 task_spawner.spawn(rgis_network::NetworkFetchTask { url, crs, name })
             }
-            rgis_events::LoadGeoJsonFileEvent::FromBytes {
+            rgis_events::LoadFileEvent::FromBytes {
                 file_name,
-                bytes,
+                file_loader,
                 crs,
             } => task_spawner.spawn(crate::tasks::LoadFileJob {
-                file_loader: geo_file_loader::geojson::GeoJsonSource { bytes },
+                file_loader,
                 source_crs: crs,
                 name: file_name,
             }),
@@ -37,12 +39,12 @@ fn load_geojson_file_handler(
     }
 }
 
-fn handle_load_geojson_file_task_finished_events(
+fn handle_load_file_task_finished_events(
     mut finished_tasks: bevy_jobs::FinishedJobs,
     mut create_layer_event_writer: EventWriter<rgis_events::CreateLayerEvent>,
 ) {
-    while let Some(outcome) = finished_tasks
-        .take_next::<crate::tasks::LoadFileJob<geo_file_loader::geojson::GeoJsonSource>>()
+    while let Some(outcome) =
+        finished_tasks.take_next::<crate::tasks::LoadFileJob<geo_file_loader::GeoJsonSource>>()
     {
         match outcome {
             Ok(outcome) => create_layer_event_writer.send(rgis_events::CreateLayerEvent {
@@ -59,6 +61,7 @@ fn handle_load_geojson_file_task_finished_events(
 
 pub fn system_set() -> SystemSet {
     SystemSet::new()
-        .with_system(load_geojson_file_handler)
-        .with_system(handle_load_geojson_file_task_finished_events)
+        .with_system(load_file_handler::<geo_file_loader::GeoJsonSource>)
+        .with_system(load_file_handler::<geo_file_loader::WktSource>)
+        .with_system(handle_load_file_task_finished_events)
 }

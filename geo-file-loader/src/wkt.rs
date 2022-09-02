@@ -2,7 +2,7 @@ use std::io;
 
 use geozero::GeozeroDatasource;
 
-struct WktSource {
+pub struct WktSource {
     bytes: Vec<u8>,
 }
 
@@ -10,6 +10,10 @@ impl crate::FileLoader for WktSource {
     type Error = ();
 
     const FILE_TYPE_NAME: &'static str = "WKT";
+
+    fn from_bytes(bytes: Vec<u8>) -> Self {
+        WktSource { bytes }
+    }
 
     fn load(self) -> Result<geo_features::FeatureCollection, Self::Error> {
         let mut bytes_cursor = io::Cursor::new(&self.bytes);
