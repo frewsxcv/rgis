@@ -1,9 +1,8 @@
 use bevy::ecs::event::Events;
 use bevy::prelude::*;
 
-fn load_file_handler<F: geo_file_loader::FileLoader + Send + Sync + 'static>(
+fn handle_network_fetch_finished_tasks<F: geo_file_loader::FileLoader + Send + Sync + 'static>(
     mut load_event_reader: ResMut<Events<rgis_events::LoadFileEvent<F>>>,
-    mut task_spawner: bevy_jobs::JobSpawner,
     mut finished_tasks: bevy_jobs::FinishedJobs,
 ) where
     <F as geo_file_loader::FileLoader>::Error: Send + Sync + 'static,
@@ -20,7 +19,14 @@ fn load_file_handler<F: geo_file_loader::FileLoader + Send + Sync + 'static>(
             }
         }
     }
+}
 
+fn handle_load_file_events<F: geo_file_loader::FileLoader + Send + Sync + 'static>(
+    mut load_event_reader: ResMut<Events<rgis_events::LoadFileEvent<F>>>,
+    mut task_spawner: bevy_jobs::JobSpawner,
+) where
+    <F as geo_file_loader::FileLoader>::Error: Send + Sync + 'static,
+{
     for event in load_event_reader.drain() {
         match event {
             rgis_events::LoadFileEvent::FromNetwork { url, crs, name } => {
@@ -63,8 +69,9 @@ fn handle_load_file_task_finished_events<F: geo_file_loader::FileLoader + Send +
 
 pub fn system_set() -> SystemSet {
     SystemSet::new()
-        .with_system(load_file_handler::<geo_file_loader::GeoJsonSource>)
-        .with_system(load_file_handler::<geo_file_loader::WktSource>)
+        .with_system(handle_network_fetch_finished_tasks::<geo_file_loader::GeoJsonSource>)
+        .with_system(handle_load_file_events::<geo_file_loader::GeoJsonSource>)
+        .with_system(handle_load_file_events::<geo_file_loader::WktSource>)
         .with_system(handle_load_file_task_finished_events::<geo_file_loader::GeoJsonSource>)
         .with_system(handle_load_file_task_finished_events::<geo_file_loader::WktSource>)
 }
