@@ -16,16 +16,10 @@ cargo install --git https://github.com/frewsxcv/rgis
 
 ## Usage
 
-Render GeoJSON files:
+Run rgis:
 
 ```sh
-rgis file1.geojson file2.geojson
-```
-
-Read GeoJSON files from standard in:
-
-```sh
-cat file1.geojson | rgis
+rgis
 ```
 
 Print help information:
