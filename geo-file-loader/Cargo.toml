@@ -10,5 +10,6 @@ geo = "0.23"
 geo-features = { path = "../geo-features" }
 geojson = { version = "0.23", features = ["geo-types"] }
 geozero = { version = "0.9", features = ["with-wkt"] }
+geozero-shp = "0.3"
 serde_json = "1"
 thiserror = "1"
