@@ -47,7 +47,7 @@ jobs:
           ~/.cargo/registry/cache/
           ~/.cargo/git/db/
           target/
-        key: web-${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+        key: web-${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-v1
     - run: command -v wasm-pack >/dev/null 2>&1 || cargo install --force --git https://github.com/frewsxcv/wasm-pack.git --branch patch-2
     - name: Install wasm Rust target
       run: rustup target add wasm32-unknown-unknown
