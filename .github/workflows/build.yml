@@ -48,7 +48,8 @@ jobs:
           ~/.cargo/git/db/
           target/
         key: web-${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-    - run: command -v wasm-pack >/dev/null 2>&1 || cargo install --git https://github.com/rustwasm/wasm-pack.git
+#     - run: command -v wasm-pack >/dev/null 2>&1 || cargo install --git https://github.com/rustwasm/wasm-pack.git
+    - run: cargo install --git https://github.com/rustwasm/wasm-pack.git
     - name: Install wasm Rust target
       run: rustup target add wasm32-unknown-unknown
     - name: Install system dependencies
