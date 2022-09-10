@@ -104,14 +104,10 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
 
                     if layer.visible {
                         if ui.button("👁 Hide").clicked() {
-                            self.events
-                                .toggle_layer_visibility_event_writer
-                                .send(rgis_events::ToggleLayerVisibilityEvent(layer.id));
+                            self.toggle_layer_visibility(layer);
                         }
                     } else if ui.button("👁 Show").clicked() {
-                        self.events
-                            .toggle_layer_visibility_event_writer
-                            .send(rgis_events::ToggleLayerVisibilityEvent(layer.id));
+                        self.toggle_layer_visibility(layer);
                     }
 
                     if ui.button("🔎 Zoom to extent").clicked() {
@@ -154,11 +150,21 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
                     }
 
                     if ui.button("❌ Remove").clicked() {
-                        self.events
-                            .delete_layer_event_writer
-                            .send(rgis_events::DeleteLayerEvent(layer.id))
+                        self.delete_layer(layer);
                     }
                 });
         });
+    }
+
+    fn toggle_layer_visibility(&mut self, layer: &rgis_layers::Layer) {
+        self.events
+            .toggle_layer_visibility_event_writer
+            .send(rgis_events::ToggleLayerVisibilityEvent(layer.id));
+    }
+
+    fn delete_layer(&mut self, layer: &rgis_layers::Layer) {
+        self.events
+            .delete_layer_event_writer
+            .send(rgis_events::DeleteLayerEvent(layer.id));
     }
 }
