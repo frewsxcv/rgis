@@ -1,5 +1,5 @@
 #!/bin/sh -ex
 
 rm -rf www/dist/
-wasm-pack build rgis
+wasm-pack build --release rgis
 (cd www && npm run build)
