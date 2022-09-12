@@ -162,27 +162,31 @@ fn handle_crs_changed_events(
 }
 
 fn handle_camera_scale_changed_event(
-    mut camera_scale_changed_event_reader: bevy::ecs::event::EventReader<
-        rgis_events::CameraScaleChangedEvent,
-    >,
     mut query: Query<
         &bevy::transform::components::GlobalTransform,
-        bevy::ecs::query::With<bevy::render::camera::Camera>,
+        (
+            bevy::ecs::query::With<bevy::render::camera::Camera>,
+            bevy::ecs::query::Changed<bevy::transform::components::GlobalTransform>,
+        ),
     >,
     mut sprite_bundle_query: Query<&mut Sprite>,
 ) {
     // ZoomCameraEvent
-    for event in camera_scale_changed_event_reader.iter() {
-        let camera_global_transform = query.get_single().unwrap();
+    // for event in camera_scale_changed_event_reader.iter() {
+    if let Ok(camera_global_transform) = query.get_single() {
         let (scale, _, _) = camera_global_transform.to_scale_rotation_translation();
 
-        println!("camera global transform scale: {:?}", scale.truncate() / 1000000.);
+        println!(
+            "camera global transform scale: {:?}",
+            scale.truncate() / 1000000.
+        );
         for mut sprite in &mut sprite_bundle_query {
             // println!("new camera scale: {}", event.scale);
             // println!("new camera scale: {}", 1. / (event.scale * event.scale));
             sprite.custom_size = Some(scale.truncate() / 1000000.);
         }
     }
+    // }
 }
 
 pub fn system_set() -> SystemSet {

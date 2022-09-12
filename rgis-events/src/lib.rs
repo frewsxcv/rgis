@@ -20,11 +20,6 @@ pub struct ToggleLayerVisibilityEvent(pub rgis_layer_id::LayerId);
 #[derive(Debug)]
 pub struct CenterCameraEvent(pub rgis_layer_id::LayerId);
 
-#[derive(Debug)]
-pub struct CameraScaleChangedEvent {
-    pub scale: f32,
-}
-
 impl From<rgis_layer_id::LayerId> for CenterCameraEvent {
     #[inline]
     fn from(layer_id: rgis_layer_id::LayerId) -> Self {
@@ -169,7 +164,6 @@ impl bevy::app::Plugin for Plugin {
             .add_event::<PanCameraEvent>()
             .add_event::<ZoomCameraEvent>()
             .add_event::<CenterCameraEvent>()
-            .add_event::<CameraScaleChangedEvent>()
             .add_event::<LayerColorUpdatedEvent>()
             .add_event::<UpdateLayerColorEvent>()
             .add_event::<MoveLayerEvent>()
