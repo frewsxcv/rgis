@@ -12,9 +12,9 @@ use std::{error, num};
 mod line_string;
 mod point;
 
-pub struct PreparedMesh {
-    pub mesh: Mesh,
-    pub color: Color,
+pub enum PreparedMesh {
+    PolygonAndLineString { mesh: Mesh, color: Color },
+    Point(Vec<geo::Point>),
 }
 
 type Vertex = [f32; 3]; // [x, y, z]
@@ -70,11 +70,11 @@ pub fn build_bevy_meshes<G: BuildBevyMeshes>(
     geo.populate_mesh_builders(&mut ctx)?;
 
     Ok([
-        ctx.point_mesh_builder.build(color),
+        ctx.point_mesh_builder.build(),
         ctx.line_string_mesh_builder.build(color),
         ctx.polygon_mesh_builder
             .build()
-            .map(|mesh| PreparedMesh { mesh, color }),
+            .map(|mesh| PreparedMesh::PolygonAndLineString { mesh, color }),
         ctx.polygon_border_mesh_builder
             .build(bevy_render::color::Color::BLACK),
     ]

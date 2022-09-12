@@ -13,6 +13,7 @@ bevy = { version = "0.8", default-features = false, features = [
     "bevy_sprite",
     "bevy_ui",
     "wayland",
+    "png",
 ] }
 geo = "0.23"
 geo-features = { path = "../geo-features" }
