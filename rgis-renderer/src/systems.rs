@@ -171,8 +171,6 @@ fn handle_camera_scale_changed_event(
     >,
     mut sprite_bundle_query: Query<&mut Sprite>,
 ) {
-    // ZoomCameraEvent
-    // for event in camera_scale_changed_event_reader.iter() {
     if let Ok(camera_global_transform) = query.get_single() {
         let (scale, _, _) = camera_global_transform.to_scale_rotation_translation();
 
@@ -181,12 +179,9 @@ fn handle_camera_scale_changed_event(
             scale.truncate() / 1000000.
         );
         for mut sprite in &mut sprite_bundle_query {
-            // println!("new camera scale: {}", event.scale);
-            // println!("new camera scale: {}", 1. / (event.scale * event.scale));
             sprite.custom_size = Some(scale.truncate() / 1000000.);
         }
     }
-    // }
 }
 
 pub fn system_set() -> SystemSet {
