@@ -49,6 +49,9 @@ fn set_camera_transform(
 
 fn zoom_camera_system(
     mut zoom_camera_event_reader: bevy::ecs::event::EventReader<rgis_events::ZoomCameraEvent>,
+    mut camera_scale_changed_event_writer: bevy::ecs::event::EventWriter<
+        rgis_events::CameraScaleChangedEvent,
+    >,
     mut query: Query<
         &mut bevy::transform::components::Transform,
         bevy::ecs::query::With<bevy::render::camera::Camera>,
@@ -63,6 +66,9 @@ fn zoom_camera_system(
     for event in zoom_camera_event_reader.iter() {
         camera_scale.zoom(event.amount);
     }
+    camera_scale_changed_event_writer.send(rgis_events::CameraScaleChangedEvent {
+        scale: camera_scale.0,
+    });
     // TODO: change camera offset
     set_camera_transform(&mut transform, camera_offset, camera_scale);
 }

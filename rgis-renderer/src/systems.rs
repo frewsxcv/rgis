@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, render::camera};
 
 use crate::tasks::MeshBuildingTask;
 
@@ -161,6 +161,30 @@ fn handle_crs_changed_events(
     }
 }
 
+fn handle_camera_scale_changed_event(
+    mut camera_scale_changed_event_reader: bevy::ecs::event::EventReader<
+        rgis_events::CameraScaleChangedEvent,
+    >,
+    mut query: Query<
+        &bevy::transform::components::GlobalTransform,
+        bevy::ecs::query::With<bevy::render::camera::Camera>,
+    >,
+    mut sprite_bundle_query: Query<&mut Sprite>,
+) {
+    // ZoomCameraEvent
+    for event in camera_scale_changed_event_reader.iter() {
+        let camera_global_transform = query.get_single().unwrap();
+        let (scale, _, _) = camera_global_transform.to_scale_rotation_translation();
+
+        println!("camera global transform scale: {:?}", scale.truncate() / 1000000.);
+        for mut sprite in &mut sprite_bundle_query {
+            // println!("new camera scale: {}", event.scale);
+            // println!("new camera scale: {}", 1. / (event.scale * event.scale));
+            sprite.custom_size = Some(scale.truncate() / 1000000.);
+        }
+    }
+}
+
 pub fn system_set() -> SystemSet {
     SystemSet::new()
         .with_system(layer_loaded)
@@ -171,4 +195,5 @@ pub fn system_set() -> SystemSet {
         .with_system(handle_layer_deleted_events)
         .with_system(handle_mesh_building_task_outcome)
         .with_system(handle_crs_changed_events)
+        .with_system(handle_camera_scale_changed_event)
 }
