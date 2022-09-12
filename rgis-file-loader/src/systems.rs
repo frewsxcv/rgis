@@ -51,9 +51,7 @@ fn handle_load_file_task_finished_events<F: geo_file_loader::FileLoader + Send +
 ) where
     <F as geo_file_loader::FileLoader>::Error: Send + Sync + 'static,
 {
-    while let Some(outcome) =
-        finished_tasks.take_next::<crate::tasks::LoadFileJob<F>>()
-    {
+    while let Some(outcome) = finished_tasks.take_next::<crate::tasks::LoadFileJob<F>>() {
         match outcome {
             Ok(outcome) => create_layer_event_writer.send(rgis_events::CreateLayerEvent {
                 name: outcome.name,

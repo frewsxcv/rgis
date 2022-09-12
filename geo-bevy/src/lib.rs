@@ -13,10 +13,7 @@ mod line_string;
 mod point;
 
 pub enum PreparedMesh {
-    PolygonAndLineString {
-        mesh: Mesh,
-        color: Color,
-    },
+    PolygonAndLineString { mesh: Mesh, color: Color },
     Point,
 }
 
