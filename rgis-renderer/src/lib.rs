@@ -42,7 +42,7 @@ fn spawn_geometry_meshes(
                     .coords_iter()
                 {
                     let mut transform = Transform::from_xyz(coord.x as f32, coord.y as f32, 0.);
-                    transform.scale = (coord.x as f32, coord.y as f32, 1.).into();
+                    transform.translation = (coord.x as f32, coord.y as f32, 1.).into();
                     spawn_sprite_bundle(asset_server, transform, commands, layer.id);
                 }
             }
@@ -71,10 +71,6 @@ fn spawn_sprite_bundle(
     let bundle = SpriteBundle {
         texture: asset_server.load("circle.png"),
         transform,
-        sprite: Sprite {
-            custom_size: Some((0.001, 0.001).into()),
-            ..Default::default()
-        },
         ..Default::default()
     };
     commands.spawn_bundle(bundle).insert(layer_id);

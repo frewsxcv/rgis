@@ -1,4 +1,4 @@
-use bevy::{prelude::*, render::camera};
+use bevy::prelude::*;
 
 use crate::tasks::MeshBuildingTask;
 
@@ -179,7 +179,7 @@ fn handle_camera_scale_changed_event(
         let (scale, _, _) = camera_global_transform.to_scale_rotation_translation();
 
         for mut sprite in &mut sprite_bundle_query {
-            sprite.custom_size = Some(scale.truncate() / 1000000.);
+            sprite.custom_size = Some(scale.truncate() * 5.);
         }
     }
 }

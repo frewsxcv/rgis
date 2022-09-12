@@ -1,5 +1,4 @@
 use crate::Vertex;
-use bevy_render::prelude::*;
 use std::num;
 
 pub struct PointMeshBuilder {
