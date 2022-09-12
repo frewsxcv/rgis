@@ -174,10 +174,6 @@ fn handle_camera_scale_changed_event(
     if let Ok(camera_global_transform) = query.get_single() {
         let (scale, _, _) = camera_global_transform.to_scale_rotation_translation();
 
-        println!(
-            "camera global transform scale: {:?}",
-            scale.truncate() / 1000000.
-        );
         for mut sprite in &mut sprite_bundle_query {
             sprite.custom_size = Some(scale.truncate() / 1000000.);
         }
