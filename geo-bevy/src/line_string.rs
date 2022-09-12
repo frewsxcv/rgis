@@ -38,7 +38,7 @@ impl LineStringMeshBuilder {
         if self.vertices.is_empty() {
             None
         } else {
-            Some(crate::PreparedMesh {
+            Some(crate::PreparedMesh::PolygonAndLineString {
                 mesh: crate::build_mesh_from_vertices(
                     bevy_render::render_resource::PrimitiveTopology::LineList,
                     self.vertices,

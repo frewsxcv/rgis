@@ -1,4 +1,5 @@
 use crate::Vertex;
+use bevy_render::prelude::*;
 use std::num;
 
 pub struct PointMeshBuilder {
@@ -23,18 +24,21 @@ impl PointMeshBuilder {
         Ok(())
     }
 
-    pub fn build(self, color: bevy_render::color::Color) -> Option<crate::PreparedMesh> {
+    pub fn build(self) -> Option<crate::PreparedMesh> {
         if self.vertices.is_empty() {
             None
         } else {
-            Some(crate::PreparedMesh {
-                mesh: crate::build_mesh_from_vertices(
-                    bevy_render::render_resource::PrimitiveTopology::PointList,
-                    self.vertices,
-                    self.indices,
-                ),
-                color,
-            })
+            let mut mesh: Mesh = shape::Box::new(1.0, 1.0, 0.0).into();
+            let num_vertices = self.vertices.len();
+            mesh.set_indices(Some(bevy_render::mesh::Indices::U32(self.indices)));
+            mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, self.vertices);
+            let normals = vec![[0.0, 0.0, 0.0]; num_vertices];
+            let uvs = vec![[0.0, 0.0]; num_vertices];
+
+            mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, normals);
+            mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
+
+            Some(crate::PreparedMesh::Point { mesh })
         }
     }
 }

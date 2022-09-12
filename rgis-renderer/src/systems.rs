@@ -52,6 +52,7 @@ fn handle_mesh_building_task_outcome(
     layers: Res<rgis_layers::Layers>,
     mut meshes_spawned_event_writer: EventWriter<rgis_events::MeshesSpawnedEvent>,
     mut finished_tasks: bevy_jobs::FinishedJobs,
+    asset_server: Res<AssetServer>,
 ) {
     while let Some(outcome) = finished_tasks.take_next::<MeshBuildingTask>() {
         let (meshes, layer_id) = skip_err!(outcome, "Encountered error when spawning mesh: {}");
@@ -61,11 +62,12 @@ fn handle_mesh_building_task_outcome(
         crate::spawn_geometry_meshes(
             meshes,
             &mut materials,
-            layer.id,
+            layer,
             &mut commands,
             &mut assets_meshes,
             z_index,
             layer.visible,
+            &asset_server,
         );
 
         meshes_spawned_event_writer.send(layer_id.into());
