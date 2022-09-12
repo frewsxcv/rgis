@@ -35,13 +35,13 @@ pub enum LoadGeoJsonError {
     JsonNumberToFloat(#[from] JsonNumberToFloatError),
 }
 
-fn attempt_to_load_with_feature_iterator<R: io::Read>(
-    iter: iter::Peekable<geojson::FeatureIterator<R>>,
+fn attempt_to_load_with_feature_iterator(
+    iter: iter::Peekable<impl Iterator<Item = geojson::Result<geojson::Feature>>>,
 ) -> Result<geo_features::FeatureCollection, LoadGeoJsonError> {
     let tl = time_logger::start!("Parsing file and converting to geo-types");
     let mut features: Vec<geo_features::Feature> = vec![];
     for feature_result in iter {
-        let feature = feature_result?;
+        let feature = feature_result.map_err(Box::new)?;
         features.push(geojson_feature_to_geo_feature(feature)?);
     }
     tl.finish();
@@ -51,13 +51,17 @@ fn attempt_to_load_with_feature_iterator<R: io::Read>(
 fn load_from_reader<R: io::Read + io::Seek>(
     mut reader: R,
 ) -> Result<geo_features::FeatureCollection, LoadGeoJsonError> {
-    let mut iter = geojson::FeatureIterator::new(&mut reader).peekable();
+    {
+        let mut iter = geojson::FeatureReader::from_reader(&mut reader)
+            .features()
+            .peekable();
 
-    if iter.peek().is_some() {
-        if let Ok(feature_collection) = attempt_to_load_with_feature_iterator(iter) {
-            return Ok(feature_collection);
-        } else {
-            reader.rewind()?;
+        if iter.peek().is_some() {
+            if let Ok(feature_collection) = attempt_to_load_with_feature_iterator(iter) {
+                return Ok(feature_collection);
+            } else {
+                reader.rewind()?;
+            }
         }
     }
 
