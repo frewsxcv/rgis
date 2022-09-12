@@ -34,7 +34,7 @@ fn spawn_geometry_meshes(
             geo_bevy::PreparedMesh::Point(points) => {
                 for geo::Point(coord) in points {
                     let mut transform = Transform::from_xyz(coord.x as f32, coord.y as f32, 0.);
-                    transform.translation = (coord.x as f32, coord.y as f32, 1.).into();
+                    transform.translation = (coord.x as f32, coord.y as f32, z_index as f32).into();
                     spawn_sprite_bundle(asset_server, transform, commands, layer.id);
                 }
             }
