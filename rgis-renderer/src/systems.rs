@@ -161,14 +161,18 @@ fn handle_crs_changed_events(
     }
 }
 
+type CameraGlobalTransformQuery<'world, 'state, 'a> = Query<
+    'world,
+    'state,
+    &'a bevy::transform::components::GlobalTransform,
+    (
+        bevy::ecs::query::With<bevy::render::camera::Camera>,
+        bevy::ecs::query::Changed<bevy::transform::components::GlobalTransform>,
+    ),
+>;
+
 fn handle_camera_scale_changed_event(
-    mut query: Query<
-        &bevy::transform::components::GlobalTransform,
-        (
-            bevy::ecs::query::With<bevy::render::camera::Camera>,
-            bevy::ecs::query::Changed<bevy::transform::components::GlobalTransform>,
-        ),
-    >,
+    query: CameraGlobalTransformQuery,
     mut sprite_bundle_query: Query<&mut Sprite>,
 ) {
     if let Ok(camera_global_transform) = query.get_single() {
