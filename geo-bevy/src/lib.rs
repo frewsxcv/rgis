@@ -14,7 +14,7 @@ mod point;
 
 pub enum PreparedMesh {
     PolygonAndLineString { mesh: Mesh, color: Color },
-    Point,
+    Point(Vec<geo::Point>),
 }
 
 type Vertex = [f32; 3]; // [x, y, z]

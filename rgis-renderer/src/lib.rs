@@ -31,16 +31,8 @@ fn spawn_geometry_meshes(
 ) {
     for prepared_mesh in prepared_meshes {
         match prepared_mesh {
-            geo_bevy::PreparedMesh::Point => {
-                use geo::algorithm::coords_iter::CoordsIter;
-                // TODO: below is inefficient
-                for coord in layer
-                    .projected_feature_collection
-                    .as_ref()
-                    .unwrap()
-                    .to_geometry_collection()
-                    .coords_iter()
-                {
+            geo_bevy::PreparedMesh::Point(points) => {
+                for geo::Point(coord) in points {
                     let mut transform = Transform::from_xyz(coord.x as f32, coord.y as f32, 0.);
                     transform.translation = (coord.x as f32, coord.y as f32, 1.).into();
                     spawn_sprite_bundle(asset_server, transform, commands, layer.id);
