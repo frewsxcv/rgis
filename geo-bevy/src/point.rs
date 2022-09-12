@@ -28,17 +28,7 @@ impl PointMeshBuilder {
         if self.vertices.is_empty() {
             None
         } else {
-            let mut mesh: Mesh = shape::Box::new(1.0, 1.0, 0.0).into();
-            let num_vertices = self.vertices.len();
-            mesh.set_indices(Some(bevy_render::mesh::Indices::U32(self.indices)));
-            mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, self.vertices);
-            let normals = vec![[0.0, 0.0, 0.0]; num_vertices];
-            let uvs = vec![[0.0, 0.0]; num_vertices];
-
-            mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, normals);
-            mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
-
-            Some(crate::PreparedMesh::Point { mesh })
+            Some(crate::PreparedMesh::Point)
         }
     }
 }

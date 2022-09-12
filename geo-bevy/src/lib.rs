@@ -17,9 +17,7 @@ pub enum PreparedMesh {
         mesh: Mesh,
         color: Color,
     },
-    Point {
-        mesh: Mesh,
-    },
+    Point,
 }
 
 type Vertex = [f32; 3]; // [x, y, z]

@@ -31,9 +31,8 @@ fn spawn_geometry_meshes(
 ) {
     for prepared_mesh in prepared_meshes {
         match prepared_mesh {
-            geo_bevy::PreparedMesh::Point { mesh } => {
+            geo_bevy::PreparedMesh::Point => {
                 use geo::algorithm::coords_iter::CoordsIter;
-                let image_handle = asset_server.load("circle.png");
                 // TODO: below is inefficient
                 for coord in layer
                     .projected_feature_collection
@@ -43,13 +42,8 @@ fn spawn_geometry_meshes(
                     .coords_iter()
                 {
                     let mut transform = Transform::from_xyz(coord.x as f32, coord.y as f32, 0.);
-                    transform.scale = (1., 1., 1.).into();
-                    let bundle = SpriteBundle {
-                        texture: image_handle.clone(),
-                        transform: transform,
-                        ..Default::default()
-                    };
-                    commands.spawn_bundle(bundle).insert(layer.id);
+                    transform.scale = (coord.x as f32, coord.y as f32, 1.).into();
+                    spawn_sprite_bundle(asset_server, transform, commands, layer.id);
                 }
             }
             geo_bevy::PreparedMesh::PolygonAndLineString { mesh, color } => {
@@ -69,22 +63,18 @@ fn spawn_geometry_meshes(
 }
 
 fn spawn_sprite_bundle(
-    mesh: Mesh,
-    material: Handle<ColorMaterial>,
-    meshes: &mut Assets<Mesh>,
+    asset_server: &AssetServer,
+    transform: Transform,
     commands: &mut Commands,
     layer_id: rgis_layer_id::LayerId,
 ) {
     let bundle = SpriteBundle {
-        // mesh: meshes.add(mesh),
-        // material: materials.add(Color::PINK.into()),
-        // sprite: Sprite::new(Vec2::new(
-        //     2.0 * BLOCK_SIZE,
-        //     2.0 * BLOCK_SIZE,
-        // )),
-        // transform: Transform::from_translation(
-        //     Vec3::new(0.0, 0.0, 0.0),
-        // ),
+        texture: asset_server.load("circle.png"),
+        transform,
+        sprite: Sprite {
+            custom_size: Some((0.001, 0.001).into()),
+            ..Default::default()
+        },
         ..Default::default()
     };
     commands.spawn_bundle(bundle).insert(layer_id);
