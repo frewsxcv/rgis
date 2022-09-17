@@ -155,6 +155,27 @@ impl FeatureCollection {
         self.bounding_rect = bounding_rect_from_features(&self.features);
         Ok(())
     }
+
+    pub fn remove_outliers(&self) -> Result<geo::MultiPoint, ()> {
+        use geo::OutlierDetection;
+
+        let mut non_outliers = vec![];
+
+        for geometry in self.features.iter().map(|f| f.geometry.as_ref()) {
+            let multi_point = match geometry {
+                Some(geo::Geometry::MultiPoint(n)) => n,
+                _ => continue,
+            };
+
+            for (outlier_score, coord) in multi_point.outliers(15).iter().zip(multi_point.0.iter()) {
+                if *outlier_score < 2. {
+                    non_outliers.push(coord.clone());
+                }
+            }
+        }
+
+        Ok(geo::MultiPoint::new(non_outliers))
+    }
 }
 
 fn bounding_rect_from_features(features: &[Feature]) -> Option<geo::Rect> {

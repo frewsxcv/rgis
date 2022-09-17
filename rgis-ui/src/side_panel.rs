@@ -134,6 +134,26 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
                         }
                     }
 
+                    // TODO: only enable this button for multipoint
+                    if ui.button("⚙ Remove outliers").clicked() {
+                        if let Ok(new_multi_point) =
+                            layer.unprojected_feature_collection.remove_outliers()
+                        {
+                            self.events.create_layer_event_writer.send(
+                                rgis_events::CreateLayerEvent {
+                                    unprojected_geometry:
+                                        geo_features::FeatureCollection::from_geometry(
+                                            new_multi_point.into(),
+                                        )
+                                        .unwrap(),
+                                    name: "No outliers".into(), // todo
+                                    source_crs: layer.crs.clone(),
+                                },
+                                // TODO: Need to repaint after this is done
+                            );
+                        }
+                    }
+
                     if ui.button("⚙ Generate convex hull").clicked() {
                         let hull = layer.unprojected_feature_collection.convex_hull();
                         if let Ok(feature_collection) =

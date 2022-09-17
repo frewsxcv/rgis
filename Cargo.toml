@@ -23,3 +23,6 @@ resolver = "2"
 
 [profile.release]
 debug = true
+
+[patch.crates-io]
+geo = { git = 'https://github.com/urschrei/geo', branch = "lof" }
