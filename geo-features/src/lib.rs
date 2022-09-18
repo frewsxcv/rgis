@@ -167,7 +167,7 @@ impl FeatureCollection {
             for (outlier_score, coord) in multi_point.outliers(15).iter().zip(multi_point.0.iter())
             {
                 if *outlier_score < 2. {
-                    non_outliers.push(coord.clone());
+                    non_outliers.push(*coord);
                 }
             }
         }

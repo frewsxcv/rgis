@@ -1,4 +1,3 @@
-use crate::Vertex;
 use std::num;
 
 pub struct PointMeshBuilder {

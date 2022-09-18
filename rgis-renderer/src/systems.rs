@@ -93,13 +93,15 @@ fn handle_layer_z_index_updated_event(
     }
 }
 
+type LayerEntitiesWithColorMaterialsOrImagesQuery<'world, 'state, 'a> = Query<'world, 'state, 
+    (&'a rgis_layer_id::LayerId, Entity),
+    Or<(With<Handle<ColorMaterial>>, With<Handle<Image>>)>,
+>;
+
 fn handle_layer_deleted_events(
     mut layer_deleted_event_reader: bevy::ecs::event::EventReader<rgis_events::LayerDeletedEvent>,
     mut commands: Commands,
-    query: Query<
-        (&rgis_layer_id::LayerId, Entity),
-        Or<(With<Handle<ColorMaterial>>, With<Handle<Image>>)>,
-    >,
+    query: LayerEntitiesWithColorMaterialsOrImagesQuery,
 ) {
     for event in layer_deleted_event_reader.iter() {
         for (_, entity) in query.iter().filter(|(i, _)| **i == event.0) {
