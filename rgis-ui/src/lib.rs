@@ -55,6 +55,8 @@ impl bevy::app::Plugin for Plugin {
             .insert_resource(BottomPanelHeight(0.))
             .insert_resource(SidePanelWidth(0.));
 
+        app.add_startup_system_set(systems::startup_system_set());
+
         for system_set in systems::system_sets() {
             app.add_system_set(system_set);
         }

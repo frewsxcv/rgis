@@ -206,6 +206,32 @@ fn render_top_panel(
     .render();
 }
 
+fn set_egui_theme(
+    mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
+    mut clear_color: ResMut<ClearColor>,
+) {
+    let egui_visuals = match dark_light::detect() {
+        dark_light::Mode::Dark => egui::Visuals::dark(),
+        dark_light::Mode::Light => egui::Visuals::light(),
+    };
+    // Set the background color of the map
+    clear_color.0 = egui_color_to_bevy_color(egui_visuals.extreme_bg_color);
+    // Set the egui theme
+    bevy_egui_ctx.ctx_mut().set_visuals(egui_visuals);
+}
+
+fn egui_color_to_bevy_color(egui_color: bevy_egui::egui::Color32) -> bevy::render::color::Color {
+    bevy::render::color::Color::rgb_u8(
+        egui_color.r(),
+        egui_color.g(),
+        egui_color.b(),
+    )
+}
+
+pub fn startup_system_set() -> SystemSet {
+    SystemSet::new().with_system(set_egui_theme)
+}
+
 pub fn system_sets() -> [SystemSet; 2] {
     [
         SystemSet::new()
