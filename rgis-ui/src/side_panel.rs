@@ -137,32 +137,35 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
                         }
                     }
 
-                    /*
-                    let operations: Vec<Box<dyn rgis_geo_ops::Operation>> = vec![
-                        Box::new(rgis_geo_ops::ConvexHull),
-                        Box::new(rgis_geo_ops::Outliers),
-                    ];
-                    for operation in operations {
+                    fn display_operation(
+                        events: &mut Events,
+                        layer: &rgis_layers::Layer,
+                        operation: impl rgis_geo_ops::Operation,
+                        ui: &mut egui::Ui,
+                    ) {
                         // TODO: disable button if geometry isn't allowed
+                        let operation_name = operation.name().to_owned();
                         if ui.button(format!("⚙ {}", operation.name())).clicked() {
-                            let outcome = operation.perform(layer.unprojected_feature_collection.clone()); // TODO: clone?
+                            let outcome =
+                                operation.perform(layer.unprojected_feature_collection.clone()); // TODO: clone?
 
-                            if let Some(rgis_geo_ops::Outcome::Feature(new)) = outcome {
-                                self.events.create_layer_event_writer.send(
+                            if let Some(feature_collection) = outcome {
+                                events.create_layer_event_writer.send(
                                     rgis_events::CreateLayerEvent {
-                                        unprojected_geometry:
-                                            geo_features::FeatureCollection::from_feature(
-                                                new,
-                                            ),
-                                        name: "No outliers".into(), // todo
+                                        unprojected_geometry: feature_collection,
+                                        name: operation_name,
                                         source_crs: layer.crs.clone(),
                                     },
                                 );
                             }
                         }
                     }
-                    */
 
+                    display_operation(self.events, layer, rgis_geo_ops::ConvexHull::default(), ui);
+                    display_operation(self.events, layer, rgis_geo_ops::Outliers::default(), ui);
+
+
+                    /*
                     // TODO: only enable this button for multipoint
                     if ui.button("⚙ Remove outliers").clicked() {
                         if let Ok(new_multi_point) =
@@ -197,6 +200,7 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
                             );
                         }
                     }
+                    */
 
                     if ui.button("❌ Remove").clicked() {
                         self.delete_layer(layer);

@@ -6,7 +6,7 @@
     clippy::expect_used
 )]
 
-use geo::{BoundingRect, Contains, ConvexHull};
+use geo::{BoundingRect, Contains};
 use std::{collections, fmt};
 
 #[derive(Default)]
@@ -139,40 +139,9 @@ impl FeatureCollection {
         )
     }
 
-    pub fn convex_hull(&self) -> geo::Polygon {
-        self.to_geometry_collection().convex_hull()
-        // let mut hulls = vec![];
-        // for feature in &self.features {
-        //     hulls.push(feature.geometry.as_ref().unwrap().convex_hull());
-        // }
-        // geo::MultiPolygon::new(hulls)
-    }
-
     pub fn recalculate_bounding_rect(&mut self) -> Result<(), BoundingRectError> {
         self.bounding_rect = bounding_rect_from_features(&self.features);
         Ok(())
-    }
-
-    pub fn remove_outliers(&self) -> Result<geo::MultiPoint, ()> {
-        use geo::OutlierDetection;
-
-        let mut non_outliers = vec![];
-
-        for geometry in self.features.iter().map(|f| f.geometry.as_ref()) {
-            let multi_point = match geometry {
-                Some(geo::Geometry::MultiPoint(n)) => n,
-                _ => continue,
-            };
-
-            for (outlier_score, coord) in multi_point.outliers(15).iter().zip(multi_point.0.iter())
-            {
-                if *outlier_score < 2. {
-                    non_outliers.push(*coord);
-                }
-            }
-        }
-
-        Ok(geo::MultiPoint::new(non_outliers))
     }
 }
 
