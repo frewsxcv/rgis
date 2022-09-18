@@ -3466,6 +3466,7 @@ dependencies = [
  "geo-file-loader",
  "rfd",
  "rgis-events",
+ "rgis-geo-ops",
  "rgis-layer-id",
  "rgis-layers",
  "rgis-library",

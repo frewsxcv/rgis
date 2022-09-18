@@ -7,6 +7,7 @@ members = [
     "rgis-cli",
     "rgis-events",
     "rgis-file-loader",
+    "rgis-geo-ops",
     "rgis-keyboard",
     "rgis-layer-id",
     "rgis-layers",

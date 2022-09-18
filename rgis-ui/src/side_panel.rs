@@ -137,7 +137,32 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
                         }
                     }
 
+                    let operations: Vec<Box<dyn rgis_geo_ops::Operation>> = vec![
+                        Box::new(rgis_geo_ops::ConvexHull),
+                        Box::new(rgis_geo_ops::Outliers),
+                    ];
+                    for operation in operations {
+                        // TODO: disable button if geometry isn't allowed
+                        if ui.button(format!("⚙ {}", operation.name())).clicked() {
+                            let outcome = operation.perform(layer.unprojected_feature_collection.clone()); // TODO: clone?
+
+                            if let Some(rgis_geo_ops::Outcome::Feature(new)) = outcome {
+                                self.events.create_layer_event_writer.send(
+                                    rgis_events::CreateLayerEvent {
+                                        unprojected_geometry:
+                                            geo_features::FeatureCollection::from_feature(
+                                                new,
+                                            ),
+                                        name: "No outliers".into(), // todo
+                                        source_crs: layer.crs.clone(),
+                                    },
+                                );
+                            }
+                        }
+                    }
+
                     // TODO: only enable this button for multipoint
+                    /*
                     if ui.button("⚙ Remove outliers").clicked() {
                         if let Ok(new_multi_point) =
                             layer.unprojected_feature_collection.remove_outliers()
@@ -171,6 +196,7 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
                             );
                         }
                     }
+                    */
 
                     if ui.button("❌ Remove").clicked() {
                         self.delete_layer(layer);
