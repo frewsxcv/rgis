@@ -1861,7 +1861,7 @@ dependencies = [
 [[package]]
 name = "geo"
 version = "0.23.0"
-source = "git+https://github.com/urschrei/geo?branch=lof#a97861d3fd255d33e519eb7b37c8705fb5a61268"
+source = "git+https://github.com/georust/geo#8ee3a0a838b67e8e78409b78f2aada06231dc89c"
 dependencies = [
  "float_next_after",
  "geo-types",
