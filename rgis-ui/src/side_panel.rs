@@ -137,6 +137,7 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
                         }
                     }
 
+                    /*
                     let operations: Vec<Box<dyn rgis_geo_ops::Operation>> = vec![
                         Box::new(rgis_geo_ops::ConvexHull),
                         Box::new(rgis_geo_ops::Outliers),
@@ -160,9 +161,9 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
                             }
                         }
                     }
+                    */
 
                     // TODO: only enable this button for multipoint
-                    /*
                     if ui.button("⚙ Remove outliers").clicked() {
                         if let Ok(new_multi_point) =
                             layer.unprojected_feature_collection.remove_outliers()
@@ -196,7 +197,6 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
                             );
                         }
                     }
-                    */
 
                     if ui.button("❌ Remove").clicked() {
                         self.delete_layer(layer);
