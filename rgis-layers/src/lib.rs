@@ -199,6 +199,23 @@ pub struct Layer {
     pub crs: String,
 }
 
+#[derive(Debug)]
+pub enum GeomType {
+    Empty,
+    Point,
+    Line,
+    LineString,
+    Polygon,
+    MultiPoint,
+    MultiLineString,
+    MultiPolygon,
+    Triangle,
+    Rect,
+    GeometryCollection,
+    // TODO: this shouldn't exist
+    Mixed,
+}
+
 impl Layer {
     #[inline]
     pub fn get_projected_feature_or_log(&self) -> Option<&geo_features::FeatureCollection> {
@@ -212,6 +229,42 @@ impl Layer {
                 None
             }
         }
+    }
+
+    pub fn geom_type(&self) -> GeomType {
+        if self
+            .unprojected_feature_collection
+            .geometry_iter()
+            .next()
+            .is_none()
+        {
+            return GeomType::Empty;
+        }
+
+        macro_rules! geom_type_impl {
+            ($geom_type:ident) => {
+                if self
+                    .unprojected_feature_collection
+                    .geometry_iter()
+                    .all(|g| matches!(g, ::geo::Geometry::$geom_type(_)))
+                {
+                    return GeomType::$geom_type;
+                }
+            };
+        }
+
+        geom_type_impl!(Point);
+        geom_type_impl!(Line);
+        geom_type_impl!(LineString);
+        geom_type_impl!(Polygon);
+        geom_type_impl!(MultiPoint);
+        geom_type_impl!(MultiLineString);
+        geom_type_impl!(MultiPolygon);
+        geom_type_impl!(Triangle);
+        geom_type_impl!(Rect);
+        geom_type_impl!(GeometryCollection);
+
+        GeomType::Mixed
     }
 }
 

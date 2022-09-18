@@ -124,20 +124,17 @@ impl FeatureCollection {
         }
     }
 
+    pub fn geometry_iter(&self) -> impl Iterator<Item = &geo::Geometry> {
+        self.features.iter().filter_map(|f| f.geometry.as_ref())
+    }
+
     pub fn to_geometry_collection(&self) -> geo::GeometryCollection {
-        geo::GeometryCollection(
-            self.features
-                .iter()
-                .filter_map(|f| f.geometry.clone())
-                .collect::<Vec<_>>(),
-        )
+        geo::GeometryCollection(self.geometry_iter().cloned().collect())
     }
 
     pub fn bounding_rect(&self) -> Result<geo::Rect, BoundingRectError> {
         rect_merge_many(
-            self.features
-                .iter()
-                .filter_map(|feature| feature.geometry.as_ref())
+            self.geometry_iter()
                 .filter_map(|geometry| geometry.bounding_rect()),
         )
     }
@@ -167,7 +164,8 @@ impl FeatureCollection {
                 _ => continue,
             };
 
-            for (outlier_score, coord) in multi_point.outliers(15).iter().zip(multi_point.0.iter()) {
+            for (outlier_score, coord) in multi_point.outliers(15).iter().zip(multi_point.0.iter())
+            {
                 if *outlier_score < 2. {
                     non_outliers.push(coord.clone());
                 }

@@ -73,6 +73,9 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
             egui::CollapsingHeader::new(layer.name.to_owned())
                 .id_source(layer.id) // Instead of using the layer name as the ID (which is not unique), use the layer ID
                 .show(ui, |ui| {
+                    // TODO: `geom_type` shouldn't be recalculatd every frame
+                    ui.label(format!("Type: {:?}", layer.geom_type()));
+
                     if ui.button("✏ Manage").clicked() {
                         self.manage_layer_window_state.is_visible = true;
                         self.manage_layer_window_state.layer_id = Some(layer.id);
