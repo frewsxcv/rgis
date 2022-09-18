@@ -407,9 +407,9 @@ dependencies = [
 
 [[package]]
 name = "bevy_egui"
-version = "0.16.0"
+version = "0.16.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e92efd442c1c99edb841c21b51248e0b472d9fc92ecd8124bc7bcfb5346760e9"
+checksum = "d365761fd6a5c227b1f88f38b560287334accb69cfe938443e27615464edc897"
 dependencies = [
  "arboard",
  "bevy",
@@ -830,7 +830,7 @@ dependencies = [
  "cexpr",
  "clang-sys",
  "clap 2.34.0",
- "env_logger 0.9.0",
+ "env_logger 0.9.1",
  "lazy_static",
  "lazycell",
  "log",
@@ -1484,9 +1484,9 @@ dependencies = [
 
 [[package]]
 name = "env_logger"
-version = "0.9.0"
+version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0b2cf0344971ee6c64c31be0d530793fba457d322dfec2810c453d0ef228f9c3"
+checksum = "c90bf5f19754d10198ccb95b70664fc925bd1fc090a0fd9a6ebc54acc8cd6272"
 dependencies = [
  "atty",
  "humantime",
@@ -1689,7 +1689,7 @@ dependencies = [
 [[package]]
 name = "geo"
 version = "0.23.0"
-source = "git+https://github.com/urschrei/geo?branch=lof#0db52630bb358df25f2e29cb06ded60f45e39d58"
+source = "git+https://github.com/urschrei/geo?branch=lof#a97861d3fd255d33e519eb7b37c8705fb5a61268"
 dependencies = [
  "float_next_after",
  "geo-types",
