@@ -79,7 +79,7 @@ pub struct ConvexHull {
 }
 
 impl Operation for ConvexHull {
-    const ALLOWED_GEOM_TYPES: geo_geom_type::GeomType = geo_geom_type::GeomType::ALL;
+    const ALLOWED_GEOM_TYPES: geo_geom_type::GeomType = geo_geom_type::GeomType::all();
 
     fn name(&self) -> &'static str {
         "Convex hull"

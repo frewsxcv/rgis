@@ -8,7 +8,6 @@
 
 bitflags::bitflags! {
     pub struct GeomType: u16 {
-        const EMPTY             = 0b000000000;
         const POINT             = 0b000000001;
         const LINE              = 0b000000010;
         const LINE_STRING       = 0b000000100;
@@ -18,21 +17,11 @@ bitflags::bitflags! {
         const MULTI_POLYGON     = 0b001000000;
         const RECT              = 0b010000000;
         const TRIANGLE          = 0b100000000;
-        const ALL =
-            Self::POINT.bits |
-            Self::LINE.bits |
-            Self::LINE_STRING.bits |
-            Self::POLYGON.bits |
-            Self::MULTI_POINT.bits |
-            Self::MULTI_LINE_STRING.bits |
-            Self::MULTI_POLYGON.bits |
-            Self::RECT.bits |
-            Self::TRIANGLE.bits;
     }
 }
 
 pub fn determine<'a>(geometries: impl IntoIterator<Item = &'a geo::Geometry>) -> GeomType {
-    geometries.into_iter().fold(GeomType::EMPTY, |acc, next| {
+    geometries.into_iter().fold(GeomType::empty(), |acc, next| {
         acc | match next {
             geo::Geometry::Point(_) => GeomType::POINT,
             geo::Geometry::Line(_) => GeomType::LINE,
