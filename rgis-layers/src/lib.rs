@@ -215,11 +215,7 @@ impl Layer {
     }
 
     pub fn geom_type(&self) -> geo_geom_type::GeomType {
-        geo_geom_type::determine(
-            self
-                .unprojected_feature_collection
-                .geometry_iter()
-        )
+        geo_geom_type::determine(self.unprojected_feature_collection.geometry_iter())
     }
 }
 

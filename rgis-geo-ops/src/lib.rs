@@ -106,11 +106,9 @@ pub struct Outliers {
 }
 
 impl Operation for Outliers {
-    const ALLOWED_GEOM_TYPES: geo_geom_type::GeomType =
-        geo_geom_type::GeomType::from_bits_truncate(
-            geo_geom_type::GeomType::POINT.bits() |
-            geo_geom_type::GeomType::MULTI_POINT.bits()
-        );
+    const ALLOWED_GEOM_TYPES: geo_geom_type::GeomType = geo_geom_type::GeomType::from_bits_truncate(
+        geo_geom_type::GeomType::POINT.bits() | geo_geom_type::GeomType::MULTI_POINT.bits(),
+    );
 
     fn name(&self) -> &'static str {
         "Detect outliers"

@@ -93,7 +93,9 @@ fn handle_layer_z_index_updated_event(
     }
 }
 
-type LayerEntitiesWithColorMaterialsOrImagesQuery<'world, 'state, 'a> = Query<'world, 'state, 
+type LayerEntitiesWithColorMaterialsOrImagesQuery<'world, 'state, 'a> = Query<
+    'world,
+    'state,
     (&'a rgis_layer_id::LayerId, Entity),
     Or<(With<Handle<ColorMaterial>>, With<Handle<Image>>)>,
 >;

@@ -221,11 +221,7 @@ fn set_egui_theme(
 }
 
 fn egui_color_to_bevy_color(egui_color: bevy_egui::egui::Color32) -> bevy::render::color::Color {
-    bevy::render::color::Color::rgb_u8(
-        egui_color.r(),
-        egui_color.g(),
-        egui_color.b(),
-    )
+    bevy::render::color::Color::rgb_u8(egui_color.r(), egui_color.g(), egui_color.b())
 }
 
 pub fn startup_system_set() -> SystemSet {
