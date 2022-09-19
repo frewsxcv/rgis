@@ -1237,8 +1237,8 @@
 /******/ 					"__wbindgen_closure_wrapper475": function(p0i32,p1i32,p2i32) {
 /******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_closure_wrapper475"](p0i32,p1i32,p2i32);
 /******/ 					},
-/******/ 					"__wbindgen_closure_wrapper1226": function(p0i32,p1i32,p2i32) {
-/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_closure_wrapper1226"](p0i32,p1i32,p2i32);
+/******/ 					"__wbindgen_closure_wrapper1101": function(p0i32,p1i32,p2i32) {
+/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_closure_wrapper1101"](p0i32,p1i32,p2i32);
 /******/ 					},
 /******/ 					"__wbindgen_closure_wrapper1474": function(p0i32,p1i32,p2i32) {
 /******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_closure_wrapper1474"](p0i32,p1i32,p2i32);
@@ -1377,7 +1377,7 @@
 /******/ 				promises.push(installedWasmModuleData);
 /******/ 			else {
 /******/ 				var importObject = wasmImportObjects[wasmModuleId]();
-/******/ 				var req = fetch(__webpack_require__.p + "" + {"../rgis/pkg/rgis_bg.wasm":"be137b2680ed1aadad2c"}[wasmModuleId] + ".module.wasm");
+/******/ 				var req = fetch(__webpack_require__.p + "" + {"../rgis/pkg/rgis_bg.wasm":"cd64f92cf70d4ab281d3"}[wasmModuleId] + ".module.wasm");
 /******/ 				var promise;
 /******/ 				if(importObject instanceof Promise && typeof WebAssembly.compileStreaming === 'function') {
 /******/ 					promise = Promise.all([WebAssembly.compileStreaming(req), importObject]).then(function(items) {
