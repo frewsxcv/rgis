@@ -139,53 +139,47 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
                         }
                     }
 
-                    fn display_operation<Op: rgis_geo_ops::Operation>(
-                        events: &mut Events,
-                        layer: &rgis_layers::Layer,
-                        operation: Op,
-                        ui: &mut egui::Ui,
-                    ) {
-                        if ui
-                            .add_enabled(
-                                Op::ALLOWED_GEOM_TYPES.contains(layer.geom_type()),
-                                egui::Button::new(format!("⚙ {}", Op::NAME)),
-                            )
-                            .clicked()
-                        {
-                            let outcome =
-                                operation.perform(layer.unprojected_feature_collection.clone()); // TODO: clone?
-
-                            match outcome {
-                                rgis_geo_ops::Outcome::FeatureCollection(feature_collection) => {
-                                    events.create_layer_event_writer.send(
-                                        rgis_events::CreateLayerEvent {
-                                            unprojected_geometry: feature_collection,
-                                            name: Op::NAME.into(),
-                                            source_crs: layer.crs.clone(),
-                                        },
-                                    );
-                                }
-                                rgis_geo_ops::Outcome::Text(text) => events
-                                    .render_message_event_writer
-                                    .send(rgis_events::RenderMessageEvent(text)),
-                            }
-                        }
-                    }
-
-                    display_operation(self.events, layer, rgis_geo_ops::ConvexHull::default(), ui);
-                    display_operation(self.events, layer, rgis_geo_ops::Outliers::default(), ui);
-                    display_operation(
-                        self.events,
-                        layer,
-                        rgis_geo_ops::UnsignedArea::default(),
-                        ui,
-                    );
+                    self.display_operation::<rgis_geo_ops::ConvexHull>(layer, ui);
+                    self.display_operation::<rgis_geo_ops::Outliers>(layer, ui);
+                    self.display_operation::<rgis_geo_ops::UnsignedArea>(layer, ui);
 
                     if ui.button("❌ Remove").clicked() {
                         self.delete_layer(layer);
                     }
                 });
         });
+    }
+
+    fn display_operation<Op: rgis_geo_ops::Operation + Default>(
+        &mut self,
+        layer: &rgis_layers::Layer,
+        ui: &mut egui::Ui,
+    ) {
+        if ui
+            .add_enabled(
+                Op::ALLOWED_GEOM_TYPES.contains(layer.geom_type()),
+                egui::Button::new(format!("⚙ {}", Op::NAME)),
+            )
+            .clicked()
+        {
+            let outcome = Op::default().perform(layer.unprojected_feature_collection.clone()); // TODO: clone?
+
+            match outcome {
+                rgis_geo_ops::Outcome::FeatureCollection(feature_collection) => {
+                    self.events
+                        .create_layer_event_writer
+                        .send(rgis_events::CreateLayerEvent {
+                            unprojected_geometry: feature_collection,
+                            name: Op::NAME.into(),
+                            source_crs: layer.crs.clone(),
+                        });
+                }
+                rgis_geo_ops::Outcome::Text(text) => self
+                    .events
+                    .render_message_event_writer
+                    .send(rgis_events::RenderMessageEvent(text)),
+            }
+        }
     }
 
     fn toggle_layer_visibility(&mut self, layer: &rgis_layers::Layer) {
