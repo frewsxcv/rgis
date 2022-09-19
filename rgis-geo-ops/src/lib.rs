@@ -19,8 +19,7 @@ pub enum Outcome {
 
 pub trait Operation: Sized {
     const ALLOWED_GEOM_TYPES: geo_geom_type::GeomType;
-
-    fn name(&self) -> &'static str;
+    const NAME: &'static str;
 
     fn perform(
         mut self,

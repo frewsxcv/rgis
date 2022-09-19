@@ -8,9 +8,7 @@ pub struct ConvexHull {
 impl Operation for ConvexHull {
     const ALLOWED_GEOM_TYPES: geo_geom_type::GeomType = geo_geom_type::GeomType::all();
 
-    fn name(&self) -> &'static str {
-        "Convex hull"
-    }
+    const NAME: &'static str = "Convex hull";
 
     fn visit_geometry(&mut self, geometry: geo::Geometry) {
         self.geometries.push(geometry);

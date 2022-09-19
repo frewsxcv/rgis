@@ -10,9 +10,7 @@ impl Operation for Outliers {
         geo_geom_type::GeomType::POINT.bits() | geo_geom_type::GeomType::MULTI_POINT.bits(),
     );
 
-    fn name(&self) -> &'static str {
-        "Detect outliers"
-    }
+    const NAME: &'static str = "Detect outliers";
 
     fn visit_point(&mut self, point: geo::Point) {
         self.points.push(point);

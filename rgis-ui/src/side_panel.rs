@@ -143,11 +143,10 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
                         operation: Op,
                         ui: &mut egui::Ui,
                     ) {
-                        let operation_name = operation.name().to_owned();
                         if ui
                             .add_enabled(
                                 Op::ALLOWED_GEOM_TYPES.contains(layer.geom_type()),
-                                egui::Button::new(format!("⚙ {}", operation.name())),
+                                egui::Button::new(format!("⚙ {}", Op::NAME)),
                             )
                             .clicked()
                         {
@@ -158,7 +157,7 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
                                 events.create_layer_event_writer.send(
                                     rgis_events::CreateLayerEvent {
                                         unprojected_geometry: feature_collection,
-                                        name: operation_name,
+                                        name: Op::NAME.into(),
                                         source_crs: layer.crs.clone(),
                                     },
                                 );
