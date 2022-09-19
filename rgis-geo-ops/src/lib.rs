@@ -6,6 +6,9 @@
     clippy::expect_used
 )]
 
+mod unsigned_area;
+pub use unsigned_area::UnsignedArea;
+
 mod convex_hull;
 pub use convex_hull::ConvexHull;
 

@@ -174,6 +174,12 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
 
                     display_operation(self.events, layer, rgis_geo_ops::ConvexHull::default(), ui);
                     display_operation(self.events, layer, rgis_geo_ops::Outliers::default(), ui);
+                    display_operation(
+                        self.events,
+                        layer,
+                        rgis_geo_ops::UnsignedArea::default(),
+                        ui,
+                    );
 
                     if ui.button("❌ Remove").clicked() {
                         self.delete_layer(layer);
