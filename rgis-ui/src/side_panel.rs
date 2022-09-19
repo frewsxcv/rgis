@@ -137,15 +137,20 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
                         }
                     }
 
-                    fn display_operation(
+                    fn display_operation<Op: rgis_geo_ops::Operation>(
                         events: &mut Events,
                         layer: &rgis_layers::Layer,
-                        operation: impl rgis_geo_ops::Operation,
+                        operation: Op,
                         ui: &mut egui::Ui,
                     ) {
-                        // TODO: disable button if geometry isn't allowed
                         let operation_name = operation.name().to_owned();
-                        if ui.button(format!("⚙ {}", operation.name())).clicked() {
+                        if ui
+                            .add_enabled(
+                                Op::ALLOWED_GEOM_TYPES.contains(layer.geom_type()),
+                                egui::Button::new(format!("⚙ {}", operation.name())),
+                            )
+                            .clicked()
+                        {
                             let outcome =
                                 operation.perform(layer.unprojected_feature_collection.clone()); // TODO: clone?
 
@@ -163,44 +168,6 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
 
                     display_operation(self.events, layer, rgis_geo_ops::ConvexHull::default(), ui);
                     display_operation(self.events, layer, rgis_geo_ops::Outliers::default(), ui);
-
-
-                    /*
-                    // TODO: only enable this button for multipoint
-                    if ui.button("⚙ Remove outliers").clicked() {
-                        if let Ok(new_multi_point) =
-                            layer.unprojected_feature_collection.remove_outliers()
-                        {
-                            self.events.create_layer_event_writer.send(
-                                rgis_events::CreateLayerEvent {
-                                    unprojected_geometry:
-                                        geo_features::FeatureCollection::from_geometry(
-                                            new_multi_point.into(),
-                                        )
-                                        .unwrap(),
-                                    name: "No outliers".into(), // todo
-                                    source_crs: layer.crs.clone(),
-                                },
-                                // TODO: Need to repaint after this is done
-                            );
-                        }
-                    }
-
-                    if ui.button("⚙ Generate convex hull").clicked() {
-                        let hull = layer.unprojected_feature_collection.convex_hull();
-                        if let Ok(feature_collection) =
-                            geo_features::FeatureCollection::from_geometry(hull.into())
-                        {
-                            self.events.create_layer_event_writer.send(
-                                rgis_events::CreateLayerEvent {
-                                    unprojected_geometry: feature_collection, // todo
-                                    name: "Convex hull".into(),               // todo
-                                    source_crs: layer.crs.clone(),
-                                },
-                            );
-                        }
-                    }
-                    */
 
                     if ui.button("❌ Remove").clicked() {
                         self.delete_layer(layer);

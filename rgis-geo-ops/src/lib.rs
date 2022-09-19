@@ -12,9 +12,14 @@ pub enum Outcome {
 }
 
 pub trait Operation: Sized {
+    const ALLOWED_GEOM_TYPES: geo_geom_type::GeomType;
+
     fn name(&self) -> &'static str;
 
-    fn perform(mut self, feature_collection: geo_features::FeatureCollection) -> Option<geo_features::FeatureCollection> {
+    fn perform(
+        mut self,
+        feature_collection: geo_features::FeatureCollection,
+    ) -> Option<geo_features::FeatureCollection> {
         for feature in feature_collection.features {
             self.visit_feature(feature);
         }
@@ -34,8 +39,6 @@ pub trait Operation: Sized {
         }
     }
 
-    fn is_geometry_allowed(&self, geometry: geo::Geometry) -> bool;
-
     fn visit_geometry(&mut self, geometry: geo::Geometry) {
         match geometry {
             geo::Geometry::Point(g) => self.visit_point(g),
@@ -51,32 +54,23 @@ pub trait Operation: Sized {
         }
     }
 
-    fn visit_point(&mut self, _point: geo::Point) {
-    }
+    fn visit_point(&mut self, _point: geo::Point) {}
 
-    fn visit_line(&mut self, _line: geo::Line) {
-    }
+    fn visit_line(&mut self, _line: geo::Line) {}
 
-    fn visit_line_string(&mut self, _line_string: geo::LineString) {
-    }
+    fn visit_line_string(&mut self, _line_string: geo::LineString) {}
 
-    fn visit_polygon(&mut self, _polygon: geo::Polygon) {
-    }
+    fn visit_polygon(&mut self, _polygon: geo::Polygon) {}
 
-    fn visit_multi_point(&mut self, _multi_point: geo::MultiPoint) {
-    }
+    fn visit_multi_point(&mut self, _multi_point: geo::MultiPoint) {}
 
-    fn visit_multi_line_string(&mut self, _multi_line_string: geo::MultiLineString) {
-    }
+    fn visit_multi_line_string(&mut self, _multi_line_string: geo::MultiLineString) {}
 
-    fn visit_multi_polygon(&mut self, _multi_polygon: geo::MultiPolygon) {
-    }
+    fn visit_multi_polygon(&mut self, _multi_polygon: geo::MultiPolygon) {}
 
-    fn visit_rect(&mut self, _rect: geo::Rect) {
-    }
+    fn visit_rect(&mut self, _rect: geo::Rect) {}
 
-    fn visit_triangle(&mut self, _triagnle: geo::Triangle) {
-    }
+    fn visit_triangle(&mut self, _triagnle: geo::Triangle) {}
 }
 
 #[derive(Default)]
@@ -85,12 +79,10 @@ pub struct ConvexHull {
 }
 
 impl Operation for ConvexHull {
+    const ALLOWED_GEOM_TYPES: geo_geom_type::GeomType = geo_geom_type::GeomType::ALL;
+
     fn name(&self) -> &'static str {
         "Convex hull"
-    }
-
-    fn is_geometry_allowed(&self, _geometry: geo::Geometry) -> bool {
-        true
     }
 
     fn visit_geometry(&mut self, geometry: geo::Geometry) {
@@ -103,7 +95,7 @@ impl Operation for ConvexHull {
         let outcome = geo::GeometryCollection(self.geometries).convex_hull();
 
         Outcome::FeatureCollection(
-            geo_features::FeatureCollection::from_geometry(outcome.into()).unwrap()
+            geo_features::FeatureCollection::from_geometry(outcome.into()).unwrap(),
         )
     }
 }
@@ -114,12 +106,14 @@ pub struct Outliers {
 }
 
 impl Operation for Outliers {
+    const ALLOWED_GEOM_TYPES: geo_geom_type::GeomType =
+        geo_geom_type::GeomType::from_bits_truncate(
+            geo_geom_type::GeomType::POINT.bits() |
+            geo_geom_type::GeomType::MULTI_POINT.bits()
+        );
+
     fn name(&self) -> &'static str {
         "Detect outliers"
-    }
-
-    fn is_geometry_allowed(&self, geometry: geo::Geometry) -> bool {
-        matches!(geometry, geo::Geometry::MultiPoint(_))
     }
 
     fn visit_point(&mut self, point: geo::Point) {
@@ -137,8 +131,7 @@ impl Operation for Outliers {
 
         let multi_point = geo::MultiPoint(self.points);
 
-        for (outlier_score, coord) in multi_point.outliers(15).iter().zip(multi_point.0.iter())
-        {
+        for (outlier_score, coord) in multi_point.outliers(15).iter().zip(multi_point.0.iter()) {
             if *outlier_score < 2. {
                 non_outliers.push(*coord);
             }
@@ -147,7 +140,7 @@ impl Operation for Outliers {
         let new_multi_point = geo::MultiPoint::new(non_outliers);
 
         Outcome::FeatureCollection(
-            geo_features::FeatureCollection::from_geometry(new_multi_point.into()).unwrap()
+            geo_features::FeatureCollection::from_geometry(new_multi_point.into()).unwrap(),
         )
     }
 }

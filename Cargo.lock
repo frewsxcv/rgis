@@ -1904,6 +1904,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "geo-geom-type"
+version = "0.1.0"
+dependencies = [
+ "bitflags",
+ "geo",
+]
+
+[[package]]
 name = "geo-proj-js"
 version = "0.1.0"
 dependencies = [
@@ -3356,6 +3364,7 @@ version = "0.1.0"
 dependencies = [
  "geo",
  "geo-features",
+ "geo-geom-type",
 ]
 
 [[package]]
@@ -3381,6 +3390,7 @@ dependencies = [
  "colorous",
  "geo",
  "geo-features",
+ "geo-geom-type",
  "rgis-events",
  "rgis-layer-id",
  "serde_json",

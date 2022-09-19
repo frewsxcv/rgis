@@ -199,23 +199,6 @@ pub struct Layer {
     pub crs: String,
 }
 
-#[derive(Debug)]
-pub enum GeomType {
-    Empty,
-    Point,
-    Line,
-    LineString,
-    Polygon,
-    MultiPoint,
-    MultiLineString,
-    MultiPolygon,
-    Triangle,
-    Rect,
-    GeometryCollection,
-    // TODO: this shouldn't exist
-    Mixed,
-}
-
 impl Layer {
     #[inline]
     pub fn get_projected_feature_or_log(&self) -> Option<&geo_features::FeatureCollection> {
@@ -231,48 +214,12 @@ impl Layer {
         }
     }
 
-    pub fn geom_type(&self) -> GeomType {
-        if self
-            .unprojected_feature_collection
-            .geometry_iter()
-            .next()
-            .is_none()
-        {
-            return GeomType::Empty;
-        }
-
-        macro_rules! geom_type_impl {
-            ($geo_geometry_pattern:pat, $geom_variant:ident) => {
-                if self
-                    .unprojected_feature_collection
-                    .geometry_iter()
-                    .all(|g| matches!(g, $geo_geometry_pattern))
-                {
-                    return GeomType::$geom_variant;
-                }
-            };
-        }
-
-        geom_type_impl!(geo::Geometry::Point(_), Point);
-        geom_type_impl!(geo::Geometry::Line(_), Line);
-        geom_type_impl!(geo::Geometry::LineString(_), LineString);
-        geom_type_impl!(geo::Geometry::Polygon(_), Polygon);
-        geom_type_impl!(
-            geo::Geometry::Point(_) | geo::Geometry::MultiPoint(_),
-            Point
-        );
-        geom_type_impl!(
-            geo::Geometry::LineString(_) | geo::Geometry::MultiLineString(_),
-            LineString
-        );
-        geom_type_impl!(
-            geo::Geometry::Polygon(_) | geo::Geometry::MultiPolygon(_),
-            MultiPolygon
-        );
-        geom_type_impl!(geo::Geometry::Triangle(_), Triangle);
-        geom_type_impl!(geo::Geometry::Rect(_), Rect);
-
-        GeomType::GeometryCollection
+    pub fn geom_type(&self) -> geo_geom_type::GeomType {
+        geo_geom_type::determine(
+            self
+                .unprojected_feature_collection
+                .geometry_iter()
+        )
     }
 }
 

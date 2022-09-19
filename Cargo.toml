@@ -2,6 +2,7 @@
 members = [
     "geo-bevy",
     "geo-features",
+    "geo-geom-type",
     "geo-proj-js",
     "rgis-camera",
     "rgis-cli",

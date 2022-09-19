@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 geo = "0.23"
 geo-features = { path = "../geo-features" }
+geo-geom-type = { path = "../geo-geom-type" }
