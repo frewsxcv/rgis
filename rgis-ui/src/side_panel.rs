@@ -13,6 +13,8 @@ pub struct Events<'w, 's> {
     create_layer_event_writer: bevy::ecs::event::EventWriter<'w, 's, rgis_events::CreateLayerEvent>,
     show_add_layer_window_event_writer:
         bevy::ecs::event::EventWriter<'w, 's, rgis_events::ShowAddLayerWindow>,
+    render_message_event_writer:
+        bevy::ecs::event::EventWriter<'w, 's, rgis_events::RenderMessageEvent>,
 }
 
 pub(crate) struct SidePanel<'a, 'w, 's> {
@@ -153,14 +155,19 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
                             let outcome =
                                 operation.perform(layer.unprojected_feature_collection.clone()); // TODO: clone?
 
-                            if let Some(feature_collection) = outcome {
-                                events.create_layer_event_writer.send(
-                                    rgis_events::CreateLayerEvent {
-                                        unprojected_geometry: feature_collection,
-                                        name: Op::NAME.into(),
-                                        source_crs: layer.crs.clone(),
-                                    },
-                                );
+                            match outcome {
+                                rgis_geo_ops::Outcome::FeatureCollection(feature_collection) => {
+                                    events.create_layer_event_writer.send(
+                                        rgis_events::CreateLayerEvent {
+                                            unprojected_geometry: feature_collection,
+                                            name: Op::NAME.into(),
+                                            source_crs: layer.crs.clone(),
+                                        },
+                                    );
+                                }
+                                rgis_geo_ops::Outcome::Text(text) => events
+                                    .render_message_event_writer
+                                    .send(rgis_events::RenderMessageEvent(text)),
                             }
                         }
                     }

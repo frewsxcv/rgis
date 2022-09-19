@@ -13,16 +13,6 @@ fn handle_render_feature_properties_event(
     }
 }
 
-fn handle_render_message_event(
-    mut render_message_events: ResMut<bevy::ecs::event::Events<rgis_events::RenderMessageEvent>>,
-    mut state: ResMut<crate::MessageWindowState>,
-) {
-    if let Some(event) = render_message_events.drain().last() {
-        state.message = Some(event.0);
-        state.is_visible = true;
-    }
-}
-
 fn render_bottom_panel(
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
     mouse_pos: Res<rgis_mouse::MousePos>,
@@ -155,9 +145,14 @@ fn render_feature_properties_window(
 }
 
 fn render_message_window(
-    mut state: ResMut<crate::MessageWindowState>, // TODO: change this to Local?
+    mut state: Local<crate::MessageWindowState>,
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
+    mut render_message_events: ResMut<bevy::ecs::event::Events<rgis_events::RenderMessageEvent>>,
 ) {
+    if let Some(event) = render_message_events.drain().last() {
+        state.message = Some(event.0);
+        state.is_visible = true;
+    }
     crate::message_window::MessageWindow {
         state: &mut state,
         bevy_egui_ctx: &mut bevy_egui_ctx,
@@ -238,7 +233,6 @@ pub fn system_sets() -> [SystemSet; 2] {
         SystemSet::new()
             .with_system(handle_open_file_task)
             .with_system(handle_render_feature_properties_event)
-            .with_system(handle_render_message_event)
             .with_system(render_message_window)
             .with_system(render_side_panel.after("top_bottom_panels"))
             .with_system(render_manage_layer_window.after(render_side_panel))

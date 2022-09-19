@@ -48,7 +48,6 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(bevy_egui::EguiPlugin)
             .insert_resource(add_layer_window::SelectedFile(None))
-            .insert_resource(MessageWindowState::default())
             .insert_resource(ManageLayerWindowState::default())
             .insert_resource(FeaturePropertiesWindowState::default())
             .insert_resource(TopPanelHeight(0.))

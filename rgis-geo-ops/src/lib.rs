@@ -13,7 +13,7 @@ mod outliers;
 pub use outliers::Outliers;
 
 pub enum Outcome {
-    Text,
+    Text(String),
     FeatureCollection(geo_features::FeatureCollection),
 }
 
@@ -21,18 +21,11 @@ pub trait Operation: Sized {
     const ALLOWED_GEOM_TYPES: geo_geom_type::GeomType;
     const NAME: &'static str;
 
-    fn perform(
-        mut self,
-        feature_collection: geo_features::FeatureCollection,
-    ) -> Option<geo_features::FeatureCollection> {
+    fn perform(mut self, feature_collection: geo_features::FeatureCollection) -> Outcome {
         for feature in feature_collection.features {
             self.visit_feature(feature);
         }
-        match self.finalize() {
-            Outcome::FeatureCollection(feature_collection) => Some(feature_collection),
-            // TODO: handle text outcome
-            _ => todo!(),
-        }
+        self.finalize()
     }
 
     fn finalize(self) -> Outcome;
@@ -77,4 +70,3 @@ pub trait Operation: Sized {
 
     fn visit_triangle(&mut self, _triagnle: geo::Triangle) {}
 }
-
