@@ -35,7 +35,7 @@ fn spawn_geometry_meshes(
                 for geo::Point(coord) in points {
                     let mut transform = Transform::from_xyz(coord.x as f32, coord.y as f32, 0.);
                     transform.translation = (coord.x as f32, coord.y as f32, z_index as f32).into();
-                    spawn_sprite_bundle(asset_server, transform, commands, layer.id);
+                    spawn_sprite_bundle(asset_server, transform, commands, layer.id, layer.color);
                 }
             }
             geo_bevy::PreparedMesh::PolygonAndLineString { mesh, color } => {
@@ -59,8 +59,13 @@ fn spawn_sprite_bundle(
     transform: Transform,
     commands: &mut Commands,
     layer_id: rgis_layer_id::LayerId,
+    color: Color,
 ) {
     let bundle = SpriteBundle {
+        sprite: Sprite {
+            color,
+            ..Default::default()
+        },
         texture: asset_server.load("circle.png"),
         transform,
         ..Default::default()

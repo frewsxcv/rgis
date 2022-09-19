@@ -137,7 +137,8 @@ fn handle_layer_became_visible_event(
 fn handle_layer_color_changed_event(
     mut events: EventReader<rgis_events::LayerColorUpdatedEvent>,
     layers: Res<rgis_layers::Layers>,
-    query: Query<(&rgis_layer_id::LayerId, &Handle<ColorMaterial>)>,
+    color_material_query: Query<(&rgis_layer_id::LayerId, &Handle<ColorMaterial>)>,
+    mut sprite_query: Query<(&rgis_layer_id::LayerId, &mut Sprite)>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     for layer in events
@@ -145,10 +146,13 @@ fn handle_layer_color_changed_event(
         .map(|event| event.0)
         .filter_map(|layer_id| layers.get(layer_id))
     {
-        for (_, handle) in query.iter().filter(|(i, _)| **i == layer.id) {
+        for (_, handle) in color_material_query.iter().filter(|(i, _)| **i == layer.id) {
             if let Some(color_material) = materials.get_mut(handle) {
                 color_material.color = layer.color
             }
+        }
+        for (_, mut sprite) in sprite_query.iter_mut().filter(|(i, _)| **i == layer.id) {
+            sprite.color = layer.color;
         }
     }
 }
