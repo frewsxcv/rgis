@@ -51,7 +51,11 @@ pub trait Operation: Sized {
             geo::Geometry::MultiPolygon(g) => self.visit_multi_polygon(g),
             geo::Geometry::Rect(g) => self.visit_rect(g),
             geo::Geometry::Triangle(g) => self.visit_triangle(g),
-            geo::Geometry::GeometryCollection(g) => todo!(),
+            geo::Geometry::GeometryCollection(geometry_collection) => {
+                for geometry in geometry_collection {
+                    self.visit_geometry(geometry);
+                }
+            },
         }
     }
 
