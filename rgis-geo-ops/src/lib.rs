@@ -6,6 +6,12 @@
     clippy::expect_used
 )]
 
+mod convex_hull;
+pub use convex_hull::ConvexHull;
+
+mod outliers;
+pub use outliers::Outliers;
+
 pub enum Outcome {
     Text,
     FeatureCollection(geo_features::FeatureCollection),
@@ -73,72 +79,3 @@ pub trait Operation: Sized {
     fn visit_triangle(&mut self, _triagnle: geo::Triangle) {}
 }
 
-#[derive(Default)]
-pub struct ConvexHull {
-    geometries: Vec<geo::Geometry>,
-}
-
-impl Operation for ConvexHull {
-    const ALLOWED_GEOM_TYPES: geo_geom_type::GeomType = geo_geom_type::GeomType::all();
-
-    fn name(&self) -> &'static str {
-        "Convex hull"
-    }
-
-    fn visit_geometry(&mut self, geometry: geo::Geometry) {
-        self.geometries.push(geometry);
-    }
-
-    fn finalize(self) -> Outcome {
-        use geo::ConvexHull;
-
-        let outcome = geo::GeometryCollection(self.geometries).convex_hull();
-
-        Outcome::FeatureCollection(
-            geo_features::FeatureCollection::from_geometry(outcome.into()).unwrap(),
-        )
-    }
-}
-
-#[derive(Default)]
-pub struct Outliers {
-    points: Vec<geo::Point>,
-}
-
-impl Operation for Outliers {
-    const ALLOWED_GEOM_TYPES: geo_geom_type::GeomType = geo_geom_type::GeomType::from_bits_truncate(
-        geo_geom_type::GeomType::POINT.bits() | geo_geom_type::GeomType::MULTI_POINT.bits(),
-    );
-
-    fn name(&self) -> &'static str {
-        "Detect outliers"
-    }
-
-    fn visit_point(&mut self, point: geo::Point) {
-        self.points.push(point);
-    }
-
-    fn visit_multi_point(&mut self, multi_point: geo::MultiPoint) {
-        self.points.extend(multi_point.0.into_iter());
-    }
-
-    fn finalize(self) -> Outcome {
-        use geo::OutlierDetection;
-
-        let mut non_outliers = vec![];
-
-        let multi_point = geo::MultiPoint(self.points);
-
-        for (outlier_score, coord) in multi_point.outliers(15).iter().zip(multi_point.0.iter()) {
-            if *outlier_score < 2. {
-                non_outliers.push(*coord);
-            }
-        }
-
-        let new_multi_point = geo::MultiPoint::new(non_outliers);
-
-        Outcome::FeatureCollection(
-            geo_features::FeatureCollection::from_geometry(new_multi_point.into()).unwrap(),
-        )
-    }
-}
