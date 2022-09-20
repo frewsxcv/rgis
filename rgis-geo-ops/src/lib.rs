@@ -55,7 +55,7 @@ pub trait Operation: Sized {
                 for geometry in geometry_collection {
                     self.visit_geometry(geometry);
                 }
-            },
+            }
         }
     }
 
