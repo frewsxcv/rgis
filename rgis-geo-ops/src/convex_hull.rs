@@ -14,13 +14,13 @@ impl Operation for ConvexHull {
         self.geometries.push(geometry);
     }
 
-    fn finalize(self) -> Outcome {
+    fn finalize(self) -> Result<Outcome, Box<dyn std::error::Error>> {
         use geo::ConvexHull;
 
         let outcome = geo::GeometryCollection(self.geometries).convex_hull();
 
-        Outcome::FeatureCollection(
-            geo_features::FeatureCollection::from_geometry(outcome.into()).unwrap(),
-        )
+        Ok(Outcome::FeatureCollection(
+            geo_features::FeatureCollection::from_geometry(outcome.into())?,
+        ))
     }
 }

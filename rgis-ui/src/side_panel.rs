@@ -164,7 +164,7 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
         {
             let outcome = Op::default().perform(layer.unprojected_feature_collection.clone()); // TODO: clone?
 
-            match outcome {
+            match outcome.unwrap() {
                 rgis_geo_ops::Outcome::FeatureCollection(feature_collection) => {
                     self.events
                         .create_layer_event_writer

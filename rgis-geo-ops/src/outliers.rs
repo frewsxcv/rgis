@@ -20,7 +20,7 @@ impl Operation for Outliers {
         self.points.extend(multi_point.0.into_iter());
     }
 
-    fn finalize(self) -> Outcome {
+    fn finalize(self) -> Result<Outcome, Box<dyn std::error::Error>> {
         use geo::OutlierDetection;
 
         let mut non_outliers = vec![];
@@ -35,8 +35,8 @@ impl Operation for Outliers {
 
         let new_multi_point = geo::MultiPoint::new(non_outliers);
 
-        Outcome::FeatureCollection(
-            geo_features::FeatureCollection::from_geometry(new_multi_point.into()).unwrap(),
-        )
+        Ok(Outcome::FeatureCollection(
+            geo_features::FeatureCollection::from_geometry(new_multi_point.into())?,
+        ))
     }
 }

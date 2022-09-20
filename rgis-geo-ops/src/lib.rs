@@ -24,14 +24,17 @@ pub trait Operation: Sized {
     const ALLOWED_GEOM_TYPES: geo_geom_type::GeomType;
     const NAME: &'static str;
 
-    fn perform(mut self, feature_collection: geo_features::FeatureCollection) -> Outcome {
+    fn perform(
+        mut self,
+        feature_collection: geo_features::FeatureCollection,
+    ) -> Result<Outcome, Box<dyn std::error::Error>> {
         for feature in feature_collection.features {
             self.visit_feature(feature);
         }
         self.finalize()
     }
 
-    fn finalize(self) -> Outcome;
+    fn finalize(self) -> Result<Outcome, Box<dyn std::error::Error>>;
 
     fn visit_feature(&mut self, feature: geo_features::Feature) {
         match feature.geometry {

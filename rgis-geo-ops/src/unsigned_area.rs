@@ -35,7 +35,7 @@ impl Operation for UnsignedArea {
         self.total_area += rect.unsigned_area();
     }
 
-    fn finalize(self) -> Outcome {
-        Outcome::Text(format!("Area: {}", self.total_area))
+    fn finalize(self) -> Result<Outcome, Box<dyn std::error::Error>> {
+        Ok(Outcome::Text(format!("Area: {}", self.total_area)))
     }
 }
