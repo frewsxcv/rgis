@@ -477,7 +477,7 @@ dependencies = [
  "bevy",
  "egui",
  "thread_local",
- "webbrowser",
+ "webbrowser 0.7.1",
 ]
 
 [[package]]
@@ -3479,7 +3479,7 @@ dependencies = [
  "rgis-library",
  "rgis-mouse",
  "rgis-settings",
- "webbrowser",
+ "webbrowser 0.8.0",
 ]
 
 [[package]]
@@ -4383,6 +4383,22 @@ checksum = "fc6a3cffdb686fbb24d9fb8f03a213803277ed2300f11026a3afe1f108dc021b"
 dependencies = [
  "jni",
  "ndk-glue 0.6.2",
+ "url",
+ "web-sys",
+ "widestring",
+ "winapi",
+]
+
+[[package]]
+name = "webbrowser"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "01d62aa75495ab67cdc273d0b95cc76bcedfea2ba28338a4cf9b4137949dfac5"
+dependencies = [
+ "jni",
+ "ndk-glue 0.6.2",
+ "objc",
+ "raw-window-handle 0.5.0",
  "url",
  "web-sys",
  "widestring",

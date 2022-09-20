@@ -28,7 +28,7 @@ rgis-events = { path = "../rgis-events" }
 rgis-mouse = { path = "../rgis-mouse" }
 rgis-settings = { path = "../rgis-settings" }
 bevy_jobs = { git = "https://github.com/frewsxcv/bevy_jobs" }
-webbrowser = "0.7"
+webbrowser = "0.8"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 geo = { version = "0.23", features = ["use-proj"] }
