@@ -43,7 +43,7 @@ fn spawn_geometry_meshes(
                 spawn_material_mesh_2d_bundle(
                     mesh,
                     z_index,
-                    material.clone(),
+                    material,
                     assets_meshes,
                     commands,
                     layer.id,
