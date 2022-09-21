@@ -37,9 +37,8 @@ pub trait Operation: Sized {
     fn finalize(self) -> Result<Outcome, Box<dyn std::error::Error>>;
 
     fn visit_feature(&mut self, feature: geo_features::Feature) {
-        match feature.geometry {
-            Some(g) => self.visit_geometry(g),
-            None => (),
+        if let Some(g) = feature.geometry {
+            self.visit_geometry(g);
         }
     }
 

@@ -66,7 +66,6 @@ fn handle_mesh_building_task_outcome(
             &mut commands,
             &mut assets_meshes,
             z_index,
-            layer.visible,
             &asset_server,
         );
 

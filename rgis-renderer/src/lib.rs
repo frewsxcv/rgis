@@ -26,7 +26,6 @@ fn spawn_geometry_meshes(
     commands: &mut Commands,
     assets_meshes: &mut Assets<Mesh>,
     z_index: usize,
-    is_visible: bool,
     asset_server: &AssetServer,
 ) {
     for prepared_mesh in prepared_meshes {
@@ -46,8 +45,7 @@ fn spawn_geometry_meshes(
                     material,
                     assets_meshes,
                     commands,
-                    layer.id,
-                    is_visible,
+                    layer,
                 );
             }
         }
@@ -79,15 +77,16 @@ fn spawn_material_mesh_2d_bundle(
     material: Handle<ColorMaterial>,
     assets_meshes: &mut Assets<Mesh>,
     commands: &mut Commands,
-    layer_id: rgis_layer_id::LayerId,
-    is_visible: bool,
+    layer: &rgis_layers::Layer,
 ) {
     let mmb = bevy::sprite::MaterialMesh2dBundle {
         material,
         mesh: bevy::sprite::Mesh2dHandle(assets_meshes.add(mesh)),
         transform: Transform::from_xyz(0., 0., z_index as f32),
-        visibility: bevy::render::view::Visibility { is_visible },
+        visibility: bevy::render::view::Visibility {
+            is_visible: layer.visible,
+        },
         ..Default::default()
     };
-    commands.spawn_bundle(mmb).insert(layer_id);
+    commands.spawn_bundle(mmb).insert(layer.id);
 }
