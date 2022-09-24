@@ -6,8 +6,6 @@
     clippy::expect_used
 )]
 
-#![feature(never_type)]
-
 use std::error;
 
 mod unsigned_area;

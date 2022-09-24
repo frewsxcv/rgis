@@ -15,7 +15,7 @@ impl Operation for UnsignedArea {
             | geo_geom_type::GeomType::TRIANGLE.bits(),
     );
     const NAME: &'static str = "Area (unsigned)";
-    type Error = !;
+    type Error = geo_features::BoundingRectError;
 
     fn visit_polygon(&mut self, polygon: geo::Polygon) {
         self.total_area += polygon.unsigned_area();
