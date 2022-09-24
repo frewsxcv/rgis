@@ -14,8 +14,8 @@ impl Operation for UnsignedArea {
             | geo_geom_type::GeomType::RECT.bits()
             | geo_geom_type::GeomType::TRIANGLE.bits(),
     );
-
     const NAME: &'static str = "Area (unsigned)";
+    type Error = !;
 
     fn visit_polygon(&mut self, polygon: geo::Polygon) {
         self.total_area += polygon.unsigned_area();
@@ -35,7 +35,7 @@ impl Operation for UnsignedArea {
         self.total_area += rect.unsigned_area();
     }
 
-    fn finalize(self) -> Result<Outcome, Box<dyn std::error::Error>> {
+    fn finalize(self) -> Result<Outcome, Self::Error> {
         Ok(Outcome::Text(format!("Area: {}", self.total_area)))
     }
 }

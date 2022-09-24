@@ -6,6 +6,10 @@
     clippy::expect_used
 )]
 
+#![feature(never_type)]
+
+use std::error;
+
 mod unsigned_area;
 pub use unsigned_area::UnsignedArea;
 
@@ -23,18 +27,19 @@ pub enum Outcome {
 pub trait Operation: Sized {
     const ALLOWED_GEOM_TYPES: geo_geom_type::GeomType;
     const NAME: &'static str;
+    type Error: error::Error;
 
     fn perform(
         mut self,
         feature_collection: geo_features::FeatureCollection,
-    ) -> Result<Outcome, Box<dyn std::error::Error>> {
+    ) -> Result<Outcome, Self::Error> {
         for feature in feature_collection.features {
             self.visit_feature(feature);
         }
         self.finalize()
     }
 
-    fn finalize(self) -> Result<Outcome, Box<dyn std::error::Error>>;
+    fn finalize(self) -> Result<Outcome, Self::Error>;
 
     fn visit_feature(&mut self, feature: geo_features::Feature) {
         if let Some(g) = feature.geometry {
