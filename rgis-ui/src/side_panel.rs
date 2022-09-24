@@ -164,8 +164,8 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
         {
             let outcome = Op::default().perform(layer.unprojected_feature_collection.clone()); // TODO: clone?
 
-            match outcome.unwrap() {
-                rgis_geo_ops::Outcome::FeatureCollection(feature_collection) => {
+            match outcome {
+                Ok(rgis_geo_ops::Outcome::FeatureCollection(feature_collection)) => {
                     self.events
                         .create_layer_event_writer
                         .send(rgis_events::CreateLayerEvent {
@@ -174,10 +174,13 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
                             source_crs: layer.crs.clone(),
                         });
                 }
-                rgis_geo_ops::Outcome::Text(text) => self
+                Ok(rgis_geo_ops::Outcome::Text(text)) => self
                     .events
                     .render_message_event_writer
                     .send(rgis_events::RenderMessageEvent(text)),
+                Err(e) => {
+                    bevy::log::error!("Encountered an error during the operation: {}", e);
+                }
             }
         }
     }
