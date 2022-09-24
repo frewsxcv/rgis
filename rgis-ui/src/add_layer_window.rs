@@ -187,8 +187,10 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                                 Format::Unselected => {}
                             },
                             None => {
-                                bevy::log::error!("Expected file to exist when loading, but no file exists");
-                            },
+                                bevy::log::error!(
+                                    "Expected file to exist when loading, but no file exists"
+                                );
+                            }
                         };
                         self.events.hide_add_layer_window_events.send_default();
                         self.state.reset();
