@@ -28,7 +28,9 @@ impl crate::FileLoader for WktSource {
         let mut wkt_reader = geozero::wkt::WktReader(&mut bytes_cursor);
         let mut geo_writer = geozero::geo_types::GeoWriter::new();
         wkt_reader.process(&mut geo_writer)?;
-        let geometry = geo_writer.take_geometry().unwrap();
-        Ok(geo_features::FeatureCollection::from_geometry(geometry)?)
+        match geo_writer.take_geometry() {
+            Some(geometry) => Ok(geo_features::FeatureCollection::from_geometry(geometry)?),
+            None => Ok(geo_features::FeatureCollection::default()),
+        }
     }
 }

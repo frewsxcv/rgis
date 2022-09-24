@@ -87,10 +87,16 @@ impl Contains<geo::Coordinate> for Feature {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Default, Clone, Debug)]
 pub struct FeatureCollection {
     pub features: Vec<Feature>,
     pub bounding_rect: Option<geo::Rect>,
+}
+
+impl FeatureCollection {
+    pub fn new() -> Self {
+        FeatureCollection::default()
+    }
 }
 
 #[derive(Debug)]
