@@ -160,32 +160,36 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                         .add_enabled(submittable, egui::Button::new("Add layer"))
                         .clicked()
                     {
-                        let loaded_file = self.selected_file.0.take().unwrap();
-                        match self.state.selected_format {
-                            Format::GeoJson => {
-                                self.events.load_geo_json_file_event_writer.send(
-                                    rgis_events::LoadFileEvent::FromBytes {
-                                        file_name: loaded_file.file_name,
-                                        file_loader: geo_file_loader::GeoJsonSource {
-                                            bytes: loaded_file.bytes,
+                        match self.selected_file.0.take() {
+                            Some(loaded_file) => match self.state.selected_format {
+                                Format::GeoJson => {
+                                    self.events.load_geo_json_file_event_writer.send(
+                                        rgis_events::LoadFileEvent::FromBytes {
+                                            file_name: loaded_file.file_name,
+                                            file_loader: geo_file_loader::GeoJsonSource {
+                                                bytes: loaded_file.bytes,
+                                            },
+                                            crs: "EPSG:4326".into(),
                                         },
-                                        crs: "EPSG:4326".into(),
-                                    },
-                                );
-                            }
-                            Format::Wkt => {
-                                self.events.load_wkt_file_event_writer.send(
-                                    rgis_events::LoadFileEvent::FromBytes {
-                                        file_name: loaded_file.file_name,
-                                        file_loader: geo_file_loader::WktSource {
-                                            bytes: loaded_file.bytes,
+                                    );
+                                }
+                                Format::Wkt => {
+                                    self.events.load_wkt_file_event_writer.send(
+                                        rgis_events::LoadFileEvent::FromBytes {
+                                            file_name: loaded_file.file_name,
+                                            file_loader: geo_file_loader::WktSource {
+                                                bytes: loaded_file.bytes,
+                                            },
+                                            crs: "EPSG:4326".into(),
                                         },
-                                        crs: "EPSG:4326".into(),
-                                    },
-                                );
-                            }
-                            Format::Unselected => {}
-                        }
+                                    );
+                                }
+                                Format::Unselected => {}
+                            },
+                            None => {
+                                bevy::log::error!("Expected file to exist when loading, but no file exists");
+                            },
+                        };
                         self.events.hide_add_layer_window_events.send_default();
                         self.state.reset();
                     }
