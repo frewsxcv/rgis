@@ -63,7 +63,6 @@ fn zoom_camera_system(
     for event in zoom_camera_event_reader.iter() {
         camera_scale.zoom(event.amount);
     }
-    // TODO: change camera offset
     set_camera_transform(&mut transform, camera_offset, camera_scale);
 }
 
