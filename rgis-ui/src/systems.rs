@@ -1,18 +1,6 @@
 use bevy::prelude::*;
 use bevy_egui::egui;
 
-fn handle_render_feature_properties_event(
-    mut render_message_events: ResMut<
-        bevy::ecs::event::Events<rgis_events::RenderFeaturePropertiesEvent>,
-    >,
-    mut state: ResMut<crate::FeaturePropertiesWindowState>,
-) {
-    if let Some(event) = render_message_events.drain().last() {
-        state.is_visible = true;
-        state.properties = Some(event.0);
-    }
-}
-
 fn render_bottom_panel(
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
     mouse_pos: Res<rgis_mouse::MousePos>,
@@ -134,9 +122,16 @@ fn render_change_crs_window(
 }
 
 fn render_feature_properties_window(
-    mut state: ResMut<crate::FeaturePropertiesWindowState>, // TODO: change this to Local?
+    mut state: Local<crate::FeaturePropertiesWindowState>,
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
+    mut render_message_events: ResMut<
+        bevy::ecs::event::Events<rgis_events::RenderFeaturePropertiesEvent>,
+    >,
 ) {
+    if let Some(event) = render_message_events.drain().last() {
+        state.is_visible = true;
+        state.properties = Some(event.0);
+    }
     crate::feature_properties_window::FeaturePropertiesWindow {
         state: &mut state,
         bevy_egui_ctx: &mut bevy_egui_ctx,
@@ -232,7 +227,6 @@ pub fn system_sets() -> [SystemSet; 2] {
             .with_system(render_bottom_panel),
         SystemSet::new()
             .with_system(handle_open_file_task)
-            .with_system(handle_render_feature_properties_event)
             .with_system(render_message_window)
             .with_system(render_side_panel.after("top_bottom_panels"))
             .with_system(render_manage_layer_window.after(render_side_panel))
