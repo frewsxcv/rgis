@@ -132,7 +132,9 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
                                 layer.unprojected_feature_collection.bounding_rect()
                             {
                                 if let Ok(feature_collection) =
-                                    geo_features::FeatureCollection::from_geometry(bounding_rect.into())
+                                    geo_features::FeatureCollection::from_geometry(
+                                        bounding_rect.into(),
+                                    )
                                 {
                                     self.events.create_layer_event_writer.send(
                                         rgis_events::CreateLayerEvent {
