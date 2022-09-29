@@ -151,6 +151,7 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
                         self.display_operation::<rgis_geo_ops::UnsignedArea>(layer, ui);
                     });
             });
+        ui.separator();
     }
 
     fn display_operation<Op: rgis_geo_ops::Operation + Default>(
