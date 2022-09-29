@@ -124,10 +124,10 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
                     self.delete_layer(layer);
                 }
 
-                egui::CollapsingHeader::new("Operations")
+                egui::CollapsingHeader::new("⚙ Operations")
                     .id_source(format!("{:?}-operations", layer.id)) // Instead of using the layer name as the ID (which is not unique), use the layer ID
                     .show(ui, |ui| {
-                        if ui.button("⚙ Generate bounding rect").clicked() {
+                        if ui.button("Bounding rect").clicked() {
                             if let Ok(bounding_rect) =
                                 layer.unprojected_feature_collection.bounding_rect()
                             {
@@ -162,7 +162,7 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
         if ui
             .add_enabled(
                 Op::ALLOWED_GEOM_TYPES.contains(layer.geom_type()),
-                egui::Button::new(format!("⚙ {}", Op::NAME)),
+                egui::Button::new(Op::NAME),
             )
             .clicked()
         {
