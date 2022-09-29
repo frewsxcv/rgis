@@ -1,4 +1,4 @@
-use bevy_egui::egui;
+use bevy_egui::egui::{self, Align, Layout};
 
 // const MAX_SIDE_PANEL_WIDTH: f32 = 200.0f32;
 
@@ -77,79 +77,83 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
                 // TODO: `geom_type` shouldn't be recalculatd every frame
                 ui.label(format!("Type: {:?}", layer.geom_type()));
 
-                if ui.button("✏ Manage").clicked() {
-                    self.manage_layer_window_state.is_visible = true;
-                    self.manage_layer_window_state.layer_id = Some(layer.id);
-                }
+                ui.with_layout(Layout::top_down_justified(Align::LEFT), |ui| {
+                    if ui.button("✏ Manage").clicked() {
+                        self.manage_layer_window_state.is_visible = true;
+                        self.manage_layer_window_state.layer_id = Some(layer.id);
+                    }
 
-                if ui
-                    .add_enabled(is_move_up_enabled, egui::Button::new("⬆ Move up"))
-                    .clicked()
-                {
-                    self.events
-                        .move_layer_event_writer
-                        .send(rgis_events::MoveLayerEvent(
-                            layer.id,
-                            rgis_events::MoveDirection::Up,
-                        ));
-                }
+                    if ui
+                        .add_enabled(is_move_up_enabled, egui::Button::new("⬆ Move up"))
+                        .clicked()
+                    {
+                        self.events
+                            .move_layer_event_writer
+                            .send(rgis_events::MoveLayerEvent(
+                                layer.id,
+                                rgis_events::MoveDirection::Up,
+                            ));
+                    }
 
-                if ui
-                    .add_enabled(is_move_down_enabled, egui::Button::new("⬇ Move down"))
-                    .clicked()
-                {
-                    self.events
-                        .move_layer_event_writer
-                        .send(rgis_events::MoveLayerEvent(
-                            layer.id,
-                            rgis_events::MoveDirection::Down,
-                        ));
-                }
+                    if ui
+                        .add_enabled(is_move_down_enabled, egui::Button::new("⬇ Move down"))
+                        .clicked()
+                    {
+                        self.events
+                            .move_layer_event_writer
+                            .send(rgis_events::MoveLayerEvent(
+                                layer.id,
+                                rgis_events::MoveDirection::Down,
+                            ));
+                    }
 
-                if layer.visible {
-                    if ui.button("👁 Hide").clicked() {
+                    if layer.visible {
+                        if ui.button("👁 Hide").clicked() {
+                            self.toggle_layer_visibility(layer);
+                        }
+                    } else if ui.button("👁 Show").clicked() {
                         self.toggle_layer_visibility(layer);
                     }
-                } else if ui.button("👁 Show").clicked() {
-                    self.toggle_layer_visibility(layer);
-                }
 
-                if ui.button("🔎 Zoom to extent").clicked() {
-                    self.events
-                        .center_layer_event_writer
-                        .send(rgis_events::CenterCameraEvent(layer.id))
-                }
+                    if ui.button("🔎 Zoom to extent").clicked() {
+                        self.events
+                            .center_layer_event_writer
+                            .send(rgis_events::CenterCameraEvent(layer.id))
+                    }
 
-                if ui.button("❌ Remove").clicked() {
-                    self.delete_layer(layer);
-                }
+                    if ui.button("❌ Remove").clicked() {
+                        self.delete_layer(layer);
+                    }
 
-                egui::CollapsingHeader::new("⚙ Operations")
-                    .id_source(format!("{:?}-operations", layer.id)) // Instead of using the layer name as the ID (which is not unique), use the layer ID
-                    .show(ui, |ui| {
-                        if ui.button("Bounding rect").clicked() {
-                            if let Ok(bounding_rect) =
-                                layer.unprojected_feature_collection.bounding_rect()
-                            {
-                                if let Ok(feature_collection) =
-                                    geo_features::FeatureCollection::from_geometry(
-                                        bounding_rect.into(),
-                                    )
-                                {
-                                    self.events.create_layer_event_writer.send(
-                                        rgis_events::CreateLayerEvent {
-                                            unprojected_geometry: feature_collection, // todo
-                                            name: "Bounding rect".into(),             // todo
-                                            source_crs: layer.crs.clone(),
-                                        },
-                                    );
+                    egui::CollapsingHeader::new("⚙ Operations")
+                        .id_source(format!("{:?}-operations", layer.id)) // Instead of using the layer name as the ID (which is not unique), use the layer ID
+                        .show(ui, |ui| {
+                            ui.with_layout(Layout::top_down_justified(Align::LEFT), |ui| {
+                                if ui.button("Bounding rect").clicked() {
+                                    if let Ok(bounding_rect) =
+                                        layer.unprojected_feature_collection.bounding_rect()
+                                    {
+                                        if let Ok(feature_collection) =
+                                            geo_features::FeatureCollection::from_geometry(
+                                                bounding_rect.into(),
+                                            )
+                                        {
+                                            self.events.create_layer_event_writer.send(
+                                                rgis_events::CreateLayerEvent {
+                                                    unprojected_geometry: feature_collection, // todo
+                                                    name: "Bounding rect".into(), // todo
+                                                    source_crs: layer.crs.clone(),
+                                                },
+                                            );
+                                        }
+                                    }
                                 }
-                            }
-                        }
-                        self.display_operation::<rgis_geo_ops::ConvexHull>(layer, ui);
-                        self.display_operation::<rgis_geo_ops::Outliers>(layer, ui);
-                        self.display_operation::<rgis_geo_ops::UnsignedArea>(layer, ui);
-                    });
+                                self.display_operation::<rgis_geo_ops::ConvexHull>(layer, ui);
+                                self.display_operation::<rgis_geo_ops::Outliers>(layer, ui);
+                                self.display_operation::<rgis_geo_ops::UnsignedArea>(layer, ui);
+                            });
+                        });
+                });
             });
         ui.separator();
     }
