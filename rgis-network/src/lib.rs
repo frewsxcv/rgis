@@ -12,8 +12,8 @@ pub struct FetchedFile {
     pub crs: String,
 }
 
-type FetchedFileSender = async_channel::Sender<Result<ehttp::Response, String>>;
-type FetchedFileReceiver = async_channel::Receiver<Result<ehttp::Response, String>>;
+type FetchedFileSender = async_channel::Sender<ehttp::Result<ehttp::Response>>;
+type FetchedFileReceiver = async_channel::Receiver<ehttp::Result<ehttp::Response>>;
 
 pub struct NetworkFetchTask {
     pub url: String,
