@@ -6,7 +6,7 @@
     clippy::expect_used
 )]
 
-use bevy::{core_pipeline::clear_color::ClearColor, prelude::*};
+use bevy::prelude::*;
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
 
@@ -39,8 +39,7 @@ pub fn run() {
     .add_plugin(bevy_jobs::Plugin)
     .add_plugin(rgis_transform::Plugin)
     .add_plugin(rgis_ui::Plugin)
-    .add_plugin(rgis_settings::Plugin)
-    .insert_resource(ClearColor(Color::WHITE));
+    .add_plugin(rgis_settings::Plugin);
 
     #[cfg(target_arch = "wasm32")]
     {
