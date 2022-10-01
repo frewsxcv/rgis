@@ -16,4 +16,4 @@ bevy = { version = "0.8", default-features = false, features = [
     "wayland",
     "png",
 ] }
-clap = { version = "3", default-features = false, features = ["std"] }
+clap = { version = "4", default-features = false, features = ["std", "help", "usage", "error-context", "wrap_help"] }

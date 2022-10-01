@@ -6,7 +6,7 @@
     clippy::expect_used
 )]
 
-use clap::{Arg, Command};
+use clap::{Arg, Command, ArgAction};
 use std::error;
 
 static DEFAULT_MSAA: &str = "4";
@@ -25,25 +25,18 @@ pub fn run() -> Result<Values, Box<dyn error::Error>> {
         .about("Geospatial data viewer written in Rust")
         .arg(
             Arg::new("MSAA SAMPLE COUNT")
-                .long("--msaa-sample-count")
+                .long("msaa-sample-count")
                 .default_value(DEFAULT_MSAA)
+                .action(ArgAction::Set)
                 .help("Multi-Sample Anti-Aliasing sample count. Setting the sample count higher will result in smoother edges, but it will also increase the cost to render those edges. The range should generally be somewhere between 1 (no multi sampling, but cheap) to 8 (crisp but expensive).")
-                .validator(|s| {
-                    if s.parse::<MsaaSampleCount>().is_ok() {
-                        Ok(())
-                    } else {
-                        Err("should be a non-zero positive integer".to_string())
-                    }
-                })
-                .takes_value(true),
+                .value_parser(clap::value_parser!(u32))
         )
         .get_matches();
 
     Ok(Values {
-        msaa_sample_count: matches
-            .value_of("MSAA SAMPLE COUNT")
+        msaa_sample_count: *matches
+            .get_one::<MsaaSampleCount>("MSAA SAMPLE COUNT")
             .ok_or("Could not fetch MSAA sample count from clap")?
-            .parse()?,
     })
 }
 
