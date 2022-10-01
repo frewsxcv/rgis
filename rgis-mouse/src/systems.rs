@@ -28,7 +28,7 @@ fn screen_coords_to_geo_coords(
     transform: &bevy::transform::components::Transform,
     window: &bevy::prelude::Window,
 ) -> geo::Coordinate {
-    let size = bevy::math::Vec2::new(window.width() as f32, window.height() as f32);
+    let size = bevy::math::Vec2::new(window.width(), window.height());
 
     // the default orthographic projection is in pixels from the center;
     // just undo the translation
