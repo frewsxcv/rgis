@@ -6,7 +6,7 @@
     clippy::expect_used
 )]
 
-use clap::{Arg, Command, ArgAction};
+use clap::{Arg, ArgAction, Command};
 use std::error;
 
 static DEFAULT_MSAA: &str = "4";
@@ -36,7 +36,7 @@ pub fn run() -> Result<Values, Box<dyn error::Error>> {
     Ok(Values {
         msaa_sample_count: *matches
             .get_one::<MsaaSampleCount>("MSAA SAMPLE COUNT")
-            .ok_or("Could not fetch MSAA sample count from clap")?
+            .ok_or("Could not fetch MSAA sample count from clap")?,
     })
 }
 
