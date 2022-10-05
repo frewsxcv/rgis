@@ -12,7 +12,7 @@ pub struct LibraryEntry {
     pub crs: &'static str,
 }
 
-pub const ENTRIES: [LibraryEntry; 7] = [LibraryEntry {
+pub const ENTRIES: [LibraryEntry; 8] = [LibraryEntry {
     name: "USA States",
     url: "https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json",
     crs: "EPSG:4326",
