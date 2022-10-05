@@ -17,10 +17,6 @@ pub const ENTRIES: [LibraryEntry; 7] = [LibraryEntry {
     url: "https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json",
     crs: "EPSG:4326",
 }, LibraryEntry {
-    name: "USA Counties",
-    url: "https://github.com/zeke/us-counties/raw/master/county.geo.json",
-    crs: "EPSG:4326",
-}, LibraryEntry {
     name: "Tectonic Plate Boundaries",
     url: "https://raw.githubusercontent.com/andrea-ballatore/open-geo-data-education/main/datasets/tectonic_plates_2002/PB2002_boundaries.geojson",
     crs: "EPSG:4326",
