@@ -18,7 +18,7 @@ pub struct Values {
     pub msaa_sample_count: MsaaSampleCount,
 }
 
-pub fn run() -> Result<Values, Box<dyn error::Error>> {
+pub fn run() -> Result<Values, String> {
     let matches = Command::new("rgis")
         .version("0.1.0")
         .author("Corey Farwell <coreyf@rwell.org>")
