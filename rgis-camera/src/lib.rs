@@ -9,6 +9,10 @@
 use bevy::prelude::*;
 
 mod systems;
+mod utils;
+
+struct ProjectedWorldRect(geo::Rect);
+
 pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
