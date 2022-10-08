@@ -79,6 +79,33 @@ fn handle_meshes_spawned_events(
     }
 }
 
+struct ProjectedWorldRect(geo::Rect);
+
+fn center_camera_on_projected_world_rect(
+    bounding_rect: ProjectedWorldRect,
+    camera_transform: &mut Transform,
+    window: &bevy::window::Window,
+    side_panel_width: &rgis_ui::SidePanelWidth,
+    top_panel_height: &rgis_ui::TopPanelHeight,
+    bottom_panel_height: &rgis_ui::BottomPanelHeight,
+) {
+    let layer_center = bounding_rect.0.center();
+    let canvas_size = bevy::ui::Size::new(
+        f64::from(window.width() - side_panel_width.0),
+        f64::from(window.height() - top_panel_height.0 - bottom_panel_height.0),
+    );
+
+    let scale = determine_scale(bounding_rect.0, canvas_size);
+    let camera_scale = crate::CameraScale(scale as f32);
+    let mut camera_offset = crate::CameraOffset::from_coord(layer_center);
+    camera_offset.pan_x(-side_panel_width.0 / 2., camera_scale);
+    camera_offset.pan_y(
+        (top_panel_height.0 - bottom_panel_height.0) / 2.,
+        camera_scale,
+    );
+    set_camera_transform(camera_transform, camera_offset, camera_scale);
+}
+
 fn center_camera(
     layers: Res<rgis_layers::Layers>,
     mut event_reader: EventReader<rgis_events::CenterCameraEvent>,
@@ -96,30 +123,22 @@ fn center_camera(
         .filter_map(|event| layers.get(event.0))
         .filter_map(|layer| layer.get_projected_feature_or_log())
     {
-        let mut transform = query.single_mut();
         let bounding_rect = match projected_feature.bounding_rect {
             Some(b) => b,
             None => continue,
         };
-        let layer_center = bounding_rect.center();
+        let mut transform = query.single_mut();
         let window = windows.primary();
 
-        let canvas_size = bevy::ui::Size::new(
-            f64::from(window.width() - side_panel_width.0),
-            f64::from(window.height() - top_panel_height.0 - bottom_panel_height.0),
-        );
-
-        let scale = determine_scale(bounding_rect, canvas_size);
         debug!("Moving camera to look at new layer");
-
-        let camera_scale = crate::CameraScale(scale as f32);
-        let mut camera_offset = crate::CameraOffset::from_coord(layer_center);
-        camera_offset.pan_x(-side_panel_width.0 / 2., camera_scale);
-        camera_offset.pan_y(
-            (top_panel_height.0 - bottom_panel_height.0) / 2.,
-            camera_scale,
+        center_camera_on_projected_world_rect(
+            ProjectedWorldRect(bounding_rect),
+            &mut transform,
+            window,
+            &side_panel_width,
+            &top_panel_height,
+            &bottom_panel_height,
         );
-        set_camera_transform(&mut transform, camera_offset, camera_scale);
     }
 }
 
