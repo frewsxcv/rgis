@@ -7,7 +7,6 @@
 )]
 
 use clap::{Arg, ArgAction, Command};
-use std::error;
 
 static DEFAULT_MSAA: &str = "4";
 
