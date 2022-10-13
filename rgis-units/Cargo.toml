@@ -13,3 +13,4 @@ bevy = { version = "0.8", default-features = false, features = [
     "wayland",
     "png",
 ] }
+geo = "0.23"

@@ -19,3 +19,4 @@ geo = "0.23"
 geo-features = { path = "../geo-features" }
 geo-file-loader = { path = "../geo-file-loader" }
 rgis-layer-id = { path = "../rgis-layer-id" }
+rgis-units = { path = "../rgis-units" }

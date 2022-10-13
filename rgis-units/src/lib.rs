@@ -7,29 +7,29 @@
 )]
 
 pub fn screen_coords_to_geo_coords(
-    screen_coords: bevy::prelude::Vec2,
+    screen_coords: ScreenLocation,
     transform: &bevy::transform::components::Transform,
     window: &bevy::prelude::Window,
-) -> ScreenLocation {
-    let size = bevy::math::Vec2::new(window.width(), window.height());
+) -> geo::Coordinate {
+    let size = bevy::math::DVec2::new(f64::from(window.width()), f64::from(window.height()));
 
     // the default orthographic projection is in pixels from the center;
     // just undo the translation
-    let p = screen_coords - size / 2.0;
+    let p = bevy::math::DVec2::new(screen_coords.x, screen_coords.y) - size / 2.0;
 
     // apply the camera transform
-    let pos_wld = transform.compute_matrix() * p.extend(0.0).extend(1.0);
+    let pos_wld = transform.compute_matrix().as_dmat4() * p.extend(0.0).extend(1.0);
 
-    ScreenLocation {
-        x: pos_wld.x.into(),
-        y: pos_wld.y.into(),
+    geo::Coordinate {
+        x: pos_wld.x,
+        y: pos_wld.y,
     }
 }
 
 // From top-left
 pub struct ScreenLocation {
-    x: f64,
-    y: f64,
+    pub x: f64,
+    pub y: f64,
 }
 
 fn map_area_projected_rect() -> bevy::ui::UiRect<f64> {
@@ -40,9 +40,9 @@ fn center_camera_on_screen_coords_rect() {
     todo!()
 }
 
-pub struct ScreenLength(f32);
+pub struct ScreenLength(pub f32);
 
-pub struct ScreenSize(bevy::ui::Size<f32>);
+pub struct ScreenSize(pub bevy::ui::Size<f32>);
 
 impl ScreenSize {
     fn from_width_height(width: ScreenLength, height: ScreenLength) -> Self {

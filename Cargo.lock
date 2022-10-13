@@ -3428,6 +3428,7 @@ dependencies = [
  "geo-features",
  "geo-file-loader",
  "rgis-layer-id",
+ "rgis-units",
 ]
 
 [[package]]
@@ -3575,6 +3576,7 @@ name = "rgis-units"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "geo",
 ]
 
 [[package]]

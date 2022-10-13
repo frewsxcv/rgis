@@ -11,9 +11,9 @@ pub(crate) fn center_camera_on_projected_world_rect(
     let layer_center = bounding_rect.0.center();
     let canvas_size = rgis_units::map_area_size(
         window,
-        side_panel_width,
-        top_panel_height,
-        bottom_panel_height,
+        rgis_units::ScreenLength(side_panel_width.0),
+        rgis_units::ScreenLength(top_panel_height.0),
+        rgis_units::ScreenLength(bottom_panel_height.0),
     );
 
     let scale = determine_scale(bounding_rect.0, canvas_size.0);
@@ -37,6 +37,7 @@ pub(crate) fn set_camera_transform(
     debug!("New transform scale: {:?}", transform.scale);
 }
 
-pub(crate) fn determine_scale(bounding_rect: geo::Rect, canvas_size: bevy::ui::Size<f64>) -> f64 {
-    (bounding_rect.width() / canvas_size.width).max(bounding_rect.height() / canvas_size.height)
+pub(crate) fn determine_scale(bounding_rect: geo::Rect, canvas_size: bevy::ui::Size<f32>) -> f32 {
+    (bounding_rect.width() as f32 / canvas_size.width)
+        .max(bounding_rect.height() as f32 / canvas_size.height)
 }
