@@ -19,27 +19,14 @@ fn cursor_moved_system(
     let window = windows.primary();
     let transform = query.single();
     if let Some(event) = cursor_moved_event_reader.iter().next_back() {
-        mouse_position.projected = screen_coords_to_geo_coords(event.position, transform, window);
-    }
-}
-
-fn screen_coords_to_geo_coords(
-    screen_coords: bevy::prelude::Vec2,
-    transform: &bevy::transform::components::Transform,
-    window: &bevy::prelude::Window,
-) -> geo::Coordinate {
-    let size = bevy::math::Vec2::new(window.width(), window.height());
-
-    // the default orthographic projection is in pixels from the center;
-    // just undo the translation
-    let p = screen_coords - size / 2.0;
-
-    // apply the camera transform
-    let pos_wld = transform.compute_matrix() * p.extend(0.0).extend(1.0);
-
-    geo::Coordinate {
-        x: pos_wld.x.into(),
-        y: pos_wld.y.into(),
+        mouse_position.projected = rgis_units::screen_coords_to_geo_coords(
+            rgis_units::ScreenLocation {
+                x: f64::from(event.position.x),
+                y: f64::from(event.position.y),
+            },
+            transform,
+            window,
+        );
     }
 }
 

@@ -18,6 +18,7 @@ members = [
     "rgis-renderer",
     "rgis-settings",
     "rgis-ui",
+    "rgis-units",
     "rgis",
     "time-logger",
 ]

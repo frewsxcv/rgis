@@ -1,0 +1,16 @@
+[package]
+name = "rgis-units"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bevy = { version = "0.8", default-features = false, features = [
+    "bevy_winit",
+    "bevy_core_pipeline",
+    "bevy_render",
+    "bevy_sprite",
+    "bevy_ui",
+    "wayland",
+    "png",
+] }
+geo = "0.23"
