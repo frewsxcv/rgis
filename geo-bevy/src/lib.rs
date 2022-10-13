@@ -42,6 +42,7 @@ pub struct BuildBevyMeshesContext {
     point_mesh_builder: point::PointMeshBuilder,
     line_string_mesh_builder: line_string::LineStringMeshBuilder,
     polygon_mesh_builder: bevy_earcutr::PolygonMeshBuilder,
+    polygon_border_mesh_builder: line_string::LineStringMeshBuilder,
 }
 
 impl Default for BuildBevyMeshesContext {
@@ -57,17 +58,6 @@ impl BuildBevyMeshesContext {
             line_string_mesh_builder: line_string::LineStringMeshBuilder::new(),
             polygon_mesh_builder: bevy_earcutr::PolygonMeshBuilder::new(),
             polygon_border_mesh_builder: line_string::LineStringMeshBuilder::new(),
-        }
-    }
-}
-
-impl BuildBevyMeshesContext {
-    pub fn new(z_index: usize) -> Self {
-        BuildBevyMeshesContext {
-            point_mesh_builder: PointMeshBuilder::new(),
-            line_string_mesh_builder: LineStringMeshBuilder::new(),
-            polygon_mesh_builder: bevy_earcutr::PolygonMeshBuilder::new(),
-            z_index,
         }
     }
 }
