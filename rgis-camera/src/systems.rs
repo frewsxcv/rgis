@@ -6,6 +6,7 @@ pub fn system_set() -> bevy::ecs::schedule::SystemSet {
         .with_system(pan_camera_system)
         .with_system(handle_meshes_spawned_events)
         .with_system(zoom_camera_system)
+        .with_system(handle_change_crs_event)
 }
 
 pub fn startup_system_set() -> bevy::ecs::schedule::SystemSet {
@@ -14,6 +15,12 @@ pub fn startup_system_set() -> bevy::ecs::schedule::SystemSet {
 
 fn init_camera(mut commands: Commands) {
     commands.spawn().insert_bundle(Camera2dBundle::default());
+}
+
+fn handle_change_crs_event(
+    mut change_crs_event_reader: bevy::ecs::event::EventReader<rgis_events::ChangeCrsEvent>,
+) {
+    if let Some(event) = change_crs_event_reader.iter().next_back() {}
 }
 
 fn pan_camera_system(

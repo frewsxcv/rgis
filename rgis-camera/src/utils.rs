@@ -9,12 +9,14 @@ pub(crate) fn center_camera_on_projected_world_rect(
     bottom_panel_height: &rgis_ui::BottomPanelHeight,
 ) {
     let layer_center = bounding_rect.0.center();
-    let canvas_size = bevy::ui::Size::new(
-        f64::from(window.width() - side_panel_width.0),
-        f64::from(window.height() - top_panel_height.0 - bottom_panel_height.0),
+    let canvas_size = rgis_units::map_area_size(
+        window,
+        side_panel_width,
+        top_panel_height,
+        bottom_panel_height,
     );
 
-    let scale = determine_scale(bounding_rect.0, canvas_size);
+    let scale = determine_scale(bounding_rect.0, canvas_size.0);
     let camera_scale = crate::CameraScale(scale as f32);
     let mut camera_offset = crate::CameraOffset::from_coord(layer_center);
     camera_offset.pan_x(-side_panel_width.0 / 2., camera_scale);

@@ -3408,6 +3408,7 @@ dependencies = [
  "rgis-events",
  "rgis-layers",
  "rgis-ui",
+ "rgis-units",
 ]
 
 [[package]]
@@ -3496,6 +3497,7 @@ dependencies = [
  "geo",
  "rgis-events",
  "rgis-settings",
+ "rgis-units",
 ]
 
 [[package]]
@@ -3566,6 +3568,13 @@ dependencies = [
  "rgis-mouse",
  "rgis-settings",
  "webbrowser 0.8.0",
+]
+
+[[package]]
+name = "rgis-units"
+version = "0.1.0"
+dependencies = [
+ "bevy",
 ]
 
 [[package]]

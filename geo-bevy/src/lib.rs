@@ -42,6 +42,7 @@ pub struct BuildBevyMeshesContext {
     point_mesh_builder: point::PointMeshBuilder,
     line_string_mesh_builder: line_string::LineStringMeshBuilder,
     polygon_mesh_builder: bevy_earcutr::PolygonMeshBuilder,
+<<<<<<< Updated upstream
     polygon_border_mesh_builder: line_string::LineStringMeshBuilder,
 }
 
@@ -62,6 +63,22 @@ impl BuildBevyMeshesContext {
     }
 }
 
+// =======
+//     z_index: usize,
+// }
+
+impl BuildBevyMeshesContext {
+    pub fn new(z_index: usize) -> Self {
+        BuildBevyMeshesContext {
+            point_mesh_builder: PointMeshBuilder::new(),
+            line_string_mesh_builder: LineStringMeshBuilder::new(),
+            polygon_mesh_builder: bevy_earcutr::PolygonMeshBuilder::new(),
+            z_index,
+        }
+    }
+}
+
+>>>>>>> Stashed changes
 pub fn build_bevy_meshes<G: BuildBevyMeshes>(
     geo: &G,
     color: bevy_render::color::Color,
