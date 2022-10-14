@@ -3407,6 +3407,7 @@ dependencies = [
  "geo",
  "rgis-events",
  "rgis-layers",
+ "rgis-transform",
  "rgis-ui",
  "rgis-units",
 ]

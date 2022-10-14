@@ -128,10 +128,14 @@ impl ZoomCameraEvent {
 }
 
 pub struct ChangeCrsEvent {
-    pub crs: String,
+    pub old_crs: String,
+    pub new_crs: String,
 }
 
-pub struct CrsChangedEvent;
+pub struct CrsChangedEvent {
+    pub old_crs: String,
+    pub new_crs: String,
+}
 
 pub struct RenderMessageEvent(pub String);
 

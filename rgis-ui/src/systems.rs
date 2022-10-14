@@ -104,6 +104,7 @@ fn render_change_crs_window(
     mut open_change_crs_window_event_reader: bevy::ecs::event::EventReader<
         rgis_events::OpenChangeCrsWindow,
     >,
+    rgis_settings: Res<rgis_settings::RgisSettings>,
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
     mut text_field_value: Local<String>,
     mut change_crs_event_writer: bevy::ecs::event::EventWriter<rgis_events::ChangeCrsEvent>,
@@ -117,6 +118,7 @@ fn render_change_crs_window(
         bevy_egui_ctx: &mut bevy_egui_ctx,
         text_field_value: &mut text_field_value,
         change_crs_event_writer: &mut change_crs_event_writer,
+        rgis_settings: &rgis_settings,
     }
     .render();
 }

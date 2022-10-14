@@ -6,6 +6,7 @@ pub(crate) struct ChangeCrsWindow<'a, 'w, 's> {
     pub text_field_value: &'a mut String,
     pub change_crs_event_writer:
         &'a mut bevy::ecs::event::EventWriter<'w, 's, rgis_events::ChangeCrsEvent>,
+    pub rgis_settings: &'a rgis_settings::RgisSettings,
 }
 
 impl<'a, 'w, 's> ChangeCrsWindow<'a, 'w, 's> {
@@ -36,7 +37,8 @@ impl<'a, 'w, 's> ChangeCrsWindow<'a, 'w, 's> {
                     {
                         self.change_crs_event_writer
                             .send(rgis_events::ChangeCrsEvent {
-                                crs: self.text_field_value.clone(),
+                                old_crs: self.rgis_settings.target_crs.clone(),
+                                new_crs: self.text_field_value.clone(),
                             })
                     }
                 }

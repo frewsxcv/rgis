@@ -24,3 +24,32 @@ fn set_proj_log_level() {
         proj_sys::proj_log_level(std::ptr::null_mut(), proj_sys::PJ_LOG_LEVEL_PJ_LOG_NONE);
     }
 }
+
+#[derive(thiserror::Error, Debug)]
+pub enum TransformError {
+    #[cfg(target_arch = "wasm32")]
+    #[error("{0}")]
+    GeoProjJs(#[from] geo_proj_js::Error),
+    #[cfg(not(target_arch = "wasm32"))]
+    #[error("{0}")]
+    Proj(#[from] geo::algorithm::proj::TransformError),
+    #[error("{0}")]
+    BoundingRect(#[from] geo_features::BoundingRectError),
+}
+
+pub fn transform(
+    geometry: &mut geo::Geometry,
+    source_crs: &str,
+    target_crs: &str,
+) -> Result<(), TransformError> {
+    #[cfg(target_arch = "wasm32")]
+    {
+        geo_proj_js::transform(geometry, source_crs, target_crs)?;
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        use geo::transform::Transform;
+        geometry.transform_crs_to_crs(source_crs, target_crs)?;
+    }
+    Ok(())
+}

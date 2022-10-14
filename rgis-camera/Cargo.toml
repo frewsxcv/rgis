@@ -20,5 +20,6 @@ bevy = { version = "0.8", default-features = false, features = [
 geo = "0.23"
 rgis-events = { path = "../rgis-events" }
 rgis-layers = { path = "../rgis-layers" }
+rgis-transform = { path = "../rgis-transform" }
 rgis-ui = { path = "../rgis-ui" }
 rgis-units = { path = "../rgis-units" }

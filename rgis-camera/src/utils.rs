@@ -3,28 +3,18 @@ use bevy::prelude::*;
 pub(crate) fn center_camera_on_projected_world_rect(
     bounding_rect: crate::ProjectedWorldRect,
     camera_transform: &mut Transform,
-    window: &bevy::window::Window,
-    side_panel_width: &rgis_ui::SidePanelWidth,
-    top_panel_height: &rgis_ui::TopPanelHeight,
-    bottom_panel_height: &rgis_ui::BottomPanelHeight,
+    map_area: rgis_units::MapArea,
 ) {
     let layer_center = bounding_rect.0.center();
-    let canvas_size = rgis_units::MapArea {
-        window,
-        ui_rect: bevy::ui::UiRect {
-            left: side_panel_width.0,
-            top: top_panel_height.0,
-            bottom: bottom_panel_height.0,
-            right: 0.,
-        },
-    };
-
-    let scale = determine_scale(bounding_rect.0, canvas_size.size().0);
-    let camera_scale = crate::CameraScale(scale as f32);
+    let scale = determine_scale(bounding_rect.0, map_area.size().0);
+    let camera_scale = crate::CameraScale(scale);
     let mut camera_offset = crate::CameraOffset::from_coord(layer_center);
-    camera_offset.pan_x(-side_panel_width.0 / 2., camera_scale);
+    camera_offset.pan_x(
+        (map_area.ui_rect.right - map_area.ui_rect.left) / 2.,
+        camera_scale,
+    );
     camera_offset.pan_y(
-        (top_panel_height.0 - bottom_panel_height.0) / 2.,
+        (map_area.ui_rect.top - map_area.ui_rect.bottom) / 2.,
         camera_scale,
     );
     set_camera_transform(camera_transform, camera_offset, camera_scale);

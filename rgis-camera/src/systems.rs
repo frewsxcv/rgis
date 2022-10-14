@@ -18,9 +18,40 @@ fn init_camera(mut commands: Commands) {
 }
 
 fn handle_change_crs_event(
-    mut change_crs_event_reader: bevy::ecs::event::EventReader<rgis_events::ChangeCrsEvent>,
+    mut change_crs_event_reader: bevy::ecs::event::EventReader<rgis_events::CrsChangedEvent>,
+    mut query: Query<
+        &mut bevy::transform::components::Transform,
+        bevy::ecs::query::With<bevy::render::camera::Camera>,
+    >,
+    windows: Res<bevy::window::Windows>,
+    side_panel_width: Res<rgis_ui::SidePanelWidth>,
+    top_panel_height: Res<rgis_ui::TopPanelHeight>,
+    bottom_panel_height: Res<rgis_ui::BottomPanelHeight>,
 ) {
-    if let Some(event) = change_crs_event_reader.iter().next_back() {}
+    if let Some(event) = change_crs_event_reader.iter().next_back() {
+        let mut transform = query.single_mut();
+        let window = windows.primary();
+        let map_area = rgis_units::MapArea {
+            window,
+            ui_rect: bevy::ui::UiRect {
+                left: side_panel_width.0,
+                top: top_panel_height.0,
+                bottom: bottom_panel_height.0,
+                right: 0.,
+            },
+        };
+        let rect = map_area.projected_geo_rect(&transform, window);
+        let mut geometry = geo::Geometry::Rect(rect);
+        rgis_transform::transform(&mut geometry, &event.old_crs, &event.new_crs).unwrap();
+
+        if let geo::Geometry::Rect(rect) = geometry {
+            crate::utils::center_camera_on_projected_world_rect(
+                crate::ProjectedWorldRect(rect),
+                &mut transform,
+                map_area,
+            );
+        }
+    }
 }
 
 fn pan_camera_system(
@@ -101,13 +132,19 @@ fn center_camera(
         let window = windows.primary();
 
         debug!("Moving camera to look at new layer");
+        let map_area = rgis_units::MapArea {
+            window,
+            ui_rect: bevy::ui::UiRect {
+                left: side_panel_width.0,
+                top: top_panel_height.0,
+                bottom: bottom_panel_height.0,
+                right: 0.,
+            },
+        };
         crate::utils::center_camera_on_projected_world_rect(
             crate::ProjectedWorldRect(bounding_rect),
             &mut transform,
-            window,
-            &side_panel_width,
-            &top_panel_height,
-            &bottom_panel_height,
+            map_area,
         );
     }
 }

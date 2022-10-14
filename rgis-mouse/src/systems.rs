@@ -23,7 +23,7 @@ fn cursor_moved_system(
             x: f64::from(event.position.x),
             y: f64::from(event.position.y),
         }
-        .to_geo_coord(transform, window);
+        .to_projected_geo_coord(transform, window);
     }
 }
 
