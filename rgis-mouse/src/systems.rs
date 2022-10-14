@@ -19,14 +19,11 @@ fn cursor_moved_system(
     let window = windows.primary();
     let transform = query.single();
     if let Some(event) = cursor_moved_event_reader.iter().next_back() {
-        mouse_position.projected = rgis_units::screen_coords_to_geo_coords(
-            rgis_units::ScreenCoord {
-                x: f64::from(event.position.x),
-                y: f64::from(event.position.y),
-            },
-            transform,
-            window,
-        );
+        mouse_position.projected = rgis_units::ScreenCoord {
+            x: f64::from(event.position.x),
+            y: f64::from(event.position.y),
+        }
+        .to_geo_coord(transform, window);
     }
 }
 

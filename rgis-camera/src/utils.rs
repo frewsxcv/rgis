@@ -9,14 +9,17 @@ pub(crate) fn center_camera_on_projected_world_rect(
     bottom_panel_height: &rgis_ui::BottomPanelHeight,
 ) {
     let layer_center = bounding_rect.0.center();
-    let canvas_size = rgis_units::map_area_size(
+    let canvas_size = rgis_units::MapArea {
         window,
-        rgis_units::ScreenLength(side_panel_width.0),
-        rgis_units::ScreenLength(top_panel_height.0),
-        rgis_units::ScreenLength(bottom_panel_height.0),
-    );
+        ui_rect: bevy::ui::UiRect {
+            left: side_panel_width.0,
+            top: top_panel_height.0,
+            bottom: bottom_panel_height.0,
+            right: 0.,
+        },
+    };
 
-    let scale = determine_scale(bounding_rect.0, canvas_size.0);
+    let scale = determine_scale(bounding_rect.0, canvas_size.size().0);
     let camera_scale = crate::CameraScale(scale as f32);
     let mut camera_offset = crate::CameraOffset::from_coord(layer_center);
     camera_offset.pan_x(-side_panel_width.0 / 2., camera_scale);
