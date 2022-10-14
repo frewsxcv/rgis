@@ -38,10 +38,8 @@ pub enum TransformError {
 }
 
 pub fn transform<
-    #[cfg(target_arch = "wasm32")]
-    G: geo::MapCoordsInPlace<f64>,
-    #[cfg(not(target_arch = "wasm32"))]
-    G: geo::transform::Transform<f64>,
+    #[cfg(target_arch = "wasm32")] G: geo::MapCoordsInPlace<f64>,
+    #[cfg(not(target_arch = "wasm32"))] G: geo::transform::Transform<f64>,
 >(
     geometry: &mut G,
     source_crs: &str,

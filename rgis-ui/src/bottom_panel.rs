@@ -43,7 +43,7 @@ impl<'a, 'w, 's> BottomPanel<'a, 'w, 's> {
         egui::Frame::group(ui.style()).show(ui, |ui| {
             ui.label(format!(
                 "🖱 XY: {}, {}",
-                self.mouse_pos.0.0.x, self.mouse_pos.0.0.y
+                self.mouse_pos.0 .0.x, self.mouse_pos.0 .0.y
             ));
         });
     }

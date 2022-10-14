@@ -43,11 +43,7 @@ fn handle_change_crs_event(
         let mut rect = map_area.projected_geo_rect(&transform, window);
         rgis_transform::transform(&mut rect.0, &event.old_crs, &event.new_crs).unwrap();
 
-        crate::utils::center_camera_on_projected_world_rect(
-            rect,
-            &mut transform,
-            map_area,
-        );
+        crate::utils::center_camera_on_projected_world_rect(rect, &mut transform, map_area);
     }
 }
 

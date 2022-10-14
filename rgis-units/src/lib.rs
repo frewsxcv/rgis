@@ -58,8 +58,8 @@ impl<'a> MapArea<'a> {
         transform: &bevy::transform::components::Transform,
         window: &bevy::prelude::Window,
     ) -> Projected<geo::Coordinate> {
-            self.top_left_screen_coord()
-                .to_projected_geo_coord(transform, window)
+        self.top_left_screen_coord()
+            .to_projected_geo_coord(transform, window)
     }
 
     fn bottom_right_screen_coord(&self) -> ScreenCoord {
@@ -74,8 +74,8 @@ impl<'a> MapArea<'a> {
         transform: &bevy::transform::components::Transform,
         window: &bevy::prelude::Window,
     ) -> Projected<geo::Coordinate> {
-            self.bottom_right_screen_coord()
-                .to_projected_geo_coord(transform, window)
+        self.bottom_right_screen_coord()
+            .to_projected_geo_coord(transform, window)
     }
 
     pub fn projected_geo_rect(
