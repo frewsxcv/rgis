@@ -20,7 +20,7 @@ fn cursor_moved_system(
     let transform = query.single();
     if let Some(event) = cursor_moved_event_reader.iter().next_back() {
         mouse_position.projected = rgis_units::screen_coords_to_geo_coords(
-            rgis_units::ScreenLocation {
+            rgis_units::ScreenCoord {
                 x: f64::from(event.position.x),
                 y: f64::from(event.position.y),
             },

@@ -7,7 +7,7 @@
 )]
 
 pub fn screen_coords_to_geo_coords(
-    screen_coords: ScreenLocation,
+    screen_coords: ScreenCoord,
     transform: &bevy::transform::components::Transform,
     window: &bevy::prelude::Window,
 ) -> geo::Coordinate {
@@ -27,7 +27,7 @@ pub fn screen_coords_to_geo_coords(
 }
 
 // From top-left
-pub struct ScreenLocation {
+pub struct ScreenCoord {
     pub x: f64,
     pub y: f64,
 }
@@ -48,8 +48,8 @@ pub fn map_area_screen_rect(
 pub fn map_area_top_left_screen_coord(
     window: &bevy::window::Window,
     map_area_screen_rect: ScreenRect,
-) -> ScreenLocation {
-    ScreenLocation {
+) -> ScreenCoord {
+    ScreenCoord {
         x: f64::from(map_area_screen_rect.0.left),
         y: f64::from(map_area_screen_rect.0.top),
     }
@@ -58,8 +58,8 @@ pub fn map_area_top_left_screen_coord(
 pub fn map_area_bottom_right_screen_coord(
     window: &bevy::window::Window,
     map_area_screen_rect: ScreenRect,
-) -> ScreenLocation {
-    ScreenLocation {
+) -> ScreenCoord {
+    ScreenCoord {
         x: f64::from(window.width() - map_area_screen_rect.0.right),
         y: f64::from(window.height() - map_area_screen_rect.0.bottom),
     }
