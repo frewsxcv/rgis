@@ -32,7 +32,40 @@ pub struct ScreenLocation {
     pub y: f64,
 }
 
-fn map_area_projected_rect() -> bevy::ui::UiRect<f64> {
+pub fn map_area_screen_rect(
+    side_panel_width: ScreenLength,
+    top_panel_height: ScreenLength,
+    bottom_panel_height: ScreenLength,
+) -> ScreenRect {
+    ScreenRect(bevy::ui::UiRect {
+        left: side_panel_width.0,
+        right: 0.,
+        top: top_panel_height.0,
+        bottom: bottom_panel_height.0,
+    })
+}
+
+pub fn map_area_top_left_screen_coord(
+    window: &bevy::window::Window,
+    map_area_screen_rect: ScreenRect,
+) -> ScreenLocation {
+    ScreenLocation {
+        x: f64::from(map_area_screen_rect.0.left),
+        y: f64::from(map_area_screen_rect.0.top),
+    }
+}
+
+pub fn map_area_bottom_right_screen_coord(
+    window: &bevy::window::Window,
+    map_area_screen_rect: ScreenRect,
+) -> ScreenLocation {
+    ScreenLocation {
+        x: f64::from(window.width() - map_area_screen_rect.0.right),
+        y: f64::from(window.height() - map_area_screen_rect.0.bottom),
+    }
+}
+
+fn map_area_projected_rect() -> geo::Rect<f64> {
     todo!()
 }
 
@@ -41,6 +74,8 @@ fn center_camera_on_screen_coords_rect() {
 }
 
 pub struct ScreenLength(pub f32);
+
+pub struct ScreenRect(pub bevy::ui::UiRect<f32>);
 
 pub struct ScreenSize(pub bevy::ui::Size<f32>);
 
