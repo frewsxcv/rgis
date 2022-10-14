@@ -41,10 +41,10 @@ fn handle_change_crs_event(
             },
         };
         let mut rect = map_area.projected_geo_rect(&transform, window);
-        rgis_transform::transform(&mut rect, &event.old_crs, &event.new_crs).unwrap();
+        rgis_transform::transform(&mut rect.0, &event.old_crs, &event.new_crs).unwrap();
 
         crate::utils::center_camera_on_projected_world_rect(
-            crate::ProjectedWorldRect(rect),
+            rect,
             &mut transform,
             map_area,
         );
@@ -139,7 +139,7 @@ fn center_camera(
             },
         };
         crate::utils::center_camera_on_projected_world_rect(
-            crate::ProjectedWorldRect(bounding_rect),
+            rgis_units::Projected(bounding_rect),
             &mut transform,
             map_area,
         );

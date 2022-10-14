@@ -82,10 +82,12 @@ impl<'a> MapArea<'a> {
         &self,
         transform: &bevy::transform::components::Transform,
         window: &bevy::prelude::Window,
-    ) -> geo::Rect {
-        geo::Rect::new(
-            self.top_left_projected_geo_coord(transform, window),
-            self.bottom_right_projected_geo_coord(transform, window),
+    ) -> Projected<geo::Rect> {
+        Projected(
+            geo::Rect::new(
+                self.top_left_projected_geo_coord(transform, window),
+                self.bottom_right_projected_geo_coord(transform, window),
+            )
         )
     }
 
@@ -101,6 +103,10 @@ impl<'a> MapArea<'a> {
         ScreenSize::from_width_height(self.width(), self.height())
     }
 }
+
+pub struct Projected<G>(pub G);
+
+pub struct Unprojected<G>(pub G);
 
 pub struct ScreenLength(pub f32);
 
