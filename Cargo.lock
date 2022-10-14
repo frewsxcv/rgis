@@ -3482,6 +3482,7 @@ dependencies = [
  "geo-geom-type",
  "rgis-events",
  "rgis-layer-id",
+ "rgis-units",
  "serde_json",
  "thiserror",
 ]

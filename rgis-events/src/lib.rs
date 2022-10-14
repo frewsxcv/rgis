@@ -58,7 +58,7 @@ pub struct MoveLayerEvent(pub rgis_layer_id::LayerId, pub MoveDirection);
 
 pub struct LayerZIndexUpdatedEvent(pub rgis_layer_id::LayerId);
 
-pub struct MapClickedEvent(pub geo::Coordinate);
+pub struct MapClickedEvent(pub rgis_units::Projected<geo::Coordinate>);
 
 #[derive(Default)]
 pub struct OpenChangeCrsWindow;

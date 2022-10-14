@@ -90,9 +90,12 @@ impl Layers {
         )
     }
 
-    pub fn feature_from_click(&self, coord: geo::Coordinate) -> Option<&geo_features::Feature> {
+    pub fn feature_from_click(
+        &self,
+        coord: rgis_units::Projected<geo::Coordinate>,
+    ) -> Option<&geo_features::Feature> {
         self.features_iter()
-            .filter(|item| item.projected.contains(&coord))
+            .filter(|item| item.projected.contains(&coord.0))
             .map(|item| item.unprojected)
             .next()
     }

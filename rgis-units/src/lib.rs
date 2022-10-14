@@ -22,7 +22,7 @@ impl ScreenCoord {
         self,
         transform: &bevy::transform::components::Transform,
         window: &bevy::prelude::Window,
-    ) -> geo::Coordinate {
+    ) -> Projected<geo::Coordinate> {
         let size = bevy::math::DVec2::new(f64::from(window.width()), f64::from(window.height()));
 
         // the default orthographic projection is in pixels from the center;
@@ -32,10 +32,10 @@ impl ScreenCoord {
         // apply the camera transform
         let pos_wld = transform.compute_matrix().as_dmat4() * p.extend(0.0).extend(1.0);
 
-        geo::Coordinate {
+        Projected(geo::Coordinate {
             x: pos_wld.x,
             y: pos_wld.y,
-        }
+        })
     }
 }
 
@@ -57,9 +57,9 @@ impl<'a> MapArea<'a> {
         &self,
         transform: &bevy::transform::components::Transform,
         window: &bevy::prelude::Window,
-    ) -> geo::Coordinate {
-        self.top_left_screen_coord()
-            .to_projected_geo_coord(transform, window)
+    ) -> Projected<geo::Coordinate> {
+            self.top_left_screen_coord()
+                .to_projected_geo_coord(transform, window)
     }
 
     fn bottom_right_screen_coord(&self) -> ScreenCoord {
@@ -73,9 +73,9 @@ impl<'a> MapArea<'a> {
         &self,
         transform: &bevy::transform::components::Transform,
         window: &bevy::prelude::Window,
-    ) -> geo::Coordinate {
-        self.bottom_right_screen_coord()
-            .to_projected_geo_coord(transform, window)
+    ) -> Projected<geo::Coordinate> {
+            self.bottom_right_screen_coord()
+                .to_projected_geo_coord(transform, window)
     }
 
     pub fn projected_geo_rect(
@@ -83,12 +83,10 @@ impl<'a> MapArea<'a> {
         transform: &bevy::transform::components::Transform,
         window: &bevy::prelude::Window,
     ) -> Projected<geo::Rect> {
-        Projected(
-            geo::Rect::new(
-                self.top_left_projected_geo_coord(transform, window),
-                self.bottom_right_projected_geo_coord(transform, window),
-            )
-        )
+        Projected(geo::Rect::new(
+            self.top_left_projected_geo_coord(transform, window).0,
+            self.bottom_right_projected_geo_coord(transform, window).0,
+        ))
     }
 
     fn width(&self) -> ScreenLength {
@@ -106,7 +104,15 @@ impl<'a> MapArea<'a> {
 
 pub struct Projected<G>(pub G);
 
-pub struct Unprojected<G>(pub G);
+impl<G: Copy> Copy for Projected<G> {}
+impl<G: Clone> Clone for Projected<G> {
+    fn clone(&self) -> Self {
+        Projected(self.0.clone())
+    }
+}
+
+#[derive(Clone)]
+pub struct Unprojected<G: Clone>(pub G);
 
 pub struct ScreenLength(pub f32);
 

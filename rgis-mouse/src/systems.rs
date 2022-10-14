@@ -19,7 +19,7 @@ fn cursor_moved_system(
     let window = windows.primary();
     let transform = query.single();
     if let Some(event) = cursor_moved_event_reader.iter().next_back() {
-        mouse_position.projected = rgis_units::ScreenCoord {
+        mouse_position.0 = rgis_units::ScreenCoord {
             x: f64::from(event.position.x),
             y: f64::from(event.position.y),
         }
@@ -84,7 +84,7 @@ fn mouse_click_system(
     if rgis_settings.current_tool == rgis_settings::Tool::Query
         && mouse_button.just_pressed(bevy::input::mouse::MouseButton::Left)
     {
-        map_clicked_event_writer.send(rgis_events::MapClickedEvent(mouse_position.projected))
+        map_clicked_event_writer.send(rgis_events::MapClickedEvent(mouse_position.0))
     }
 }
 

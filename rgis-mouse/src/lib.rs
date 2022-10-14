@@ -8,18 +8,17 @@
 
 mod systems;
 
-#[derive(Copy, Clone)]
-pub struct MousePos {
-    pub projected: geo::Coordinate,
-}
+#[derive(Clone)]
+pub struct MousePos(pub rgis_units::Projected<geo::Coordinate>);
 
 pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut bevy::app::App) {
         app.add_system_set(systems::system_set())
-            .insert_resource(MousePos {
-                projected: geo::Coordinate { x: 0., y: 0. },
-            });
+            .insert_resource(MousePos(rgis_units::Projected(geo::Coordinate {
+                x: 0.,
+                y: 0.,
+            })));
     }
 }
