@@ -6,7 +6,6 @@
     clippy::expect_used
 )]
 
-use geo::algorithm::map_coords::MapCoordsInPlace;
 use std::{error, fmt};
 use wasm_bindgen::JsCast;
 
@@ -21,8 +20,8 @@ impl fmt::Display for Error {
 
 impl error::Error for Error {}
 
-pub fn transform(
-    geometry: &mut geo::Geometry,
+pub fn transform<G: geo::MapCoordsInPlace<f64>>(
+    geometry: &mut G,
     source_crs: &str,
     target_crs: &str,
 ) -> Result<(), Error> {
@@ -54,8 +53,6 @@ pub fn transform(
             }
         }
     });
-
-    // geometry.try_map_coords_in_place(|(x, y)| in_place((x, y), &forward, &array))?;
 
     Ok(())
 }

@@ -40,17 +40,14 @@ fn handle_change_crs_event(
                 right: 0.,
             },
         };
-        let rect = map_area.projected_geo_rect(&transform, window);
-        let mut geometry = geo::Geometry::Rect(rect);
-        rgis_transform::transform(&mut geometry, &event.old_crs, &event.new_crs).unwrap();
+        let mut rect = map_area.projected_geo_rect(&transform, window);
+        rgis_transform::transform(&mut rect, &event.old_crs, &event.new_crs).unwrap();
 
-        if let geo::Geometry::Rect(rect) = geometry {
-            crate::utils::center_camera_on_projected_world_rect(
-                crate::ProjectedWorldRect(rect),
-                &mut transform,
-                map_area,
-            );
-        }
+        crate::utils::center_camera_on_projected_world_rect(
+            crate::ProjectedWorldRect(rect),
+            &mut transform,
+            map_area,
+        );
     }
 }
 

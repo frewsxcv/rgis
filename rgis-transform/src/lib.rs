@@ -37,8 +37,13 @@ pub enum TransformError {
     BoundingRect(#[from] geo_features::BoundingRectError),
 }
 
-pub fn transform(
-    geometry: &mut geo::Geometry,
+pub fn transform<
+    #[cfg(target_arch = "wasm32")]
+    G: geo::MapCoordsInPlace<f64>,
+    #[cfg(not(target_arch = "wasm32"))]
+    G: geo::transform::Transform<f64>,
+>(
+    geometry: &mut G,
     source_crs: &str,
     target_crs: &str,
 ) -> Result<(), TransformError> {
@@ -48,7 +53,6 @@ pub fn transform(
     }
     #[cfg(not(target_arch = "wasm32"))]
     {
-        use geo::transform::Transform;
         geometry.transform_crs_to_crs(source_crs, target_crs)?;
     }
     Ok(())
