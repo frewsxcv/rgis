@@ -5,7 +5,6 @@ authors = ["Corey Farwell <coreyf@rwell.org>"]
 edition = "2021"
 
 [dependencies]
-async-channel = "1"
 bevy = { version = "0.8", default-features = false, features = [
     "bevy_winit",
     "bevy_core_pipeline",
@@ -15,5 +14,8 @@ bevy = { version = "0.8", default-features = false, features = [
     "wayland",
     "png",
 ] }
-ehttp = "0.2"
+bytes = "1"
+reqwest = "0.11"
 bevy_jobs = { git = "https://github.com/frewsxcv/bevy_jobs" }
+tokio = { version = "1", features = ["rt", "io-util", "sync", "macros"] }
+# error: Only features sync,macros,io-util,rt,time are supported on wasm.

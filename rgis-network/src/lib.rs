@@ -8,12 +8,9 @@
 
 pub struct FetchedFile {
     pub name: String,
-    pub bytes: Vec<u8>,
+    pub bytes: bytes::Bytes,
     pub crs: String,
 }
-
-type FetchedFileSender = async_channel::Sender<ehttp::Result<ehttp::Response>>;
-type FetchedFileReceiver = async_channel::Receiver<ehttp::Result<ehttp::Response>>;
 
 pub struct NetworkFetchTask {
     pub url: String,
@@ -29,29 +26,22 @@ impl bevy_jobs::Job for NetworkFetchTask {
     }
 
     fn perform(self) -> bevy_jobs::AsyncReturn<Self::Outcome> {
-        let (sender, receiver): (FetchedFileSender, FetchedFileReceiver) =
-            async_channel::unbounded();
         Box::pin(async move {
-            fetch(self.url, sender);
-            match receiver.recv().await {
-                Ok(response) => Ok(FetchedFile {
-                    bytes: response?.bytes,
+            let runtime = tokio::runtime::Builder::new_current_thread()
+                .enable_io()
+                .build()
+                .unwrap();
+            runtime.block_on(async {
+                let response = reqwest::get(self.url).await.unwrap();
+                let bytes = response.bytes().await.unwrap();
+                Ok(FetchedFile {
+                    bytes,
                     crs: self.crs,
                     name: self.name,
-                }),
-                Err(e) => Err(e.to_string()),
-            }
+                })
+            })
         })
     }
-}
-
-fn fetch(url: String, fetched_bytes_sender: FetchedFileSender) {
-    let request = ehttp::Request::get(url);
-    ehttp::fetch(request, move |result: ehttp::Result<ehttp::Response>| {
-        if let Err(e) = fetched_bytes_sender.try_send(result) {
-            bevy::log::error!("Failed to send network response to main thread: {:?}", e);
-        }
-    });
 }
 
 pub struct Plugin;

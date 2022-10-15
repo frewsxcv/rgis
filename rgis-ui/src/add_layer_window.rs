@@ -167,7 +167,7 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                                         rgis_events::LoadFileEvent::FromBytes {
                                             file_name: loaded_file.file_name,
                                             file_loader: geo_file_loader::GeoJsonSource {
-                                                bytes: loaded_file.bytes,
+                                                bytes: loaded_file.bytes.into(),
                                             },
                                             crs: "EPSG:4326".into(),
                                         },
@@ -178,7 +178,7 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                                         rgis_events::LoadFileEvent::FromBytes {
                                             file_name: loaded_file.file_name,
                                             file_loader: geo_file_loader::WktSource {
-                                                bytes: loaded_file.bytes,
+                                                bytes: loaded_file.bytes.into(),
                                             },
                                             crs: "EPSG:4326".into(),
                                         },
@@ -222,7 +222,7 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                                     rgis_events::LoadFileEvent::FromBytes {
                                         file_name: "Inputted file".into(),
                                         file_loader: geo_file_loader::GeoJsonSource {
-                                            bytes: new.into_bytes(),
+                                            bytes: new.into(),
                                         },
                                         crs: "EPSG:4326".into(),
                                     },
@@ -233,7 +233,7 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                                     rgis_events::LoadFileEvent::FromBytes {
                                         file_name: "Inputted file".into(),
                                         file_loader: geo_file_loader::WktSource {
-                                            bytes: new.into_bytes(),
+                                            bytes: new.into(),
                                         },
                                         crs: "EPSG:4326".into(),
                                     },

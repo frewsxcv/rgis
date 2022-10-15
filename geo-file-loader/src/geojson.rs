@@ -3,7 +3,7 @@
 use std::{error, fmt, io, iter};
 
 pub struct GeoJsonSource {
-    pub bytes: Vec<u8>,
+    pub bytes: bytes::Bytes,
 }
 
 impl crate::FileLoader for GeoJsonSource {
@@ -11,7 +11,7 @@ impl crate::FileLoader for GeoJsonSource {
 
     const FILE_TYPE_NAME: &'static str = "GeoJSON";
 
-    fn from_bytes(bytes: Vec<u8>) -> Self {
+    fn from_bytes(bytes: bytes::Bytes) -> Self {
         GeoJsonSource { bytes }
     }
 
