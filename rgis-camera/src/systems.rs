@@ -24,21 +24,14 @@ fn handle_change_crs_event(
         bevy::ecs::query::With<bevy::render::camera::Camera>,
     >,
     windows: Res<bevy::window::Windows>,
-    side_panel_width: Res<rgis_ui::SidePanelWidth>,
-    top_panel_height: Res<rgis_ui::TopPanelHeight>,
-    bottom_panel_height: Res<rgis_ui::BottomPanelHeight>,
+    ui_margins: rgis_ui::UiMargins,
 ) {
     if let Some(event) = change_crs_event_reader.iter().next_back() {
         let mut transform = query.single_mut();
         let window = windows.primary();
         let map_area = rgis_units::MapArea {
             window,
-            ui_rect: bevy::ui::UiRect {
-                left: side_panel_width.0,
-                top: top_panel_height.0,
-                bottom: bottom_panel_height.0,
-                right: 0.,
-            },
+            ui_rect: ui_margins.to_ui_rect(),
         };
         let mut rect = map_area.projected_geo_rect(&transform, window);
         rgis_transform::transform(&mut rect.0, &event.old_crs, &event.new_crs).unwrap();
@@ -108,9 +101,7 @@ fn center_camera(
         bevy::ecs::query::With<bevy::render::camera::Camera>,
     >,
     windows: Res<bevy::window::Windows>,
-    side_panel_width: Res<rgis_ui::SidePanelWidth>,
-    top_panel_height: Res<rgis_ui::TopPanelHeight>,
-    bottom_panel_height: Res<rgis_ui::BottomPanelHeight>,
+    ui_margins: rgis_ui::UiMargins,
 ) {
     for projected_feature in event_reader
         .iter()
@@ -127,12 +118,7 @@ fn center_camera(
         debug!("Moving camera to look at new layer");
         let map_area = rgis_units::MapArea {
             window,
-            ui_rect: bevy::ui::UiRect {
-                left: side_panel_width.0,
-                top: top_panel_height.0,
-                bottom: bottom_panel_height.0,
-                right: 0.,
-            },
+            ui_rect: ui_margins.to_ui_rect(),
         };
         crate::utils::center_camera_on_projected_world_rect(
             rgis_units::Projected(bounding_rect),

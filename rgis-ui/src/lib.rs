@@ -7,6 +7,7 @@
 )]
 
 use bevy::prelude::*;
+use std::marker;
 
 mod add_layer_window;
 mod bottom_panel;
@@ -20,11 +21,34 @@ mod top_panel;
 
 pub struct Plugin;
 
+#[derive(Copy, Clone)]
 pub struct SidePanelWidth(pub f32);
 
+#[derive(Copy, Clone)]
 pub struct TopPanelHeight(pub f32);
 
+#[derive(Copy, Clone)]
 pub struct BottomPanelHeight(pub f32);
+
+#[derive(bevy::ecs::system::SystemParam)]
+pub struct UiMargins<'w, 's> {
+    pub left: Res<'w, SidePanelWidth>,
+    pub top: Res<'w, TopPanelHeight>,
+    pub bottom: Res<'w, BottomPanelHeight>,
+    #[system_param(ignore)]
+    marker: marker::PhantomData<&'s usize>,
+}
+
+impl<'w, 's> UiMargins<'w, 's> {
+    pub fn to_ui_rect(&self) -> bevy::ui::UiRect<f32> {
+        bevy::ui::UiRect {
+            left: self.left.0,
+            top: self.top.0,
+            bottom: self.bottom.0,
+            right: 0.,
+        }
+    }
+}
 
 #[derive(Default)]
 pub struct MessageWindowState {
