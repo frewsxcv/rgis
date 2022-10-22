@@ -7,7 +7,7 @@
 )]
 
 use geo::{BoundingRect, Contains};
-use std::{collections, fmt};
+use std::{collections, fmt, num, sync};
 
 #[derive(Default)]
 pub struct FeatureBuilder {
@@ -39,6 +39,7 @@ impl FeatureBuilder {
             .as_ref()
             .and_then(|geometry| geometry.bounding_rect());
         Ok(Feature {
+            id: FeatureId::new(),
             geometry: self.geometry,
             properties: self.properties,
             bounding_rect,
@@ -48,6 +49,7 @@ impl FeatureBuilder {
 
 #[derive(Clone, Debug, Default)]
 pub struct Feature {
+    pub id: FeatureId,
     pub geometry: Option<geo::Geometry>,
     pub properties: Properties,
     pub bounding_rect: Option<geo::Rect>,
@@ -189,4 +191,29 @@ fn rect_merge<T: geo::CoordFloat>(a: geo::Rect<T>, b: geo::Rect<T>) -> geo::Rect
             y: a.max().y.max(b.max().y),
         },
     )
+}
+
+// The starting value is `1` so we can utilize `NonZeroU16`.
+static NEXT_ID: sync::atomic::AtomicU16 = sync::atomic::AtomicU16::new(1);
+
+#[derive(
+    Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Hash,
+)]
+pub struct FeatureId(num::NonZeroU16);
+
+impl Default for FeatureId {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl FeatureId {
+    pub fn new() -> Self {
+        FeatureId(new_id())
+    }
+}
+
+fn new_id() -> num::NonZeroU16 {
+    // Unsafety: The starting ID is 1 and we always increment.
+    unsafe { num::NonZeroU16::new_unchecked(NEXT_ID.fetch_add(1, sync::atomic::Ordering::SeqCst)) }
 }
