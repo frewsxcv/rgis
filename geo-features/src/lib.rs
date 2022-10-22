@@ -75,8 +75,12 @@ impl Feature {
     }
 }
 
-impl Contains<geo::Coordinate> for Feature {
-    fn contains(&self, coord: &geo::Coordinate) -> bool {
+impl<G> Contains<G> for Feature
+where
+    geo::Rect: Contains<G>,
+    geo::Geometry: Contains<G>,
+{
+    fn contains(&self, coord: &G) -> bool {
         self.bounding_rect
             .as_ref()
             .map(|bounding_rect| bounding_rect.contains(coord))
@@ -98,6 +102,26 @@ pub struct FeatureCollection {
 impl FeatureCollection {
     pub fn new() -> Self {
         FeatureCollection::default()
+    }
+}
+
+impl<G> Contains<G> for FeatureCollection
+where
+    geo::Rect: Contains<G>,
+    geo::Geometry: Contains<G>,
+{
+    fn contains(&self, coord: &G) -> bool {
+        self.bounding_rect
+            .as_ref()
+            .map(|bounding_rect| bounding_rect.contains(coord))
+            .unwrap_or(false)
+            && self.features.iter().any(|feature| {
+                feature
+                    .geometry
+                    .as_ref()
+                    .map(|geometry| geometry.contains(coord))
+                    .unwrap_or(false)
+            })
     }
 }
 
