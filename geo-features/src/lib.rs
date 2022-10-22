@@ -196,9 +196,7 @@ fn rect_merge<T: geo::CoordFloat>(a: geo::Rect<T>, b: geo::Rect<T>) -> geo::Rect
 // The starting value is `1` so we can utilize `NonZeroU16`.
 static NEXT_ID: sync::atomic::AtomicU16 = sync::atomic::AtomicU16::new(1);
 
-#[derive(
-    Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Hash,
-)]
+#[derive(Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Hash)]
 pub struct FeatureId(num::NonZeroU16);
 
 impl Default for FeatureId {
