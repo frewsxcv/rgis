@@ -52,10 +52,7 @@ impl Layers {
     pub fn containing_coord(&self, coord: geo::Coordinate) -> impl Iterator<Item = &Layer> {
         self.iter_top_to_bottom()
             .filter(move |layer| match layer.projected_feature_collection {
-                Some(ref projected) => projected
-                    .features
-                    .iter()
-                    .any(|feature| feature.contains(&coord)),
+                Some(ref projected) => projected.contains(&coord),
                 None => false,
             })
     }
