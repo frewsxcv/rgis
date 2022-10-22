@@ -100,25 +100,6 @@ impl Layers {
             .next()
     }
 
-    // Returns whether the selected layer changed
-    /*
-    pub fn set_selected_layer_from_mouse_press(&mut self, coord: geo::Coordinate) -> bool {
-        let selected_layer_id = {
-            let mut iter = self.containing_coord(coord);
-            let new_selected_layer = iter.next();
-            if let Some(layer) = new_selected_layer {
-                info!("A layer was clicked: {:?}", layer.name);
-            }
-            new_selected_layer.map(|layer| layer.id)
-        };
-        let prev_selected_layer_id = self.selected_layer_id;
-
-        self.selected_layer_id = selected_layer_id;
-
-        prev_selected_layer_id != self.selected_layer_id
-    }
-    */
-
     fn get_index(&self, layer_id: rgis_layer_id::LayerId) -> Option<usize> {
         self.data.iter().position(|entry| entry.id == layer_id)
     }
