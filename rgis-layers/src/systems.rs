@@ -90,6 +90,7 @@ fn handle_move_layer_events(
 fn handle_map_clicked_events(
     mut map_clicked_event_reader: EventReader<rgis_events::MapClickedEvent>,
     mut render_message_event_writer: EventWriter<rgis_events::RenderFeaturePropertiesEvent>,
+    mut feature_clicked_event_writer: EventWriter<rgis_events::FeatureClickedEvent>,
     layers: Res<crate::Layers>,
 ) {
     for event in map_clicked_event_reader.iter() {
@@ -97,6 +98,7 @@ fn handle_map_clicked_events(
             render_message_event_writer.send(rgis_events::RenderFeaturePropertiesEvent(
                 feature.properties.clone(),
             ));
+            feature_clicked_event_writer.send(rgis_events::FeatureClickedEvent(feature.id))
         }
     }
 }
