@@ -18,6 +18,7 @@ bevy = { version = "0.8", default-features = false, features = [
     "png",
 ] }
 geo = "0.23"
+geo-projected = { path = "../geo-projected" }
 rgis-events = { path = "../rgis-events" }
 rgis-layers = { path = "../rgis-layers" }
 rgis-transform = { path = "../rgis-transform" }

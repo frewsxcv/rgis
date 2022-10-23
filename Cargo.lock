@@ -1942,6 +1942,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "geo-projected"
+version = "0.1.0"
+dependencies = [
+ "geo",
+ "geo-features",
+]
+
+[[package]]
 name = "geo-types"
 version = "0.7.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3405,6 +3413,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "geo",
+ "geo-projected",
  "rgis-events",
  "rgis-layers",
  "rgis-transform",
@@ -3428,6 +3437,7 @@ dependencies = [
  "geo",
  "geo-features",
  "geo-file-loader",
+ "geo-projected",
  "rgis-layer-id",
  "rgis-units",
 ]
@@ -3440,6 +3450,7 @@ dependencies = [
  "bevy_jobs",
  "geo-features",
  "geo-file-loader",
+ "geo-projected",
  "rgis-events",
  "rgis-network",
  "rgis-units",
@@ -3455,6 +3466,7 @@ dependencies = [
  "geo",
  "geo-features",
  "geo-geom-type",
+ "geo-projected",
  "rgis-units",
 ]
 
@@ -3482,6 +3494,7 @@ dependencies = [
  "geo",
  "geo-features",
  "geo-geom-type",
+ "geo-projected",
  "rgis-events",
  "rgis-layer-id",
  "rgis-units",
@@ -3500,6 +3513,7 @@ dependencies = [
  "bevy",
  "bevy_egui",
  "geo",
+ "geo-projected",
  "rgis-events",
  "rgis-settings",
  "rgis-units",
@@ -3545,6 +3559,7 @@ dependencies = [
  "geo",
  "geo-features",
  "geo-proj-js",
+ "geo-projected",
  "proj-sys",
  "rgis-events",
  "rgis-layer-id",
@@ -3565,6 +3580,7 @@ dependencies = [
  "geo",
  "geo-features",
  "geo-file-loader",
+ "geo-projected",
  "rfd",
  "rgis-events",
  "rgis-geo-ops",
@@ -3584,6 +3600,7 @@ dependencies = [
  "bevy",
  "geo",
  "geo-features",
+ "geo-projected",
 ]
 
 [[package]]

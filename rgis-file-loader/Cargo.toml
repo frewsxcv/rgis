@@ -16,6 +16,7 @@ bevy = { version = "0.8", default-features = false, features = [
 ] }
 geo-features = { path = "../geo-features" }
 geo-file-loader = { path = "../geo-file-loader" }
+geo-projected = { path = "../geo-projected" }
 rgis-events = { path = "../rgis-events" }
 rgis-network = { path = "../rgis-network" }
 rgis-units = { path = "../rgis-units" }

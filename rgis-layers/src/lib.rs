@@ -50,7 +50,7 @@ impl Layers {
 
     pub fn containing_coord(
         &self,
-        coord: rgis_units::Projected<geo::Coordinate>,
+        coord: geo_projected::Projected<geo::Coordinate>,
     ) -> impl Iterator<Item = &Layer> {
         self.iter_top_to_bottom()
             .filter(move |layer| match layer.projected_feature_collection {
@@ -90,8 +90,8 @@ impl Layers {
 
     pub fn feature_from_click(
         &self,
-        coord: rgis_units::Projected<geo::Coordinate>,
-    ) -> Option<rgis_units::Unprojected<&geo_features::Feature>> {
+        coord: geo_projected::Projected<geo::Coordinate>,
+    ) -> Option<geo_projected::Unprojected<&geo_features::Feature>> {
         self.features_iter()
             .filter(|item| item.projected.contains(&coord))
             .map(|item| item.unprojected)
@@ -139,7 +139,7 @@ impl Layers {
 
     fn add(
         &mut self,
-        unprojected: rgis_units::Unprojected<geo_features::FeatureCollection>,
+        unprojected: geo_projected::Unprojected<geo_features::FeatureCollection>,
         name: String,
         source_crs: String,
     ) -> Result<rgis_layer_id::LayerId, geo_features::BoundingRectError> {
@@ -172,9 +172,9 @@ pub type Metadata = serde_json::Map<String, serde_json::Value>;
 
 #[derive(Clone, Debug)]
 pub struct Layer {
-    pub unprojected_feature_collection: rgis_units::Unprojected<geo_features::FeatureCollection>,
+    pub unprojected_feature_collection: geo_projected::Unprojected<geo_features::FeatureCollection>,
     pub projected_feature_collection:
-        Option<rgis_units::Projected<geo_features::FeatureCollection>>,
+        Option<geo_projected::Projected<geo_features::FeatureCollection>>,
     pub color: Color,
     pub id: rgis_layer_id::LayerId,
     pub name: String,
@@ -186,7 +186,7 @@ impl Layer {
     #[inline]
     pub fn get_projected_feature_or_log(
         &self,
-    ) -> Option<&rgis_units::Projected<geo_features::FeatureCollection>> {
+    ) -> Option<&geo_projected::Projected<geo_features::FeatureCollection>> {
         match self.projected_feature_collection.as_ref() {
             Some(p) => Some(p),
             None => {
@@ -230,11 +230,11 @@ impl bevy::app::Plugin for Plugin {
 }
 
 struct FeatureCollectionsIterItem<'a> {
-    projected: &'a rgis_units::Projected<geo_features::FeatureCollection>,
-    unprojected: &'a rgis_units::Unprojected<geo_features::FeatureCollection>,
+    projected: &'a geo_projected::Projected<geo_features::FeatureCollection>,
+    unprojected: &'a geo_projected::Unprojected<geo_features::FeatureCollection>,
 }
 
 struct FeaturesIterItem<'a> {
-    projected: rgis_units::Projected<&'a geo_features::Feature>,
-    unprojected: rgis_units::Unprojected<&'a geo_features::Feature>,
+    projected: geo_projected::Projected<&'a geo_features::Feature>,
+    unprojected: geo_projected::Unprojected<&'a geo_features::Feature>,
 }

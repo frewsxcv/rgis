@@ -133,7 +133,7 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
                                     if let Ok(bounding_rect) =
                                         layer.unprojected_feature_collection.bounding_rect()
                                     {
-                                        if let Ok(feature_collection) = rgis_units::Unprojected::<
+                                        if let Ok(feature_collection) = geo_projected::Unprojected::<
                                             geo_features::FeatureCollection,
                                         >::from_geometry(
                                             bounding_rect.0.into()

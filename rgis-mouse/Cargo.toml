@@ -18,6 +18,7 @@ bevy = { version = "0.8", default-features = false, features = [
 ] }
 bevy_egui = "0.16"
 geo = "0.23"
+geo-projected = { path = "../geo-projected" }
 rgis-events = { path = "../rgis-events" }
 rgis-settings = { path = "../rgis-settings" }
 rgis-units = { path = "../rgis-units" }

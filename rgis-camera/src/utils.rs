@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 pub(crate) fn center_camera_on_projected_world_rect(
-    bounding_rect: rgis_units::Projected<geo::Rect>,
+    bounding_rect: geo_projected::Projected<geo::Rect>,
     camera_transform: &mut Transform,
     map_area: rgis_units::MapArea,
 ) {

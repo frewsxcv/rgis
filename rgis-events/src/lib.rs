@@ -61,7 +61,7 @@ pub struct MoveLayerEvent(pub rgis_layer_id::LayerId, pub MoveDirection);
 
 pub struct LayerZIndexUpdatedEvent(pub rgis_layer_id::LayerId);
 
-pub struct MapClickedEvent(pub rgis_units::Projected<geo::Coordinate>);
+pub struct MapClickedEvent(pub geo_projected::Projected<geo::Coordinate>);
 
 #[derive(Default)]
 pub struct OpenChangeCrsWindow;
@@ -145,7 +145,7 @@ pub struct RenderMessageEvent(pub String);
 pub struct RenderFeaturePropertiesEvent(pub geo_features::Properties);
 
 pub struct CreateLayerEvent {
-    pub feature_collection: rgis_units::Unprojected<geo_features::FeatureCollection>,
+    pub feature_collection: geo_projected::Unprojected<geo_features::FeatureCollection>,
     pub name: String,
     pub source_crs: String,
 }

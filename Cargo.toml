@@ -4,6 +4,7 @@ members = [
     "geo-features",
     "geo-geom-type",
     "geo-proj-js",
+    "geo-projected",
     "rgis-camera",
     "rgis-cli",
     "rgis-events",

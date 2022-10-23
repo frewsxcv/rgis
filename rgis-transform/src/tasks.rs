@@ -1,12 +1,12 @@
 pub struct ReprojectGeometryTask {
-    pub feature_collection: rgis_units::Unprojected<geo_features::FeatureCollection>,
+    pub feature_collection: geo_projected::Unprojected<geo_features::FeatureCollection>,
     pub layer_id: rgis_layer_id::LayerId,
     pub source_crs: String,
     pub target_crs: String,
 }
 
 pub struct ReprojectGeometryTaskOutcome {
-    pub feature_collection: rgis_units::Projected<geo_features::FeatureCollection>,
+    pub feature_collection: geo_projected::Projected<geo_features::FeatureCollection>,
     pub layer_id: rgis_layer_id::LayerId,
     pub target_crs: String,
 }

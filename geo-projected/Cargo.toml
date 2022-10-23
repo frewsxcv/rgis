@@ -1,0 +1,9 @@
+[package]
+name = "geo-projected"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+geo = "0.23"
+geo-features = { path = "../geo-features" }
