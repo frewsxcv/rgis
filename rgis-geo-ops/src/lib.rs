@@ -7,6 +7,7 @@
 )]
 
 use std::error;
+use geo_projected::Unprojected;
 
 mod unsigned_area;
 pub use unsigned_area::UnsignedArea;
@@ -19,7 +20,7 @@ pub use outliers::Outliers;
 
 pub enum Outcome {
     Text(String),
-    FeatureCollection(geo_projected::Unprojected<geo_features::FeatureCollection>),
+    FeatureCollection(Unprojected<geo_features::FeatureCollection>),
 }
 
 pub trait Operation: Sized {
@@ -29,9 +30,9 @@ pub trait Operation: Sized {
 
     fn perform(
         mut self,
-        feature_collection: geo_projected::Unprojected<geo_features::FeatureCollection>,
+        feature_collection: Unprojected<geo_features::FeatureCollection>,
     ) -> Result<Outcome, Self::Error> {
-        for feature in feature_collection.0.features {
+        for feature in feature_collection.into_features_iter() {
             self.visit_feature(feature);
         }
         self.finalize()
@@ -39,8 +40,8 @@ pub trait Operation: Sized {
 
     fn finalize(self) -> Result<Outcome, Self::Error>;
 
-    fn visit_feature(&mut self, feature: geo_features::Feature) {
-        if let Some(g) = feature.geometry {
+    fn visit_feature(&mut self, feature: Unprojected<geo_features::Feature>) {
+        if let Some(g) = feature.0.geometry {
             self.visit_geometry(g);
         }
     }

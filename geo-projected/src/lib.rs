@@ -10,7 +10,7 @@ mod feature;
 mod feature_collection;
 
 #[derive(Debug)]
-pub struct Projected<G>(pub G);
+pub struct Projected<G>(pub G); // TODO: remove `pub`
 
 impl<G> Projected<G> {
     pub fn into_unprojected(self) -> Unprojected<G> {
@@ -19,7 +19,7 @@ impl<G> Projected<G> {
 }
 
 #[derive(Debug)]
-pub struct Unprojected<G>(pub G);
+pub struct Unprojected<G>(pub G); // TODO: remove `pub`
 
 impl<G> Unprojected<G> {
     pub fn into_projected(self) -> Projected<G> {

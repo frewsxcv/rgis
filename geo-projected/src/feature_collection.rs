@@ -1,12 +1,27 @@
 use crate::{Projected, Unprojected};
 
+macro_rules! feature_collection_impl_owned {
+    ($outer_ty:ident, $inner_ty:ty) => {
+        impl $outer_ty<$inner_ty> {
+            pub fn into_features_iter(
+                self,
+            ) -> impl Iterator<Item = $outer_ty<geo_features::Feature>> {
+                self.0.features.into_iter().map($outer_ty)
+            }
+        }
+    };
+}
+
+feature_collection_impl_owned!(Projected, geo_features::FeatureCollection);
+feature_collection_impl_owned!(Unprojected, geo_features::FeatureCollection);
+
 macro_rules! feature_collection_impl_ref_mut {
     ($outer_ty:ident, $inner_ty:ty) => {
         impl $outer_ty<$inner_ty> {
             pub fn features_iter_mut(
                 &mut self,
-            ) -> impl Iterator<Item = Projected<&mut geo_features::Feature>> {
-                self.0.features.iter_mut().map(Projected)
+            ) -> impl Iterator<Item = $outer_ty<&mut geo_features::Feature>> {
+                self.0.features.iter_mut().map($outer_ty)
             }
         }
     };
