@@ -3442,6 +3442,7 @@ dependencies = [
  "geo-file-loader",
  "rgis-events",
  "rgis-network",
+ "rgis-units",
  "serde_json",
  "thiserror",
  "time-logger",
@@ -3454,6 +3455,7 @@ dependencies = [
  "geo",
  "geo-features",
  "geo-geom-type",
+ "rgis-units",
 ]
 
 [[package]]
@@ -3548,6 +3550,7 @@ dependencies = [
  "rgis-layer-id",
  "rgis-layers",
  "rgis-settings",
+ "rgis-units",
  "thiserror",
 ]
 
@@ -3570,6 +3573,7 @@ dependencies = [
  "rgis-library",
  "rgis-mouse",
  "rgis-settings",
+ "rgis-units",
  "webbrowser 0.8.0",
 ]
 
@@ -3579,6 +3583,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "geo",
+ "geo-features",
 ]
 
 [[package]]

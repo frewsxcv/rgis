@@ -55,7 +55,7 @@ fn handle_load_file_task_finished_events<F: geo_file_loader::FileLoader + Send +
         match outcome {
             Ok(outcome) => create_layer_event_writer.send(rgis_events::CreateLayerEvent {
                 name: outcome.name,
-                unprojected_geometry: outcome.geometry,
+                feature_collection: outcome.feature_collection,
                 source_crs: outcome.source_crs,
             }),
             Err(e) => {

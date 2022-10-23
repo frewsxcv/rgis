@@ -133,14 +133,14 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
                                     if let Ok(bounding_rect) =
                                         layer.unprojected_feature_collection.bounding_rect()
                                     {
-                                        if let Ok(feature_collection) =
-                                            geo_features::FeatureCollection::from_geometry(
-                                                bounding_rect.into(),
-                                            )
-                                        {
+                                        if let Ok(feature_collection) = rgis_units::Unprojected::<
+                                            geo_features::FeatureCollection,
+                                        >::from_geometry(
+                                            bounding_rect.0.into()
+                                        ) {
                                             self.events.create_layer_event_writer.send(
                                                 rgis_events::CreateLayerEvent {
-                                                    unprojected_geometry: feature_collection, // todo
+                                                    feature_collection,           // todo
                                                     name: "Bounding rect".into(), // todo
                                                     source_crs: layer.crs.clone(),
                                                 },
@@ -177,7 +177,7 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
                     self.events
                         .create_layer_event_writer
                         .send(rgis_events::CreateLayerEvent {
-                            unprojected_geometry: feature_collection,
+                            feature_collection,
                             name: Op::NAME.into(),
                             source_crs: layer.crs.clone(),
                         });

@@ -32,7 +32,7 @@ fn layer_loaded(
     mut task_spawner: bevy_jobs::JobSpawner,
 ) {
     for layer in event_reader.iter().flat_map(|event| layers.get(event.0)) {
-        let projected_feature = skip_none!(
+        let feature_collection = skip_none!(
             layer.projected_feature_collection.as_ref(),
             "Expected a layer to have a projected geometry"
         );
@@ -40,7 +40,9 @@ fn layer_loaded(
         task_spawner.spawn(crate::tasks::MeshBuildingTask {
             layer_id: layer.id,
             color: layer.color,
-            geometry: geo::Geometry::GeometryCollection(projected_feature.to_geometry_collection()),
+            geometry: geo::Geometry::GeometryCollection(
+                feature_collection.to_geometry_collection().0,
+            ),
         })
     }
 }

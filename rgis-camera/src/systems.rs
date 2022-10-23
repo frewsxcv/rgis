@@ -108,9 +108,9 @@ fn center_camera(
         .filter_map(|event| layers.get(event.0))
         .filter_map(|layer| layer.get_projected_feature_or_log())
     {
-        let bounding_rect = match projected_feature.bounding_rect {
-            Some(b) => b,
-            None => continue,
+        let bounding_rect = match projected_feature.bounding_rect() {
+            Ok(b) => b,
+            Err(_) => continue,
         };
         let mut transform = query.single_mut();
         let window = windows.primary();
@@ -121,7 +121,7 @@ fn center_camera(
             ui_rect: ui_margins.to_ui_rect(),
         };
         crate::utils::center_camera_on_projected_world_rect(
-            rgis_units::Projected(bounding_rect),
+            bounding_rect,
             &mut transform,
             map_area,
         );

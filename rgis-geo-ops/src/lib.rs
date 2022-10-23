@@ -19,7 +19,7 @@ pub use outliers::Outliers;
 
 pub enum Outcome {
     Text(String),
-    FeatureCollection(geo_features::FeatureCollection),
+    FeatureCollection(rgis_units::Unprojected<geo_features::FeatureCollection>),
 }
 
 pub trait Operation: Sized {
@@ -29,9 +29,9 @@ pub trait Operation: Sized {
 
     fn perform(
         mut self,
-        feature_collection: geo_features::FeatureCollection,
+        feature_collection: rgis_units::Unprojected<geo_features::FeatureCollection>,
     ) -> Result<Outcome, Self::Error> {
-        for feature in feature_collection.features {
+        for feature in feature_collection.0.features {
             self.visit_feature(feature);
         }
         self.finalize()

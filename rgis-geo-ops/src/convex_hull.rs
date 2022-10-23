@@ -19,8 +19,8 @@ impl Operation for ConvexHull {
 
         let outcome = geo::GeometryCollection(self.geometries).convex_hull();
 
-        Ok(Outcome::FeatureCollection(
+        Ok(Outcome::FeatureCollection(rgis_units::Unprojected::new(
             geo_features::FeatureCollection::from_geometry(outcome.into())?,
-        ))
+        )))
     }
 }

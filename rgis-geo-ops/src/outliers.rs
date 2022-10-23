@@ -35,8 +35,8 @@ impl Operation for Outliers {
 
         let new_multi_point = geo::MultiPoint::new(non_outliers);
 
-        Ok(Outcome::FeatureCollection(
+        Ok(Outcome::FeatureCollection(rgis_units::Unprojected::new(
             geo_features::FeatureCollection::from_geometry(new_multi_point.into())?,
-        ))
+        )))
     }
 }
