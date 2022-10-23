@@ -3439,7 +3439,6 @@ dependencies = [
  "geo-file-loader",
  "geo-projected",
  "rgis-layer-id",
- "rgis-units",
 ]
 
 [[package]]
@@ -3453,7 +3452,6 @@ dependencies = [
  "geo-projected",
  "rgis-events",
  "rgis-network",
- "rgis-units",
  "serde_json",
  "thiserror",
  "time-logger",
@@ -3467,7 +3465,6 @@ dependencies = [
  "geo-features",
  "geo-geom-type",
  "geo-projected",
- "rgis-units",
 ]
 
 [[package]]
@@ -3497,7 +3494,6 @@ dependencies = [
  "geo-projected",
  "rgis-events",
  "rgis-layer-id",
- "rgis-units",
  "serde_json",
  "thiserror",
 ]
@@ -3565,7 +3561,6 @@ dependencies = [
  "rgis-layer-id",
  "rgis-layers",
  "rgis-settings",
- "rgis-units",
  "thiserror",
 ]
 

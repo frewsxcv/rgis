@@ -19,7 +19,6 @@ geo-file-loader = { path = "../geo-file-loader" }
 geo-projected = { path = "../geo-projected" }
 rgis-events = { path = "../rgis-events" }
 rgis-network = { path = "../rgis-network" }
-rgis-units = { path = "../rgis-units" }
 bevy_jobs = { git = "https://github.com/frewsxcv/bevy_jobs" }
 serde_json = "1"
 time-logger = { path = "../time-logger" }
