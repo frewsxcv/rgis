@@ -81,9 +81,9 @@ impl<G: Clone> Clone for Unprojected<G> {
     }
 }
 
-macro_rules! feature_impl {
-    ($outer_ty:ident, $general_inner_ty:ty, $specific_inner_ty:ty) => {
-        impl $outer_ty<$specific_inner_ty> {
+macro_rules! feature_impl_ref {
+    ($outer_ty:ident, $inner_ty:ty) => {
+        impl $outer_ty<$inner_ty> {
             pub fn id(&self) -> geo_features::FeatureId {
                 self.0.id
             }
@@ -99,26 +99,27 @@ macro_rules! feature_impl {
     };
 }
 
-feature_impl!(Unprojected, geo_features::Feature, geo_features::Feature);
-feature_impl!(Unprojected, geo_features::Feature, &geo_features::Feature);
-feature_impl!(Projected, geo_features::Feature, geo_features::Feature);
-feature_impl!(Projected, geo_features::Feature, &geo_features::Feature);
+feature_impl_ref!(Projected, geo_features::Feature);
+feature_impl_ref!(Projected, &geo_features::Feature);
+feature_impl_ref!(Unprojected, geo_features::Feature);
+feature_impl_ref!(Unprojected, &geo_features::Feature);
 
-impl Projected<geo_features::FeatureCollection> {
-    pub fn features_iter_mut(
-        &mut self,
-    ) -> impl Iterator<Item = Projected<&mut geo_features::Feature>> {
-        self.0.features.iter_mut().map(Projected)
-    }
+macro_rules! feature_collection_impl_ref_mut {
+    ($outer_ty:ident, $inner_ty:ty) => {
+        impl $outer_ty<$inner_ty> {
+            pub fn features_iter_mut(
+                &mut self,
+            ) -> impl Iterator<Item = Projected<&mut geo_features::Feature>> {
+                self.0.features.iter_mut().map(Projected)
+            }
+        }
+    };
 }
 
-impl Unprojected<geo_features::FeatureCollection> {
-    pub fn features_iter_mut(
-        &mut self,
-    ) -> impl Iterator<Item = Unprojected<&mut geo_features::Feature>> {
-        self.0.features.iter_mut().map(Unprojected)
-    }
-}
+feature_collection_impl_ref_mut!(Projected, geo_features::FeatureCollection);
+feature_collection_impl_ref_mut!(Projected, &mut geo_features::FeatureCollection);
+feature_collection_impl_ref_mut!(Unprojected, geo_features::FeatureCollection);
+feature_collection_impl_ref_mut!(Unprojected, &mut geo_features::FeatureCollection);
 
 macro_rules! feature_collection_impl {
     ($outer_ty:ident, $general_inner_ty:ty, $specific_inner_ty:ty) => {
