@@ -185,6 +185,7 @@ impl bevy::app::Plugin for Plugin {
             .add_event::<OpenChangeCrsWindow>()
             .add_event::<ShowAddLayerWindow>()
             .add_event::<HideAddLayerWindow>()
-            .add_event::<LayerReprojectedEvent>();
+            .add_event::<LayerReprojectedEvent>()
+            .add_event::<FeatureClickedEvent>();
     }
 }
