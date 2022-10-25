@@ -37,12 +37,10 @@ fn layer_loaded(
             "Expected a layer to have a projected geometry"
         );
 
-        task_spawner.spawn(crate::tasks::MeshBuildingTask {
+        task_spawner.spawn(MeshBuildingTask {
             layer_id: layer.id,
             color: layer.color,
-            geometry: geo::Geometry::GeometryCollection(
-                feature_collection.to_geometry_collection().0,
-            ),
+            geometry: feature_collection.to_geometry_collection_geometry(),
         })
     }
 }
@@ -196,6 +194,22 @@ fn handle_camera_scale_changed_event(
     }
 }
 
+fn handle_feature_clicked_event(
+    mut feature_clicked_event: bevy::ecs::event::EventReader<rgis_events::FeatureClickedEvent>,
+    layers: Res<rgis_layers::Layers>,
+    mut task_spawner: bevy_jobs::JobSpawner,
+) {
+    for event in feature_clicked_event.iter() {
+        let layer = layers.get(event.0).unwrap();
+        let feature = layer.get_projected_feature_or_log(event.1).unwrap();
+        task_spawner.spawn(MeshBuildingTask {
+            layer_id: event.0,
+            color: bevy::render::color::Color::PINK,
+            geometry: feature.geometry().unwrap().cloned(),
+        })
+    }
+}
+
 pub fn system_set() -> SystemSet {
     SystemSet::new()
         .with_system(layer_loaded)
@@ -207,4 +221,5 @@ pub fn system_set() -> SystemSet {
         .with_system(handle_mesh_building_task_outcome)
         .with_system(handle_crs_changed_events)
         .with_system(handle_camera_scale_changed_event)
+        .with_system(handle_feature_clicked_event)
 }

@@ -28,7 +28,7 @@ impl From<rgis_layer_id::LayerId> for CenterCameraEvent {
 }
 
 #[derive(Debug)]
-pub struct FeatureClickedEvent(pub geo_features::FeatureId);
+pub struct FeatureClickedEvent(pub rgis_layer_id::LayerId, pub geo_features::FeatureId);
 
 #[derive(Debug)]
 pub struct LayerBecameHiddenEvent(pub rgis_layer_id::LayerId);

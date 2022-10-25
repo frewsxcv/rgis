@@ -43,6 +43,12 @@ macro_rules! base_impls {
             }
         }
 
+        impl<G: Clone> $ty<&G> {
+            pub fn cloned(&self) -> $ty<G> {
+                $ty(self.0.clone())
+            }
+        }
+
         impl<G: Copy> Copy for $ty<G> {}
 
         impl<G: Clone> Clone for $ty<G> {

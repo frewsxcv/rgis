@@ -3533,6 +3533,7 @@ dependencies = [
  "bevy_jobs",
  "geo",
  "geo-bevy",
+ "geo-projected",
  "rgis-events",
  "rgis-layer-id",
  "rgis-layers",

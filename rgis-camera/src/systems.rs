@@ -106,7 +106,7 @@ fn center_camera(
     for projected_feature in event_reader
         .iter()
         .filter_map(|event| layers.get(event.0))
-        .filter_map(|layer| layer.get_projected_feature_or_log())
+        .filter_map(|layer| layer.get_projected_feature_collection_or_log())
     {
         let bounding_rect = match projected_feature.bounding_rect() {
             Ok(b) => b,

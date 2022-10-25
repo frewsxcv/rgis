@@ -1,7 +1,7 @@
 pub struct MeshBuildingTask {
     pub layer_id: rgis_layer_id::LayerId,
     pub color: bevy::render::color::Color,
-    pub geometry: geo::Geometry,
+    pub geometry: geo_projected::Projected<geo::Geometry>,
 }
 
 impl bevy_jobs::Job for MeshBuildingTask {
@@ -18,7 +18,7 @@ impl bevy_jobs::Job for MeshBuildingTask {
         Box::pin(async move {
             Ok((
                 geo_bevy::build_bevy_meshes(
-                    &self.geometry,
+                    self.geometry.as_raw(),
                     self.color,
                     geo_bevy::BuildBevyMeshesContext::new(),
                 )?

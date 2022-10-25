@@ -54,6 +54,12 @@ macro_rules! feature_collection_impl {
             pub fn to_geometry_collection(&self) -> $outer_ty<geo::GeometryCollection> {
                 $outer_ty(self.0.to_geometry_collection())
             }
+
+            pub fn to_geometry_collection_geometry(&self) -> $outer_ty<geo::Geometry> {
+                $outer_ty(geo::Geometry::GeometryCollection(
+                    self.0.to_geometry_collection(),
+                ))
+            }
         }
     };
 }
