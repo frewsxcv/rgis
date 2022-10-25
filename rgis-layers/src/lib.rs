@@ -206,7 +206,7 @@ impl Layer {
     }
 
     #[inline]
-    pub fn get_projected_feature_or_log(
+    pub fn get_projected_feature(
         &self,
         feature_id: geo_features::FeatureId,
     ) -> Option<geo_projected::Projected<&geo_features::Feature>> {

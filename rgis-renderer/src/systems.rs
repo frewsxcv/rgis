@@ -2,25 +2,34 @@ use bevy::prelude::*;
 
 use crate::tasks::MeshBuildingTask;
 
-macro_rules! skip_err {
-    ($res:expr, $str:literal) => {
-        match $res {
-            Ok(val) => val,
-            Err(error) => {
-                bevy::log::error!($str, error);
-                continue;
+macro_rules! return_if_none {
+    ($expr:expr) => {
+        match $expr {
+            Some(n) => n,
+            None => return,
+        }
+    };
+}
+
+macro_rules! expect_some_or {
+    ($ident:ident, $expr:expr) => {
+        match $expr {
+            Some(n) => n,
+            None => {
+                bevy::log::error!("Expected `{}` to return `Some`", stringify!($expr));
+                $ident;
             }
         }
     };
 }
 
-macro_rules! skip_none {
-    ($res:expr, $str:literal) => {
-        match $res {
-            Some(val) => val,
-            None => {
-                bevy::log::error!($str);
-                continue;
+macro_rules! expect_ok_or {
+    ($ident:ident, $expr:expr) => {
+        match $expr {
+            Ok(n) => n,
+            Err(e) => {
+                bevy::log::error!("{}", e);
+                $ident;
             }
         }
     };
@@ -32,10 +41,8 @@ fn layer_loaded(
     mut task_spawner: bevy_jobs::JobSpawner,
 ) {
     for layer in event_reader.iter().flat_map(|event| layers.get(event.0)) {
-        let feature_collection = skip_none!(
-            layer.projected_feature_collection.as_ref(),
-            "Expected a layer to have a projected geometry"
-        );
+        let feature_collection =
+            expect_some_or!(continue, layer.projected_feature_collection.as_ref());
 
         task_spawner.spawn(MeshBuildingTask {
             layer_id: layer.id,
@@ -55,9 +62,8 @@ fn handle_mesh_building_task_outcome(
     asset_server: Res<AssetServer>,
 ) {
     while let Some(outcome) = finished_tasks.take_next::<MeshBuildingTask>() {
-        let (meshes, layer_id) = skip_err!(outcome, "Encountered error when spawning mesh: {}");
-        let (layer, z_index) =
-            skip_none!(layers.get_with_z_index(layer_id), "Could not find layer");
+        let (meshes, layer_id) = expect_ok_or!(continue, outcome);
+        let (layer, z_index) = expect_some_or!(continue, layers.get_with_z_index(layer_id));
 
         crate::spawn_geometry_meshes(
             meshes,
@@ -81,7 +87,7 @@ fn handle_layer_z_index_updated_event(
     layers: Res<rgis_layers::Layers>,
 ) {
     for event in layer_z_index_updated_event_reader.iter() {
-        let (_, z_index) = skip_none!(layers.get_with_z_index(event.0), "Could not find layer");
+        let (_, z_index) = expect_some_or!(continue, layers.get_with_z_index(event.0));
 
         for mut transform in query
             .iter_mut()
@@ -133,18 +139,15 @@ fn handle_layer_became_visible_event(
     }
 }
 
-fn handle_layer_color_changed_event(
-    mut events: EventReader<rgis_events::LayerColorUpdatedEvent>,
+fn handle_layer_color_updated_event(
+    mut event_reader: bevy::ecs::event::EventReader<rgis_events::LayerColorUpdatedEvent>,
     layers: Res<rgis_layers::Layers>,
     color_material_query: Query<(&rgis_layer_id::LayerId, &Handle<ColorMaterial>)>,
     mut sprite_query: Query<(&rgis_layer_id::LayerId, &mut Sprite)>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    for layer in events
-        .iter()
-        .map(|event| event.0)
-        .filter_map(|layer_id| layers.get(layer_id))
-    {
+    for event in event_reader.iter() {
+        let layer = expect_some_or!(return, layers.get(event.0));
         for (_, handle) in color_material_query.iter().filter(|(i, _)| **i == layer.id) {
             if let Some(color_material) = materials.get_mut(handle) {
                 color_material.color = layer.color
@@ -195,18 +198,18 @@ fn handle_camera_scale_changed_event(
 }
 
 fn handle_feature_clicked_event(
-    mut feature_clicked_event: bevy::ecs::event::EventReader<rgis_events::FeatureClickedEvent>,
+    mut event_reader: EventReader<rgis_events::FeatureClickedEvent>,
     layers: Res<rgis_layers::Layers>,
     mut task_spawner: bevy_jobs::JobSpawner,
 ) {
-    for event in feature_clicked_event.iter() {
-        let layer = layers.get(event.0).unwrap();
-        let feature = layer.get_projected_feature_or_log(event.1).unwrap();
+    for event in event_reader.iter() {
+        let layer = expect_some_or!(return, layers.get(event.0));
+        let feature = expect_some_or!(return, layer.get_projected_feature(event.1));
         task_spawner.spawn(MeshBuildingTask {
             layer_id: event.0,
             color: bevy::render::color::Color::PINK,
-            geometry: feature.geometry().unwrap().cloned(),
-        })
+            geometry: expect_some_or!(return, feature.geometry()).cloned(),
+        });
     }
 }
 
@@ -215,7 +218,7 @@ pub fn system_set() -> SystemSet {
         .with_system(layer_loaded)
         .with_system(handle_layer_became_hidden_event)
         .with_system(handle_layer_became_visible_event)
-        .with_system(handle_layer_color_changed_event)
+        .with_system(handle_layer_color_updated_event)
         .with_system(handle_layer_z_index_updated_event)
         .with_system(handle_layer_deleted_events)
         .with_system(handle_mesh_building_task_outcome)

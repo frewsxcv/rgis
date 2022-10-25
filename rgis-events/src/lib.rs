@@ -27,7 +27,7 @@ impl From<rgis_layer_id::LayerId> for CenterCameraEvent {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct FeatureClickedEvent(pub rgis_layer_id::LayerId, pub geo_features::FeatureId);
 
 #[derive(Debug)]
@@ -39,6 +39,7 @@ pub struct LayerBecameVisibleEvent(pub rgis_layer_id::LayerId);
 /// Change the `Layer`'s color
 pub struct UpdateLayerColorEvent(pub rgis_layer_id::LayerId, pub bevy::prelude::Color);
 /// After a `Layer`'s color is changed
+#[derive(Clone, Copy)]
 pub struct LayerColorUpdatedEvent(pub rgis_layer_id::LayerId);
 
 pub struct DeleteLayerEvent(pub rgis_layer_id::LayerId);
