@@ -6,8 +6,8 @@
     clippy::expect_used
 )]
 
-use std::error;
 use geo_projected::Unprojected;
+use std::error;
 
 mod unsigned_area;
 pub use unsigned_area::UnsignedArea;

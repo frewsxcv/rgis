@@ -94,7 +94,10 @@ impl Layers {
     pub fn feature_from_click(
         &self,
         coord: geo_projected::Projected<geo::Coordinate>,
-    ) -> Option<(rgis_layer_id::LayerId, geo_projected::Unprojected<&geo_features::Feature>)> {
+    ) -> Option<(
+        rgis_layer_id::LayerId,
+        geo_projected::Unprojected<&geo_features::Feature>,
+    )> {
         self.features_iter()
             .filter(|item| item.projected.contains(&coord))
             .map(|item| (item.layer_id, item.unprojected))
@@ -208,7 +211,9 @@ impl Layer {
         feature_id: geo_features::FeatureId,
     ) -> Option<geo_projected::Projected<&geo_features::Feature>> {
         let feature_collection = self.get_projected_feature_collection_or_log()?;
-        feature_collection.features_iter().find(|f| f.id() == feature_id)
+        feature_collection
+            .features_iter()
+            .find(|f| f.id() == feature_id)
     }
 
     pub fn geom_type(&self) -> geo_geom_type::GeomType {
