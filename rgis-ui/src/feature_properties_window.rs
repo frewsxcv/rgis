@@ -7,25 +7,38 @@ pub(crate) struct FeaturePropertiesWindow<'a> {
 
 impl<'a> FeaturePropertiesWindow<'a> {
     pub(crate) fn render(&mut self) {
-        if let Some(ref properties) = self.state.properties {
-            egui::Window::new("Layer Feature Properties")
-                .id(egui::Id::new("Layer Feature Properties Window"))
-                .open(&mut self.state.is_visible)
-                .anchor(egui::Align2::LEFT_TOP, [5., 5.])
-                .show(self.bevy_egui_ctx.ctx_mut(), |ui| {
-                    egui::Grid::new("feature_properties_window_grid")
-                        .num_columns(2)
-                        .striped(true)
-                        .show(ui, |ui| {
-                            let mut sorted = properties.iter().collect::<Vec<_>>();
-                            sorted.sort_unstable_by_key(|n| n.0);
-                            for (k, v) in sorted.iter() {
-                                ui.label(*k);
-                                ui.label(format!("{:?}", v));
-                                ui.end_row();
-                            }
-                        });
-                });
-        }
+        let properties = match self.state.properties {
+            Some(ref p) => p,
+            None => return,
+        };
+        egui::Window::new("Layer Feature Properties")
+            .id(egui::Id::new("Layer Feature Properties Window"))
+            .open(&mut self.state.is_visible)
+            .anchor(egui::Align2::LEFT_TOP, [5., 5.])
+            .show(self.bevy_egui_ctx.ctx_mut(), |ui| {
+                ui.add(FeaturePropertiesTable { properties })
+            });
+    }
+}
+
+struct FeaturePropertiesTable<'a> {
+    properties: &'a geo_features::Properties,
+}
+
+impl<'a> egui::Widget for FeaturePropertiesTable<'a> {
+    fn ui(self, ui: &mut bevy_egui::egui::Ui) -> bevy_egui::egui::Response {
+        egui::Grid::new("feature_properties_window_grid")
+            .num_columns(2)
+            .striped(true)
+            .show(ui, |ui| {
+                let mut sorted = self.properties.iter().collect::<Vec<_>>();
+                sorted.sort_unstable_by_key(|n| n.0);
+                for (k, v) in sorted.iter() {
+                    ui.label(*k);
+                    ui.label(format!("{:?}", v));
+                    ui.end_row();
+                }
+            })
+            .response
     }
 }
