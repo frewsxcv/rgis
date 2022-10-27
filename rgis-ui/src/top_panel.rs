@@ -15,10 +15,14 @@ impl<'a> TopPanel<'a> {
                 ui.horizontal(|ui| {
                     ui.label("rgis");
                     ui.menu_button("File", |ui| {
-                        render_exit_button(self.app_exit_events, ui);
+                        ui.add(ExitButton {
+                            app_exit_events: self.app_exit_events,
+                        });
                     });
                     ui.menu_button("View", |ui| {
-                        render_full_screen_button(self.windows, ui);
+                        ui.add(FullScreenButton {
+                            windows: self.windows,
+                        });
                     });
                     ui.menu_button("Help", |ui| {
                         if ui.button("Source code").clicked() {
@@ -54,26 +58,37 @@ impl<'a> TopPanel<'a> {
     }
 }
 
-fn render_exit_button(
-    app_exit_events: &mut bevy::ecs::event::Events<bevy::app::AppExit>,
-    ui: &mut egui::Ui,
-) {
-    ui.add_enabled_ui(cfg!(not(target_arch = "wasm32")), |ui| {
-        if ui.button("Exit").clicked() {
-            app_exit_events.send(bevy::app::AppExit);
-        }
-    });
+struct ExitButton<'a> {
+    app_exit_events: &'a mut bevy::ecs::event::Events<bevy::app::AppExit>,
 }
 
-fn render_full_screen_button(windows: &mut bevy::window::Windows, ui: &mut egui::Ui) {
-    ui.add_enabled_ui(cfg!(not(target_arch = "wasm32")), |ui| {
-        if ui.button("Full screen").clicked() {
-            let window = windows.primary_mut();
-            window.set_mode(if window.mode() == bevy::window::WindowMode::Fullscreen {
-                bevy::window::WindowMode::Windowed
-            } else {
-                bevy::window::WindowMode::Fullscreen
-            });
-        }
-    });
+impl<'a> egui::Widget for ExitButton<'a> {
+    fn ui(self, ui: &mut egui::Ui) -> egui::Response {
+        ui.add_enabled_ui(cfg!(not(target_arch = "wasm32")), |ui| {
+            if ui.button("Exit").clicked() {
+                self.app_exit_events.send(bevy::app::AppExit);
+            }
+        })
+        .response
+    }
+}
+
+struct FullScreenButton<'a> {
+    windows: &'a mut bevy::window::Windows,
+}
+
+impl<'a> egui::Widget for FullScreenButton<'a> {
+    fn ui(self, ui: &mut egui::Ui) -> egui::Response {
+        ui.add_enabled_ui(cfg!(not(target_arch = "wasm32")), |ui| {
+            if ui.button("Full screen").clicked() {
+                let window = self.windows.primary_mut();
+                window.set_mode(if window.mode() == bevy::window::WindowMode::Fullscreen {
+                    bevy::window::WindowMode::Windowed
+                } else {
+                    bevy::window::WindowMode::Fullscreen
+                });
+            }
+        })
+        .response
+    }
 }
