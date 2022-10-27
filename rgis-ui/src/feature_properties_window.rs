@@ -17,8 +17,10 @@ impl<'a> FeaturePropertiesWindow<'a> {
                         .num_columns(2)
                         .striped(true)
                         .show(ui, |ui| {
-                            for (k, v) in properties.iter() {
-                                ui.label(k);
+                            let mut sorted = properties.iter().collect::<Vec<_>>();
+                            sorted.sort_unstable_by_key(|n| n.0);
+                            for (k, v) in sorted.iter() {
+                                ui.label(*k);
                                 ui.label(format!("{:?}", v));
                                 ui.end_row();
                             }
