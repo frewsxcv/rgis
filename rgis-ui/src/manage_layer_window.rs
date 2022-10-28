@@ -32,10 +32,10 @@ impl<'a> ManageLayerWindow<'a> {
                     .striped(true)
                     .show(ui, |ui| {
                         ui.label("Name");
-                        ui.label(layer.name.clone());
+                        ui.label(&layer.name);
                         ui.end_row();
                         ui.label("CRS");
-                        ui.label(layer.crs.clone());
+                        ui.label(&layer.crs);
                         ui.end_row();
                         ui.label("Color");
                         let mut old_color = layer.color.as_linear_rgba_f32();
