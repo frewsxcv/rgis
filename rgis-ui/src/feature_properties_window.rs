@@ -7,9 +7,8 @@ pub(crate) struct FeaturePropertiesWindow<'a> {
 
 impl<'a> FeaturePropertiesWindow<'a> {
     pub(crate) fn render(&mut self) {
-        let properties = match self.state.properties {
-            Some(ref p) => p,
-            None => return,
+        let Some(ref properties) = self.state.properties else {
+            return;
         };
         egui::Window::new("Layer Feature Properties")
             .id(egui::Id::new("Layer Feature Properties Window"))
