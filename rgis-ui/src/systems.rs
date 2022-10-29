@@ -175,7 +175,7 @@ fn render_in_progress(
             for task_name in task_name_iter {
                 ui.horizontal(|ui| {
                     ui.add(egui::Spinner::new());
-                    ui.label(format!("Running '{}'", task_name));
+                    ui.label(format!("Running '{task_name}'"));
                 });
             }
         });

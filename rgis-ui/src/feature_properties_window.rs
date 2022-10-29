@@ -34,7 +34,7 @@ impl<'a> egui::Widget for FeaturePropertiesTable<'a> {
                 sorted.sort_unstable_by_key(|n| n.0);
                 for (k, v) in sorted.iter() {
                     ui.label(*k);
-                    ui.label(format!("{:?}", v));
+                    ui.label(format!("{v:?}"));
                     ui.end_row();
                 }
             })
