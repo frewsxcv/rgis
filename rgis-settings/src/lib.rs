@@ -10,7 +10,7 @@ mod systems;
 
 static DEFAULT_TARGET_CRS: &str = "EPSG:3857";
 
-#[derive(PartialEq, Eq)]
+#[derive(PartialEq, Eq, Copy, Clone)]
 pub enum Tool {
     Pan,
     Query,

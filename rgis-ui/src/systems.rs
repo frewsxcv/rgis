@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
 use bevy_egui::egui;
 
 fn render_bottom_panel(
@@ -187,6 +187,7 @@ fn render_top_panel(
     mut windows: ResMut<Windows>,
     mut app_settings: ResMut<rgis_settings::RgisSettings>,
     mut top_panel_height: ResMut<crate::TopPanelHeight>,
+    mut debug_stats_window_state: ResMut<crate::DebugStatsWindowState>,
 ) {
     crate::top_panel::TopPanel {
         bevy_egui_ctx: &mut bevy_egui_ctx,
@@ -194,6 +195,7 @@ fn render_top_panel(
         windows: &mut windows,
         app_settings: &mut app_settings,
         top_panel_height: &mut top_panel_height,
+        debug_stats_window_state: &mut debug_stats_window_state,
     }
     .render();
 }
@@ -220,6 +222,57 @@ pub fn startup_system_set() -> SystemSet {
     SystemSet::new().with_system(set_egui_theme)
 }
 
+#[derive(Default)]
+struct LastDebugStats {
+    fps: f64,
+    frame_time: f64,
+}
+
+fn render_debug_window(
+    mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
+    diagnostics: Res<bevy::diagnostic::Diagnostics>,
+    mut state: ResMut<crate::DebugStatsWindowState>,
+    time: Res<Time>,
+    mut last: Local<LastDebugStats>,
+) {
+    if !state.is_visible {
+        return;
+    }
+
+    if state.timer.tick(time.delta()).just_finished() {
+        last.fps = diagnostics
+            .get(FrameTimeDiagnosticsPlugin::FPS)
+            .and_then(|d| d.measurement())
+            .map(|m| m.value)
+            .unwrap_or_default();
+        last.frame_time = diagnostics
+            .get(FrameTimeDiagnosticsPlugin::FRAME_TIME)
+            .and_then(|d| d.measurement())
+            .map(|m| m.value)
+            .unwrap_or_default();
+    }
+
+    egui::Window::new("Debug")
+        .open(&mut state.is_visible)
+        .show(bevy_egui_ctx.ctx_mut(), |ui| {
+            egui::Grid::new("some_unique_id")
+                .striped(true)
+                .show(ui, |ui| {
+                    ui.label("Metric");
+                    ui.label("Value");
+                    ui.end_row();
+
+                    ui.label("FPS");
+                    ui.label(format!("{:.2} frames/sec.", last.fps));
+                    ui.end_row();
+
+                    ui.label("Frame time");
+                    ui.label(format!("{:.3} sec.", last.frame_time));
+                    ui.end_row();
+                });
+        });
+}
+
 pub fn system_sets() -> [SystemSet; 2] {
     [
         SystemSet::new()
@@ -228,6 +281,7 @@ pub fn system_sets() -> [SystemSet; 2] {
             .with_system(render_top_panel)
             .with_system(render_bottom_panel),
         SystemSet::new()
+            .with_system(render_debug_window)
             .with_system(handle_open_file_task)
             .with_system(render_message_window)
             .with_system(render_side_panel.after("top_bottom_panels"))

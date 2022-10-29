@@ -6,6 +6,7 @@ pub(crate) struct TopPanel<'a> {
     pub windows: &'a mut bevy::window::Windows,
     pub app_settings: &'a mut rgis_settings::RgisSettings,
     pub top_panel_height: &'a mut crate::TopPanelHeight,
+    pub debug_stats_window_state: &'a mut crate::DebugStatsWindowState,
 }
 
 impl<'a> TopPanel<'a> {
@@ -25,6 +26,9 @@ impl<'a> TopPanel<'a> {
                         });
                     });
                     ui.menu_button("Help", |ui| {
+                        if ui.button("Debug stats").clicked() {
+                            self.debug_stats_window_state.is_visible = true;
+                        }
                         if ui.button("Source code").clicked() {
                             let _ = webbrowser::open("https://github.com/frewsxcv/rgis");
                         }

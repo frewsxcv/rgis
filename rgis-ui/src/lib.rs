@@ -68,6 +68,11 @@ pub struct FeaturePropertiesWindowState {
     is_visible: bool,
 }
 
+pub struct DebugStatsWindowState {
+    timer: Timer,
+    is_visible: bool,
+}
+
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(bevy_egui::EguiPlugin)
@@ -75,7 +80,11 @@ impl bevy::app::Plugin for Plugin {
             .insert_resource(ManageLayerWindowState::default())
             .insert_resource(TopPanelHeight(0.))
             .insert_resource(BottomPanelHeight(0.))
-            .insert_resource(SidePanelWidth(0.));
+            .insert_resource(SidePanelWidth(0.))
+            .insert_resource(DebugStatsWindowState {
+                timer: Timer::from_seconds(1.0, true),
+                is_visible: false,
+            });
 
         app.add_startup_system_set(systems::startup_system_set());
 

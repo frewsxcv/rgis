@@ -39,7 +39,9 @@ pub fn run() {
     .add_plugin(bevy_jobs::Plugin)
     .add_plugin(rgis_transform::Plugin)
     .add_plugin(rgis_ui::Plugin)
-    .add_plugin(rgis_settings::Plugin);
+    .add_plugin(rgis_settings::Plugin)
+    .add_plugin(bevy::diagnostic::DiagnosticsPlugin)
+    .add_plugin(bevy::diagnostic::FrameTimeDiagnosticsPlugin);
 
     #[cfg(target_arch = "wasm32")]
     {
