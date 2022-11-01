@@ -34,30 +34,36 @@ fn mouse_motion_system(
     mut windows: ResMut<bevy::window::Windows>,
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
     rgis_settings: Res<rgis_settings::RgisSettings>,
+    mut last_cursor_icon: Local<Option<bevy::window::CursorIcon>>,
 ) {
-    // if mouse_motion_event_reader.is_empty() {
-    //     return;
-    // }
+    if let Some(cursor_icon) = *last_cursor_icon {
+        windows.primary_mut().set_cursor_icon(cursor_icon);
+    }
 
-    if bevy_egui_ctx.ctx_mut().wants_pointer_input() {
+    // If the mouse didn't move, then don't go any further
+    if mouse_motion_event_reader.is_empty() {
         return;
     }
 
-    if bevy_egui_ctx.ctx_mut().is_pointer_over_area() {
+    // If egui wants to do something with the mouse then release the cursor icon to it
+    if bevy_egui_ctx.ctx_mut().wants_pointer_input()
+        || bevy_egui_ctx.ctx_mut().is_pointer_over_area()
+        || bevy_egui_ctx.ctx_mut().is_using_pointer()
+    {
+        clear_cursor_icon(&mut last_cursor_icon);
         return;
     }
 
-    if bevy_egui_ctx.ctx_mut().is_using_pointer() {
-        return;
-    }
-
+    // Handle panning
     if rgis_settings.current_tool == rgis_settings::Tool::Pan
         && mouse_button.pressed(bevy::input::mouse::MouseButton::Left)
         || mouse_button.pressed(bevy::input::mouse::MouseButton::Right)
     {
-        windows
-            .primary_mut()
-            .set_cursor_icon(bevy::window::CursorIcon::Grabbing);
+        set_cursor_icon(
+            &mut windows,
+            &mut last_cursor_icon,
+            bevy::window::CursorIcon::Grabbing,
+        );
         let mut x_sum = 0.;
         let mut y_sum = 0.;
         for event in mouse_motion_event_reader.iter() {
@@ -81,7 +87,20 @@ fn mouse_motion_system(
         rgis_settings::Tool::Pan => bevy::window::CursorIcon::Grab,
         rgis_settings::Tool::Query => bevy::window::CursorIcon::Crosshair,
     };
+    set_cursor_icon(&mut windows, &mut last_cursor_icon, cursor_icon);
+}
+
+fn set_cursor_icon(
+    windows: &mut bevy::window::Windows,
+    last_cursor_icon: &mut Option<bevy::window::CursorIcon>,
+    cursor_icon: bevy::window::CursorIcon,
+) {
+    *last_cursor_icon = Some(cursor_icon);
     windows.primary_mut().set_cursor_icon(cursor_icon);
+}
+
+fn clear_cursor_icon(last_cursor_icon: &mut Option<bevy::window::CursorIcon>) {
+    *last_cursor_icon = None;
 }
 
 fn mouse_click_system(
