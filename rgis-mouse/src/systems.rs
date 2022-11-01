@@ -1,4 +1,4 @@
-use bevy::ecs::system::{Query, Res, ResMut};
+use bevy::prelude::*;
 
 fn cursor_moved_system(
     mut cursor_moved_event_reader: bevy::ecs::event::EventReader<bevy::window::CursorMoved>,
@@ -35,14 +35,19 @@ fn mouse_motion_system(
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
     rgis_settings: Res<rgis_settings::RgisSettings>,
 ) {
+    // if mouse_motion_event_reader.is_empty() {
+    //     return;
+    // }
+
     if bevy_egui_ctx.ctx_mut().wants_pointer_input() {
         return;
     }
 
     if bevy_egui_ctx.ctx_mut().is_pointer_over_area() {
-        windows
-            .primary_mut()
-            .set_cursor_icon(bevy::window::CursorIcon::Arrow);
+        return;
+    }
+
+    if bevy_egui_ctx.ctx_mut().is_using_pointer() {
         return;
     }
 
@@ -118,5 +123,5 @@ pub fn system_set() -> bevy::ecs::schedule::SystemSet {
         .with_system(cursor_moved_system)
         .with_system(mouse_scroll_system)
         .with_system(mouse_click_system)
-        .with_system(mouse_motion_system)
+        .with_system(mouse_motion_system.after("rgis_ui")) // Egui mouseover functions are dependent on the UI finished setting up
 }

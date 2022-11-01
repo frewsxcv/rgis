@@ -289,6 +289,7 @@ pub fn system_sets() -> [SystemSet; 2] {
             .with_system(render_add_layer_window.after(render_manage_layer_window))
             .with_system(render_change_crs_window.after(render_add_layer_window))
             .with_system(render_feature_properties_window.after(render_add_layer_window))
-            .with_system(render_in_progress.after("top_bottom_panels")),
+            .with_system(render_in_progress.after("top_bottom_panels"))
+            .label("rgis_ui"),
     ]
 }
