@@ -28,6 +28,7 @@ pub fn run() {
     .add_plugin(bevy::core_pipeline::CorePipelinePlugin::default())
     .add_plugin(bevy::transform::TransformPlugin::default())
     .add_plugin(bevy::sprite::SpritePlugin::default())
+    .add_plugin(rgis_ui::Plugin)
     .add_plugin(rgis_layers::Plugin)
     .add_plugin(rgis_file_loader::Plugin)
     .add_plugin(rgis_renderer::Plugin)
@@ -38,7 +39,6 @@ pub fn run() {
     .add_plugin(rgis_events::Plugin)
     .add_plugin(bevy_jobs::Plugin)
     .add_plugin(rgis_transform::Plugin)
-    .add_plugin(rgis_ui::Plugin)
     .add_plugin(rgis_settings::Plugin)
     .add_plugin(bevy::diagnostic::DiagnosticsPlugin)
     .add_plugin(bevy::diagnostic::FrameTimeDiagnosticsPlugin);

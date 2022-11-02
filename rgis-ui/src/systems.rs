@@ -250,11 +250,30 @@ fn render_debug_window(
             .and_then(|d| d.measurement())
             .map(|m| m.value)
             .unwrap_or_default();
+
+        if state.history.len() >= crate::DEBUG_STATS_HISTORY_LEN {
+            let _ = state.history.pop_front();
+        }
+
+        if last.fps != 0. {
+            state.history.push_back(last.fps);
+        }
     }
 
-    egui::Window::new("Debug")
-        .open(&mut state.is_visible)
-        .show(bevy_egui_ctx.ctx_mut(), |ui| {
+    let sin = if state.is_visible {
+        state
+            .history
+            .iter()
+            .enumerate()
+            .map(|(x, y)| egui::plot::PlotPoint::new(x as f64, *y))
+            .collect::<Vec<_>>()
+    } else {
+        vec![]
+    };
+
+    egui::Window::new("Debug").open(&mut state.is_visible).show(
+        bevy_egui_ctx.ctx_mut(),
+        move |ui| {
             egui::Grid::new("some_unique_id")
                 .striped(true)
                 .show(ui, |ui| {
@@ -270,7 +289,25 @@ fn render_debug_window(
                     ui.label(format!("{:.3} sec.", last.frame_time));
                     ui.end_row();
                 });
-        });
+
+            use egui::plot::{Line, Plot, PlotPoints};
+            let line = Line::new(PlotPoints::Owned(sin));
+            Plot::new("fps_plot")
+                .allow_drag(false)
+                .allow_boxed_zoom(false)
+                .allow_scroll(false)
+                .allow_zoom(false)
+                .set_margin_fraction((0., 0.).into())
+                .show_x(false)
+                .x_axis_formatter(|_, _| "".into())
+                .y_axis_formatter(|n, _| format!("{:?}", n))
+                .include_x(0.)
+                .include_x(crate::DEBUG_STATS_HISTORY_LEN as f64)
+                .include_y(0.)
+                .view_aspect(2.) // Width is twice as big as height
+                .show(ui, |plot_ui| plot_ui.line(line));
+        },
+    );
 }
 
 pub fn system_sets() -> [SystemSet; 2] {

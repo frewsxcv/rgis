@@ -7,7 +7,7 @@
 )]
 
 use bevy::prelude::*;
-use std::marker;
+use std::{collections, marker};
 
 mod add_layer_window;
 mod bottom_panel;
@@ -71,7 +71,10 @@ pub struct FeaturePropertiesWindowState {
 pub struct DebugStatsWindowState {
     timer: Timer,
     is_visible: bool,
+    history: collections::VecDeque<f64>,
 }
+
+const DEBUG_STATS_HISTORY_LEN: usize = 100;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
@@ -82,8 +85,9 @@ impl bevy::app::Plugin for Plugin {
             .insert_resource(BottomPanelHeight(0.))
             .insert_resource(SidePanelWidth(0.))
             .insert_resource(DebugStatsWindowState {
-                timer: Timer::from_seconds(1.0, true),
+                timer: Timer::from_seconds(0.5, true),
                 is_visible: false,
+                history: collections::VecDeque::with_capacity(DEBUG_STATS_HISTORY_LEN),
             });
 
         app.add_startup_system_set(systems::startup_system_set());
