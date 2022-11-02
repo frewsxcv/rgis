@@ -239,7 +239,7 @@ fn render_debug_window(
         return;
     }
 
-    if state.timer.tick(time.delta()).just_finished() {
+    if state.history.is_empty() || state.timer.tick(time.delta()).just_finished() {
         last.fps = diagnostics
             .get(FrameTimeDiagnosticsPlugin::FPS)
             .and_then(|d| d.measurement())
