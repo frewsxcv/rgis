@@ -28,7 +28,7 @@ impl From<rgis_layer_id::LayerId> for CenterCameraEvent {
 }
 
 #[derive(Clone, Copy, Debug)]
-pub struct FeatureClickedEvent(pub rgis_layer_id::LayerId, pub geo_features::FeatureId);
+pub struct FeatureSelectedEvent(pub rgis_layer_id::LayerId, pub geo_features::FeatureId);
 
 #[derive(Debug)]
 pub struct LayerBecameHiddenEvent(pub rgis_layer_id::LayerId);
@@ -63,6 +63,8 @@ pub struct MoveLayerEvent(pub rgis_layer_id::LayerId, pub MoveDirection);
 pub struct LayerZIndexUpdatedEvent(pub rgis_layer_id::LayerId);
 
 pub struct MapClickedEvent(pub geo_projected::Projected<geo::Coordinate>);
+
+pub struct FeaturesDeselectedEvent;
 
 #[derive(Default)]
 pub struct OpenChangeCrsWindow;
@@ -187,6 +189,7 @@ impl bevy::app::Plugin for Plugin {
             .add_event::<ShowAddLayerWindow>()
             .add_event::<HideAddLayerWindow>()
             .add_event::<LayerReprojectedEvent>()
-            .add_event::<FeatureClickedEvent>();
+            .add_event::<FeatureSelectedEvent>()
+            .add_event::<FeaturesDeselectedEvent>();
     }
 }

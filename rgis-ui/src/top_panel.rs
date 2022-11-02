@@ -14,6 +14,8 @@ impl<'a> TopPanel<'a> {
         let inner_response =
             egui::TopBottomPanel::top("top_panel").show(self.bevy_egui_ctx.ctx_mut(), |ui| {
                 ui.horizontal(|ui| {
+                    let prev_current_tool = self.app_settings.current_tool;
+
                     ui.label("rgis");
                     ui.menu_button("File", |ui| {
                         ui.add(ExitButton {
@@ -54,6 +56,12 @@ impl<'a> TopPanel<'a> {
                         .clicked()
                     {
                         self.app_settings.current_tool = rgis_settings::Tool::Query;
+                    }
+
+                    if prev_current_tool == rgis_settings::Tool::Query
+                        && self.app_settings.current_tool != rgis_settings::Tool::Query
+                    {
+                        // send DeselectAllFeatures event
                     }
                 });
             });
