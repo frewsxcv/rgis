@@ -226,6 +226,7 @@ pub fn startup_system_set() -> SystemSet {
 struct LastDebugStats {
     fps: f64,
     frame_time: f64,
+    frame_count: f64,
 }
 
 fn render_debug_window(
@@ -240,23 +241,32 @@ fn render_debug_window(
     }
 
     if state.history.is_empty() || state.timer.tick(time.delta()).just_finished() {
-        last.fps = diagnostics
+        let fps = diagnostics
             .get(FrameTimeDiagnosticsPlugin::FPS)
             .and_then(|d| d.measurement())
-            .map(|m| m.value)
-            .unwrap_or_default();
-        last.frame_time = diagnostics
+            .map(|m| m.value);
+        let frame_time = diagnostics
             .get(FrameTimeDiagnosticsPlugin::FRAME_TIME)
             .and_then(|d| d.measurement())
-            .map(|m| m.value)
-            .unwrap_or_default();
+            .map(|m| m.value);
+        let frame_count = diagnostics
+            .get(FrameTimeDiagnosticsPlugin::FRAME_COUNT)
+            .and_then(|d| d.measurement())
+            .map(|m| m.value);
+
+        if let Some(fps) = fps {
+            state.history.push_back(fps);
+            last.fps = fps;
+        }
+        if let Some(frame_time) = frame_time {
+            last.frame_time = frame_time;
+        }
+        if let Some(frame_count) = frame_count {
+            last.frame_count = frame_count;
+        }
 
         if state.history.len() >= crate::DEBUG_STATS_HISTORY_LEN {
             let _ = state.history.pop_front();
-        }
-
-        if last.fps != 0. {
-            state.history.push_back(last.fps);
         }
     }
 
@@ -287,6 +297,10 @@ fn render_debug_window(
 
                     ui.label("Frame time");
                     ui.label(format!("{:.3} sec.", last.frame_time));
+                    ui.end_row();
+
+                    ui.label("Frame count");
+                    ui.label(format!("{} frames", last.frame_count));
                     ui.end_row();
                 });
 
