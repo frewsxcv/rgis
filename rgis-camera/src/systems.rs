@@ -26,20 +26,19 @@ fn handle_change_crs_event(
     windows: Res<bevy::window::Windows>,
     ui_margins: rgis_ui::UiMargins,
 ) {
-    if let Some(event) = change_crs_event_reader.iter().next_back() {
-        let mut transform = query.single_mut();
-        let window = windows.primary();
-        let map_area = rgis_units::MapArea {
-            window,
-            ui_rect: ui_margins.to_ui_rect(),
-        };
-        let mut rect = map_area.projected_geo_rect(&transform, window);
-        if let Err(e) = rgis_transform::transform(&mut rect.0, &event.old_crs, &event.new_crs) {
-            bevy::log::error!("Enountered error when transforming: {}", e);
-        }
-
-        crate::utils::center_camera_on_projected_world_rect(rect, &mut transform, map_area);
+    let Some(event) = change_crs_event_reader.iter().next_back() else { return };
+    let mut transform = query.single_mut();
+    let window = windows.primary();
+    let map_area = rgis_units::MapArea {
+        window,
+        ui_rect: ui_margins.to_ui_rect(),
+    };
+    let mut rect = map_area.projected_geo_rect(&transform, window);
+    if let Err(e) = rgis_transform::transform(&mut rect.0, &event.old_crs, &event.new_crs) {
+        bevy::log::error!("Enountered error when transforming: {}", e);
     }
+
+    crate::utils::center_camera_on_projected_world_rect(rect, &mut transform, map_area);
 }
 
 fn pan_camera_system(
