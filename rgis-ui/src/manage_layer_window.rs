@@ -9,20 +9,16 @@ pub(crate) struct ManageLayerWindow<'a> {
 
 impl<'a> ManageLayerWindow<'a> {
     pub(crate) fn render(&mut self) {
-        let layer_id = match (self.state.is_visible, self.state.layer_id) {
-            (true, Some(layer_id)) => layer_id,
-            _ => return,
+        let (true, Some(layer_id)) = (self.state.is_visible, self.state.layer_id) else {
+            return;
         };
-        let layer = match self.layers.get(layer_id) {
-            Some(l) => l,
-            None => {
-                bevy::log::warn!(
-                    "Could not find layer with ID {:?}, closing manage layer window",
-                    layer_id
-                );
-                self.state.is_visible = false;
-                return;
-            }
+        let Some(layer) = self.layers.get(layer_id) else {
+            bevy::log::warn!(
+                "Could not find layer with ID {:?}, closing manage layer window",
+                layer_id
+            );
+            self.state.is_visible = false;
+            return;
         };
         egui::Window::new("Manage Layer")
             .open(&mut self.state.is_visible)
