@@ -34,7 +34,9 @@ fn handle_change_crs_event(
             ui_rect: ui_margins.to_ui_rect(),
         };
         let mut rect = map_area.projected_geo_rect(&transform, window);
-        rgis_transform::transform(&mut rect.0, &event.old_crs, &event.new_crs).unwrap();
+        if let Err(e) = rgis_transform::transform(&mut rect.0, &event.old_crs, &event.new_crs) {
+            bevy::log::error!("Enountered error when transforming: {}", e);
+        }
 
         crate::utils::center_camera_on_projected_world_rect(rect, &mut transform, map_area);
     }
