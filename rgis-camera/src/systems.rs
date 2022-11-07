@@ -109,10 +109,7 @@ fn center_camera(
         .filter_map(|event| layers.get(event.0))
         .filter_map(|layer| layer.get_projected_feature_collection_or_log())
     {
-        let bounding_rect = match projected_feature.bounding_rect() {
-            Ok(b) => b,
-            Err(_) => continue,
-        };
+        let Ok(bounding_rect) = projected_feature.bounding_rect() else { continue };
         let mut transform = query.single_mut();
         let window = windows.primary();
 
