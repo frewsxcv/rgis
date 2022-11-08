@@ -22,7 +22,7 @@ impl ScreenCoord {
         self,
         transform: &bevy::transform::components::Transform,
         window: &bevy::prelude::Window,
-    ) -> geo_projected::Projected<geo::Coordinate> {
+    ) -> geo_projected::Projected<geo::Coord> {
         let size = bevy::math::DVec2::new(f64::from(window.width()), f64::from(window.height()));
 
         // the default orthographic projection is in pixels from the center;
@@ -32,7 +32,7 @@ impl ScreenCoord {
         // apply the camera transform
         let pos_wld = transform.compute_matrix().as_dmat4() * p.extend(0.0).extend(1.0);
 
-        geo_projected::Projected(geo::Coordinate {
+        geo_projected::Projected(geo::Coord {
             x: pos_wld.x,
             y: pos_wld.y,
         })
@@ -57,7 +57,7 @@ impl<'a> MapArea<'a> {
         &self,
         transform: &bevy::transform::components::Transform,
         window: &bevy::prelude::Window,
-    ) -> geo_projected::Projected<geo::Coordinate> {
+    ) -> geo_projected::Projected<geo::Coord> {
         self.top_left_screen_coord()
             .to_projected_geo_coord(transform, window)
     }
@@ -73,7 +73,7 @@ impl<'a> MapArea<'a> {
         &self,
         transform: &bevy::transform::components::Transform,
         window: &bevy::prelude::Window,
-    ) -> geo_projected::Projected<geo::Coordinate> {
+    ) -> geo_projected::Projected<geo::Coord> {
         self.bottom_right_screen_coord()
             .to_projected_geo_coord(transform, window)
     }

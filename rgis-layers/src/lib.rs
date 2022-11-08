@@ -50,7 +50,7 @@ impl Layers {
 
     pub fn containing_coord(
         &self,
-        coord: geo_projected::Projected<geo::Coordinate>,
+        coord: geo_projected::Projected<geo::Coord>,
     ) -> impl Iterator<Item = &Layer> {
         self.iter_top_to_bottom()
             .filter(move |layer| match layer.projected_feature_collection {
@@ -93,7 +93,7 @@ impl Layers {
 
     pub fn feature_from_click(
         &self,
-        coord: geo_projected::Projected<geo::Coordinate>,
+        coord: geo_projected::Projected<geo::Coord>,
     ) -> Option<(
         rgis_layer_id::LayerId,
         geo_projected::Unprojected<&geo_features::Feature>,

@@ -2001,8 +2001,7 @@ dependencies = [
 [[package]]
 name = "geo-types"
 version = "0.7.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e8d77ceb80f375dc4cda113a3ae1b06a36ef623f8f035c03752ca6698f4ddfee"
+source = "git+https://github.com/georust/geo#3b0d5738f54bd8964f7d1f573bd63dc114587dc4"
 dependencies = [
  "approx",
  "num-traits",

@@ -206,11 +206,11 @@ fn option_rect_merge<T: geo::CoordFloat>(
 
 fn rect_merge<T: geo::CoordFloat>(a: geo::Rect<T>, b: geo::Rect<T>) -> geo::Rect<T> {
     geo::Rect::new(
-        geo::Coordinate {
+        geo::Coord {
             x: a.min().x.min(b.min().x),
             y: a.min().y.min(b.min().y),
         },
-        geo::Coordinate {
+        geo::Coord {
             x: a.max().x.max(b.max().x),
             y: a.max().y.max(b.max().y),
         },
