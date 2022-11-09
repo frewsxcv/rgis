@@ -150,6 +150,7 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
                                 }
                                 self.display_operation::<rgis_geo_ops::ConvexHull>(layer, ui);
                                 self.display_operation::<rgis_geo_ops::Outliers>(layer, ui);
+                                self.display_operation::<rgis_geo_ops::Simplify>(layer, ui);
                                 self.display_operation::<rgis_geo_ops::UnsignedArea>(layer, ui);
                             });
                         });

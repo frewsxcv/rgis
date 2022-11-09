@@ -18,6 +18,9 @@ pub use convex_hull::ConvexHull;
 mod outliers;
 pub use outliers::Outliers;
 
+mod simplify;
+pub use simplify::Simplify;
+
 pub enum Outcome {
     Text(String),
     FeatureCollection(Unprojected<geo_features::FeatureCollection>),
