@@ -3507,6 +3507,7 @@ dependencies = [
 name = "rgis-geo-ops"
 version = "0.1.0"
 dependencies = [
+ "bevy_egui",
  "geo",
  "geo-features",
  "geo-geom-type",

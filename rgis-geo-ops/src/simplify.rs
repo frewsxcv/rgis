@@ -19,6 +19,11 @@ impl Operation for Simplify {
     const NAME: &'static str = "Simplify geometries";
     type Error = geo_features::BoundingRectError;
 
+    fn ui(&self, ui: &mut bevy_egui::egui::Ui) {
+        let mut s = String::new();
+        ui.text_edit_singleline(&mut s);
+    }
+
     fn visit_line_string(&mut self, line_string: geo::LineString) {
         self.simplified
             .0

@@ -18,6 +18,7 @@ mod message_window;
 mod side_panel;
 mod systems;
 mod top_panel;
+mod operation_window;
 
 pub struct Plugin;
 
