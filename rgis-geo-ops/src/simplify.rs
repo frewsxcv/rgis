@@ -1,5 +1,5 @@
-use crate::{Operation, Outcome};
-use std::mem;
+use crate::{Operation, Outcome, OperationEntry};
+use std::{error, mem};
 use geo::Simplify as GeoSimplify;
 
 // TODO: This should be calculated dynamically
@@ -10,7 +10,7 @@ pub struct Simplify {
     simplified: geo::GeometryCollection,
 }
 
-impl Operation for Simplify {
+impl OperationEntry for Simplify {
     const ALLOWED_GEOM_TYPES: geo_geom_type::GeomType = geo_geom_type::GeomType::from_bits_truncate(
         geo_geom_type::GeomType::LINE_STRING.bits()
             | geo_geom_type::GeomType::MULTI_LINE_STRING.bits()
@@ -18,8 +18,13 @@ impl Operation for Simplify {
             | geo_geom_type::GeomType::MULTI_POLYGON.bits(),
     );
     const NAME: &'static str = "Simplify geometries";
-    type Error = geo_features::BoundingRectError;
 
+    fn build() -> Box<dyn Operation> {
+        Box::<Simplify>::default()
+    }
+}
+
+impl Operation for Simplify {
     fn ui(&self, ui: &mut bevy_egui::egui::Ui) {
         let mut s = String::new();
         ui.text_edit_singleline(&mut s);
@@ -45,7 +50,7 @@ impl Operation for Simplify {
             .push(multi_polygon.simplify(&EPSILON).into());
     }
 
-    fn finalize(&mut self) -> Result<Outcome, Self::Error> {
+    fn finalize(&mut self) -> Result<Outcome, Box<dyn error::Error>> {
         let simplified = mem::take(&mut self.simplified);
         Ok(Outcome::FeatureCollection(geo_projected::Unprojected::new(
             geo_features::FeatureCollection::from_geometry(geo::Geometry::GeometryCollection(

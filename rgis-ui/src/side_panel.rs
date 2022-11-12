@@ -159,7 +159,7 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
         ui.separator();
     }
 
-    fn display_operation<Op: rgis_geo_ops::Operation + Default>(
+    fn display_operation<Op: rgis_geo_ops::OperationEntry + Default>(
         &mut self,
         layer: &rgis_layers::Layer,
         ui: &mut egui::Ui,
@@ -171,7 +171,7 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
             )
             .clicked()
         {
-            let outcome = Op::default().perform(layer.unprojected_feature_collection.clone()); // TODO: clone?
+            let outcome = Op::build().perform(layer.unprojected_feature_collection.clone()); // TODO: clone?
 
             match outcome {
                 Ok(rgis_geo_ops::Outcome::FeatureCollection(feature_collection)) => {

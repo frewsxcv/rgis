@@ -26,22 +26,25 @@ pub enum Outcome {
     FeatureCollection(Unprojected<geo_features::FeatureCollection>),
 }
 
-pub trait Operation {
+pub trait OperationEntry {
     const ALLOWED_GEOM_TYPES: geo_geom_type::GeomType;
     const NAME: &'static str;
-    type Error: error::Error;
 
+    fn build() -> Box<dyn Operation>;
+}
+
+pub trait Operation {
     fn perform(
         &mut self,
         feature_collection: Unprojected<geo_features::FeatureCollection>,
-    ) -> Result<Outcome, Self::Error> {
+    ) -> Result<Outcome, Box<dyn error::Error>> {
         for feature in feature_collection.into_features_iter() {
             self.visit_feature(feature);
         }
         self.finalize()
     }
 
-    fn finalize(&mut self) -> Result<Outcome, Self::Error>;
+    fn finalize(&mut self) -> Result<Outcome, Box<dyn error::Error>>;
 
     fn ui(&self, ui: &mut bevy_egui::egui::Ui) {
     }
