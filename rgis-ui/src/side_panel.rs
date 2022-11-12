@@ -171,24 +171,28 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
             )
             .clicked()
         {
-            let outcome = Op::build().perform(layer.unprojected_feature_collection.clone()); // TODO: clone?
+            if Op::HAS_GUI {
 
-            match outcome {
-                Ok(rgis_geo_ops::Outcome::FeatureCollection(feature_collection)) => {
-                    self.events
-                        .create_layer_event_writer
-                        .send(rgis_events::CreateLayerEvent {
-                            feature_collection,
-                            name: Op::NAME.into(),
-                            source_crs: layer.crs.clone(),
-                        });
-                }
-                Ok(rgis_geo_ops::Outcome::Text(text)) => self
-                    .events
-                    .render_message_event_writer
-                    .send(rgis_events::RenderMessageEvent(text)),
-                Err(e) => {
-                    bevy::log::error!("Encountered an error during the operation: {}", e);
+            } else {
+                let outcome = Op::build().perform(layer.unprojected_feature_collection.clone()); // TODO: clone?
+
+                match outcome {
+                    Ok(rgis_geo_ops::Outcome::FeatureCollection(feature_collection)) => {
+                        self.events
+                            .create_layer_event_writer
+                            .send(rgis_events::CreateLayerEvent {
+                                feature_collection,
+                                name: Op::NAME.into(),
+                                source_crs: layer.crs.clone(),
+                            });
+                    }
+                    Ok(rgis_geo_ops::Outcome::Text(text)) => self
+                        .events
+                        .render_message_event_writer
+                        .send(rgis_events::RenderMessageEvent(text)),
+                    Err(e) => {
+                        bevy::log::error!("Encountered an error during the operation: {}", e);
+                    }
                 }
             }
         }

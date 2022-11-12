@@ -16,9 +16,10 @@ impl OperationEntry for UnsignedArea {
             | geo_geom_type::GeomType::TRIANGLE.bits(),
     );
     const NAME: &'static str = "Area (unsigned)";
+    const HAS_GUI: bool = false;
 
     fn build() -> Box<dyn Operation> {
-        Box::new(UnsignedArea::default())
+        Box::<UnsignedArea>::default()
     }
 }
 

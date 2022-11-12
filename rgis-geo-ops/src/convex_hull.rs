@@ -9,9 +9,10 @@ pub struct ConvexHull {
 impl OperationEntry for ConvexHull {
     const ALLOWED_GEOM_TYPES: geo_geom_type::GeomType = geo_geom_type::GeomType::all();
     const NAME: &'static str = "Convex hull";
+    const HAS_GUI: bool = false;
 
     fn build() -> Box<dyn Operation> {
-        Box::new(ConvexHull::default())
+        Box::<ConvexHull>::default()
     }
 }
 

@@ -18,6 +18,7 @@ impl OperationEntry for Simplify {
             | geo_geom_type::GeomType::MULTI_POLYGON.bits(),
     );
     const NAME: &'static str = "Simplify geometries";
+    const HAS_GUI: bool = true;
 
     fn build() -> Box<dyn Operation> {
         Box::<Simplify>::default()
