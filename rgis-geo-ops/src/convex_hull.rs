@@ -1,4 +1,5 @@
 use crate::{Operation, Outcome};
+use std::mem;
 
 #[derive(Default)]
 pub struct ConvexHull {
@@ -14,10 +15,11 @@ impl Operation for ConvexHull {
         self.geometries.push(geometry);
     }
 
-    fn finalize(self) -> Result<Outcome, Self::Error> {
+    fn finalize(&mut self) -> Result<Outcome, Self::Error> {
         use geo::ConvexHull;
 
-        let outcome = geo::GeometryCollection(self.geometries).convex_hull();
+        let geometries = mem::take(&mut self.geometries);
+        let outcome = geo::GeometryCollection(geometries).convex_hull();
 
         Ok(Outcome::FeatureCollection(geo_projected::Unprojected::new(
             geo_features::FeatureCollection::from_geometry(outcome.into())?,

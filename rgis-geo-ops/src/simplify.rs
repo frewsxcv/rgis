@@ -1,4 +1,5 @@
 use crate::{Operation, Outcome};
+use std::mem;
 use geo::Simplify as GeoSimplify;
 
 // TODO: This should be calculated dynamically
@@ -44,10 +45,11 @@ impl Operation for Simplify {
             .push(multi_polygon.simplify(&EPSILON).into());
     }
 
-    fn finalize(self) -> Result<Outcome, Self::Error> {
+    fn finalize(&mut self) -> Result<Outcome, Self::Error> {
+        let simplified = mem::take(&mut self.simplified);
         Ok(Outcome::FeatureCollection(geo_projected::Unprojected::new(
             geo_features::FeatureCollection::from_geometry(geo::Geometry::GeometryCollection(
-                self.simplified,
+                simplified,
             ))?,
         )))
     }

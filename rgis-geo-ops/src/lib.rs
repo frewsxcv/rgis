@@ -26,13 +26,13 @@ pub enum Outcome {
     FeatureCollection(Unprojected<geo_features::FeatureCollection>),
 }
 
-pub trait Operation: Sized {
+pub trait Operation {
     const ALLOWED_GEOM_TYPES: geo_geom_type::GeomType;
     const NAME: &'static str;
     type Error: error::Error;
 
     fn perform(
-        mut self,
+        &mut self,
         feature_collection: Unprojected<geo_features::FeatureCollection>,
     ) -> Result<Outcome, Self::Error> {
         for feature in feature_collection.into_features_iter() {
@@ -41,7 +41,10 @@ pub trait Operation: Sized {
         self.finalize()
     }
 
-    fn finalize(self) -> Result<Outcome, Self::Error>;
+    fn finalize(&mut self) -> Result<Outcome, Self::Error>;
+
+    fn ui(&self, ui: &mut bevy_egui::egui::Ui) {
+    }
 
     fn visit_feature(&mut self, feature: Unprojected<geo_features::Feature>) {
         if let Some(g) = feature.0.geometry {

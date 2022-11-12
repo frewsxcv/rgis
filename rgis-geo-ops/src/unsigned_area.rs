@@ -35,7 +35,7 @@ impl Operation for UnsignedArea {
         self.total_area += rect.unsigned_area();
     }
 
-    fn finalize(self) -> Result<Outcome, Self::Error> {
+    fn finalize(&mut self) -> Result<Outcome, Self::Error> {
         Ok(Outcome::Text(format!("Area: {}", self.total_area)))
     }
 }

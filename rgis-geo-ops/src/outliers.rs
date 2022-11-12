@@ -1,4 +1,6 @@
 use crate::{Operation, Outcome};
+use geo::OutlierDetection;
+use std::mem;
 
 #[derive(Default)]
 pub struct Outliers {
@@ -20,12 +22,11 @@ impl Operation for Outliers {
         self.points.extend(multi_point.0.into_iter());
     }
 
-    fn finalize(self) -> Result<Outcome, Self::Error> {
-        use geo::OutlierDetection;
-
+    fn finalize(&mut self) -> Result<Outcome, Self::Error> {
         let mut non_outliers = vec![];
+        let points = mem::take(&mut self.points);
 
-        let multi_point = geo::MultiPoint(self.points);
+        let multi_point = geo::MultiPoint(points);
 
         for (outlier_score, coord) in multi_point.outliers(15).iter().zip(multi_point.0.iter()) {
             if *outlier_score < 2. {
