@@ -1,4 +1,4 @@
-use bevy_egui::egui::{self, Align, Layout};
+use bevy_egui::egui::{self, Align, Layout, Widget};
 
 // const MAX_SIDE_PANEL_WIDTH: f32 = 200.0f32;
 
@@ -40,7 +40,7 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
         ui.vertical_centered_justified(|ui| {
             egui::ScrollArea::vertical().show(ui, |ui| {
                 self.render_layers_heading(ui);
-                self.render_add_layer_button(ui);
+                (AddLayerButton { events: self.events }).ui(ui);
                 self.render_layers(ui);
             });
         });
@@ -48,14 +48,6 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
 
     fn render_layers_heading(&mut self, ui: &mut egui::Ui) {
         ui.heading("🗺 Layers");
-    }
-
-    fn render_add_layer_button(&mut self, ui: &mut egui::Ui) {
-        if ui.button("➕ Add Layer").clicked() {
-            self.events
-                .show_add_layer_window_event_writer
-                .send_default();
-        }
     }
 
     fn render_layers(&mut self, ui: &mut egui::Ui) {
@@ -172,7 +164,6 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
             .clicked()
         {
             if Op::HAS_GUI {
-
             } else {
                 let outcome = Op::build().perform(layer.unprojected_feature_collection.clone()); // TODO: clone?
 
@@ -208,5 +199,23 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
         self.events
             .delete_layer_event_writer
             .send(rgis_events::DeleteLayerEvent(layer.id));
+    }
+}
+
+struct AddLayerButton<'a, 'w, 's> {
+    events: &'a mut Events<'w, 's>,
+}
+
+impl<'a, 'w, 's> egui::Widget for AddLayerButton<'a, 'w, 's> {
+    fn ui(self, ui: &mut egui::Ui) -> egui::Response {
+        let button = ui.button("➕ Add Layer");
+
+        if button.clicked() {
+            self.events
+                .show_add_layer_window_event_writer
+                .send_default();
+        }
+
+        button
     }
 }
