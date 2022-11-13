@@ -71,7 +71,7 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
             .id_source(layer.id) // Instead of using the layer name as the ID (which is not unique), use the layer ID
             .show(ui, |ui| {
                 // TODO: `geom_type` shouldn't be recalculatd every frame
-                ui.label(format!("Type: {:?}", layer.geom_type()));
+                ui.label(format!("Type: {:?}", layer.geom_type));
 
                 ui.with_layout(Layout::top_down_justified(Align::LEFT), |ui| {
                     if ui.button("✏ Manage").clicked() {
@@ -195,7 +195,7 @@ impl<'a, 'w, 's, Op: rgis_geo_ops::OperationEntry> egui::Widget
 {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         let button = ui.add_enabled(
-            Op::ALLOWED_GEOM_TYPES.contains(self.layer.geom_type()),
+            Op::ALLOWED_GEOM_TYPES.contains(self.layer.geom_type),
             egui::Button::new(Op::NAME),
         );
         if button.clicked() {

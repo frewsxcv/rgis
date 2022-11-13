@@ -150,6 +150,7 @@ impl Layers {
         source_crs: String,
     ) -> Result<rgis_layer_id::LayerId, geo_features::BoundingRectError> {
         let layer_id = self.next_layer_id();
+        let geom_type = geo_geom_type::determine(unprojected.as_raw().geometry_iter());
         let layer = Layer {
             unprojected_feature_collection: unprojected,
             projected_feature_collection: None,
@@ -158,6 +159,7 @@ impl Layers {
             visible: true,
             id: layer_id,
             crs: source_crs,
+            geom_type,
         };
         self.data.push(layer);
         Ok(layer_id)
@@ -186,6 +188,7 @@ pub struct Layer {
     pub name: String,
     pub visible: bool,
     pub crs: String,
+    pub geom_type: geo_geom_type::GeomType,
 }
 
 impl Layer {
@@ -214,10 +217,6 @@ impl Layer {
         feature_collection
             .features_iter()
             .find(|f| f.id() == feature_id)
-    }
-
-    pub fn geom_type(&self) -> geo_geom_type::GeomType {
-        geo_geom_type::determine(self.unprojected_feature_collection.as_raw().geometry_iter())
     }
 }
 
