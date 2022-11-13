@@ -1,5 +1,6 @@
-use crate::{Operation, Outcome};
+use crate::{Operation, Outcome, OperationEntry};
 use geo::Area;
+use std::error;
 
 // FIXME: should this operate on the projected featurecollection instead of the unprojected?
 #[derive(Default)]
@@ -7,7 +8,7 @@ pub struct UnsignedArea {
     total_area: f64,
 }
 
-impl Operation for UnsignedArea {
+impl OperationEntry for UnsignedArea {
     const ALLOWED_GEOM_TYPES: geo_geom_type::GeomType = geo_geom_type::GeomType::from_bits_truncate(
         geo_geom_type::GeomType::POLYGON.bits()
             | geo_geom_type::GeomType::MULTI_POLYGON.bits()
@@ -15,8 +16,14 @@ impl Operation for UnsignedArea {
             | geo_geom_type::GeomType::TRIANGLE.bits(),
     );
     const NAME: &'static str = "Area (unsigned)";
-    type Error = geo_features::BoundingRectError;
+    const HAS_GUI: bool = false;
 
+    fn build() -> Box<dyn Operation> {
+        Box::<UnsignedArea>::default()
+    }
+}
+
+impl Operation for UnsignedArea {
     fn visit_polygon(&mut self, polygon: geo::Polygon) {
         self.total_area += polygon.unsigned_area();
     }
@@ -35,7 +42,7 @@ impl Operation for UnsignedArea {
         self.total_area += rect.unsigned_area();
     }
 
-    fn finalize(self) -> Result<Outcome, Self::Error> {
+    fn finalize(&mut self) -> Result<Outcome, Box<dyn error::Error>> {
         Ok(Outcome::Text(format!("Area: {}", self.total_area)))
     }
 }
