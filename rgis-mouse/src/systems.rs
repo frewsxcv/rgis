@@ -14,6 +14,7 @@ fn cursor_moved_system(
         return;
     }
     if bevy_egui_ctx.ctx_mut().is_pointer_over_area() {
+        cursor_moved_event_reader.clear();
         return;
     }
     let window = windows.primary();
@@ -51,6 +52,7 @@ fn mouse_motion_system(
         || bevy_egui_ctx_mut.is_pointer_over_area()
         || bevy_egui_ctx_mut.is_using_pointer()
     {
+        mouse_motion_event_reader.clear();
         clear_cursor_icon(&mut last_cursor_icon);
         return;
     }
@@ -84,6 +86,7 @@ fn mouse_motion_system(
         return;
     }
 
+    mouse_motion_event_reader.clear();
     let cursor_icon = match rgis_settings.current_tool {
         rgis_settings::Tool::Pan => bevy::window::CursorIcon::Grab,
         rgis_settings::Tool::Query => bevy::window::CursorIcon::Crosshair,
