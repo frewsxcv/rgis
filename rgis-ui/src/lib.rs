@@ -87,7 +87,7 @@ impl bevy::app::Plugin for Plugin {
             .insert_resource(BottomPanelHeight(0.))
             .insert_resource(SidePanelWidth(0.))
             .insert_resource(DebugStatsWindowState {
-                timer: Timer::from_seconds(0.5, TimerMode::Repeating),
+                timer: Timer::from_seconds(0.3, TimerMode::Repeating),
                 is_visible: false,
                 history: collections::VecDeque::with_capacity(DEBUG_STATS_HISTORY_LEN),
             });

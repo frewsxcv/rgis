@@ -229,6 +229,8 @@ struct LastDebugStats {
     frame_count: f64,
 }
 
+const FPS_MAX: f64 = 100.;
+
 fn render_debug_window(
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
     diagnostics: Res<bevy::diagnostic::Diagnostics>,
@@ -275,15 +277,16 @@ fn render_debug_window(
             .history
             .iter()
             .enumerate()
-            .map(|(x, y)| egui::plot::PlotPoint::new(x as f64, *y))
+            .map(|(x, y)| egui::plot::PlotPoint::new(x as f64, y.min(FPS_MAX)))
             .collect::<Vec<_>>()
     } else {
         vec![]
     };
 
-    egui::Window::new("Debug").open(&mut state.is_visible).show(
-        bevy_egui_ctx.ctx_mut(),
-        move |ui| {
+    egui::Window::new("Debug")
+        .default_width(200.)
+        .open(&mut state.is_visible)
+        .show(bevy_egui_ctx.ctx_mut(), move |ui| {
             egui::Grid::new("some_unique_id")
                 .striped(true)
                 .show(ui, |ui| {
@@ -318,10 +321,10 @@ fn render_debug_window(
                 .include_x(0.)
                 .include_x(crate::DEBUG_STATS_HISTORY_LEN as f64)
                 .include_y(0.)
+                .include_y(FPS_MAX)
                 .view_aspect(2.) // Width is twice as big as height
                 .show(ui, |plot_ui| plot_ui.line(line));
-        },
-    );
+        });
 }
 
 pub fn system_sets() -> [SystemSet; 2] {
