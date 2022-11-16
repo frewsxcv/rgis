@@ -1,4 +1,4 @@
-use crate::{Operation, Outcome, OperationEntry};
+use crate::{Operation, OperationEntry, Outcome};
 use geo::Area;
 use std::error;
 

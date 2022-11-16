@@ -15,10 +15,10 @@ mod change_crs_window;
 mod feature_properties_window;
 mod manage_layer_window;
 mod message_window;
+mod operation_window;
 mod side_panel;
 mod systems;
 mod top_panel;
-mod operation_window;
 
 pub struct Plugin;
 

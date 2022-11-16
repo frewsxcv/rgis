@@ -33,12 +33,11 @@ pub(crate) fn set_camera_transform(
 pub(crate) fn determine_scale(bounding_rect: geo::Rect, canvas_size: bevy::ui::Size) -> f32 {
     let width = match canvas_size.width {
         Val::Px(p) => p,
-        _ => unreachable!()
+        _ => unreachable!(),
     };
     let height = match canvas_size.height {
         Val::Px(p) => p,
-        _ => unreachable!()
+        _ => unreachable!(),
     };
-    (bounding_rect.width() as f32 / width)
-        .max(bounding_rect.height() as f32 / height)
+    (bounding_rect.width() as f32 / width).max(bounding_rect.height() as f32 / height)
 }

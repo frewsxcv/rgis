@@ -47,8 +47,7 @@ pub trait Operation {
 
     fn finalize(&mut self) -> Result<Outcome, Box<dyn error::Error>>;
 
-    fn ui(&self, ui: &mut bevy_egui::egui::Ui) {
-    }
+    fn ui(&self, ui: &mut bevy_egui::egui::Ui) {}
 
     fn visit_feature(&mut self, feature: Unprojected<geo_features::Feature>) {
         if let Some(g) = feature.0.geometry {

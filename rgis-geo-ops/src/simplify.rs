@@ -1,6 +1,6 @@
-use crate::{Operation, Outcome, OperationEntry};
-use std::{error, mem};
+use crate::{Operation, OperationEntry, Outcome};
 use geo::Simplify as GeoSimplify;
+use std::{error, mem};
 
 // TODO: This should be calculated dynamically
 const EPSILON: f64 = 1.;

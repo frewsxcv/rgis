@@ -1,4 +1,4 @@
-use crate::{Operation, Outcome, OperationEntry};
+use crate::{Operation, OperationEntry, Outcome};
 use std::{error, mem};
 
 #[derive(Default)]
