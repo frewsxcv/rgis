@@ -46,9 +46,10 @@ fn mouse_motion_system(
     }
 
     // If egui wants to do something with the mouse then release the cursor icon to it
-    if bevy_egui_ctx.ctx_mut().wants_pointer_input()
-        || bevy_egui_ctx.ctx_mut().is_pointer_over_area()
-        || bevy_egui_ctx.ctx_mut().is_using_pointer()
+    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut();
+    if bevy_egui_ctx_mut.wants_pointer_input()
+        || bevy_egui_ctx_mut.is_pointer_over_area()
+        || bevy_egui_ctx_mut.is_using_pointer()
     {
         clear_cursor_icon(&mut last_cursor_icon);
         return;
