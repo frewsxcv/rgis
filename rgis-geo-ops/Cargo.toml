@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bevy_egui = "0.16"
+bevy_egui = "0.17"
 geo = "0.23"
 geo-features = { path = "../geo-features" }
 geo-geom-type = { path = "../geo-geom-type" }

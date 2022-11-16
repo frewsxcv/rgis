@@ -42,14 +42,17 @@ impl ScreenCoord {
 pub struct MapArea<'a> {
     pub window: &'a bevy::window::Window,
     /// Size of UI components (in pixels)
-    pub ui_rect: bevy::ui::UiRect<f32>,
+    pub left_offset_px: f32,
+    pub top_offset_px: f32,
+    pub right_offset_px: f32,
+    pub bottom_offset_px: f32,
 }
 
 impl<'a> MapArea<'a> {
     fn top_left_screen_coord(&self) -> ScreenCoord {
         ScreenCoord {
-            x: f64::from(self.ui_rect.left),
-            y: f64::from(self.ui_rect.top),
+            x: f64::from(self.left_offset_px),
+            y: f64::from(self.top_offset_px),
         }
     }
 
@@ -64,8 +67,8 @@ impl<'a> MapArea<'a> {
 
     fn bottom_right_screen_coord(&self) -> ScreenCoord {
         ScreenCoord {
-            x: f64::from(self.window.width() - self.ui_rect.right),
-            y: f64::from(self.window.height() - self.ui_rect.bottom),
+            x: f64::from(self.window.width() - self.right_offset_px),
+            y: f64::from(self.window.height() - self.bottom_offset_px),
         }
     }
 
@@ -90,11 +93,11 @@ impl<'a> MapArea<'a> {
     }
 
     fn width(&self) -> ScreenLength {
-        ScreenLength(self.window.width() - self.ui_rect.left - self.ui_rect.right)
+        ScreenLength(self.window.width() - self.left_offset_px - self.right_offset_px)
     }
 
     fn height(&self) -> ScreenLength {
-        ScreenLength(self.window.height() - self.ui_rect.top - self.ui_rect.bottom)
+        ScreenLength(self.window.height() - self.top_offset_px - self.bottom_offset_px)
     }
 
     pub fn size(&self) -> ScreenSize {
@@ -104,10 +107,23 @@ impl<'a> MapArea<'a> {
 
 pub struct ScreenLength(pub f32);
 
-pub struct ScreenSize(pub bevy::ui::Size<f32>);
+pub struct ScreenSize {
+    pub width: f32,
+    pub height: f32,
+}
 
 impl ScreenSize {
     fn from_width_height(width: ScreenLength, height: ScreenLength) -> Self {
-        ScreenSize(bevy::ui::Size::new(width.0, height.0))
+        ScreenSize {
+            width: width.0,
+            height: height.0,
+        }
+    }
+
+    pub fn to_bevy_size(&self) -> bevy::ui::Size {
+        bevy::ui::Size::new(
+            bevy::ui::Val::Px(self.width),
+            bevy::ui::Val::Px(self.height),
+        )
     }
 }

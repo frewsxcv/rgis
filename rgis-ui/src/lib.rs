@@ -22,16 +22,16 @@ mod operation_window;
 
 pub struct Plugin;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Resource)]
 pub struct SidePanelWidth(pub f32);
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Resource)]
 pub struct TopPanelHeight(pub f32);
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Resource)]
 pub struct BottomPanelHeight(pub f32);
 
-#[derive(bevy::ecs::system::SystemParam)]
+#[derive(bevy::ecs::system::SystemParam, Resource)]
 pub struct UiMargins<'w, 's> {
     pub left: Res<'w, SidePanelWidth>,
     pub top: Res<'w, TopPanelHeight>,
@@ -41,23 +41,23 @@ pub struct UiMargins<'w, 's> {
 }
 
 impl<'w, 's> UiMargins<'w, 's> {
-    pub fn to_ui_rect(&self) -> bevy::ui::UiRect<f32> {
-        bevy::ui::UiRect {
-            left: self.left.0,
-            top: self.top.0,
-            bottom: self.bottom.0,
-            right: 0.,
-        }
-    }
+    // pub fn to_ui_rect(&self) -> bevy::ui::UiRect {
+    //     bevy::ui::UiRect {
+    //         left: Val::Px(self.left.0),
+    //         top: Val::Px(self.top.0),
+    //         bottom: Val::Px(self.bottom.0),
+    //         right: Val::Px(0.),
+    //     }
+    // }
 }
 
-#[derive(Default)]
+#[derive(Default, Resource)]
 pub struct MessageWindowState {
     is_visible: bool,
     message: Option<String>,
 }
 
-#[derive(Default)]
+#[derive(Default, Resource)]
 pub struct ManageLayerWindowState {
     layer_id: Option<rgis_layer_id::LayerId>,
     is_visible: bool,
@@ -69,6 +69,7 @@ pub struct FeaturePropertiesWindowState {
     is_visible: bool,
 }
 
+#[derive(Resource)]
 pub struct DebugStatsWindowState {
     timer: Timer,
     is_visible: bool,
@@ -86,7 +87,7 @@ impl bevy::app::Plugin for Plugin {
             .insert_resource(BottomPanelHeight(0.))
             .insert_resource(SidePanelWidth(0.))
             .insert_resource(DebugStatsWindowState {
-                timer: Timer::from_seconds(0.5, true),
+                timer: Timer::from_seconds(0.5, TimerMode::Repeating),
                 is_visible: false,
                 history: collections::VecDeque::with_capacity(DEBUG_STATS_HISTORY_LEN),
             });

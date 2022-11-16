@@ -14,7 +14,7 @@ pub fn startup_system_set() -> bevy::ecs::schedule::SystemSet {
 }
 
 fn init_camera(mut commands: Commands) {
-    commands.spawn().insert_bundle(Camera2dBundle::default());
+    commands.spawn(Camera2dBundle::default());
 }
 
 fn handle_change_crs_event(
@@ -31,7 +31,10 @@ fn handle_change_crs_event(
     let window = windows.primary();
     let map_area = rgis_units::MapArea {
         window,
-        ui_rect: ui_margins.to_ui_rect(),
+        left_offset_px: ui_margins.left.0,
+        right_offset_px: 0.,
+        top_offset_px: ui_margins.top.0,
+        bottom_offset_px: ui_margins.bottom.0,
     };
     let mut rect = map_area.projected_geo_rect(&transform, window);
     if let Err(e) = rgis_transform::transform(&mut rect.0, &event.old_crs, &event.new_crs) {
@@ -116,7 +119,10 @@ fn center_camera(
         debug!("Moving camera to look at new layer");
         let map_area = rgis_units::MapArea {
             window,
-            ui_rect: ui_margins.to_ui_rect(),
+            right_offset_px: 0.,
+            left_offset_px: ui_margins.left.0,
+            bottom_offset_px: ui_margins.bottom.0,
+            top_offset_px: ui_margins.top.0,
         };
         crate::utils::center_camera_on_projected_world_rect(
             bounding_rect,

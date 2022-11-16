@@ -6,9 +6,11 @@
     clippy::expect_used
 )]
 
+use bevy::prelude::*;
+
 mod systems;
 
-#[derive(Clone)]
+#[derive(Clone, Resource)]
 pub struct MousePos(pub geo_projected::Projected<geo::Coord>);
 
 pub struct Plugin;

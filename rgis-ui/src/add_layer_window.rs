@@ -1,3 +1,4 @@
+use bevy::prelude::*;
 use bevy_egui::egui;
 use std::mem;
 
@@ -64,7 +65,7 @@ pub struct State {
     selected_format: Format,
 }
 
-#[derive(Default)]
+#[derive(Default, Resource)]
 pub struct SelectedFile(pub Option<OpenedFile>);
 
 impl State {

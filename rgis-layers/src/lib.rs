@@ -12,7 +12,7 @@ use std::sync;
 
 mod systems;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Resource)]
 pub struct Layers {
     data: Vec<Layer>,
     // ID of the currently selected Layer

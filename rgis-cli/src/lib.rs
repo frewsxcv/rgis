@@ -6,13 +6,14 @@
     clippy::expect_used
 )]
 
+use bevy::prelude::*;
 use clap::{Arg, ArgAction, Command};
 
 static DEFAULT_MSAA: &str = "4";
 
 type MsaaSampleCount = u32;
 
-#[derive(Clone)]
+#[derive(Clone, Resource)]
 pub struct Values {
     pub msaa_sample_count: MsaaSampleCount,
 }

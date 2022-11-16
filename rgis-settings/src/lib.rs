@@ -6,6 +6,8 @@
     clippy::expect_used
 )]
 
+use bevy::prelude::*;
+
 mod systems;
 
 static DEFAULT_TARGET_CRS: &str = "EPSG:3857";
@@ -16,6 +18,7 @@ pub enum Tool {
     Query,
 }
 
+#[derive(Resource)]
 pub struct RgisSettings {
     pub target_crs: String,
     pub current_tool: Tool,
