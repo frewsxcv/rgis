@@ -1,5 +1,5 @@
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
-use bevy_egui::egui;
+use bevy_egui::egui::{self, Widget};
 
 fn render_bottom_panel(
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
@@ -287,25 +287,7 @@ fn render_debug_window(
         .default_width(200.)
         .open(&mut state.is_visible)
         .show(bevy_egui_ctx.ctx_mut(), move |ui| {
-            egui::Grid::new("some_unique_id")
-                .striped(true)
-                .show(ui, |ui| {
-                    ui.label("Metric");
-                    ui.label("Value");
-                    ui.end_row();
-
-                    ui.label("FPS");
-                    ui.label(format!("{:.2} frames/sec.", last.fps));
-                    ui.end_row();
-
-                    ui.label("Frame time");
-                    ui.label(format!("{:.3} sec.", last.frame_time));
-                    ui.end_row();
-
-                    ui.label("Frame count");
-                    ui.label(format!("{} frames", last.frame_count));
-                    ui.end_row();
-                });
+            DebugTable { last: &last }.ui(ui);
 
             use egui::plot::{Line, Plot, PlotPoints};
             let line = Line::new(PlotPoints::Owned(sin));
@@ -346,4 +328,33 @@ pub fn system_sets() -> [SystemSet; 2] {
             .with_system(render_in_progress.after("top_bottom_panels"))
             .label("rgis_ui"),
     ]
+}
+
+struct DebugTable<'a> {
+    last: &'a LastDebugStats,
+}
+
+impl<'a> egui::Widget for DebugTable<'a> {
+    fn ui(self, ui: &mut egui::Ui) -> egui::Response {
+        egui::Grid::new("some_unique_id")
+            .striped(true)
+            .show(ui, |ui| {
+                ui.label("Metric");
+                ui.label("Value");
+                ui.end_row();
+
+                ui.label("FPS");
+                ui.label(format!("{:.2} frames/sec.", self.last.fps));
+                ui.end_row();
+
+                ui.label("Frame time");
+                ui.label(format!("{:.3} sec.", self.last.frame_time));
+                ui.end_row();
+
+                ui.label("Frame count");
+                ui.label(format!("{} frames", self.last.frame_count));
+                ui.end_row();
+            })
+            .response
+    }
 }
