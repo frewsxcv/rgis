@@ -7,9 +7,8 @@ impl OperationEntry for Outliers {
         geo_geom_type::GeomType::POINT.bits() | geo_geom_type::GeomType::MULTI_POINT.bits(),
     );
     const NAME: &'static str = "Detect outliers";
-    const HAS_GUI: bool = false;
 
-    fn build() -> Box<dyn Operation> {
+    fn build() -> Box<dyn Operation + Send + Sync> {
         Box::<Outliers>::default()
     }
 }

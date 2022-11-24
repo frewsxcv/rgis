@@ -21,6 +21,12 @@ impl<G> Projected<G> {
 #[derive(Debug)]
 pub struct Unprojected<G>(pub G); // TODO: remove `pub`
 
+impl<G: Default> Default for Unprojected<G> {
+    fn default() -> Self {
+        Unprojected(G::default())
+    }
+}
+
 impl<G> Unprojected<G> {
     pub fn into_projected(self) -> Projected<G> {
         Projected(self.0)

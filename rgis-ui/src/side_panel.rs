@@ -16,6 +16,8 @@ pub struct Events<'w, 's> {
         bevy::ecs::event::EventWriter<'w, 's, rgis_events::ShowAddLayerWindow>,
     render_message_event_writer:
         bevy::ecs::event::EventWriter<'w, 's, rgis_events::RenderMessageEvent>,
+    open_operation_window_event_writer:
+        bevy::ecs::event::EventWriter<'w, 's, crate::events::OpenOperationWindowEvent>,
 }
 
 pub(crate) struct SidePanel<'a, 'w, 's> {
@@ -144,6 +146,7 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
                                         }
                                     }
                                 }
+
                                 OperationButton::<rgis_geo_ops::ConvexHull> {
                                     events: self.events,
                                     layer,
@@ -199,27 +202,38 @@ impl<'a, 'w, 's, Op: rgis_geo_ops::OperationEntry> egui::Widget
             egui::Button::new(Op::NAME),
         );
         if button.clicked() {
-            if Op::HAS_GUI {
-            } else {
-                let outcome =
-                    Op::build().perform(self.layer.unprojected_feature_collection.clone()); // TODO: clone?
+            let mut operation = Op::build();
+            match operation.next_action() {
+                rgis_geo_ops::Action::RenderUi => {
+                    self.events.open_operation_window_event_writer.send(
+                        crate::events::OpenOperationWindowEvent {
+                            operation,
+                            feature_collection: self.layer.unprojected_feature_collection.clone(), // TODO: clone?
+                        },
+                    )
+                }
+                rgis_geo_ops::Action::Perform => {
+                    // TODO: perform in background task
+                    let outcome =
+                        operation.perform(self.layer.unprojected_feature_collection.clone()); // TODO: clone?
 
-                match outcome {
-                    Ok(rgis_geo_ops::Outcome::FeatureCollection(feature_collection)) => {
-                        self.events
-                            .create_layer_event_writer
-                            .send(rgis_events::CreateLayerEvent {
-                                feature_collection,
-                                name: Op::NAME.into(),
-                                source_crs: self.layer.crs.clone(),
-                            });
-                    }
-                    Ok(rgis_geo_ops::Outcome::Text(text)) => self
-                        .events
-                        .render_message_event_writer
-                        .send(rgis_events::RenderMessageEvent(text)),
-                    Err(e) => {
-                        bevy::log::error!("Encountered an error during the operation: {}", e);
+                    match outcome {
+                        Ok(rgis_geo_ops::Outcome::FeatureCollection(feature_collection)) => {
+                            self.events.create_layer_event_writer.send(
+                                rgis_events::CreateLayerEvent {
+                                    feature_collection,
+                                    name: Op::NAME.into(),
+                                    source_crs: self.layer.crs.clone(),
+                                },
+                            );
+                        }
+                        Ok(rgis_geo_ops::Outcome::Text(text)) => self
+                            .events
+                            .render_message_event_writer
+                            .send(rgis_events::RenderMessageEvent(text)),
+                        Err(e) => {
+                            bevy::log::error!("Encountered an error during the operation: {}", e);
+                        }
                     }
                 }
             }

@@ -7,7 +7,7 @@
 )]
 
 use geo::{BoundingRect, Contains};
-use std::{collections, fmt, num, sync};
+use std::{collections, fmt, iter, num, sync};
 
 #[derive(Default)]
 pub struct FeatureBuilder {
@@ -53,6 +53,27 @@ pub struct Feature {
     pub geometry: Option<geo::Geometry>,
     pub properties: Properties,
     pub bounding_rect: Option<geo::Rect>,
+}
+
+impl<'a> geo::CoordsIter<'a> for Feature {
+    type Scalar = f64;
+    type Iter = iter::Empty<geo::Coord<Self::Scalar>>;
+    type ExteriorIter = iter::Empty<geo::Coord<Self::Scalar>>;
+
+    fn coords_count(&'a self) -> usize {
+        self.geometry
+            .as_ref()
+            .map(|g| g.coords_count())
+            .unwrap_or(0)
+    }
+
+    fn coords_iter(&'a self) -> Self::Iter {
+        todo!()
+    }
+
+    fn exterior_coords_iter(&'a self) -> Self::ExteriorIter {
+        todo!()
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -102,6 +123,24 @@ pub struct FeatureCollection {
 impl FeatureCollection {
     pub fn new() -> Self {
         FeatureCollection::default()
+    }
+}
+
+impl<'a> geo::CoordsIter<'a> for FeatureCollection {
+    type Scalar = f64;
+    type Iter = iter::Empty<geo::Coord<Self::Scalar>>;
+    type ExteriorIter = iter::Empty<geo::Coord<Self::Scalar>>;
+
+    fn coords_count(&'a self) -> usize {
+        self.features.iter().map(|f| f.coords_count()).sum()
+    }
+
+    fn coords_iter(&'a self) -> Self::Iter {
+        todo!()
+    }
+
+    fn exterior_coords_iter(&'a self) -> Self::ExteriorIter {
+        todo!()
     }
 }
 

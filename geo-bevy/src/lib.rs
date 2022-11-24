@@ -67,19 +67,25 @@ pub fn build_bevy_meshes<G: BuildBevyMeshes>(
     color: bevy_render::color::Color,
     mut ctx: BuildBevyMeshesContext,
 ) -> Result<impl Iterator<Item = PreparedMesh>, <G as BuildBevyMeshes>::Error> {
-    geo.populate_mesh_builders(&mut ctx)?;
+    {
+        let span = bevy_log::info_span!("Populating Bevy mesh builders");
+        let foo = span.enter();
+        geo.populate_mesh_builders(&mut ctx)?;
+    }
 
-    Ok([
-        ctx.point_mesh_builder.build(),
-        ctx.line_string_mesh_builder.build(color),
-        ctx.polygon_mesh_builder
-            .build()
-            .map(|mesh| PreparedMesh::PolygonAndLineString { mesh, color }),
-        ctx.polygon_border_mesh_builder
-            .build(bevy_render::color::Color::BLACK),
-    ]
-    .into_iter()
-    .flatten())
+    bevy_log::info_span!("Building Bevy meshes").in_scope(|| {
+        Ok([
+            ctx.point_mesh_builder.build(),
+            ctx.line_string_mesh_builder.build(color),
+            ctx.polygon_mesh_builder
+                .build()
+                .map(|mesh| PreparedMesh::PolygonAndLineString { mesh, color }),
+            ctx.polygon_border_mesh_builder
+                .build(bevy_render::color::Color::BLACK),
+        ]
+        .into_iter()
+        .flatten())
+    })
 }
 
 pub trait BuildBevyMeshes {

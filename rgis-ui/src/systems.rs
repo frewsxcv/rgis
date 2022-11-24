@@ -157,6 +157,28 @@ fn render_message_window(
     .render();
 }
 
+fn render_operation_window(
+    mut state: Local<crate::OperationWindowState>,
+    mut events: ResMut<Events<crate::events::OpenOperationWindowEvent>>,
+    mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
+    create_layer_event_writer: EventWriter<rgis_events::CreateLayerEvent>,
+    render_message_event_writer: EventWriter<rgis_events::RenderMessageEvent>,
+) {
+    if let Some(event) = events.drain().last() {
+        state.is_visible = true;
+        state.operation = Some(event.operation);
+        state.feature_collection = event.feature_collection; // Should this be `Some()`? Otherwise we'll always have something stored
+    }
+
+    crate::operation_window::OperationWindow {
+        bevy_egui_ctx: &mut bevy_egui_ctx,
+        state: &mut state,
+        create_layer_event_writer,
+        render_message_event_writer,
+    }
+    .render();
+}
+
 fn render_in_progress(
     query: Query<&bevy_jobs::InProgressJob>,
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
@@ -324,7 +346,8 @@ pub fn system_sets() -> [SystemSet; 2] {
             .with_system(render_manage_layer_window.after(render_side_panel))
             .with_system(render_add_layer_window.after(render_manage_layer_window))
             .with_system(render_change_crs_window.after(render_add_layer_window))
-            .with_system(render_feature_properties_window.after(render_add_layer_window))
+            .with_system(render_feature_properties_window.after(render_change_crs_window))
+            .with_system(render_operation_window.after(render_feature_properties_window))
             .with_system(render_in_progress.after("top_bottom_panels"))
             .label("rgis_ui"),
     ]

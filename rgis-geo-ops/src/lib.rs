@@ -29,9 +29,13 @@ pub enum Outcome {
 pub trait OperationEntry {
     const ALLOWED_GEOM_TYPES: geo_geom_type::GeomType;
     const NAME: &'static str;
-    const HAS_GUI: bool;
 
-    fn build() -> Box<dyn Operation>;
+    fn build() -> Box<dyn Operation + Send + Sync>;
+}
+
+pub enum Action {
+    RenderUi,
+    Perform,
 }
 
 pub trait Operation {
@@ -47,7 +51,16 @@ pub trait Operation {
 
     fn finalize(&mut self) -> Result<Outcome, Box<dyn error::Error>>;
 
-    fn ui(&self, ui: &mut bevy_egui::egui::Ui) {}
+    fn next_action(&self) -> Action {
+        Action::Perform
+    }
+
+    fn ui(
+        &mut self,
+        _ui: &mut bevy_egui::egui::Ui,
+        _feature_collection: &Unprojected<geo_features::FeatureCollection>,
+    ) {
+    }
 
     fn visit_feature(&mut self, feature: Unprojected<geo_features::Feature>) {
         if let Some(g) = feature.0.geometry {

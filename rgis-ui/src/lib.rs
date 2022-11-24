@@ -12,6 +12,7 @@ use std::{collections, marker};
 mod add_layer_window;
 mod bottom_panel;
 mod change_crs_window;
+mod events;
 mod feature_properties_window;
 mod manage_layer_window;
 mod message_window;
@@ -76,6 +77,13 @@ pub struct DebugStatsWindowState {
     history: collections::VecDeque<f64>,
 }
 
+#[derive(Default)]
+struct OperationWindowState {
+    is_visible: bool,
+    operation: Option<Box<dyn Send + Sync + rgis_geo_ops::Operation>>,
+    feature_collection: geo_projected::Unprojected<geo_features::FeatureCollection>,
+}
+
 const DEBUG_STATS_HISTORY_LEN: usize = 100;
 
 impl bevy::app::Plugin for Plugin {
@@ -90,7 +98,8 @@ impl bevy::app::Plugin for Plugin {
                 timer: Timer::from_seconds(0.3, TimerMode::Repeating),
                 is_visible: false,
                 history: collections::VecDeque::with_capacity(DEBUG_STATS_HISTORY_LEN),
-            });
+            })
+            .add_event::<events::OpenOperationWindowEvent>();
 
         app.add_startup_system_set(systems::startup_system_set());
 
