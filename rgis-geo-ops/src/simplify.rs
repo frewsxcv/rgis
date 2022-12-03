@@ -84,9 +84,14 @@ impl Operation for Simplify {
     }
 
     fn visit_polygon(&mut self, polygon: geo::Polygon) {
+        let simplified = polygon.simplify(&self.epsilon.unwrap());
+        debug_assert!(simplified.exterior().0.len() >= 4);
+        for interior in polygon.interiors() {
+            debug_assert!(interior.0.len() >= 4);
+        }
         self.simplified
             .0
-            .push(polygon.simplify(&self.epsilon.unwrap()).into());
+            .push(simplified.into());
     }
 
     fn visit_multi_polygon(&mut self, multi_polygon: geo::MultiPolygon) {

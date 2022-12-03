@@ -216,10 +216,12 @@ impl BuildBevyMeshes for geo::GeometryCollection {
 fn polygon_to_earcutr_input(polygon: &geo::Polygon) -> bevy_earcutr::EarcutrInput {
     let mut vertices = Vec::with_capacity(polygon.coords_count() * 2);
     let mut interior_indices = Vec::with_capacity(polygon.interiors().len());
+    debug_assert!(polygon.exterior().0.len() >= 4);
 
     flat_line_string_coords_2(polygon.exterior(), &mut vertices);
 
     for interior in polygon.interiors() {
+        debug_assert!(interior.0.len() >= 4);
         interior_indices.push(vertices.len() / 2);
         flat_line_string_coords_2(interior, &mut vertices);
     }
