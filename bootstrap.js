@@ -61,11 +61,11 @@
 /******/ 					"__wbindgen_object_drop_ref": function(p0i32) {
 /******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_object_drop_ref"](p0i32);
 /******/ 					},
-/******/ 					"__wbindgen_cb_drop": function(p0i32) {
-/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_cb_drop"](p0i32);
-/******/ 					},
 /******/ 					"__wbindgen_number_get": function(p0i32,p1i32) {
 /******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_number_get"](p0i32,p1i32);
+/******/ 					},
+/******/ 					"__wbindgen_cb_drop": function(p0i32) {
+/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_cb_drop"](p0i32);
 /******/ 					},
 /******/ 					"__wbindgen_is_function": function(p0i32) {
 /******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_is_function"](p0i32);
@@ -103,12 +103,6 @@
 /******/ 					"__wbg_error_f851667af71bcfc6": function(p0i32,p1i32) {
 /******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbg_error_f851667af71bcfc6"](p0i32,p1i32);
 /******/ 					},
-/******/ 					"__wbg_randomFillSync_6894564c2c334c42": function(p0i32,p1i32,p2i32) {
-/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbg_randomFillSync_6894564c2c334c42"](p0i32,p1i32,p2i32);
-/******/ 					},
-/******/ 					"__wbg_getRandomValues_805f1c3d65988a5a": function(p0i32,p1i32) {
-/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbg_getRandomValues_805f1c3d65988a5a"](p0i32,p1i32);
-/******/ 					},
 /******/ 					"__wbg_crypto_e1d53a1d73fb10b8": function(p0i32) {
 /******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbg_crypto_e1d53a1d73fb10b8"](p0i32);
 /******/ 					},
@@ -132,6 +126,12 @@
 /******/ 					},
 /******/ 					"__wbg_require_78a3dcfbdba9cbce": function() {
 /******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbg_require_78a3dcfbdba9cbce"]();
+/******/ 					},
+/******/ 					"__wbg_getRandomValues_805f1c3d65988a5a": function(p0i32,p1i32) {
+/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbg_getRandomValues_805f1c3d65988a5a"](p0i32,p1i32);
+/******/ 					},
+/******/ 					"__wbg_randomFillSync_6894564c2c334c42": function(p0i32,p1i32,p2i32) {
+/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbg_randomFillSync_6894564c2c334c42"](p0i32,p1i32,p2i32);
 /******/ 					},
 /******/ 					"__wbg_instanceof_WebGl2RenderingContext_fcfa91cd777063f3": function(p0i32) {
 /******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbg_instanceof_WebGl2RenderingContext_fcfa91cd777063f3"](p0i32);
@@ -568,6 +568,15 @@
 /******/ 					"__wbg_readAsArrayBuffer_c0699f289036f24a": function(p0i32,p1i32) {
 /******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbg_readAsArrayBuffer_c0699f289036f24a"](p0i32,p1i32);
 /******/ 					},
+/******/ 					"__wbg_bindVertexArrayOES_84540c072ea96b75": function(p0i32,p1i32) {
+/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbg_bindVertexArrayOES_84540c072ea96b75"](p0i32,p1i32);
+/******/ 					},
+/******/ 					"__wbg_createVertexArrayOES_00a5c523e5b17eff": function(p0i32) {
+/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbg_createVertexArrayOES_00a5c523e5b17eff"](p0i32);
+/******/ 					},
+/******/ 					"__wbg_deleteVertexArrayOES_98b83132b3d85825": function(p0i32,p1i32) {
+/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbg_deleteVertexArrayOES_98b83132b3d85825"](p0i32,p1i32);
+/******/ 					},
 /******/ 					"__wbg_instanceof_HtmlCanvasElement_97761617af6ea089": function(p0i32) {
 /******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbg_instanceof_HtmlCanvasElement_97761617af6ea089"](p0i32);
 /******/ 					},
@@ -640,12 +649,6 @@
 /******/ 					"__wbg_name_4c77dffe5e7dabfc": function(p0i32,p1i32) {
 /******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbg_name_4c77dffe5e7dabfc"](p0i32,p1i32);
 /******/ 					},
-/******/ 					"__wbg_parentElement_0cffb3ceb0f107bd": function(p0i32) {
-/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbg_parentElement_0cffb3ceb0f107bd"](p0i32);
-/******/ 					},
-/******/ 					"__wbg_appendChild_e513ef0e5098dfdd": function(p0i32,p1i32) {
-/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbg_appendChild_e513ef0e5098dfdd"](p0i32,p1i32);
-/******/ 					},
 /******/ 					"__wbg_target_bf704b7db7ad1387": function(p0i32) {
 /******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbg_target_bf704b7db7ad1387"](p0i32);
 /******/ 					},
@@ -657,6 +660,12 @@
 /******/ 					},
 /******/ 					"__wbg_stopPropagation_eca3af16f2d02a91": function(p0i32) {
 /******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbg_stopPropagation_eca3af16f2d02a91"](p0i32);
+/******/ 					},
+/******/ 					"__wbg_parentElement_0cffb3ceb0f107bd": function(p0i32) {
+/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbg_parentElement_0cffb3ceb0f107bd"](p0i32);
+/******/ 					},
+/******/ 					"__wbg_appendChild_e513ef0e5098dfdd": function(p0i32,p1i32) {
+/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbg_appendChild_e513ef0e5098dfdd"](p0i32,p1i32);
 /******/ 					},
 /******/ 					"__wbg_setProperty_e489dfd8c0a6bffc": function(p0i32,p1i32,p2i32,p3i32,p4i32) {
 /******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbg_setProperty_e489dfd8c0a6bffc"](p0i32,p1i32,p2i32,p3i32,p4i32);
@@ -1051,15 +1060,6 @@
 /******/ 					"__wbg_movementY_2c81eed268321a0a": function(p0i32) {
 /******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbg_movementY_2c81eed268321a0a"](p0i32);
 /******/ 					},
-/******/ 					"__wbg_bindVertexArrayOES_84540c072ea96b75": function(p0i32,p1i32) {
-/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbg_bindVertexArrayOES_84540c072ea96b75"](p0i32,p1i32);
-/******/ 					},
-/******/ 					"__wbg_createVertexArrayOES_00a5c523e5b17eff": function(p0i32) {
-/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbg_createVertexArrayOES_00a5c523e5b17eff"](p0i32);
-/******/ 					},
-/******/ 					"__wbg_deleteVertexArrayOES_98b83132b3d85825": function(p0i32,p1i32) {
-/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbg_deleteVertexArrayOES_98b83132b3d85825"](p0i32,p1i32);
-/******/ 					},
 /******/ 					"__wbg_pointerId_18be034781db46f3": function(p0i32) {
 /******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbg_pointerId_18be034781db46f3"](p0i32);
 /******/ 					},
@@ -1231,47 +1231,47 @@
 /******/ 					"__wbindgen_memory": function() {
 /******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_memory"]();
 /******/ 					},
-/******/ 					"__wbindgen_closure_wrapper598": function(p0i32,p1i32,p2i32) {
-/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_closure_wrapper598"](p0i32,p1i32,p2i32);
+/******/ 					"__wbindgen_closure_wrapper624": function(p0i32,p1i32,p2i32) {
+/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_closure_wrapper624"](p0i32,p1i32,p2i32);
 /******/ 					},
-/******/ 					"__wbindgen_closure_wrapper2220": function(p0i32,p1i32,p2i32) {
-/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_closure_wrapper2220"](p0i32,p1i32,p2i32);
+/******/ 					"__wbindgen_closure_wrapper1733": function(p0i32,p1i32,p2i32) {
+/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_closure_wrapper1733"](p0i32,p1i32,p2i32);
 /******/ 					},
-/******/ 					"__wbindgen_closure_wrapper2955": function(p0i32,p1i32,p2i32) {
-/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_closure_wrapper2955"](p0i32,p1i32,p2i32);
+/******/ 					"__wbindgen_closure_wrapper2967": function(p0i32,p1i32,p2i32) {
+/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_closure_wrapper2967"](p0i32,p1i32,p2i32);
 /******/ 					},
-/******/ 					"__wbindgen_closure_wrapper5724": function(p0i32,p1i32,p2i32) {
-/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_closure_wrapper5724"](p0i32,p1i32,p2i32);
+/******/ 					"__wbindgen_closure_wrapper5707": function(p0i32,p1i32,p2i32) {
+/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_closure_wrapper5707"](p0i32,p1i32,p2i32);
 /******/ 					},
-/******/ 					"__wbindgen_closure_wrapper5726": function(p0i32,p1i32,p2i32) {
-/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_closure_wrapper5726"](p0i32,p1i32,p2i32);
+/******/ 					"__wbindgen_closure_wrapper5709": function(p0i32,p1i32,p2i32) {
+/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_closure_wrapper5709"](p0i32,p1i32,p2i32);
 /******/ 					},
-/******/ 					"__wbindgen_closure_wrapper5728": function(p0i32,p1i32,p2i32) {
-/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_closure_wrapper5728"](p0i32,p1i32,p2i32);
+/******/ 					"__wbindgen_closure_wrapper5711": function(p0i32,p1i32,p2i32) {
+/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_closure_wrapper5711"](p0i32,p1i32,p2i32);
 /******/ 					},
-/******/ 					"__wbindgen_closure_wrapper5730": function(p0i32,p1i32,p2i32) {
-/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_closure_wrapper5730"](p0i32,p1i32,p2i32);
+/******/ 					"__wbindgen_closure_wrapper5713": function(p0i32,p1i32,p2i32) {
+/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_closure_wrapper5713"](p0i32,p1i32,p2i32);
 /******/ 					},
-/******/ 					"__wbindgen_closure_wrapper5732": function(p0i32,p1i32,p2i32) {
-/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_closure_wrapper5732"](p0i32,p1i32,p2i32);
+/******/ 					"__wbindgen_closure_wrapper5715": function(p0i32,p1i32,p2i32) {
+/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_closure_wrapper5715"](p0i32,p1i32,p2i32);
 /******/ 					},
-/******/ 					"__wbindgen_closure_wrapper5734": function(p0i32,p1i32,p2i32) {
-/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_closure_wrapper5734"](p0i32,p1i32,p2i32);
+/******/ 					"__wbindgen_closure_wrapper5717": function(p0i32,p1i32,p2i32) {
+/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_closure_wrapper5717"](p0i32,p1i32,p2i32);
 /******/ 					},
-/******/ 					"__wbindgen_closure_wrapper5736": function(p0i32,p1i32,p2i32) {
-/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_closure_wrapper5736"](p0i32,p1i32,p2i32);
+/******/ 					"__wbindgen_closure_wrapper5719": function(p0i32,p1i32,p2i32) {
+/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_closure_wrapper5719"](p0i32,p1i32,p2i32);
 /******/ 					},
-/******/ 					"__wbindgen_closure_wrapper5738": function(p0i32,p1i32,p2i32) {
-/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_closure_wrapper5738"](p0i32,p1i32,p2i32);
+/******/ 					"__wbindgen_closure_wrapper5721": function(p0i32,p1i32,p2i32) {
+/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_closure_wrapper5721"](p0i32,p1i32,p2i32);
 /******/ 					},
-/******/ 					"__wbindgen_closure_wrapper5740": function(p0i32,p1i32,p2i32) {
-/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_closure_wrapper5740"](p0i32,p1i32,p2i32);
+/******/ 					"__wbindgen_closure_wrapper5723": function(p0i32,p1i32,p2i32) {
+/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_closure_wrapper5723"](p0i32,p1i32,p2i32);
 /******/ 					},
-/******/ 					"__wbindgen_closure_wrapper25373": function(p0i32,p1i32,p2i32) {
-/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_closure_wrapper25373"](p0i32,p1i32,p2i32);
+/******/ 					"__wbindgen_closure_wrapper25620": function(p0i32,p1i32,p2i32) {
+/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_closure_wrapper25620"](p0i32,p1i32,p2i32);
 /******/ 					},
-/******/ 					"__wbindgen_closure_wrapper29962": function(p0i32,p1i32,p2i32) {
-/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_closure_wrapper29962"](p0i32,p1i32,p2i32);
+/******/ 					"__wbindgen_closure_wrapper30187": function(p0i32,p1i32,p2i32) {
+/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_closure_wrapper30187"](p0i32,p1i32,p2i32);
 /******/ 					}
 /******/ 				}
 /******/ 			};
@@ -1374,7 +1374,7 @@
 /******/ 				promises.push(installedWasmModuleData);
 /******/ 			else {
 /******/ 				var importObject = wasmImportObjects[wasmModuleId]();
-/******/ 				var req = fetch(__webpack_require__.p + "" + {"../rgis/pkg/rgis_bg.wasm":"b771c85a41a0d72db929"}[wasmModuleId] + ".module.wasm");
+/******/ 				var req = fetch(__webpack_require__.p + "" + {"../rgis/pkg/rgis_bg.wasm":"f37b018f52874e48a97d"}[wasmModuleId] + ".module.wasm");
 /******/ 				var promise;
 /******/ 				if(importObject instanceof Promise && typeof WebAssembly.compileStreaming === 'function') {
 /******/ 					promise = Promise.all([WebAssembly.compileStreaming(req), importObject]).then(function(items) {
