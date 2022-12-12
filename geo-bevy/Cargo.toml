@@ -8,5 +8,5 @@ publish = false
 [dependencies]
 bevy_log = "0.9"
 bevy_render = "0.9"
-bevy-earcutr = { path = "../../bevy-earcutr" }
+bevy-earcutr = "0.7"
 geo = "0.23"
