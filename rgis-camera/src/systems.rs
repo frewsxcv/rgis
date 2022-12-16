@@ -81,7 +81,9 @@ fn zoom_camera_system(
     for event in zoom_camera_event_reader.iter() {
         camera_scale.zoom(event.amount);
     }
-    crate::utils::set_camera_transform(&mut transform, camera_offset, camera_scale);
+    if camera_scale.0.is_finite() {
+        crate::utils::set_camera_transform(&mut transform, camera_offset, camera_scale);
+    }
 }
 
 fn handle_meshes_spawned_events(
