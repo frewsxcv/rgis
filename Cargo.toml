@@ -4,6 +4,7 @@ members = [
     "geo-features",
     "geo-geom-type",
     "geo-proj-js",
+    "geo-projected",
     "rgis-camera",
     "rgis-cli",
     "rgis-events",
@@ -29,3 +30,4 @@ debug = true
 
 [patch.crates-io]
 geo = { git = 'https://github.com/georust/geo' }
+geo-types = { git = 'https://github.com/georust/geo' }

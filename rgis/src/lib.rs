@@ -14,32 +14,37 @@ use wasm_bindgen::prelude::*;
 pub fn run() {
     let mut app = App::new();
 
-    app.insert_resource(WindowDescriptor {
-        title: "rgis".to_string(),
+    app.add_plugins(MinimalPlugins);
+    app.add_plugin(bevy::asset::AssetPlugin::default());
+    app.add_plugin(WindowPlugin {
+        window: WindowDescriptor {
+            title: "rgis".to_string(),
+            ..Default::default()
+        },
         ..Default::default()
-    })
-    .add_plugins(MinimalPlugins)
-    .add_plugin(bevy::asset::AssetPlugin::default())
-    .add_plugin(bevy::window::WindowPlugin::default())
-    .add_plugin(bevy::log::LogPlugin::default())
-    .add_plugin(bevy::winit::WinitPlugin::default())
-    .add_plugin(bevy::input::InputPlugin::default())
-    .add_plugin(bevy::render::RenderPlugin::default())
-    .add_plugin(bevy::core_pipeline::CorePipelinePlugin::default())
-    .add_plugin(bevy::transform::TransformPlugin::default())
-    .add_plugin(bevy::sprite::SpritePlugin::default())
-    .add_plugin(rgis_layers::Plugin)
-    .add_plugin(rgis_file_loader::Plugin)
-    .add_plugin(rgis_renderer::Plugin)
-    .add_plugin(rgis_mouse::Plugin)
-    .add_plugin(rgis_keyboard::Plugin)
-    .add_plugin(rgis_network::Plugin)
-    .add_plugin(rgis_camera::Plugin)
-    .add_plugin(rgis_events::Plugin)
-    .add_plugin(bevy_jobs::Plugin)
-    .add_plugin(rgis_transform::Plugin)
-    .add_plugin(rgis_ui::Plugin)
-    .add_plugin(rgis_settings::Plugin);
+    });
+    app.add_plugin(bevy::winit::WinitPlugin::default());
+    app.add_plugin(bevy::render::RenderPlugin::default());
+    app.add_plugin(bevy::render::texture::ImagePlugin::default());
+    app.add_plugin(bevy::log::LogPlugin::default());
+    app.add_plugin(bevy::input::InputPlugin::default());
+    app.add_plugin(bevy::core_pipeline::CorePipelinePlugin::default());
+    app.add_plugin(bevy::transform::TransformPlugin::default());
+    app.add_plugin(bevy::sprite::SpritePlugin::default());
+    app.add_plugin(rgis_ui::Plugin);
+    app.add_plugin(rgis_layers::Plugin);
+    app.add_plugin(rgis_file_loader::Plugin);
+    app.add_plugin(rgis_renderer::Plugin);
+    app.add_plugin(rgis_mouse::Plugin);
+    app.add_plugin(rgis_keyboard::Plugin);
+    app.add_plugin(rgis_network::Plugin);
+    app.add_plugin(rgis_camera::Plugin);
+    app.add_plugin(rgis_events::Plugin);
+    app.add_plugin(bevy_jobs::Plugin);
+    app.add_plugin(rgis_transform::Plugin);
+    app.add_plugin(rgis_settings::Plugin);
+    app.add_plugin(bevy::diagnostic::DiagnosticsPlugin);
+    app.add_plugin(bevy::diagnostic::FrameTimeDiagnosticsPlugin);
 
     #[cfg(target_arch = "wasm32")]
     {

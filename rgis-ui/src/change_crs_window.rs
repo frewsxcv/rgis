@@ -28,7 +28,7 @@ impl<'a, 'w, 's> ChangeCrsWindow<'a, 'w, 's> {
                                 .description
                                 .unwrap_or_else(|| self.text_field_value.to_string())
                         ),
-                        Err(e) => format!("❌ {:?}", e),
+                        Err(e) => format!("❌ {e:?}"),
                     };
                     ui.label(message);
                     if ui

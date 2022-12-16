@@ -12,7 +12,7 @@ use std::sync;
 
 mod systems;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Resource)]
 pub struct Layers {
     data: Vec<Layer>,
     // ID of the currently selected Layer
@@ -48,14 +48,13 @@ impl Layers {
         self.data.len()
     }
 
-    // coord is assumed to be projected
-    pub fn containing_coord(&self, coord: geo::Coordinate) -> impl Iterator<Item = &Layer> {
+    pub fn containing_coord(
+        &self,
+        coord: geo_projected::Projected<geo::Coord>,
+    ) -> impl Iterator<Item = &Layer> {
         self.iter_top_to_bottom()
             .filter(move |layer| match layer.projected_feature_collection {
-                Some(ref projected) => projected
-                    .features
-                    .iter()
-                    .any(|feature| feature.contains(&coord)),
+                Some(ref projected) => projected.as_ref().contains(&coord),
                 None => false,
             })
     }
@@ -66,6 +65,7 @@ impl Layers {
                 .projected_feature_collection
                 .as_ref()
                 .map(|projected| FeatureCollectionsIterItem {
+                    layer_id: layer.id,
                     unprojected: &layer.unprojected_feature_collection,
                     projected,
                 })
@@ -75,14 +75,15 @@ impl Layers {
     fn features_iter(&self) -> impl Iterator<Item = FeaturesIterItem> {
         self.feature_collections_iter().flat_map(
             |FeatureCollectionsIterItem {
+                 layer_id,
                  projected,
                  unprojected,
              }| {
                 unprojected
-                    .features
-                    .iter()
-                    .zip(projected.features.iter())
-                    .map(|(unprojected, projected)| FeaturesIterItem {
+                    .features_iter()
+                    .zip(projected.features_iter())
+                    .map(move |(unprojected, projected)| FeaturesIterItem {
+                        layer_id,
                         projected,
                         unprojected,
                     })
@@ -92,32 +93,16 @@ impl Layers {
 
     pub fn feature_from_click(
         &self,
-        coord: rgis_units::Projected<geo::Coordinate>,
-    ) -> Option<&geo_features::Feature> {
+        coord: geo_projected::Projected<geo::Coord>,
+    ) -> Option<(
+        rgis_layer_id::LayerId,
+        geo_projected::Unprojected<&geo_features::Feature>,
+    )> {
         self.features_iter()
-            .filter(|item| item.projected.contains(&coord.0))
-            .map(|item| item.unprojected)
+            .filter(|item| item.projected.contains(&coord))
+            .map(|item| (item.layer_id, item.unprojected))
             .next()
     }
-
-    // Returns whether the selected layer changed
-    /*
-    pub fn set_selected_layer_from_mouse_press(&mut self, coord: geo::Coordinate) -> bool {
-        let selected_layer_id = {
-            let mut iter = self.containing_coord(coord);
-            let new_selected_layer = iter.next();
-            if let Some(layer) = new_selected_layer {
-                info!("A layer was clicked: {:?}", layer.name);
-            }
-            new_selected_layer.map(|layer| layer.id)
-        };
-        let prev_selected_layer_id = self.selected_layer_id;
-
-        self.selected_layer_id = selected_layer_id;
-
-        prev_selected_layer_id != self.selected_layer_id
-    }
-    */
 
     fn get_index(&self, layer_id: rgis_layer_id::LayerId) -> Option<usize> {
         self.data.iter().position(|entry| entry.id == layer_id)
@@ -160,11 +145,12 @@ impl Layers {
 
     fn add(
         &mut self,
-        unprojected: geo_features::FeatureCollection,
+        unprojected: geo_projected::Unprojected<geo_features::FeatureCollection>,
         name: String,
         source_crs: String,
     ) -> Result<rgis_layer_id::LayerId, geo_features::BoundingRectError> {
         let layer_id = self.next_layer_id();
+        let geom_type = geo_geom_type::determine(unprojected.as_raw().geometry_iter());
         let layer = Layer {
             unprojected_feature_collection: unprojected,
             projected_feature_collection: None,
@@ -173,6 +159,7 @@ impl Layers {
             visible: true,
             id: layer_id,
             crs: source_crs,
+            geom_type,
         };
         self.data.push(layer);
         Ok(layer_id)
@@ -193,23 +180,27 @@ pub type Metadata = serde_json::Map<String, serde_json::Value>;
 
 #[derive(Clone, Debug)]
 pub struct Layer {
-    pub unprojected_feature_collection: geo_features::FeatureCollection,
-    pub projected_feature_collection: Option<geo_features::FeatureCollection>,
+    pub unprojected_feature_collection: geo_projected::Unprojected<geo_features::FeatureCollection>,
+    pub projected_feature_collection:
+        Option<geo_projected::Projected<geo_features::FeatureCollection>>,
     pub color: Color,
     pub id: rgis_layer_id::LayerId,
     pub name: String,
     pub visible: bool,
     pub crs: String,
+    pub geom_type: geo_geom_type::GeomType,
 }
 
 impl Layer {
     #[inline]
-    pub fn get_projected_feature_or_log(&self) -> Option<&geo_features::FeatureCollection> {
+    pub fn get_projected_feature_collection_or_log(
+        &self,
+    ) -> Option<&geo_projected::Projected<geo_features::FeatureCollection>> {
         match self.projected_feature_collection.as_ref() {
             Some(p) => Some(p),
             None => {
                 bevy::log::error!(
-                    "Expected layer (id: {:?}) to have a projected feature",
+                    "Expected layer (id: {:?}) to have a projected feature collection",
                     self.id
                 );
                 None
@@ -217,8 +208,15 @@ impl Layer {
         }
     }
 
-    pub fn geom_type(&self) -> geo_geom_type::GeomType {
-        geo_geom_type::determine(self.unprojected_feature_collection.geometry_iter())
+    #[inline]
+    pub fn get_projected_feature(
+        &self,
+        feature_id: geo_features::FeatureId,
+    ) -> Option<geo_projected::Projected<&geo_features::Feature>> {
+        let feature_collection = self.get_projected_feature_collection_or_log()?;
+        feature_collection
+            .features_iter()
+            .find(|f| f.id() == feature_id)
     }
 }
 
@@ -248,11 +246,13 @@ impl bevy::app::Plugin for Plugin {
 }
 
 struct FeatureCollectionsIterItem<'a> {
-    projected: &'a geo_features::FeatureCollection,
-    unprojected: &'a geo_features::FeatureCollection,
+    layer_id: rgis_layer_id::LayerId,
+    projected: &'a geo_projected::Projected<geo_features::FeatureCollection>,
+    unprojected: &'a geo_projected::Unprojected<geo_features::FeatureCollection>,
 }
 
 struct FeaturesIterItem<'a> {
-    projected: &'a geo_features::Feature,
-    unprojected: &'a geo_features::Feature,
+    layer_id: rgis_layer_id::LayerId,
+    projected: geo_projected::Projected<&'a geo_features::Feature>,
+    unprojected: geo_projected::Unprojected<&'a geo_features::Feature>,
 }

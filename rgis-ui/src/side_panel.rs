@@ -1,4 +1,5 @@
-use bevy_egui::egui::{self, Align, Layout};
+use bevy_egui::egui::{self, Align, Layout, Widget};
+use std::marker;
 
 // const MAX_SIDE_PANEL_WIDTH: f32 = 200.0f32;
 
@@ -15,6 +16,8 @@ pub struct Events<'w, 's> {
         bevy::ecs::event::EventWriter<'w, 's, rgis_events::ShowAddLayerWindow>,
     render_message_event_writer:
         bevy::ecs::event::EventWriter<'w, 's, rgis_events::RenderMessageEvent>,
+    open_operation_window_event_writer:
+        bevy::ecs::event::EventWriter<'w, 's, crate::events::OpenOperationWindowEvent>,
 }
 
 pub(crate) struct SidePanel<'a, 'w, 's> {
@@ -40,7 +43,10 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
         ui.vertical_centered_justified(|ui| {
             egui::ScrollArea::vertical().show(ui, |ui| {
                 self.render_layers_heading(ui);
-                self.render_add_layer_button(ui);
+                (AddLayerButton {
+                    events: self.events,
+                })
+                .ui(ui);
                 self.render_layers(ui);
             });
         });
@@ -50,17 +56,9 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
         ui.heading("🗺 Layers");
     }
 
-    fn render_add_layer_button(&mut self, ui: &mut egui::Ui) {
-        if ui.button("➕ Add Layer").clicked() {
-            self.events
-                .show_add_layer_window_event_writer
-                .send_default();
-        }
-    }
-
     fn render_layers(&mut self, ui: &mut egui::Ui) {
         for (i, layer) in self.layers.iter_top_to_bottom().enumerate() {
-            self.render_layer(ui, layer, i > 0, i < self.layers.count());
+            self.render_layer(ui, layer, i > 0, i < self.layers.count() - 1);
         }
     }
 
@@ -75,7 +73,7 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
             .id_source(layer.id) // Instead of using the layer name as the ID (which is not unique), use the layer ID
             .show(ui, |ui| {
                 // TODO: `geom_type` shouldn't be recalculatd every frame
-                ui.label(format!("Type: {:?}", layer.geom_type()));
+                ui.label(format!("Type: {:?}", layer.geom_type));
 
                 ui.with_layout(Layout::top_down_justified(Align::LEFT), |ui| {
                     if ui.button("✏ Manage").clicked() {
@@ -133,14 +131,14 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
                                     if let Ok(bounding_rect) =
                                         layer.unprojected_feature_collection.bounding_rect()
                                     {
-                                        if let Ok(feature_collection) =
-                                            geo_features::FeatureCollection::from_geometry(
-                                                bounding_rect.into(),
-                                            )
-                                        {
+                                        if let Ok(feature_collection) = geo_projected::Unprojected::<
+                                            geo_features::FeatureCollection,
+                                        >::from_geometry(
+                                            bounding_rect.0.into()
+                                        ) {
                                             self.events.create_layer_event_writer.send(
                                                 rgis_events::CreateLayerEvent {
-                                                    unprojected_geometry: feature_collection, // todo
+                                                    feature_collection,           // todo
                                                     name: "Bounding rect".into(), // todo
                                                     source_crs: layer.crs.clone(),
                                                 },
@@ -148,49 +146,32 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
                                         }
                                     }
                                 }
-                                self.display_operation::<rgis_geo_ops::ConvexHull>(layer, ui);
-                                self.display_operation::<rgis_geo_ops::Outliers>(layer, ui);
-                                self.display_operation::<rgis_geo_ops::UnsignedArea>(layer, ui);
+
+                                OperationButton::<rgis_geo_ops::ConvexHull> {
+                                    events: self.events,
+                                    layer,
+                                    operation: Default::default()
+                                }.ui(ui);
+                                OperationButton::<rgis_geo_ops::Outliers> {
+                                    events: self.events,
+                                    layer,
+                                    operation: Default::default()
+                                }.ui(ui);
+                                OperationButton::<rgis_geo_ops::Simplify> {
+                                    events: self.events,
+                                    layer,
+                                    operation: Default::default()
+                                }.ui(ui);
+                                OperationButton::<rgis_geo_ops::UnsignedArea> {
+                                    events: self.events,
+                                    layer,
+                                    operation: Default::default()
+                                }.ui(ui);
                             });
                         });
                 });
             });
         ui.separator();
-    }
-
-    fn display_operation<Op: rgis_geo_ops::Operation + Default>(
-        &mut self,
-        layer: &rgis_layers::Layer,
-        ui: &mut egui::Ui,
-    ) {
-        if ui
-            .add_enabled(
-                Op::ALLOWED_GEOM_TYPES.contains(layer.geom_type()),
-                egui::Button::new(Op::NAME),
-            )
-            .clicked()
-        {
-            let outcome = Op::default().perform(layer.unprojected_feature_collection.clone()); // TODO: clone?
-
-            match outcome {
-                Ok(rgis_geo_ops::Outcome::FeatureCollection(feature_collection)) => {
-                    self.events
-                        .create_layer_event_writer
-                        .send(rgis_events::CreateLayerEvent {
-                            unprojected_geometry: feature_collection,
-                            name: Op::NAME.into(),
-                            source_crs: layer.crs.clone(),
-                        });
-                }
-                Ok(rgis_geo_ops::Outcome::Text(text)) => self
-                    .events
-                    .render_message_event_writer
-                    .send(rgis_events::RenderMessageEvent(text)),
-                Err(e) => {
-                    bevy::log::error!("Encountered an error during the operation: {}", e);
-                }
-            }
-        }
     }
 
     fn toggle_layer_visibility(&mut self, layer: &rgis_layers::Layer) {
@@ -203,5 +184,78 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
         self.events
             .delete_layer_event_writer
             .send(rgis_events::DeleteLayerEvent(layer.id));
+    }
+}
+
+struct OperationButton<'a, 'w, 's, Op: rgis_geo_ops::OperationEntry> {
+    events: &'a mut Events<'w, 's>,
+    layer: &'a rgis_layers::Layer,
+    operation: marker::PhantomData<Op>,
+}
+
+impl<'a, 'w, 's, Op: rgis_geo_ops::OperationEntry> egui::Widget
+    for OperationButton<'a, 'w, 's, Op>
+{
+    fn ui(self, ui: &mut egui::Ui) -> egui::Response {
+        let button = ui.add_enabled(
+            Op::ALLOWED_GEOM_TYPES.contains(self.layer.geom_type),
+            egui::Button::new(Op::NAME),
+        );
+        if button.clicked() {
+            let mut operation = Op::build();
+            match operation.next_action() {
+                rgis_geo_ops::Action::RenderUi => {
+                    self.events.open_operation_window_event_writer.send(
+                        crate::events::OpenOperationWindowEvent {
+                            operation,
+                            feature_collection: self.layer.unprojected_feature_collection.clone(), // TODO: clone?
+                        },
+                    )
+                }
+                rgis_geo_ops::Action::Perform => {
+                    // TODO: perform in background task
+                    let outcome =
+                        operation.perform(self.layer.unprojected_feature_collection.clone()); // TODO: clone?
+
+                    match outcome {
+                        Ok(rgis_geo_ops::Outcome::FeatureCollection(feature_collection)) => {
+                            self.events.create_layer_event_writer.send(
+                                rgis_events::CreateLayerEvent {
+                                    feature_collection,
+                                    name: Op::NAME.into(),
+                                    source_crs: self.layer.crs.clone(),
+                                },
+                            );
+                        }
+                        Ok(rgis_geo_ops::Outcome::Text(text)) => self
+                            .events
+                            .render_message_event_writer
+                            .send(rgis_events::RenderMessageEvent(text)),
+                        Err(e) => {
+                            bevy::log::error!("Encountered an error during the operation: {}", e);
+                        }
+                    }
+                }
+            }
+        }
+        button
+    }
+}
+
+struct AddLayerButton<'a, 'w, 's> {
+    events: &'a mut Events<'w, 's>,
+}
+
+impl<'a, 'w, 's> egui::Widget for AddLayerButton<'a, 'w, 's> {
+    fn ui(self, ui: &mut egui::Ui) -> egui::Response {
+        let button = ui.button("➕ Add Layer");
+
+        if button.clicked() {
+            self.events
+                .show_add_layer_window_event_writer
+                .send_default();
+        }
+
+        button
     }
 }

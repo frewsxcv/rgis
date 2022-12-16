@@ -27,6 +27,9 @@ impl From<rgis_layer_id::LayerId> for CenterCameraEvent {
     }
 }
 
+#[derive(Clone, Copy, Debug)]
+pub struct FeatureSelectedEvent(pub rgis_layer_id::LayerId, pub geo_features::FeatureId);
+
 #[derive(Debug)]
 pub struct LayerBecameHiddenEvent(pub rgis_layer_id::LayerId);
 
@@ -36,6 +39,7 @@ pub struct LayerBecameVisibleEvent(pub rgis_layer_id::LayerId);
 /// Change the `Layer`'s color
 pub struct UpdateLayerColorEvent(pub rgis_layer_id::LayerId, pub bevy::prelude::Color);
 /// After a `Layer`'s color is changed
+#[derive(Clone, Copy)]
 pub struct LayerColorUpdatedEvent(pub rgis_layer_id::LayerId);
 
 pub struct DeleteLayerEvent(pub rgis_layer_id::LayerId);
@@ -58,7 +62,9 @@ pub struct MoveLayerEvent(pub rgis_layer_id::LayerId, pub MoveDirection);
 
 pub struct LayerZIndexUpdatedEvent(pub rgis_layer_id::LayerId);
 
-pub struct MapClickedEvent(pub rgis_units::Projected<geo::Coordinate>);
+pub struct MapClickedEvent(pub geo_projected::Projected<geo::Coord>);
+
+pub struct FeaturesDeselectedEvent;
 
 #[derive(Default)]
 pub struct OpenChangeCrsWindow;
@@ -142,8 +148,7 @@ pub struct RenderMessageEvent(pub String);
 pub struct RenderFeaturePropertiesEvent(pub geo_features::Properties);
 
 pub struct CreateLayerEvent {
-    // TODO: there should be an option to pass a projected geometry instead of an unprojected geometry
-    pub unprojected_geometry: geo_features::FeatureCollection,
+    pub feature_collection: geo_projected::Unprojected<geo_features::FeatureCollection>,
     pub name: String,
     pub source_crs: String,
 }
@@ -183,6 +188,8 @@ impl bevy::app::Plugin for Plugin {
             .add_event::<OpenChangeCrsWindow>()
             .add_event::<ShowAddLayerWindow>()
             .add_event::<HideAddLayerWindow>()
-            .add_event::<LayerReprojectedEvent>();
+            .add_event::<LayerReprojectedEvent>()
+            .add_event::<FeatureSelectedEvent>()
+            .add_event::<FeaturesDeselectedEvent>();
     }
 }

@@ -1,5 +1,5 @@
-use bevy::prelude::*;
-use bevy_egui::egui;
+use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
+use bevy_egui::egui::{self, Widget};
 
 fn render_bottom_panel(
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
@@ -157,6 +157,28 @@ fn render_message_window(
     .render();
 }
 
+fn render_operation_window(
+    mut state: Local<crate::OperationWindowState>,
+    mut events: ResMut<Events<crate::events::OpenOperationWindowEvent>>,
+    mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
+    create_layer_event_writer: EventWriter<rgis_events::CreateLayerEvent>,
+    render_message_event_writer: EventWriter<rgis_events::RenderMessageEvent>,
+) {
+    if let Some(event) = events.drain().last() {
+        state.is_visible = true;
+        state.operation = Some(event.operation);
+        state.feature_collection = event.feature_collection; // Should this be `Some()`? Otherwise we'll always have something stored
+    }
+
+    crate::operation_window::OperationWindow {
+        bevy_egui_ctx: &mut bevy_egui_ctx,
+        state: &mut state,
+        create_layer_event_writer,
+        render_message_event_writer,
+    }
+    .render();
+}
+
 fn render_in_progress(
     query: Query<&bevy_jobs::InProgressJob>,
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
@@ -175,7 +197,7 @@ fn render_in_progress(
             for task_name in task_name_iter {
                 ui.horizontal(|ui| {
                     ui.add(egui::Spinner::new());
-                    ui.label(format!("Running '{}'", task_name));
+                    ui.label(format!("Running '{task_name}'"));
                 });
             }
         });
@@ -187,6 +209,7 @@ fn render_top_panel(
     mut windows: ResMut<Windows>,
     mut app_settings: ResMut<rgis_settings::RgisSettings>,
     mut top_panel_height: ResMut<crate::TopPanelHeight>,
+    mut debug_stats_window_state: ResMut<crate::DebugStatsWindowState>,
 ) {
     crate::top_panel::TopPanel {
         bevy_egui_ctx: &mut bevy_egui_ctx,
@@ -194,6 +217,7 @@ fn render_top_panel(
         windows: &mut windows,
         app_settings: &mut app_settings,
         top_panel_height: &mut top_panel_height,
+        debug_stats_window_state: &mut debug_stats_window_state,
     }
     .render();
 }
@@ -220,6 +244,93 @@ pub fn startup_system_set() -> SystemSet {
     SystemSet::new().with_system(set_egui_theme)
 }
 
+#[derive(Default)]
+struct LastDebugStats {
+    fps: f64,
+    frame_time: f64,
+    frame_count: f64,
+}
+
+const FPS_MAX: f64 = 100.;
+
+fn render_debug_window(
+    mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
+    diagnostics: Res<bevy::diagnostic::Diagnostics>,
+    mut state: ResMut<crate::DebugStatsWindowState>,
+    time: Res<Time>,
+    mut last: Local<LastDebugStats>,
+) {
+    if !state.is_visible {
+        return;
+    }
+
+    if state.history.is_empty() || state.timer.tick(time.delta()).just_finished() {
+        let fps = diagnostics
+            .get(FrameTimeDiagnosticsPlugin::FPS)
+            .and_then(|d| d.measurement())
+            .map(|m| m.value);
+        let frame_time = diagnostics
+            .get(FrameTimeDiagnosticsPlugin::FRAME_TIME)
+            .and_then(|d| d.measurement())
+            .map(|m| m.value);
+        let frame_count = diagnostics
+            .get(FrameTimeDiagnosticsPlugin::FRAME_COUNT)
+            .and_then(|d| d.measurement())
+            .map(|m| m.value);
+
+        if let Some(fps) = fps {
+            state.history.push_back(fps);
+            last.fps = fps;
+        }
+        if let Some(frame_time) = frame_time {
+            last.frame_time = frame_time;
+        }
+        if let Some(frame_count) = frame_count {
+            last.frame_count = frame_count;
+        }
+
+        if state.history.len() >= crate::DEBUG_STATS_HISTORY_LEN {
+            let _ = state.history.pop_front();
+        }
+    }
+
+    let sin = if state.is_visible {
+        state
+            .history
+            .iter()
+            .enumerate()
+            .map(|(x, y)| egui::plot::PlotPoint::new(x as f64, y.min(FPS_MAX)))
+            .collect::<Vec<_>>()
+    } else {
+        vec![]
+    };
+
+    egui::Window::new("Debug")
+        .default_width(200.)
+        .open(&mut state.is_visible)
+        .show(bevy_egui_ctx.ctx_mut(), move |ui| {
+            DebugTable { last: &last }.ui(ui);
+
+            use egui::plot::{Line, Plot, PlotPoints};
+            let line = Line::new(PlotPoints::Owned(sin));
+            Plot::new("fps_plot")
+                .allow_drag(false)
+                .allow_boxed_zoom(false)
+                .allow_scroll(false)
+                .allow_zoom(false)
+                .set_margin_fraction((0., 0.).into())
+                .show_x(false)
+                .x_axis_formatter(|_, _| "".into())
+                .y_axis_formatter(|n, _| format!("{:?}", n))
+                .include_x(0.)
+                .include_x(crate::DEBUG_STATS_HISTORY_LEN as f64)
+                .include_y(0.)
+                .include_y(FPS_MAX)
+                .view_aspect(2.) // Width is twice as big as height
+                .show(ui, |plot_ui| plot_ui.line(line));
+        });
+}
+
 pub fn system_sets() -> [SystemSet; 2] {
     [
         SystemSet::new()
@@ -228,13 +339,45 @@ pub fn system_sets() -> [SystemSet; 2] {
             .with_system(render_top_panel)
             .with_system(render_bottom_panel),
         SystemSet::new()
+            .with_system(render_debug_window)
             .with_system(handle_open_file_task)
             .with_system(render_message_window)
             .with_system(render_side_panel.after("top_bottom_panels"))
             .with_system(render_manage_layer_window.after(render_side_panel))
             .with_system(render_add_layer_window.after(render_manage_layer_window))
             .with_system(render_change_crs_window.after(render_add_layer_window))
-            .with_system(render_feature_properties_window.after(render_add_layer_window))
-            .with_system(render_in_progress.after("top_bottom_panels")),
+            .with_system(render_feature_properties_window.after(render_change_crs_window))
+            .with_system(render_operation_window.after(render_feature_properties_window))
+            .with_system(render_in_progress.after("top_bottom_panels"))
+            .label("rgis_ui"),
     ]
+}
+
+struct DebugTable<'a> {
+    last: &'a LastDebugStats,
+}
+
+impl<'a> egui::Widget for DebugTable<'a> {
+    fn ui(self, ui: &mut egui::Ui) -> egui::Response {
+        egui::Grid::new("some_unique_id")
+            .striped(true)
+            .show(ui, |ui| {
+                ui.label("Metric");
+                ui.label("Value");
+                ui.end_row();
+
+                ui.label("FPS");
+                ui.label(format!("{:.2} frames/sec.", self.last.fps));
+                ui.end_row();
+
+                ui.label("Frame time");
+                ui.label(format!("{:.3} sec.", self.last.frame_time));
+                ui.end_row();
+
+                ui.label("Frame count");
+                ui.label(format!("{} frames", self.last.frame_count));
+                ui.end_row();
+            })
+            .response
+    }
 }

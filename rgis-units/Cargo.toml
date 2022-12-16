@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-bevy = { version = "0.8", default-features = false, features = [
+bevy = { version = "0.9", default-features = false, features = [
     "bevy_winit",
     "bevy_core_pipeline",
     "bevy_render",
@@ -14,3 +14,5 @@ bevy = { version = "0.8", default-features = false, features = [
     "png",
 ] }
 geo = "0.23"
+geo-features = { path = "../geo-features" }
+geo-projected = { path = "../geo-projected" }

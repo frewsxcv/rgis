@@ -6,6 +6,7 @@
     clippy::expect_used
 )]
 
+use geo_projected::Unprojected;
 use std::error;
 
 mod unsigned_area;
@@ -17,30 +18,52 @@ pub use convex_hull::ConvexHull;
 mod outliers;
 pub use outliers::Outliers;
 
+mod simplify;
+pub use simplify::Simplify;
+
 pub enum Outcome {
     Text(String),
-    FeatureCollection(geo_features::FeatureCollection),
+    FeatureCollection(Unprojected<geo_features::FeatureCollection>),
 }
 
-pub trait Operation: Sized {
+pub trait OperationEntry {
     const ALLOWED_GEOM_TYPES: geo_geom_type::GeomType;
     const NAME: &'static str;
-    type Error: error::Error;
 
+    fn build() -> Box<dyn Operation + Send + Sync>;
+}
+
+pub enum Action {
+    RenderUi,
+    Perform,
+}
+
+pub trait Operation {
     fn perform(
-        mut self,
-        feature_collection: geo_features::FeatureCollection,
-    ) -> Result<Outcome, Self::Error> {
-        for feature in feature_collection.features {
+        &mut self,
+        feature_collection: Unprojected<geo_features::FeatureCollection>,
+    ) -> Result<Outcome, Box<dyn error::Error>> {
+        for feature in feature_collection.into_features_iter() {
             self.visit_feature(feature);
         }
         self.finalize()
     }
 
-    fn finalize(self) -> Result<Outcome, Self::Error>;
+    fn finalize(&mut self) -> Result<Outcome, Box<dyn error::Error>>;
 
-    fn visit_feature(&mut self, feature: geo_features::Feature) {
-        if let Some(g) = feature.geometry {
+    fn next_action(&self) -> Action {
+        Action::Perform
+    }
+
+    fn ui(
+        &mut self,
+        _ui: &mut bevy_egui::egui::Ui,
+        _feature_collection: &Unprojected<geo_features::FeatureCollection>,
+    ) {
+    }
+
+    fn visit_feature(&mut self, feature: Unprojected<geo_features::Feature>) {
+        if let Some(g) = feature.0.geometry {
             self.visit_geometry(g);
         }
     }

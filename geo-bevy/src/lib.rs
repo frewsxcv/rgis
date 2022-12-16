@@ -67,19 +67,25 @@ pub fn build_bevy_meshes<G: BuildBevyMeshes>(
     color: bevy_render::color::Color,
     mut ctx: BuildBevyMeshesContext,
 ) -> Result<impl Iterator<Item = PreparedMesh>, <G as BuildBevyMeshes>::Error> {
-    geo.populate_mesh_builders(&mut ctx)?;
+    {
+        let span = bevy_log::info_span!("Populating Bevy mesh builders");
+        let foo = span.enter();
+        geo.populate_mesh_builders(&mut ctx)?;
+    }
 
-    Ok([
-        ctx.point_mesh_builder.build(),
-        ctx.line_string_mesh_builder.build(color),
-        ctx.polygon_mesh_builder
-            .build()
-            .map(|mesh| PreparedMesh::PolygonAndLineString { mesh, color }),
-        ctx.polygon_border_mesh_builder
-            .build(bevy_render::color::Color::BLACK),
-    ]
-    .into_iter()
-    .flatten())
+    bevy_log::info_span!("Building Bevy meshes").in_scope(|| {
+        Ok([
+            ctx.point_mesh_builder.build(),
+            ctx.line_string_mesh_builder.build(color),
+            ctx.polygon_mesh_builder
+                .build()
+                .map(|mesh| PreparedMesh::PolygonAndLineString { mesh, color }),
+            ctx.polygon_border_mesh_builder
+                .build(bevy_render::color::Color::BLACK),
+        ]
+        .into_iter()
+        .flatten())
+    })
 }
 
 pub trait BuildBevyMeshes {
@@ -210,10 +216,12 @@ impl BuildBevyMeshes for geo::GeometryCollection {
 fn polygon_to_earcutr_input(polygon: &geo::Polygon) -> bevy_earcutr::EarcutrInput {
     let mut vertices = Vec::with_capacity(polygon.coords_count() * 2);
     let mut interior_indices = Vec::with_capacity(polygon.interiors().len());
+    debug_assert!(polygon.exterior().0.len() >= 4);
 
     flat_line_string_coords_2(polygon.exterior(), &mut vertices);
 
     for interior in polygon.interiors() {
+        debug_assert!(interior.0.len() >= 4);
         interior_indices.push(vertices.len() / 2);
         flat_line_string_coords_2(interior, &mut vertices);
     }

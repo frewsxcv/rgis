@@ -7,7 +7,7 @@
 )]
 
 use geo::{BoundingRect, Contains};
-use std::{collections, fmt};
+use std::{collections, fmt, iter, num, sync};
 
 #[derive(Default)]
 pub struct FeatureBuilder {
@@ -39,6 +39,7 @@ impl FeatureBuilder {
             .as_ref()
             .and_then(|geometry| geometry.bounding_rect());
         Ok(Feature {
+            id: FeatureId::new(),
             geometry: self.geometry,
             properties: self.properties,
             bounding_rect,
@@ -48,9 +49,31 @@ impl FeatureBuilder {
 
 #[derive(Clone, Debug, Default)]
 pub struct Feature {
+    pub id: FeatureId,
     pub geometry: Option<geo::Geometry>,
     pub properties: Properties,
     pub bounding_rect: Option<geo::Rect>,
+}
+
+impl<'a> geo::CoordsIter<'a> for Feature {
+    type Scalar = f64;
+    type Iter = iter::Empty<geo::Coord<Self::Scalar>>;
+    type ExteriorIter = iter::Empty<geo::Coord<Self::Scalar>>;
+
+    fn coords_count(&'a self) -> usize {
+        self.geometry
+            .as_ref()
+            .map(|g| g.coords_count())
+            .unwrap_or(0)
+    }
+
+    fn coords_iter(&'a self) -> Self::Iter {
+        todo!()
+    }
+
+    fn exterior_coords_iter(&'a self) -> Self::ExteriorIter {
+        todo!()
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -73,8 +96,12 @@ impl Feature {
     }
 }
 
-impl Contains<geo::Coordinate> for Feature {
-    fn contains(&self, coord: &geo::Coordinate) -> bool {
+impl<G> Contains<G> for Feature
+where
+    geo::Rect: Contains<G>,
+    geo::Geometry: Contains<G>,
+{
+    fn contains(&self, coord: &G) -> bool {
         self.bounding_rect
             .as_ref()
             .map(|bounding_rect| bounding_rect.contains(coord))
@@ -96,6 +123,44 @@ pub struct FeatureCollection {
 impl FeatureCollection {
     pub fn new() -> Self {
         FeatureCollection::default()
+    }
+}
+
+impl<'a> geo::CoordsIter<'a> for FeatureCollection {
+    type Scalar = f64;
+    type Iter = iter::Empty<geo::Coord<Self::Scalar>>;
+    type ExteriorIter = iter::Empty<geo::Coord<Self::Scalar>>;
+
+    fn coords_count(&'a self) -> usize {
+        self.features.iter().map(|f| f.coords_count()).sum()
+    }
+
+    fn coords_iter(&'a self) -> Self::Iter {
+        todo!()
+    }
+
+    fn exterior_coords_iter(&'a self) -> Self::ExteriorIter {
+        todo!()
+    }
+}
+
+impl<G> Contains<G> for FeatureCollection
+where
+    geo::Rect: Contains<G>,
+    geo::Geometry: Contains<G>,
+{
+    fn contains(&self, coord: &G) -> bool {
+        self.bounding_rect
+            .as_ref()
+            .map(|bounding_rect| bounding_rect.contains(coord))
+            .unwrap_or(false)
+            && self.features.iter().any(|feature| {
+                feature
+                    .geometry
+                    .as_ref()
+                    .map(|geometry| geometry.contains(coord))
+                    .unwrap_or(false)
+            })
     }
 }
 
@@ -180,13 +245,36 @@ fn option_rect_merge<T: geo::CoordFloat>(
 
 fn rect_merge<T: geo::CoordFloat>(a: geo::Rect<T>, b: geo::Rect<T>) -> geo::Rect<T> {
     geo::Rect::new(
-        geo::Coordinate {
+        geo::Coord {
             x: a.min().x.min(b.min().x),
             y: a.min().y.min(b.min().y),
         },
-        geo::Coordinate {
+        geo::Coord {
             x: a.max().x.max(b.max().x),
             y: a.max().y.max(b.max().y),
         },
     )
+}
+
+// The starting value is `1` so we can utilize `NonZeroU16`.
+static NEXT_ID: sync::atomic::AtomicU16 = sync::atomic::AtomicU16::new(1);
+
+#[derive(Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Hash)]
+pub struct FeatureId(num::NonZeroU16);
+
+impl Default for FeatureId {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl FeatureId {
+    pub fn new() -> Self {
+        FeatureId(new_id())
+    }
+}
+
+fn new_id() -> num::NonZeroU16 {
+    // Unsafety: The starting ID is 1 and we always increment.
+    unsafe { num::NonZeroU16::new_unchecked(NEXT_ID.fetch_add(1, sync::atomic::Ordering::SeqCst)) }
 }

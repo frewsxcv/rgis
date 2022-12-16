@@ -24,10 +24,11 @@ impl Default for LayerId {
 
 impl LayerId {
     pub fn new() -> Self {
-        // Unsafety: The starting ID is 1 and we always increment.
-        let id = unsafe {
-            num::NonZeroU16::new_unchecked(NEXT_ID.fetch_add(1, sync::atomic::Ordering::SeqCst))
-        };
-        LayerId(id)
+        LayerId(new_id())
     }
+}
+
+fn new_id() -> num::NonZeroU16 {
+    // Unsafety: The starting ID is 1 and we always increment.
+    unsafe { num::NonZeroU16::new_unchecked(NEXT_ID.fetch_add(1, sync::atomic::Ordering::SeqCst)) }
 }

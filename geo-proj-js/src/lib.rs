@@ -44,15 +44,15 @@ pub fn transform<G: geo::MapCoordsInPlace<f64>>(
         .dyn_into::<js_sys::Function>()
         .map_err(|_| Error)?;
 
-    geometry.map_coords_in_place(|geo::Coordinate { x, y }| {
-        match in_place((x, y), &forward, &array) {
+    geometry.map_coords_in_place(
+        |geo::Coord { x, y }| match in_place((x, y), &forward, &array) {
             Ok(n) => n,
             Err(e) => {
                 log::error!("Failed to convert coordinate: {:?}", e);
-                geo::Coordinate { x, y }
+                geo::Coord { x, y }
             }
-        }
-    });
+        },
+    );
 
     Ok(())
 }
@@ -61,7 +61,7 @@ fn in_place(
     (x, y): (f64, f64),
     forward: &js_sys::Function,
     array: &js_sys::Array,
-) -> Result<geo::Coordinate, Error> {
+) -> Result<geo::Coord, Error> {
     array.set(0, wasm_bindgen::JsValue::from_f64(x));
     array.set(1, wasm_bindgen::JsValue::from_f64(y));
     let result = forward
@@ -69,7 +69,7 @@ fn in_place(
         .map_err(|_| Error)?
         .dyn_into::<js_sys::Array>()
         .map_err(|_| Error)?;
-    Ok(geo::Coordinate {
+    Ok(geo::Coord {
         x: result.get(0).as_f64().ok_or(Error)?,
         y: result.get(1).as_f64().ok_or(Error)?,
     })

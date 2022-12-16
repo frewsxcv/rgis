@@ -22,7 +22,7 @@ impl ScreenCoord {
         self,
         transform: &bevy::transform::components::Transform,
         window: &bevy::prelude::Window,
-    ) -> Projected<geo::Coordinate> {
+    ) -> geo_projected::Projected<geo::Coord> {
         let size = bevy::math::DVec2::new(f64::from(window.width()), f64::from(window.height()));
 
         // the default orthographic projection is in pixels from the center;
@@ -32,7 +32,7 @@ impl ScreenCoord {
         // apply the camera transform
         let pos_wld = transform.compute_matrix().as_dmat4() * p.extend(0.0).extend(1.0);
 
-        Projected(geo::Coordinate {
+        geo_projected::Projected(geo::Coord {
             x: pos_wld.x,
             y: pos_wld.y,
         })
@@ -42,14 +42,17 @@ impl ScreenCoord {
 pub struct MapArea<'a> {
     pub window: &'a bevy::window::Window,
     /// Size of UI components (in pixels)
-    pub ui_rect: bevy::ui::UiRect<f32>,
+    pub left_offset_px: f32,
+    pub top_offset_px: f32,
+    pub right_offset_px: f32,
+    pub bottom_offset_px: f32,
 }
 
 impl<'a> MapArea<'a> {
     fn top_left_screen_coord(&self) -> ScreenCoord {
         ScreenCoord {
-            x: f64::from(self.ui_rect.left),
-            y: f64::from(self.ui_rect.top),
+            x: f64::from(self.left_offset_px),
+            y: f64::from(self.top_offset_px),
         }
     }
 
@@ -57,15 +60,15 @@ impl<'a> MapArea<'a> {
         &self,
         transform: &bevy::transform::components::Transform,
         window: &bevy::prelude::Window,
-    ) -> Projected<geo::Coordinate> {
+    ) -> geo_projected::Projected<geo::Coord> {
         self.top_left_screen_coord()
             .to_projected_geo_coord(transform, window)
     }
 
     fn bottom_right_screen_coord(&self) -> ScreenCoord {
         ScreenCoord {
-            x: f64::from(self.window.width() - self.ui_rect.right),
-            y: f64::from(self.window.height() - self.ui_rect.bottom),
+            x: f64::from(self.window.width() - self.right_offset_px),
+            y: f64::from(self.window.height() - self.bottom_offset_px),
         }
     }
 
@@ -73,7 +76,7 @@ impl<'a> MapArea<'a> {
         &self,
         transform: &bevy::transform::components::Transform,
         window: &bevy::prelude::Window,
-    ) -> Projected<geo::Coordinate> {
+    ) -> geo_projected::Projected<geo::Coord> {
         self.bottom_right_screen_coord()
             .to_projected_geo_coord(transform, window)
     }
@@ -82,19 +85,19 @@ impl<'a> MapArea<'a> {
         &self,
         transform: &bevy::transform::components::Transform,
         window: &bevy::prelude::Window,
-    ) -> Projected<geo::Rect> {
-        Projected(geo::Rect::new(
+    ) -> geo_projected::Projected<geo::Rect> {
+        geo_projected::Projected(geo::Rect::new(
             self.top_left_projected_geo_coord(transform, window).0,
             self.bottom_right_projected_geo_coord(transform, window).0,
         ))
     }
 
     fn width(&self) -> ScreenLength {
-        ScreenLength(self.window.width() - self.ui_rect.left - self.ui_rect.right)
+        ScreenLength(self.window.width() - self.left_offset_px - self.right_offset_px)
     }
 
     fn height(&self) -> ScreenLength {
-        ScreenLength(self.window.height() - self.ui_rect.top - self.ui_rect.bottom)
+        ScreenLength(self.window.height() - self.top_offset_px - self.bottom_offset_px)
     }
 
     pub fn size(&self) -> ScreenSize {
@@ -102,24 +105,25 @@ impl<'a> MapArea<'a> {
     }
 }
 
-pub struct Projected<G>(pub G);
-
-impl<G: Copy> Copy for Projected<G> {}
-impl<G: Clone> Clone for Projected<G> {
-    fn clone(&self) -> Self {
-        Projected(self.0.clone())
-    }
-}
-
-#[derive(Clone)]
-pub struct Unprojected<G: Clone>(pub G);
-
 pub struct ScreenLength(pub f32);
 
-pub struct ScreenSize(pub bevy::ui::Size<f32>);
+pub struct ScreenSize {
+    pub width: f32,
+    pub height: f32,
+}
 
 impl ScreenSize {
     fn from_width_height(width: ScreenLength, height: ScreenLength) -> Self {
-        ScreenSize(bevy::ui::Size::new(width.0, height.0))
+        ScreenSize {
+            width: width.0,
+            height: height.0,
+        }
+    }
+
+    pub fn to_bevy_size(&self) -> bevy::ui::Size {
+        bevy::ui::Size::new(
+            bevy::ui::Val::Px(self.width),
+            bevy::ui::Val::Px(self.height),
+        )
     }
 }

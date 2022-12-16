@@ -6,7 +6,7 @@ edition = "2021"
 publish = false
 
 [dependencies]
-bevy = { version = "0.8", default-features = false, features = [
+bevy = { version = "0.9", default-features = false, features = [
     "bevy_winit",
     "bevy_core_pipeline",
     "bevy_render",
@@ -18,9 +18,9 @@ bevy = { version = "0.8", default-features = false, features = [
 colorous = "1"
 geo-features = { path = "../geo-features" }
 geo-geom-type = { path = "../geo-geom-type" }
+geo-projected = { path = "../geo-projected" }
 rgis-events = { path = "../rgis-events" }
 rgis-layer-id = { path = "../rgis-layer-id" }
-rgis-units = { path = "../rgis-units" }
 thiserror = "1"
 serde_json = "1"
 

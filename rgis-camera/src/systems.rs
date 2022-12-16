@@ -14,7 +14,7 @@ pub fn startup_system_set() -> bevy::ecs::schedule::SystemSet {
 }
 
 fn init_camera(mut commands: Commands) {
-    commands.spawn().insert_bundle(Camera2dBundle::default());
+    commands.spawn(Camera2dBundle::default());
 }
 
 fn handle_change_crs_event(
@@ -24,27 +24,24 @@ fn handle_change_crs_event(
         bevy::ecs::query::With<bevy::render::camera::Camera>,
     >,
     windows: Res<bevy::window::Windows>,
-    side_panel_width: Res<rgis_ui::SidePanelWidth>,
-    top_panel_height: Res<rgis_ui::TopPanelHeight>,
-    bottom_panel_height: Res<rgis_ui::BottomPanelHeight>,
+    ui_margins: rgis_ui::UiMargins,
 ) {
-    if let Some(event) = change_crs_event_reader.iter().next_back() {
-        let mut transform = query.single_mut();
-        let window = windows.primary();
-        let map_area = rgis_units::MapArea {
-            window,
-            ui_rect: bevy::ui::UiRect {
-                left: side_panel_width.0,
-                top: top_panel_height.0,
-                bottom: bottom_panel_height.0,
-                right: 0.,
-            },
-        };
-        let mut rect = map_area.projected_geo_rect(&transform, window);
-        rgis_transform::transform(&mut rect.0, &event.old_crs, &event.new_crs).unwrap();
-
-        crate::utils::center_camera_on_projected_world_rect(rect, &mut transform, map_area);
+    let Some(event) = change_crs_event_reader.iter().next_back() else { return };
+    let mut transform = query.single_mut();
+    let window = windows.primary();
+    let map_area = rgis_units::MapArea {
+        window,
+        left_offset_px: ui_margins.left.0,
+        right_offset_px: 0.,
+        top_offset_px: ui_margins.top.0,
+        bottom_offset_px: ui_margins.bottom.0,
+    };
+    let mut rect = map_area.projected_geo_rect(&transform, window);
+    if let Err(e) = rgis_transform::transform(&mut rect.0, &event.old_crs, &event.new_crs) {
+        bevy::log::error!("Enountered error when transforming: {}", e);
     }
+
+    crate::utils::center_camera_on_projected_world_rect(rect, &mut transform, map_area);
 }
 
 fn pan_camera_system(
@@ -84,7 +81,9 @@ fn zoom_camera_system(
     for event in zoom_camera_event_reader.iter() {
         camera_scale.zoom(event.amount);
     }
-    crate::utils::set_camera_transform(&mut transform, camera_offset, camera_scale);
+    if camera_scale.0.is_finite() {
+        crate::utils::set_camera_transform(&mut transform, camera_offset, camera_scale);
+    }
 }
 
 fn handle_meshes_spawned_events(
@@ -108,34 +107,27 @@ fn center_camera(
         bevy::ecs::query::With<bevy::render::camera::Camera>,
     >,
     windows: Res<bevy::window::Windows>,
-    side_panel_width: Res<rgis_ui::SidePanelWidth>,
-    top_panel_height: Res<rgis_ui::TopPanelHeight>,
-    bottom_panel_height: Res<rgis_ui::BottomPanelHeight>,
+    ui_margins: rgis_ui::UiMargins,
 ) {
     for projected_feature in event_reader
         .iter()
         .filter_map(|event| layers.get(event.0))
-        .filter_map(|layer| layer.get_projected_feature_or_log())
+        .filter_map(|layer| layer.get_projected_feature_collection_or_log())
     {
-        let bounding_rect = match projected_feature.bounding_rect {
-            Some(b) => b,
-            None => continue,
-        };
+        let Ok(bounding_rect) = projected_feature.bounding_rect() else { continue };
         let mut transform = query.single_mut();
         let window = windows.primary();
 
         debug!("Moving camera to look at new layer");
         let map_area = rgis_units::MapArea {
             window,
-            ui_rect: bevy::ui::UiRect {
-                left: side_panel_width.0,
-                top: top_panel_height.0,
-                bottom: bottom_panel_height.0,
-                right: 0.,
-            },
+            right_offset_px: 0.,
+            left_offset_px: ui_margins.left.0,
+            bottom_offset_px: ui_margins.bottom.0,
+            top_offset_px: ui_margins.top.0,
         };
         crate::utils::center_camera_on_projected_world_rect(
-            rgis_units::Projected(bounding_rect),
+            bounding_rect,
             &mut transform,
             map_area,
         );
