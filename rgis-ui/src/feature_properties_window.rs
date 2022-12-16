@@ -5,6 +5,8 @@ pub(crate) struct FeaturePropertiesWindow<'a> {
     pub state: &'a mut crate::FeaturePropertiesWindowState,
 }
 
+const MARGIN: f32 = 5.0f32;
+
 impl<'a> FeaturePropertiesWindow<'a> {
     pub(crate) fn render(&mut self) {
         let Some(ref properties) = self.state.properties else {
@@ -13,7 +15,7 @@ impl<'a> FeaturePropertiesWindow<'a> {
         egui::Window::new("Layer Feature Properties")
             .id(egui::Id::new("Layer Feature Properties Window"))
             .open(&mut self.state.is_visible)
-            .anchor(egui::Align2::LEFT_TOP, [5., 5.])
+            .anchor(egui::Align2::LEFT_TOP, [MARGIN, MARGIN])
             .show(self.bevy_egui_ctx.ctx_mut(), |ui| {
                 ui.add(FeaturePropertiesTable { properties })
             });
