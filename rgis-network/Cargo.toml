@@ -19,4 +19,3 @@ bytes = "1"
 reqwest = "0.11"
 bevy_jobs = { git = "https://github.com/frewsxcv/bevy_jobs" }
 tokio = { version = "1", features = ["rt", "io-util", "sync", "macros"] }
-# error: Only features sync,macros,io-util,rt,time are supported on wasm.
