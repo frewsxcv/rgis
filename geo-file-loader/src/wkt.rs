@@ -11,7 +11,7 @@ pub enum Error {
 }
 
 pub struct WktSource {
-    pub bytes: Vec<u8>,
+    pub bytes: bytes::Bytes,
 }
 
 impl crate::FileLoader for WktSource {
@@ -19,7 +19,7 @@ impl crate::FileLoader for WktSource {
 
     const FILE_TYPE_NAME: &'static str = "WKT";
 
-    fn from_bytes(bytes: Vec<u8>) -> Self {
+    fn from_bytes(bytes: bytes::Bytes) -> Self {
         WktSource { bytes }
     }
 
