@@ -18,4 +18,6 @@ bevy = { version = "0.9", default-features = false, features = [
 bytes = "1"
 reqwest = "0.11"
 bevy_jobs = { git = "https://github.com/frewsxcv/bevy_jobs" }
-tokio = { version = "1", features = ["rt", "io-util", "sync", "macros"] }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+tokio = { version = "1", features = ["full"] }
