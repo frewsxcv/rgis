@@ -6,6 +6,8 @@
     clippy::expect_used
 )]
 
+use std::io;
+
 pub struct FetchedFile {
     pub name: String,
     pub bytes: bytes::Bytes,
@@ -18,8 +20,16 @@ pub struct NetworkFetchTask {
     pub name: String,
 }
 
+#[derive(thiserror::Error, Debug)]
+pub enum Error {
+    #[error("{0}")]
+    Io(#[from] io::Error),
+    #[error("{0}")]
+    Reqwest(#[from] reqwest::Error),
+}
+
 impl bevy_jobs::Job for NetworkFetchTask {
-    type Outcome = Result<FetchedFile, String>;
+    type Outcome = Result<FetchedFile, Error>;
 
     fn name(&self) -> String {
         format!("Fetching '{}'", self.name)
@@ -28,8 +38,8 @@ impl bevy_jobs::Job for NetworkFetchTask {
     fn perform(self) -> bevy_jobs::AsyncReturn<Self::Outcome> {
         Box::pin(async move {
             let fetch = async {
-                let response = reqwest::get(self.url).await.unwrap();
-                let bytes = response.bytes().await.unwrap();
+                let response = reqwest::get(self.url).await?;
+                let bytes = response.bytes().await?;
                 Ok(FetchedFile {
                     bytes,
                     crs: self.crs,
@@ -40,8 +50,7 @@ impl bevy_jobs::Job for NetworkFetchTask {
             {
                 let runtime = tokio::runtime::Builder::new_current_thread()
                     .enable_io()
-                    .build()
-                    .unwrap();
+                    .build()?;
                 runtime.block_on(fetch)
             }
             #[cfg(target_arch = "wasm32")]
