@@ -27,24 +27,7 @@ impl bevy_jobs::Job for NetworkFetchTask {
 
     fn perform(self) -> bevy_jobs::AsyncReturn<Self::Outcome> {
         Box::pin(async move {
-            #[cfg(not(target_arch = "wasm32"))]
-            {
-                let runtime = tokio::runtime::Builder::new_current_thread()
-                    .enable_io()
-                    .build()
-                    .unwrap();
-                runtime.block_on(async {
-                    let response = reqwest::get(self.url).await.unwrap();
-                    let bytes = response.bytes().await.unwrap();
-                    Ok(FetchedFile {
-                        bytes,
-                        crs: self.crs,
-                        name: self.name,
-                    })
-                })
-            }
-            #[cfg(target_arch = "wasm32")]
-            {
+            let fetch = async {
                 let response = reqwest::get(self.url).await.unwrap();
                 let bytes = response.bytes().await.unwrap();
                 Ok(FetchedFile {
@@ -52,6 +35,18 @@ impl bevy_jobs::Job for NetworkFetchTask {
                     crs: self.crs,
                     name: self.name,
                 })
+            };
+            #[cfg(not(target_arch = "wasm32"))]
+            {
+                let runtime = tokio::runtime::Builder::new_current_thread()
+                    .enable_io()
+                    .build()
+                    .unwrap();
+                runtime.block_on(fetch)
+            }
+            #[cfg(target_arch = "wasm32")]
+            {
+                fetch.await
             }
         })
     }
