@@ -28,7 +28,7 @@ impl bevy_jobs::Job for NetworkFetchTask {
     fn perform(self) -> bevy_jobs::AsyncReturn<Self::Outcome> {
         Box::pin(async move {
             let runtime = tokio::runtime::Builder::new_current_thread()
-                .enable_io()
+                .enable_all()
                 .build()
                 .unwrap();
             runtime.block_on(async {
