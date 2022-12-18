@@ -123,6 +123,7 @@ fn mouse_click_system(
 fn mouse_scroll_system(
     mut mouse_scroll_event_reader: bevy::ecs::event::EventReader<bevy::input::mouse::MouseWheel>,
     mut zoom_camera_events: bevy::ecs::event::EventWriter<rgis_events::ZoomCameraEvent>,
+    mouse_position: Res<crate::MousePos>,
 ) {
     let y_amount = mouse_scroll_event_reader
         .iter()
@@ -137,7 +138,10 @@ fn mouse_scroll_system(
         })
         .sum();
     if y_amount != 0. {
-        zoom_camera_events.send(rgis_events::ZoomCameraEvent::new(y_amount));
+        zoom_camera_events.send(rgis_events::ZoomCameraEvent::new(
+            y_amount,
+            mouse_position.0,
+        ));
     }
 }
 

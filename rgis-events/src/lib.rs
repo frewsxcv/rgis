@@ -121,14 +121,16 @@ pub struct ZoomCameraEvent {
     /// * `amount ∈ [1]` → no change
     /// * `amount ∈ (0, 1)` → zoom out
     pub amount: f32,
+    pub coord: geo_projected::Projected<geo::Coord>,
 }
 
 impl ZoomCameraEvent {
     #[inline]
-    pub fn new(amount: f32) -> Self {
+    pub fn new(amount: f32, coord: geo_projected::Projected<geo::Coord>) -> Self {
         ZoomCameraEvent {
             // Don't let amount be negative, so add `max`
             amount: (1. + amount / ZOOM_FACTOR).max(0.),
+            coord: coord,
         }
     }
 }

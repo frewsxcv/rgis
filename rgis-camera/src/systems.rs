@@ -76,13 +76,28 @@ fn zoom_camera_system(
         return;
     }
     let mut transform = query.single_mut();
-    let camera_offset = crate::CameraOffset::from_transform(&transform);
-    let mut camera_scale = crate::CameraScale::from_transform(&transform);
+    let mut camera_offset = crate::CameraOffset::from_transform(&transform);
+    let mut mouse_offset = camera_offset.clone();
+    let before_scale = crate::CameraScale::from_transform(&transform);
+    let mut camera_scale = before_scale.clone();
+    let mut set = false;
     for event in zoom_camera_event_reader.iter() {
+        if !set {
+            set = true;
+            mouse_offset = crate::CameraOffset::from_coord(event.coord.0);
+        }
         camera_scale.zoom(event.amount);
     }
-    if camera_scale.0.is_finite() {
-        crate::utils::set_camera_transform(&mut transform, camera_offset, camera_scale);
+    if camera_scale.0.is_normal() {
+        let xd = mouse_offset.x - camera_offset.x;
+        let yd = mouse_offset.y - camera_offset.y;
+
+        camera_offset.x -= xd * (1.0 - before_scale.0 / camera_scale.0);
+        camera_offset.y -= yd * (1.0 - before_scale.0 / camera_scale.0);
+
+        if camera_offset.x.is_finite() && camera_offset.y.is_finite() {
+            crate::utils::set_camera_transform(&mut transform, camera_offset, camera_scale);
+        }
     }
 }
 
