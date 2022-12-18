@@ -321,7 +321,7 @@ fn render_debug_window(
                 .set_margin_fraction((0., 0.).into())
                 .show_x(false)
                 .x_axis_formatter(|_, _| "".into())
-                .y_axis_formatter(|n, _| format!("{:?}", n))
+                .y_axis_formatter(|n, _| format!("{n:?}"))
                 .include_x(0.)
                 .include_x(crate::DEBUG_STATS_HISTORY_LEN as f64)
                 .include_y(0.)

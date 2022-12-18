@@ -67,11 +67,9 @@ pub fn build_bevy_meshes<G: BuildBevyMeshes>(
     color: bevy_render::color::Color,
     mut ctx: BuildBevyMeshesContext,
 ) -> Result<impl Iterator<Item = PreparedMesh>, <G as BuildBevyMeshes>::Error> {
-    {
-        let span = bevy_log::info_span!("Populating Bevy mesh builders");
-        let foo = span.enter();
-        geo.populate_mesh_builders(&mut ctx)?;
-    }
+    bevy_log::info_span!("Building Bevy meshes").in_scope(|| {
+        geo.populate_mesh_builders(&mut ctx)
+    })?;
 
     bevy_log::info_span!("Building Bevy meshes").in_scope(|| {
         Ok([

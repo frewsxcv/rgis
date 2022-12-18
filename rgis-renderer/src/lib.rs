@@ -68,7 +68,7 @@ fn spawn_sprite_bundle(
         transform,
         ..Default::default()
     };
-    commands.spawn_bundle(bundle).insert(layer_id);
+    commands.spawn(bundle).insert(layer_id);
 }
 
 fn spawn_material_mesh_2d_bundle(
@@ -88,5 +88,5 @@ fn spawn_material_mesh_2d_bundle(
         },
         ..Default::default()
     };
-    commands.spawn_bundle(mmb).insert(layer.id);
+    commands.spawn(mmb).insert(layer.id);
 }
