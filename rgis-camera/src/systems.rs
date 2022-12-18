@@ -84,7 +84,7 @@ fn zoom_camera_system(
     for event in zoom_camera_event_reader.iter() {
         if !set {
             set = true;
-            mouse_offset = crate::CameraOffset::from_coord(event.coord);
+            mouse_offset = crate::CameraOffset::from_coord(event.coord.0);
         }
         camera_scale.zoom(event.amount);
     }

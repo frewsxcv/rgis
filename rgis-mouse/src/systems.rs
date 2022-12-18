@@ -140,7 +140,7 @@ fn mouse_scroll_system(
     if y_amount != 0. {
         zoom_camera_events.send(rgis_events::ZoomCameraEvent::new(
             y_amount,
-            mouse_position.0 .0,
+            mouse_position.0,
         ));
     }
 }
