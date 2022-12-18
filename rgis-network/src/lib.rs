@@ -49,7 +49,7 @@ impl bevy_jobs::Job for NetworkFetchTask {
             #[cfg(not(target_arch = "wasm32"))]
             {
                 let runtime = tokio::runtime::Builder::new_current_thread()
-                    .enable_io()
+                    .enable_all()
                     .build()?;
                 runtime.block_on(fetch)
             }
