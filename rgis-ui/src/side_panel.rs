@@ -147,26 +147,22 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
                                     }
                                 }
 
-                                OperationButton::<rgis_geo_ops::ConvexHull> {
-                                    events: self.events,
+                                OperationButton::<rgis_geo_ops::ConvexHull>::new(
+                                    self.events,
                                     layer,
-                                    operation: Default::default()
-                                }.ui(ui);
-                                OperationButton::<rgis_geo_ops::Outliers> {
-                                    events: self.events,
+                                ).ui(ui);
+                                OperationButton::<rgis_geo_ops::Outliers>::new(
+                                    self.events,
                                     layer,
-                                    operation: Default::default()
-                                }.ui(ui);
-                                OperationButton::<rgis_geo_ops::Simplify> {
-                                    events: self.events,
+                                ).ui(ui);
+                                OperationButton::<rgis_geo_ops::Simplify>::new(
+                                    self.events,
                                     layer,
-                                    operation: Default::default()
-                                }.ui(ui);
-                                OperationButton::<rgis_geo_ops::UnsignedArea> {
-                                    events: self.events,
+                                ).ui(ui);
+                                OperationButton::<rgis_geo_ops::UnsignedArea>::new(
+                                    self.events,
                                     layer,
-                                    operation: Default::default()
-                                }.ui(ui);
+                                ).ui(ui);
                             });
                         });
                 });
@@ -191,6 +187,16 @@ struct OperationButton<'a, 'w, 's, Op: rgis_geo_ops::OperationEntry> {
     events: &'a mut Events<'w, 's>,
     layer: &'a rgis_layers::Layer,
     operation: marker::PhantomData<Op>,
+}
+
+impl<'a, 'w, 's, Op: rgis_geo_ops::OperationEntry> OperationButton<'a, 'w, 's, Op> {
+    fn new(events: &'a mut Events<'w, 's>, layer: &'a rgis_layers::Layer) -> Self {
+        OperationButton {
+            events,
+            layer,
+            operation: Default::default(),
+        }
+    }
 }
 
 impl<'a, 'w, 's, Op: rgis_geo_ops::OperationEntry> egui::Widget
