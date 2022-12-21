@@ -89,9 +89,7 @@ impl Operation for Simplify {
         for interior in polygon.interiors() {
             debug_assert!(interior.0.len() >= 4);
         }
-        self.simplified
-            .0
-            .push(simplified.into());
+        self.simplified.0.push(simplified.into());
     }
 
     fn visit_multi_polygon(&mut self, multi_polygon: geo::MultiPolygon) {
