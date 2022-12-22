@@ -115,7 +115,8 @@ fn handle_layer_color_updated_event(
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     for event in event_reader.iter() {
-        let Some(layer) = layers.get(event.0) else { continue };
+        let rgis_events::LayerColorUpdatedEvent::Fill(event) = event else { unimplemented!() };
+        let Some(layer) = layers.get(*event) else { continue };
         for (_, handle) in color_material_query.iter().filter(|(i, _)| **i == layer.id) {
             if let Some(color_material) = materials.get_mut(handle) {
                 color_material.color = layer.color

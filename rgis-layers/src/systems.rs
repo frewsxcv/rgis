@@ -37,7 +37,7 @@ fn handle_update_color_events(
             }
         };
         layer.color = event.1;
-        updated_events.send(rgis_events::LayerColorUpdatedEvent(event.0));
+        updated_events.send(rgis_events::LayerColorUpdatedEvent::Fill(event.0));
     }
 }
 
