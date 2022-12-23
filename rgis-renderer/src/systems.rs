@@ -168,7 +168,6 @@ fn handle_camera_scale_changed_event(
 
 fn handle_feature_clicked_event(
     mut event_reader: EventReader<rgis_events::FeatureSelectedEvent>,
-    mut event_writer: EventWriter<rgis_events::DespawnMeshesEvent>,
     layers: Res<rgis_layers::Layers>,
     mut task_spawner: bevy_jobs::JobSpawner,
 ) {
