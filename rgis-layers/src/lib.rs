@@ -99,9 +99,8 @@ impl Layers {
         geo_projected::Unprojected<&geo_features::Feature>,
     )> {
         self.features_iter()
-            .filter(|item| item.projected.contains(&coord))
+            .find(|item| item.projected.contains(&coord))
             .map(|item| (item.layer_id, item.unprojected))
-            .next()
     }
 
     fn get_index(&self, layer_id: rgis_layer_id::LayerId) -> Option<usize> {
