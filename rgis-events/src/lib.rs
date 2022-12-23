@@ -199,6 +199,7 @@ impl bevy::app::Plugin for Plugin {
             .add_event::<ShowAddLayerWindow>()
             .add_event::<HideAddLayerWindow>()
             .add_event::<LayerReprojectedEvent>()
+            .add_event::<DespawnMeshesEvent>()
             .add_event::<FeatureSelectedEvent>()
             .add_event::<FeaturesDeselectedEvent>();
     }
