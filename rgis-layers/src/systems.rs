@@ -84,12 +84,9 @@ fn handle_move_layer_events(
             }
         };
         if new_z_index != old_z_index {
-            let other_layer_id = match layers.data.get(new_z_index) {
-                Some(layer) => layer.id,
-                None => {
-                    bevy::log::warn!("Could not find layer");
-                    continue;
-                }
+            let Some(other_layer_id) = layers.data.get(new_z_index).map(|l| l.id) else {
+                bevy::log::warn!("Could not find layer");
+                continue;
             };
 
             layers.data.swap(old_z_index, new_z_index);
