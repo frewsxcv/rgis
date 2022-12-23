@@ -73,8 +73,8 @@ type LayerEntitiesWithColorMaterialsOrImagesQuery<'world, 'state, 'a> = Query<
     Or<(With<Handle<ColorMaterial>>, With<Handle<Image>>)>,
 >;
 
-fn handle_layer_deleted_events(
-    mut layer_deleted_event_reader: bevy::ecs::event::EventReader<rgis_events::LayerDeletedEvent>,
+fn handle_despawn_meshes_event(
+    mut layer_deleted_event_reader: bevy::ecs::event::EventReader<rgis_events::DespawnMeshesEvent>,
     mut commands: Commands,
     query: LayerEntitiesWithColorMaterialsOrImagesQuery,
 ) {
@@ -190,7 +190,7 @@ pub fn system_set() -> SystemSet {
         .with_system(handle_layer_became_visible_event)
         .with_system(handle_layer_color_updated_event)
         .with_system(handle_layer_z_index_updated_event)
-        .with_system(handle_layer_deleted_events)
+        .with_system(handle_despawn_meshes_event)
         .with_system(handle_mesh_building_task_outcome)
         .with_system(handle_crs_changed_events)
         .with_system(handle_camera_scale_changed_event)
