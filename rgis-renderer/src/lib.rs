@@ -19,6 +19,9 @@ impl bevy::app::Plugin for Plugin {
     }
 }
 
+#[derive(Component)]
+struct SelectedFeature;
+
 fn spawn_geometry_meshes(
     prepared_meshes: Vec<geo_bevy::PreparedMesh>,
     materials: &mut Assets<ColorMaterial>,
@@ -27,6 +30,7 @@ fn spawn_geometry_meshes(
     assets_meshes: &mut Assets<Mesh>,
     z_index: usize,
     asset_server: &AssetServer,
+    is_selected: bool,
 ) {
     for prepared_mesh in prepared_meshes {
         match prepared_mesh {
@@ -34,31 +38,39 @@ fn spawn_geometry_meshes(
                 for geo::Point(coord) in points {
                     let mut transform = Transform::from_xyz(coord.x as f32, coord.y as f32, 0.);
                     transform.translation = (coord.x as f32, coord.y as f32, z_index as f32).into();
-                    spawn_sprite_bundle(asset_server, transform, commands, layer.id, layer.color);
+                    let mut entity_commands = spawn_sprite_bundle(asset_server, transform, commands, layer.color);
+                    entity_commands.insert(layer.id);
+                    if is_selected {
+                        entity_commands.insert(SelectedFeature);
+                    }
                 }
             }
             geo_bevy::PreparedMesh::PolygonAndLineString { mesh, color } => {
                 let material = materials.add(color.into());
-                spawn_material_mesh_2d_bundle(
+                let z_index = if is_selected { z_index + 1 } else { z_index };
+                let mut entity_commands = spawn_material_mesh_2d_bundle(
                     mesh,
                     z_index,
                     material,
                     assets_meshes,
                     commands,
-                    layer,
+                    layer.visible,
                 );
+                entity_commands.insert(layer.id);
+                if is_selected {
+                    entity_commands.insert(SelectedFeature);
+                }
             }
         }
     }
 }
 
-fn spawn_sprite_bundle(
+fn spawn_sprite_bundle<'w, 's, 'a>(
     asset_server: &AssetServer,
     transform: Transform,
-    commands: &mut Commands,
-    layer_id: rgis_layer_id::LayerId,
+    commands: &'a mut Commands<'w, 's>,
     color: Color,
-) {
+) -> bevy::ecs::system::EntityCommands<'w, 's, 'a> {
     let bundle = SpriteBundle {
         sprite: Sprite {
             color,
@@ -68,25 +80,23 @@ fn spawn_sprite_bundle(
         transform,
         ..Default::default()
     };
-    commands.spawn(bundle).insert(layer_id);
+    commands.spawn(bundle)
 }
 
-fn spawn_material_mesh_2d_bundle(
+fn spawn_material_mesh_2d_bundle<'w, 's, 'a>(
     mesh: Mesh,
     z_index: usize,
     material: Handle<ColorMaterial>,
-    assets_meshes: &mut Assets<Mesh>,
-    commands: &mut Commands,
-    layer: &rgis_layers::Layer,
-) {
+    assets_meshes: &'a mut Assets<Mesh>,
+    commands: &'a mut Commands<'w, 's>,
+    is_visible: bool,
+) -> bevy::ecs::system::EntityCommands<'w, 's, 'a> {
     let mmb = bevy::sprite::MaterialMesh2dBundle {
         material,
         mesh: bevy::sprite::Mesh2dHandle(assets_meshes.add(mesh)),
         transform: Transform::from_xyz(0., 0., z_index as f32),
-        visibility: bevy::render::view::Visibility {
-            is_visible: layer.visible,
-        },
+        visibility: bevy::render::view::Visibility { is_visible },
         ..Default::default()
     };
-    commands.spawn(mmb).insert(layer.id);
+    commands.spawn(mmb)
 }

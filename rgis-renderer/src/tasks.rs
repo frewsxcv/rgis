@@ -2,11 +2,13 @@ pub struct MeshBuildingTask {
     pub layer_id: rgis_layer_id::LayerId,
     pub color: bevy::render::color::Color,
     pub geometry: geo_projected::Projected<geo::Geometry>,
+    pub is_selected: bool,
 }
 
 pub struct MeshBuildingTaskOutcome {
     pub prepared_meshes: Vec<geo_bevy::PreparedMesh>,
     pub layer_id: rgis_layer_id::LayerId,
+    pub is_selected: bool,
 }
 
 impl bevy_jobs::Job for MeshBuildingTask {
@@ -27,6 +29,7 @@ impl bevy_jobs::Job for MeshBuildingTask {
                 )?
                 .collect::<Vec<_>>(),
                 layer_id: self.layer_id,
+                is_selected: self.is_selected,
             })
         })
     }

@@ -16,6 +16,7 @@ fn layer_loaded(
             layer_id: layer.id,
             color: layer.color,
             geometry: feature_collection.to_geometry_collection_geometry(),
+            is_selected: false,
         })
     }
 }
@@ -30,7 +31,9 @@ fn handle_mesh_building_task_outcome(
     asset_server: Res<AssetServer>,
 ) {
     while let Some(outcome) = finished_tasks.take_next::<MeshBuildingTask>() {
-        let Ok(crate::tasks::MeshBuildingTaskOutcome { prepared_meshes, layer_id}) = outcome else { continue };
+        let Ok(crate::tasks::MeshBuildingTaskOutcome {
+            prepared_meshes, layer_id, is_selected
+        }) = outcome else { continue };
         let Some((layer, z_index)) = layers.get_with_z_index(layer_id) else { continue };
 
         crate::spawn_geometry_meshes(
@@ -41,6 +44,7 @@ fn handle_mesh_building_task_outcome(
             &mut assets_meshes,
             z_index,
             &asset_server,
+            is_selected,
         );
 
         meshes_spawned_event_writer.send(layer_id.into());
@@ -166,19 +170,32 @@ fn handle_camera_scale_changed_event(
     }
 }
 
+type SelectedFeatureQuery<'world, 'state, 'a> = Query<
+    'world,
+    'state,
+    Entity,
+    (With<crate::SelectedFeature>, Or<(With<Handle<ColorMaterial>>, With<Handle<Image>>)>),
+>;
+
 fn handle_feature_clicked_event(
     mut event_reader: EventReader<rgis_events::FeatureSelectedEvent>,
     layers: Res<rgis_layers::Layers>,
     mut task_spawner: bevy_jobs::JobSpawner,
+    mut commands: Commands,
+    query: SelectedFeatureQuery,
 ) {
     for event in event_reader.iter() {
         let Some(layer) = layers.get(event.0) else { return };
         let Some(feature) = layer.get_projected_feature(event.1) else { return };
         let Some(geometry) = feature.geometry() else { return };
+        for entity in query.iter() {
+            commands.entity(entity).despawn();
+        }
         task_spawner.spawn(MeshBuildingTask {
             layer_id: event.0,
             color: bevy::render::color::Color::PINK,
             geometry: geometry.cloned(),
+            is_selected: true,
         });
     }
 }
