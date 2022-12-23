@@ -115,8 +115,8 @@ fn handle_layer_color_updated_event(
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     for event in event_reader.iter() {
-        let rgis_events::LayerColorUpdatedEvent::Fill(event) = event else { unimplemented!() };
-        let Some(layer) = layers.get(*event) else { continue };
+        let rgis_events::LayerColorUpdatedEvent::Fill(layer_id) = event else { unimplemented!()};
+        let Some(layer) = layers.get(*layer_id) else { continue };
         for (_, handle) in color_material_query.iter().filter(|(i, _)| **i == layer.id) {
             if let Some(color_material) = materials.get_mut(handle) {
                 color_material.color = layer.color
@@ -168,6 +168,7 @@ fn handle_camera_scale_changed_event(
 
 fn handle_feature_clicked_event(
     mut event_reader: EventReader<rgis_events::FeatureSelectedEvent>,
+    mut event_writer: EventWriter<rgis_events::DespawnMeshesEvent>,
     layers: Res<rgis_layers::Layers>,
     mut task_spawner: bevy_jobs::JobSpawner,
 ) {

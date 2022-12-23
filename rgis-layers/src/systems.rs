@@ -29,15 +29,16 @@ fn handle_update_color_events(
     mut layers: ResMut<crate::Layers>,
 ) {
     for event in update_events.iter() {
-        let layer = match layers.get_mut(event.0) {
+        let rgis_events::UpdateLayerColorEvent::Fill(layer_id, color) = event else { unimplemented!()};
+        let layer = match layers.get_mut(*layer_id) {
             Some(l) => l,
             None => {
                 bevy::log::warn!("Could not find layer");
                 continue;
             }
         };
-        layer.color = event.1;
-        updated_events.send(rgis_events::LayerColorUpdatedEvent::Fill(event.0));
+        layer.color = *color;
+        updated_events.send(rgis_events::LayerColorUpdatedEvent::Fill(*layer_id));
     }
 }
 
