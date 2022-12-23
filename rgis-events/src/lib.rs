@@ -49,7 +49,6 @@ pub enum LayerColorUpdatedEvent {
 }
 
 pub struct DeleteLayerEvent(pub rgis_layer_id::LayerId);
-pub struct LayerDeletedEvent(pub rgis_layer_id::LayerId);
 
 pub struct DespawnMeshesEvent(pub rgis_layer_id::LayerId);
 
@@ -188,7 +187,6 @@ impl bevy::app::Plugin for Plugin {
             .add_event::<MoveLayerEvent>()
             .add_event::<LayerZIndexUpdatedEvent>()
             .add_event::<DeleteLayerEvent>()
-            .add_event::<LayerDeletedEvent>()
             .add_event::<MeshesSpawnedEvent>()
             .add_event::<ChangeCrsEvent>()
             .add_event::<CrsChangedEvent>()

@@ -44,12 +44,12 @@ fn handle_update_color_events(
 
 fn handle_delete_layer_events(
     mut delete_layer_event_reader: EventReader<rgis_events::DeleteLayerEvent>,
-    mut layer_deleted_event_writer: EventWriter<rgis_events::LayerDeletedEvent>,
+    mut despawn_meshes_event_writer: EventWriter<rgis_events::DespawnMeshesEvent>,
     mut layers: ResMut<crate::Layers>,
 ) {
     for event in delete_layer_event_reader.iter() {
         layers.remove(event.0);
-        layer_deleted_event_writer.send(rgis_events::LayerDeletedEvent(event.0));
+        despawn_meshes_event_writer.send(rgis_events::DespawnMeshesEvent(event.0));
     }
 }
 
