@@ -51,6 +51,8 @@ pub enum LayerColorUpdatedEvent {
 pub struct DeleteLayerEvent(pub rgis_layer_id::LayerId);
 pub struct LayerDeletedEvent(pub rgis_layer_id::LayerId);
 
+pub struct DespawnMeshesEvent(pub rgis_layer_id::LayerId);
+
 pub struct MeshesSpawnedEvent(pub rgis_layer_id::LayerId);
 
 impl From<rgis_layer_id::LayerId> for MeshesSpawnedEvent {
