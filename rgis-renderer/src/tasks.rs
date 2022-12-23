@@ -4,11 +4,14 @@ pub struct MeshBuildingTask {
     pub geometry: geo_projected::Projected<geo::Geometry>,
 }
 
+pub struct MeshBuildingTaskOutcome {
+    pub prepared_meshes: Vec<geo_bevy::PreparedMesh>,
+    pub layer_id: rgis_layer_id::LayerId,
+}
+
 impl bevy_jobs::Job for MeshBuildingTask {
-    type Outcome = Result<
-        (Vec<geo_bevy::PreparedMesh>, rgis_layer_id::LayerId),
-        <geo::Geometry as geo_bevy::BuildBevyMeshes>::Error,
-    >;
+    type Outcome =
+        Result<MeshBuildingTaskOutcome, <geo::Geometry as geo_bevy::BuildBevyMeshes>::Error>;
 
     fn name(&self) -> String {
         "Building Bevy meshes".to_string()
@@ -16,15 +19,15 @@ impl bevy_jobs::Job for MeshBuildingTask {
 
     fn perform(self) -> bevy_jobs::AsyncReturn<Self::Outcome> {
         Box::pin(async move {
-            Ok((
-                geo_bevy::build_bevy_meshes(
+            Ok(MeshBuildingTaskOutcome {
+                prepared_meshes: geo_bevy::build_bevy_meshes(
                     self.geometry.as_raw(),
                     self.color,
                     geo_bevy::BuildBevyMeshesContext::new(),
                 )?
                 .collect::<Vec<_>>(),
-                self.layer_id,
-            ))
+                layer_id: self.layer_id,
+            })
         })
     }
 }

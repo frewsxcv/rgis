@@ -30,11 +30,11 @@ fn handle_mesh_building_task_outcome(
     asset_server: Res<AssetServer>,
 ) {
     while let Some(outcome) = finished_tasks.take_next::<MeshBuildingTask>() {
-        let Ok((meshes, layer_id)) = outcome else { continue };
+        let Ok(crate::tasks::MeshBuildingTaskOutcome { prepared_meshes, layer_id}) = outcome else { continue };
         let Some((layer, z_index)) = layers.get_with_z_index(layer_id) else { continue };
 
         crate::spawn_geometry_meshes(
-            meshes,
+            prepared_meshes,
             &mut materials,
             layer,
             &mut commands,
