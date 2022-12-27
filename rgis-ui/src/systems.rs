@@ -349,6 +349,7 @@ pub fn system_sets() -> [SystemSet; 2] {
             .with_system(render_feature_properties_window.after(render_change_crs_window))
             .with_system(render_operation_window.after(render_feature_properties_window))
             .with_system(render_in_progress.after("top_bottom_panels"))
+            .with_system(crate::scale_bar::render_map_scale.after(render_side_panel))
             .label("rgis_ui"),
     ]
 }

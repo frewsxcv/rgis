@@ -17,6 +17,7 @@ mod feature_properties_window;
 mod manage_layer_window;
 mod message_window;
 mod operation_window;
+mod scale_bar;
 mod side_panel;
 mod systems;
 mod top_panel;
