@@ -137,7 +137,7 @@ impl ZoomCameraEvent {
         ZoomCameraEvent {
             // Don't let amount be negative, so add `max`
             amount: (1. + amount / ZOOM_FACTOR).max(0.),
-            coord: coord,
+            coord,
         }
     }
 }
