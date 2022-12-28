@@ -174,7 +174,10 @@ type SelectedFeatureQuery<'world, 'state, 'a> = Query<
     'world,
     'state,
     Entity,
-    (With<crate::SelectedFeature>, Or<(With<Handle<ColorMaterial>>, With<Handle<Image>>)>),
+    (
+        With<crate::SelectedFeature>,
+        Or<(With<Handle<ColorMaterial>>, With<Handle<Image>>)>,
+    ),
 >;
 
 fn handle_feature_clicked_event(

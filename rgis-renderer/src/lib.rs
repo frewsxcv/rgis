@@ -38,7 +38,8 @@ fn spawn_geometry_meshes(
                 for geo::Point(coord) in points {
                     let mut transform = Transform::from_xyz(coord.x as f32, coord.y as f32, 0.);
                     transform.translation = (coord.x as f32, coord.y as f32, z_index as f32).into();
-                    let mut entity_commands = spawn_sprite_bundle(asset_server, transform, commands, layer.color);
+                    let mut entity_commands =
+                        spawn_sprite_bundle(asset_server, transform, commands, layer.color);
                     entity_commands.insert(layer.id);
                     if is_selected {
                         entity_commands.insert(SelectedFeature);
