@@ -18,7 +18,6 @@ bevy = { version = "0.9", default-features = false, features = [
     "png",
 ] }
 geo = "0.23"
-geo-bevy = "0.1"
 rgis-camera = { path = "../rgis-camera" }
 rgis-file-loader = { path = "../rgis-file-loader" }
 rgis-keyboard = { path = "../rgis-keyboard" }

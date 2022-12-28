@@ -313,9 +313,9 @@ dependencies = [
 
 [[package]]
 name = "bevy-earcutr"
-version = "0.7.0"
+version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d46460b15e05472aba2c81a9b8bd2c063c1c1c8a10c1d266a36466691196866c"
+checksum = "891959be9034c6983783deec59956d0fc1324f76c57d118ab336c183b2a10922"
 dependencies = [
  "bevy_render",
  "earcutr",
@@ -1526,9 +1526,9 @@ dependencies = [
 
 [[package]]
 name = "earcutr"
-version = "0.2.0"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "46e5308a83caaa6ba82d78d30a93864294cba51d6c54a4566ff390633b7dde64"
+checksum = "61b3b913f6c3864f16ccfdda02024d9323e93375a8fde344afdacc948c8b51b2"
 dependencies = [
  "num-traits",
 ]
@@ -1984,7 +1984,9 @@ dependencies = [
 
 [[package]]
 name = "geo-bevy"
-version = "0.0.0"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b1f2d3f53a9030d606c43587da62b9196ba5943434585837e7e111e236d718c9"
 dependencies = [
  "bevy-earcutr",
  "bevy_log",
@@ -3592,7 +3594,6 @@ dependencies = [
  "bevy-web-resizer",
  "bevy_jobs",
  "geo",
- "geo-bevy",
  "rgis-camera",
  "rgis-cli",
  "rgis-events",
