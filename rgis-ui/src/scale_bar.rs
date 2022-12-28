@@ -7,7 +7,11 @@ pub fn render_map_scale(
         bevy::ecs::query::With<bevy::render::camera::Camera>,
     >,
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
+    rgis_settings: Res<rgis_settings::RgisSettings>,
 ) {
+    if !rgis_settings.show_scale {
+        return;
+    }
     let transform = query.single();
     let scale = transform.scale.x;
 

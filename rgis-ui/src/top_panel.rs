@@ -26,6 +26,19 @@ impl<'a> TopPanel<'a> {
                         ui.add(FullScreenButton {
                             windows: self.windows,
                         });
+
+                        if ui
+                            .button(format!(
+                                "{} scale",
+                                match self.app_settings.show_scale {
+                                    true => "Hide",
+                                    false => "Show",
+                                }
+                            ))
+                            .clicked()
+                        {
+                            self.app_settings.show_scale = !self.app_settings.show_scale;
+                        }
                     });
                     ui.menu_button("Help", |ui| {
                         if ui.button("Debug stats").clicked() {

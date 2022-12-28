@@ -22,6 +22,7 @@ pub enum Tool {
 pub struct RgisSettings {
     pub target_crs: String,
     pub current_tool: Tool,
+    pub show_scale: bool,
 }
 
 pub struct Plugin;
@@ -31,6 +32,7 @@ impl bevy::prelude::Plugin for Plugin {
         app.insert_resource(RgisSettings {
             target_crs: DEFAULT_TARGET_CRS.into(),
             current_tool: Tool::Pan,
+            show_scale: true,
         })
         .add_system(systems::handle_crs_changed_events);
     }
