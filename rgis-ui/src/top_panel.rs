@@ -13,7 +13,7 @@ impl<'a> TopPanel<'a> {
     pub(crate) fn render(&mut self) {
         let inner_response =
             egui::TopBottomPanel::top("top_panel").show(self.bevy_egui_ctx.ctx_mut(), |ui| {
-                ui.horizontal(|ui| {
+                egui::menu::bar(ui, |ui| {
                     let prev_current_tool = self.app_settings.current_tool;
 
                     ui.label("rgis");
