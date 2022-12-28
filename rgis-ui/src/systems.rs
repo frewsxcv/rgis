@@ -228,7 +228,7 @@ fn set_egui_theme(
 ) {
     let egui_visuals = match dark_light::detect() {
         dark_light::Mode::Dark => egui::Visuals::dark(),
-        dark_light::Mode::Light => egui::Visuals::light(),
+        dark_light::Mode::Light | dark_light::Mode::Default => egui::Visuals::light(),
     };
     // Set the background color of the map
     clear_color.0 = egui_color_to_bevy_color(egui_visuals.extreme_bg_color);

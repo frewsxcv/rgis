@@ -19,7 +19,7 @@ bevy_egui = "0.18"
 geo-features = { path = "../geo-features" }
 geo-file-loader = { path = "../geo-file-loader" }
 geo-projected = { path = "../geo-projected" }
-dark-light = "0.2"
+dark-light = "1.0"
 rfd = "0.10"
 rgis-geo-ops = { path = "../rgis-geo-ops" }
 rgis-layer-id = { path = "../rgis-layer-id" }
