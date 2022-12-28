@@ -7,12 +7,9 @@ fn handle_toggle_layer_visibility_events(
     mut layers: ResMut<crate::Layers>,
 ) {
     for event in toggle_layer_visibility_event_reader.iter() {
-        let layer = match layers.get_mut(event.0) {
-            Some(l) => l,
-            None => {
-                bevy::log::warn!("Could not find layer");
-                continue;
-            }
+        let Some(layer) = layers.get_mut(event.0) else {
+            bevy::log::warn!("Could not find layer");
+            continue;
         };
         layer.visible = !layer.visible;
         if layer.visible {
