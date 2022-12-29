@@ -114,7 +114,9 @@ fn handle_layer_became_visible_event(
 fn handle_layer_color_updated_event(
     mut event_reader: bevy::ecs::event::EventReader<rgis_events::LayerColorUpdatedEvent>,
     layers: Res<rgis_layers::Layers>,
-    color_material_query: Query<(&rgis_layer_id::LayerId, &Handle<ColorMaterial>)>,
+    color_material_query: Query<
+        (&rgis_layer_id::LayerId, &Handle<ColorMaterial>),
+    >,
     mut sprite_query: Query<(&rgis_layer_id::LayerId, &mut Sprite)>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {

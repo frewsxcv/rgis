@@ -46,7 +46,8 @@ fn spawn_geometry_meshes(
                     }
                 }
             }
-            geo_bevy::PreparedMesh::PolygonAndLineString { mesh, color } => {
+            geo_bevy::PreparedMesh::Polygon { mesh, color }
+            | geo_bevy::PreparedMesh::LineString { mesh, color } => {
                 let material = materials.add(color.into());
                 let z_index = if is_selected { z_index + 1 } else { z_index };
                 let mut entity_commands = spawn_material_mesh_2d_bundle(

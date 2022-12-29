@@ -1984,9 +1984,9 @@ dependencies = [
 
 [[package]]
 name = "geo-bevy"
-version = "0.2.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b1f2d3f53a9030d606c43587da62b9196ba5943434585837e7e111e236d718c9"
+checksum = "27be924a518aa0efa35cec18e6923ff5e67d77c506b83efe59c8b19663fad739"
 dependencies = [
  "bevy-earcutr",
  "bevy_log",
