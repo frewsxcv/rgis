@@ -9,7 +9,7 @@
 use bevy::prelude::*;
 
 mod systems;
-mod tasks;
+mod jobs;
 mod z_index;
 
 use z_index::ZIndex;

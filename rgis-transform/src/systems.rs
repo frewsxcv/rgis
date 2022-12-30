@@ -2,14 +2,14 @@ fn handle_layer_created_events(
     mut layer_created_event_reader: bevy::ecs::event::EventReader<rgis_events::LayerCreatedEvent>,
     layers: bevy::ecs::system::Res<rgis_layers::Layers>,
     rgis_settings: bevy::ecs::system::Res<rgis_settings::RgisSettings>,
-    mut task_spawner: bevy_jobs::JobSpawner,
+    mut job_spawner: bevy_jobs::JobSpawner,
 ) {
     for event in layer_created_event_reader.iter() {
         let Some(layer) = layers.get(event.0) else {
             continue;
         };
 
-        task_spawner.spawn(crate::tasks::ReprojectGeometryTask {
+        job_spawner.spawn(crate::jobs::ReprojectGeometryJob {
             feature_collection: layer.unprojected_feature_collection.clone(),
             layer_id: event.0,
             source_crs: layer.crs.clone(),
@@ -18,15 +18,15 @@ fn handle_layer_created_events(
     }
 }
 
-fn handle_reproject_geometry_task_completion_events(
-    mut finished_tasks: bevy_jobs::FinishedJobs,
+fn handle_reproject_geometry_job_completion_events(
+    mut finished_jobs: bevy_jobs::FinishedJobs,
     mut layers: bevy::ecs::system::ResMut<rgis_layers::Layers>,
     mut layer_reprojected_event_writer: bevy::ecs::event::EventWriter<
         rgis_events::LayerReprojectedEvent,
     >,
     rgis_settings: bevy::ecs::system::Res<rgis_settings::RgisSettings>,
 ) {
-    while let Some(outcome) = finished_tasks.take_next::<crate::tasks::ReprojectGeometryTask>() {
+    while let Some(outcome) = finished_jobs.take_next::<crate::jobs::ReprojectGeometryJob>() {
         let outcome = match outcome {
             Ok(o) => o,
             Err(e) => {
@@ -54,13 +54,13 @@ fn handle_crs_changed_events(
     mut crs_changed_event_reader: bevy::ecs::event::EventReader<rgis_events::CrsChangedEvent>,
     mut layers: bevy::ecs::system::ResMut<rgis_layers::Layers>,
     rgis_settings: bevy::ecs::system::Res<rgis_settings::RgisSettings>,
-    mut task_spawner: bevy_jobs::JobSpawner,
+    mut job_spawner: bevy_jobs::JobSpawner,
 ) {
     if crs_changed_event_reader.iter().next().is_some() {
         layers.clear_projected();
 
         for layer in layers.iter() {
-            task_spawner.spawn(crate::tasks::ReprojectGeometryTask {
+            job_spawner.spawn(crate::jobs::ReprojectGeometryJob {
                 feature_collection: layer.unprojected_feature_collection.clone(),
                 layer_id: layer.id,
                 source_crs: layer.crs.clone(),
@@ -73,6 +73,6 @@ fn handle_crs_changed_events(
 pub fn system_set() -> bevy::ecs::schedule::SystemSet {
     bevy::ecs::schedule::SystemSet::new()
         .with_system(handle_layer_created_events)
-        .with_system(handle_reproject_geometry_task_completion_events)
+        .with_system(handle_reproject_geometry_job_completion_events)
         .with_system(handle_crs_changed_events)
 }

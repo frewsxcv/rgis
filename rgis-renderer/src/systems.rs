@@ -1,18 +1,18 @@
 use bevy::prelude::*;
 
-use crate::{tasks::MeshBuildingTask, RenderEntityType};
+use crate::{jobs::MeshBuildingJob, RenderEntityType};
 
 fn layer_loaded(
     layers: Res<rgis_layers::Layers>,
     mut event_reader: EventReader<rgis_events::LayerReprojectedEvent>,
-    mut task_spawner: bevy_jobs::JobSpawner,
+    mut job_spawner: bevy_jobs::JobSpawner,
 ) {
     for layer in event_reader.iter().flat_map(|event| layers.get(event.0)) {
         let Some(feature_collection) = layer.projected_feature_collection.as_ref() else {
             continue
          };
 
-        task_spawner.spawn(MeshBuildingTask {
+        job_spawner.spawn(MeshBuildingJob {
             layer_id: layer.id,
             color: layer.color,
             geometry: feature_collection.to_geometry_collection_geometry(),
@@ -21,17 +21,17 @@ fn layer_loaded(
     }
 }
 
-fn handle_mesh_building_task_outcome(
+fn handle_mesh_building_job_outcome(
     mut commands: Commands,
     mut assets_meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     layers: Res<rgis_layers::Layers>,
     mut meshes_spawned_event_writer: EventWriter<rgis_events::MeshesSpawnedEvent>,
-    mut finished_tasks: bevy_jobs::FinishedJobs,
+    mut finished_jobs: bevy_jobs::FinishedJobs,
     asset_server: Res<AssetServer>,
 ) {
-    while let Some(outcome) = finished_tasks.take_next::<MeshBuildingTask>() {
-        let Ok(crate::tasks::MeshBuildingTaskOutcome {
+    while let Some(outcome) = finished_jobs.take_next::<MeshBuildingJob>() {
+        let Ok(crate::jobs::MeshBuildingJobOutcome {
             prepared_meshes, layer_id, is_selected
         }) = outcome else { continue };
         let Some((layer, layer_index)) = layers.get_with_index(layer_id) else { continue };
@@ -202,7 +202,7 @@ type SelectedFeatureQuery<'world, 'state, 'a> = Query<
 fn handle_feature_clicked_event(
     mut event_reader: EventReader<rgis_events::FeatureSelectedEvent>,
     layers: Res<rgis_layers::Layers>,
-    mut task_spawner: bevy_jobs::JobSpawner,
+    mut job_spawner: bevy_jobs::JobSpawner,
     mut commands: Commands,
     query: SelectedFeatureQuery,
 ) {
@@ -218,7 +218,7 @@ fn handle_feature_clicked_event(
                 _ => (),
             }
         }
-        task_spawner.spawn(MeshBuildingTask {
+        job_spawner.spawn(MeshBuildingJob {
             layer_id: event.0,
             color: bevy::render::color::Color::PINK,
             geometry: geometry.cloned(),
@@ -235,7 +235,7 @@ pub fn system_set() -> SystemSet {
         .with_system(handle_layer_color_updated_event)
         .with_system(handle_layer_z_index_updated_event)
         .with_system(handle_despawn_meshes_event)
-        .with_system(handle_mesh_building_task_outcome)
+        .with_system(handle_mesh_building_job_outcome)
         .with_system(handle_crs_changed_events)
         .with_system(handle_camera_scale_changed_event)
         .with_system(handle_feature_clicked_event)

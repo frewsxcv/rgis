@@ -14,7 +14,7 @@ pub struct FetchedFile {
     pub crs: String,
 }
 
-pub struct NetworkFetchTask {
+pub struct NetworkFetchJob {
     pub url: String,
     pub crs: String,
     pub name: String,
@@ -28,7 +28,7 @@ pub enum Error {
     Reqwest(#[from] reqwest::Error),
 }
 
-impl bevy_jobs::Job for NetworkFetchTask {
+impl bevy_jobs::Job for NetworkFetchJob {
     type Outcome = Result<FetchedFile, Error>;
 
     fn name(&self) -> String {

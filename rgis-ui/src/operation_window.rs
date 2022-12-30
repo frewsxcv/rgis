@@ -18,7 +18,7 @@ impl<'w, 's> OperationWindow<'w, 's> {
         let Some(ref mut operation) = self.state.operation else { return };
         match operation.next_action() {
             rgis_geo_ops::Action::Perform => {
-                // TODO: perform in background task
+                // TODO: perform in background job
                 let outcome = operation.perform(self.state.feature_collection.clone());
                 match outcome {
                     Ok(rgis_geo_ops::Outcome::FeatureCollection(feature_collection)) => {

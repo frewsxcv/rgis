@@ -37,11 +37,11 @@ fn render_side_panel(
     .render();
 }
 
-fn handle_open_file_task(
-    mut finished_tasks: bevy_jobs::FinishedJobs,
+fn handle_open_file_job(
+    mut finished_jobs: bevy_jobs::FinishedJobs,
     mut selected_file: ResMut<crate::add_layer_window::SelectedFile>,
 ) {
-    while let Some(outcome) = finished_tasks.take_next::<crate::add_layer_window::OpenFileTask>() {
+    while let Some(outcome) = finished_jobs.take_next::<crate::add_layer_window::OpenFileJob>() {
         if let Some(outcome) = outcome {
             selected_file.0 = Some(outcome);
         }
@@ -75,7 +75,7 @@ fn render_add_layer_window(
     mut is_visible: Local<IsVisible>,
     mut selected_file: ResMut<crate::add_layer_window::SelectedFile>,
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
-    mut task_spawner: bevy_jobs::JobSpawner,
+    mut job_spawner: bevy_jobs::JobSpawner,
     mut state: Local<crate::add_layer_window::State>,
     mut events: crate::add_layer_window::Events,
 ) {
@@ -93,7 +93,7 @@ fn render_add_layer_window(
         selected_file: &mut selected_file,
         is_visible: &mut is_visible.0,
         bevy_egui_ctx: &mut bevy_egui_ctx,
-        task_spawner: &mut task_spawner,
+        job_spawner: &mut job_spawner,
         events: &mut events,
     }
     .render();
@@ -183,21 +183,21 @@ fn render_in_progress(
     query: Query<&bevy_jobs::InProgressJob>,
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
 ) {
-    let mut task_name_iter = query.iter().map(|task| &task.name).peekable();
+    let mut job_name_iter = query.iter().map(|job| &job.name).peekable();
 
-    if task_name_iter.peek().is_none() {
+    if job_name_iter.peek().is_none() {
         return;
     }
 
-    egui::Window::new("Running tasks")
+    egui::Window::new("Running jobs")
         .open(&mut true)
         .title_bar(false)
         .anchor(egui::Align2::RIGHT_BOTTOM, [-5., -5.])
         .show(bevy_egui_ctx.ctx_mut(), |ui| {
-            for task_name in task_name_iter {
+            for job_name in job_name_iter {
                 ui.horizontal(|ui| {
                     ui.add(egui::Spinner::new());
-                    ui.label(format!("Running '{task_name}'"));
+                    ui.label(format!("Running '{job_name}'"));
                 });
             }
         });
@@ -340,7 +340,7 @@ pub fn system_sets() -> [SystemSet; 2] {
             .with_system(render_bottom_panel),
         SystemSet::new()
             .with_system(render_debug_window)
-            .with_system(handle_open_file_task)
+            .with_system(handle_open_file_job)
             .with_system(render_message_window)
             .with_system(render_side_panel.after("top_bottom_panels"))
             .with_system(render_manage_layer_window.after(render_side_panel))

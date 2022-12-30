@@ -9,7 +9,7 @@
 use bevy::prelude::*;
 
 mod systems;
-mod tasks;
+mod jobs;
 
 pub struct Plugin;
 

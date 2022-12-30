@@ -20,9 +20,9 @@ pub struct Events<'w, 's> {
         bevy::ecs::system::ResMut<'w, bevy::ecs::event::Events<rgis_events::HideAddLayerWindow>>,
 }
 
-pub struct OpenFileTask;
+pub struct OpenFileJob;
 
-impl bevy_jobs::Job for OpenFileTask {
+impl bevy_jobs::Job for OpenFileJob {
     type Outcome = Option<OpenedFile>;
 
     fn name(&self) -> String {
@@ -45,7 +45,7 @@ pub(crate) struct AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
     pub is_visible: &'a mut bool,
     pub selected_file: &'a mut SelectedFile,
     pub bevy_egui_ctx: &'a mut bevy_egui::EguiContext,
-    pub task_spawner: &'a mut bevy_jobs::JobSpawner<'w1, 's1>,
+    pub job_spawner: &'a mut bevy_jobs::JobSpawner<'w1, 's1>,
     pub events: &'a mut Events<'w2, 's2>,
 }
 
@@ -146,7 +146,7 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                     ui.label("Select file:");
 
                     if ui.button("📄 Select file").clicked() {
-                        self.task_spawner.spawn(OpenFileTask);
+                        self.job_spawner.spawn(OpenFileJob);
                     }
 
                     let submittable = self.selected_file.0.is_some();

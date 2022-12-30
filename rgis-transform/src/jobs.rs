@@ -1,18 +1,18 @@
-pub struct ReprojectGeometryTask {
+pub struct ReprojectGeometryJob {
     pub feature_collection: geo_projected::Unprojected<geo_features::FeatureCollection>,
     pub layer_id: rgis_layer_id::LayerId,
     pub source_crs: String,
     pub target_crs: String,
 }
 
-pub struct ReprojectGeometryTaskOutcome {
+pub struct ReprojectGeometryJobOutcome {
     pub feature_collection: geo_projected::Projected<geo_features::FeatureCollection>,
     pub layer_id: rgis_layer_id::LayerId,
     pub target_crs: String,
 }
 
-impl bevy_jobs::Job for ReprojectGeometryTask {
-    type Outcome = Result<ReprojectGeometryTaskOutcome, crate::TransformError>;
+impl bevy_jobs::Job for ReprojectGeometryJob {
+    type Outcome = Result<ReprojectGeometryJobOutcome, crate::TransformError>;
 
     fn name(&self) -> String {
         "Projecting layer".to_string()
@@ -30,7 +30,7 @@ impl bevy_jobs::Job for ReprojectGeometryTask {
 
             self.feature_collection.0.recalculate_bounding_rect()?;
 
-            Ok(ReprojectGeometryTaskOutcome {
+            Ok(ReprojectGeometryJobOutcome {
                 feature_collection: self.feature_collection.into_projected(),
                 layer_id: self.layer_id,
                 target_crs: self.target_crs,

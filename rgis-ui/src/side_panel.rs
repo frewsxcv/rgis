@@ -219,7 +219,7 @@ impl<'a, 'w, 's, Op: rgis_geo_ops::OperationEntry> egui::Widget
                     )
                 }
                 rgis_geo_ops::Action::Perform => {
-                    // TODO: perform in background task
+                    // TODO: perform in background job
                     let outcome =
                         operation.perform(self.layer.unprojected_feature_collection.clone()); // TODO: clone?
 
