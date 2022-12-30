@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::tasks::MeshBuildingTask;
+use crate::{tasks::MeshBuildingTask, RenderEntityType};
 
 fn layer_loaded(
     layers: Res<rgis_layers::Layers>,
@@ -34,7 +34,7 @@ fn handle_mesh_building_task_outcome(
         let Ok(crate::tasks::MeshBuildingTaskOutcome {
             prepared_meshes, layer_id, is_selected
         }) = outcome else { continue };
-        let Some((layer, z_index)) = layers.get_with_z_index(layer_id) else { continue };
+        let Some((layer, layer_index)) = layers.get_with_index(layer_id) else { continue };
 
         crate::spawn_geometry_meshes(
             prepared_meshes,
@@ -42,7 +42,7 @@ fn handle_mesh_building_task_outcome(
             layer,
             &mut commands,
             &mut assets_meshes,
-            z_index,
+            layer_index,
             &asset_server,
             is_selected,
         );
@@ -55,17 +55,16 @@ fn handle_layer_z_index_updated_event(
     mut layer_z_index_updated_event_reader: bevy::ecs::event::EventReader<
         rgis_events::LayerZIndexUpdatedEvent,
     >,
-    mut query: Query<(&rgis_layer_id::LayerId, &mut Transform), With<bevy::sprite::Mesh2dHandle>>,
+    mut query: Query<(&rgis_layer_id::LayerId, &mut Transform, &RenderEntityType)>,
     layers: Res<rgis_layers::Layers>,
 ) {
     for event in layer_z_index_updated_event_reader.iter() {
-        let Some((_, z_index)) = layers.get_with_z_index(event.0) else { continue };
+        let Some((_, layer_index)) = layers.get_with_index(event.0) else { continue };
 
-        for mut transform in query
-            .iter_mut()
-            .filter_map(|(i, transform)| (*i == event.0).then_some(transform))
+        for (_, mut transform, render_entity) in query.iter_mut().filter(|(i, _, _)| **i == event.0)
         {
-            transform.translation.as_mut()[2] = z_index as f32;
+            let z_index = crate::ZIndex::calculate(layer_index, *render_entity);
+            transform.translation.as_mut()[2] = z_index.0 as f32;
         }
     }
 }
@@ -114,25 +113,22 @@ fn handle_layer_became_visible_event(
 fn handle_layer_color_updated_event(
     mut event_reader: bevy::ecs::event::EventReader<rgis_events::LayerColorUpdatedEvent>,
     layers: Res<rgis_layers::Layers>,
-    fill_color_material_query: Query<
-        (&rgis_layer_id::LayerId, &Handle<ColorMaterial>),
-        With<crate::PolygonMesh>,
-    >,
-    border_color_material_query: Query<
-        (&rgis_layer_id::LayerId, &Handle<ColorMaterial>),
-        With<crate::LineStringMesh>,
-    >,
+    color_material_query: Query<(
+        &rgis_layer_id::LayerId,
+        &Handle<ColorMaterial>,
+        &RenderEntityType,
+    )>,
     mut sprite_query: Query<(&rgis_layer_id::LayerId, &mut Sprite)>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     for event in event_reader.iter() {
         match event {
             rgis_events::LayerColorUpdatedEvent::Fill(layer_id) => {
+                // FIXME: this doesn't handle linestrings
                 let Some(layer) = layers.get(*layer_id) else { continue };
-                for (_, handle) in fill_color_material_query
-                    .iter()
-                    .filter(|(i, _)| **i == layer.id)
-                {
+                for (_, handle, _) in color_material_query.iter().filter(|(i, _, entity_type)| {
+                    **i == layer.id && **entity_type == RenderEntityType::Polygon
+                }) {
                     if let Some(color_material) = materials.get_mut(handle) {
                         color_material.color = layer.color
                     }
@@ -143,10 +139,9 @@ fn handle_layer_color_updated_event(
             }
             rgis_events::LayerColorUpdatedEvent::Border(layer_id) => {
                 let Some(layer) = layers.get(*layer_id) else { continue };
-                for (_, handle) in border_color_material_query
-                    .iter()
-                    .filter(|(i, _)| **i == layer.id)
-                {
+                for (_, handle, _) in color_material_query.iter().filter(|(i, _, entity_type)| {
+                    **i == layer.id && **entity_type == RenderEntityType::LineString
+                }) {
                     if let Some(color_material) = materials.get_mut(handle) {
                         color_material.color = layer.color
                     }
@@ -200,11 +195,8 @@ fn handle_camera_scale_changed_event(
 type SelectedFeatureQuery<'world, 'state, 'a> = Query<
     'world,
     'state,
-    Entity,
-    (
-        With<crate::SelectedFeature>,
-        Or<(With<Handle<ColorMaterial>>, With<Handle<Image>>)>,
-    ),
+    (Entity, &'a RenderEntityType),
+    Or<(With<Handle<ColorMaterial>>, With<Handle<Image>>)>,
 >;
 
 fn handle_feature_clicked_event(
@@ -218,8 +210,13 @@ fn handle_feature_clicked_event(
         let Some(layer) = layers.get(event.0) else { return };
         let Some(feature) = layer.get_projected_feature(event.1) else { return };
         let Some(geometry) = feature.geometry() else { return };
-        for entity in query.iter() {
-            commands.entity(entity).despawn();
+        for (entity, entity_type) in query.iter() {
+            match entity_type {
+                RenderEntityType::SelectedPolygon
+                | RenderEntityType::SelectedLineString
+                | RenderEntityType::SelectedPoint => commands.entity(entity).despawn(),
+                _ => (),
+            }
         }
         task_spawner.spawn(MeshBuildingTask {
             layer_id: event.0,

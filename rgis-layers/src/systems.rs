@@ -56,8 +56,8 @@ fn handle_move_layer_events(
     mut layers: ResMut<crate::Layers>,
 ) {
     for event in move_layer_event_reader.iter() {
-        let (_, old_z_index) = match layers.get_with_z_index(event.0) {
-            Some(result) => result,
+        let old_z_index = match layers.get_with_index(event.0) {
+            Some(result) => result.1 .0,
             None => {
                 bevy::log::warn!("Could not find layer");
                 continue;

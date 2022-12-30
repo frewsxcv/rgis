@@ -12,8 +12,12 @@ use std::sync;
 
 mod systems;
 
+#[derive(Copy, Clone, Debug)]
+pub struct LayerIndex(pub usize);
+
 #[derive(Clone, Debug, Resource)]
 pub struct Layers {
+    // Ordered from bottom to top
     data: Vec<Layer>,
     // ID of the currently selected Layer
     pub selected_layer_id: Option<rgis_layer_id::LayerId>,
@@ -114,9 +118,9 @@ impl Layers {
     }
 
     #[inline]
-    pub fn get_with_z_index(&self, layer_id: rgis_layer_id::LayerId) -> Option<(&Layer, usize)> {
+    pub fn get_with_index(&self, layer_id: rgis_layer_id::LayerId) -> Option<(&Layer, LayerIndex)> {
         let index = self.get_index(layer_id)?;
-        self.data.get(index).map(|layer| (layer, index))
+        self.data.get(index).map(|layer| (layer, LayerIndex(index)))
     }
 
     #[inline]
