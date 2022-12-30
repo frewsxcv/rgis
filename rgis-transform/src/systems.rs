@@ -5,9 +5,8 @@ fn handle_layer_created_events(
     mut task_spawner: bevy_jobs::JobSpawner,
 ) {
     for event in layer_created_event_reader.iter() {
-        let layer = match layers.get(event.0) {
-            Some(l) => l,
-            None => continue,
+        let Some(layer) = layers.get(event.0) else {
+            continue;
         };
 
         task_spawner.spawn(crate::tasks::ReprojectGeometryTask {
@@ -41,9 +40,8 @@ fn handle_reproject_geometry_task_completion_events(
             continue;
         }
 
-        let layer = match layers.get_mut(outcome.layer_id) {
-            Some(l) => l,
-            None => continue,
+        let Some(layer) = layers.get_mut(outcome.layer_id) else {
+            continue;
         };
 
         layer.projected_feature_collection = Some(outcome.feature_collection);
