@@ -22,6 +22,12 @@ impl bevy::app::Plugin for Plugin {
 #[derive(Component)]
 struct SelectedFeature;
 
+#[derive(Component)]
+struct PolygonMesh;
+
+#[derive(Component)]
+struct LineStringMesh;
+
 fn spawn_geometry_meshes(
     prepared_meshes: Vec<geo_bevy::PreparedMesh>,
     materials: &mut Assets<ColorMaterial>,
@@ -46,25 +52,61 @@ fn spawn_geometry_meshes(
                     }
                 }
             }
-            geo_bevy::PreparedMesh::Polygon { mesh, color }
-            | geo_bevy::PreparedMesh::LineString { mesh, color } => {
-                let material = materials.add(color.into());
-                let z_index = if is_selected { z_index + 1 } else { z_index };
-                let mut entity_commands = spawn_material_mesh_2d_bundle(
-                    mesh,
+            geo_bevy::PreparedMesh::Polygon { mesh, color } => {
+                spawn_helper(
+                    materials,
+                    color,
+                    is_selected,
                     z_index,
-                    material,
-                    assets_meshes,
+                    mesh,
                     commands,
-                    layer.visible,
-                );
-                entity_commands.insert(layer.id);
-                if is_selected {
-                    entity_commands.insert(SelectedFeature);
-                }
+                    assets_meshes,
+                    layer,
+                )
+                .insert(PolygonMesh);
+            }
+            geo_bevy::PreparedMesh::LineString { mesh, color } => {
+                spawn_helper(
+                    materials,
+                    color,
+                    is_selected,
+                    z_index,
+                    mesh,
+                    commands,
+                    assets_meshes,
+                    layer,
+                )
+                .insert(LineStringMesh);
             }
         }
     }
+}
+
+fn spawn_helper<'w, 's, 'a>(
+    materials: &'a mut Assets<ColorMaterial>,
+    color: bevy::render::color::Color,
+    is_selected: bool,
+    z_index: usize,
+    mesh: Mesh,
+    commands: &'a mut Commands<'w, 's>,
+    assets_meshes: &'a mut Assets<Mesh>,
+    layer: &rgis_layers::Layer,
+) -> bevy::ecs::system::EntityCommands<'w, 's, 'a> {
+    let material = materials.add(color.into());
+    let z_index = if is_selected { z_index + 1 } else { z_index };
+    let mut entity_commands = spawn_material_mesh_2d_bundle(
+        mesh,
+        z_index,
+        material,
+        assets_meshes,
+        commands,
+        layer.visible,
+    );
+    entity_commands.insert(layer.id);
+    if is_selected {
+        entity_commands.insert(SelectedFeature);
+    }
+    entity_commands
 }
 
 fn spawn_sprite_bundle<'w, 's, 'a>(

@@ -114,22 +114,47 @@ fn handle_layer_became_visible_event(
 fn handle_layer_color_updated_event(
     mut event_reader: bevy::ecs::event::EventReader<rgis_events::LayerColorUpdatedEvent>,
     layers: Res<rgis_layers::Layers>,
-    color_material_query: Query<
+    fill_color_material_query: Query<
         (&rgis_layer_id::LayerId, &Handle<ColorMaterial>),
+        With<crate::PolygonMesh>,
+    >,
+    border_color_material_query: Query<
+        (&rgis_layer_id::LayerId, &Handle<ColorMaterial>),
+        With<crate::LineStringMesh>,
     >,
     mut sprite_query: Query<(&rgis_layer_id::LayerId, &mut Sprite)>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     for event in event_reader.iter() {
-        let rgis_events::LayerColorUpdatedEvent::Fill(layer_id) = event else { unimplemented!()};
-        let Some(layer) = layers.get(*layer_id) else { continue };
-        for (_, handle) in color_material_query.iter().filter(|(i, _)| **i == layer.id) {
-            if let Some(color_material) = materials.get_mut(handle) {
-                color_material.color = layer.color
+        match event {
+            rgis_events::LayerColorUpdatedEvent::Fill(layer_id) => {
+                let Some(layer) = layers.get(*layer_id) else { continue };
+                for (_, handle) in fill_color_material_query
+                    .iter()
+                    .filter(|(i, _)| **i == layer.id)
+                {
+                    if let Some(color_material) = materials.get_mut(handle) {
+                        color_material.color = layer.color
+                    }
+                }
+                for (_, mut sprite) in sprite_query.iter_mut().filter(|(i, _)| **i == layer.id) {
+                    sprite.color = layer.color;
+                }
             }
-        }
-        for (_, mut sprite) in sprite_query.iter_mut().filter(|(i, _)| **i == layer.id) {
-            sprite.color = layer.color;
+            rgis_events::LayerColorUpdatedEvent::Border(layer_id) => {
+                let Some(layer) = layers.get(*layer_id) else { continue };
+                for (_, handle) in border_color_material_query
+                    .iter()
+                    .filter(|(i, _)| **i == layer.id)
+                {
+                    if let Some(color_material) = materials.get_mut(handle) {
+                        color_material.color = layer.color
+                    }
+                }
+                for (_, mut sprite) in sprite_query.iter_mut().filter(|(i, _)| **i == layer.id) {
+                    sprite.color = layer.color;
+                }
+            }
         }
     }
 }
