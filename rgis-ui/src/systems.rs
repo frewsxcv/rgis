@@ -204,6 +204,7 @@ fn render_in_progress(
                         //     .animate(true)
                         //     .text(format!("Running '{name}'"))
                         //     .ui(ui);
+                        ui.add(egui::Spinner::new());
                         ui.label(format!("Running '{name}' ({progress}%)"));
                     } else {
                         ui.add(egui::Spinner::new());
