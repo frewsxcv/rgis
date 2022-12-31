@@ -20,7 +20,7 @@ where
         format!("Loading {} file", F::FILE_TYPE_NAME)
     }
 
-    fn perform(self) -> bevy_jobs::AsyncReturn<Self::Outcome> {
+    fn perform(self, _: bevy_jobs::Context) -> bevy_jobs::AsyncReturn<Self::Outcome> {
         Box::pin(async move {
             Ok(LoadFileJobOutcome {
                 feature_collection: geo_projected::Unprojected::new(self.file_loader.load()?),

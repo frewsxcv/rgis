@@ -35,7 +35,7 @@ impl bevy_jobs::Job for NetworkFetchJob {
         format!("Fetching '{}'", self.name)
     }
 
-    fn perform(self) -> bevy_jobs::AsyncReturn<Self::Outcome> {
+    fn perform(self, _: bevy_jobs::Context) -> bevy_jobs::AsyncReturn<Self::Outcome> {
         Box::pin(async move {
             let fetch = async {
                 let response = reqwest::get(self.url).await?;

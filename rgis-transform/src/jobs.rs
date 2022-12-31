@@ -18,11 +18,14 @@ impl bevy_jobs::Job for ReprojectGeometryJob {
         "Projecting layer".to_string()
     }
 
-    fn perform(mut self) -> bevy_jobs::AsyncReturn<Self::Outcome> {
+    fn perform(mut self, progress_sender: bevy_jobs::Context) -> bevy_jobs::AsyncReturn<Self::Outcome> {
         Box::pin(async move {
-            for feature in self.feature_collection.features_iter_mut() {
+            let total = self.feature_collection.features_iter_mut().count();
+            for (i, feature) in self.feature_collection.features_iter_mut().enumerate() {
+                let _ = progress_sender.send_progress((100 * i / total) as u8).await;
+
                 if let Some(ref mut geometry) = &mut feature.0.geometry {
-                    crate::transform(geometry, &self.source_crs, &self.target_crs)?;
+                    crate::transform(geometry, &self.source_crs, &self.target_crs).unwrap();
                 }
 
                 feature.0.recalculate_bounding_rect()?;

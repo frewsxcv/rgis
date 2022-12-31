@@ -19,7 +19,7 @@ impl bevy_jobs::Job for MeshBuildingJob {
         "Building Bevy meshes".to_string()
     }
 
-    fn perform(self) -> bevy_jobs::AsyncReturn<Self::Outcome> {
+    fn perform(self, _: bevy_jobs::Context) -> bevy_jobs::AsyncReturn<Self::Outcome> {
         Box::pin(async move {
             Ok(MeshBuildingJobOutcome {
                 prepared_meshes: geo_bevy::build_bevy_meshes(

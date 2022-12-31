@@ -183,9 +183,9 @@ fn render_in_progress(
     query: Query<&bevy_jobs::InProgressJob>,
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
 ) {
-    let mut job_name_iter = query.iter().map(|job| &job.name).peekable();
+    let mut in_progress_job_iter = query.iter().peekable();
 
-    if job_name_iter.peek().is_none() {
+    if in_progress_job_iter.peek().is_none() {
         return;
     }
 
@@ -194,10 +194,21 @@ fn render_in_progress(
         .title_bar(false)
         .anchor(egui::Align2::RIGHT_BOTTOM, [-5., -5.])
         .show(bevy_egui_ctx.ctx_mut(), |ui| {
-            for job_name in job_name_iter {
+            for in_progress_job in in_progress_job_iter {
+                let name = &in_progress_job.name;
+                let progress = in_progress_job.progress;
                 ui.horizontal(|ui| {
-                    ui.add(egui::Spinner::new());
-                    ui.label(format!("Running '{job_name}'"));
+                    if progress > 0 {
+                        // egui::ProgressBar::new(f32::from(progress) / 100.)
+                        //     .desired_width(200.)
+                        //     .animate(true)
+                        //     .text(format!("Running '{name}'"))
+                        //     .ui(ui);
+                        ui.label(format!("Running '{name}' ({progress}%)"));
+                    } else {
+                        ui.add(egui::Spinner::new());
+                        ui.label(format!("Running '{name}'"));
+                    }
                 });
             }
         });
