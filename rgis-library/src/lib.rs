@@ -12,7 +12,7 @@ pub struct LibraryEntry {
     pub crs: &'static str,
 }
 
-pub const ENTRIES: [LibraryEntry; 7] = [LibraryEntry {
+pub const ENTRIES: [LibraryEntry; 9] = [LibraryEntry {
     name: "USA States",
     url: "https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json",
     crs: "EPSG:4326",
@@ -23,6 +23,10 @@ pub const ENTRIES: [LibraryEntry; 7] = [LibraryEntry {
 }, LibraryEntry {
     name: "Countries",
     url: "https://raw.githubusercontent.com/andrea-ballatore/open-geo-data-education/main/datasets/world_country_boundaries_2018/natural_earth_world_boundaries_50m_2018.geojson",
+    crs: "EPSG:4326",
+}, LibraryEntry {
+    name: "Countries (1m)",
+    url: "https://github.com/simonepri/geo-maps/releases/latest/download/countries-land-1m.geo.json",
     crs: "EPSG:4326",
 }, LibraryEntry {
     name: "Amtrak Stations",
@@ -39,5 +43,9 @@ pub const ENTRIES: [LibraryEntry; 7] = [LibraryEntry {
 }, LibraryEntry {
     name: "Russia",
     url: "https://raw.githubusercontent.com/hugoledoux/BIGpolygons/master/russia.geojson",
+    crs: "EPSG:4326",
+}, LibraryEntry {
+    name: "Washington DC street centerlines",
+    url: "https://raw.githubusercontent.com/benbalter/dc-maps/master/maps/street-centerlines.geojson",
     crs: "EPSG:4326",
 }];

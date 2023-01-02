@@ -7,7 +7,7 @@
 )]
 
 use std::io;
-
+use futures_util::StreamExt;
 pub struct FetchedFile {
     pub name: String,
     pub bytes: bytes::Bytes,
@@ -35,13 +35,22 @@ impl bevy_jobs::Job for NetworkFetchJob {
         format!("Fetching '{}'", self.name)
     }
 
-    fn perform(self, _: bevy_jobs::Context) -> bevy_jobs::AsyncReturn<Self::Outcome> {
+    fn perform(self, ctx: bevy_jobs::Context) -> bevy_jobs::AsyncReturn<Self::Outcome> {
         Box::pin(async move {
             let fetch = async {
                 let response = reqwest::get(self.url).await?;
-                let bytes = response.bytes().await?;
+                let total_size = response.content_length().unwrap();
+                let mut bytes_stream = response.bytes_stream();
+                let mut bytes = Vec::<u8>::with_capacity(total_size as usize);
+
+                while let Some(bytes_chunk) = bytes_stream.next().await {
+                    let mut bytes_chunk = Vec::from(bytes_chunk.unwrap());
+                    bytes.append(&mut bytes_chunk);
+                    let _ = ctx.send_progress((bytes.len() / total_size as usize) as u8).await;
+                }
+
                 Ok(FetchedFile {
-                    bytes,
+                    bytes: bytes::Bytes::from(bytes),
                     crs: self.crs,
                     name: self.name,
                 })
