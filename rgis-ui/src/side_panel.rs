@@ -72,7 +72,6 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
         egui::CollapsingHeader::new(&layer.name)
             .id_source(layer.id) // Instead of using the layer name as the ID (which is not unique), use the layer ID
             .show(ui, |ui| {
-                // TODO: `geom_type` shouldn't be recalculatd every frame
                 ui.label(format!("Type: {:?}", layer.geom_type));
 
                 ui.with_layout(Layout::top_down_justified(Align::Center), |ui| {
