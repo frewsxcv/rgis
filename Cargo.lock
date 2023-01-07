@@ -3556,6 +3556,7 @@ dependencies = [
  "bevy",
  "geo",
  "geo-projected",
+ "proj",
  "rgis-events",
  "rgis-layers",
  "rgis-transform",

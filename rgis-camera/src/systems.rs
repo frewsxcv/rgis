@@ -37,7 +37,16 @@ fn handle_change_crs_event(
         bottom_offset_px: ui_margins.bottom.0,
     };
     let mut rect = map_area.projected_geo_rect(&transform, window);
-    if let Err(e) = rgis_transform::transform(&mut rect.0, &event.old_crs, &event.new_crs) {
+    #[cfg(target_arch = "wasm32")]
+    let r = {
+        rgis_transform::transform(&mut rect.0, &event.old_crs, &event.new_crs)
+    };
+    #[cfg(not(target_arch = "wasm32"))]
+    let r = {
+        let p = proj::Proj::new_known_crs(&event.old_crs, &event.new_crs, None).unwrap();
+        rgis_transform::transform(&mut rect.0, &p)
+    };
+    if let Err(e) = r {
         bevy::log::error!("Enountered error when transforming: {}", e);
     }
 
