@@ -9,6 +9,7 @@
 use std::fmt;
 
 mod geojson;
+mod gpx;
 mod wkt;
 
 pub use crate::geojson::GeoJsonSource;

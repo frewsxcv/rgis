@@ -27,6 +27,7 @@ thiserror = "1"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 geo = { version = "0.23", features = ["use-proj"] }
+proj = "0.27"
 proj-sys = "0.23"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]

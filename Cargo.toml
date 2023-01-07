@@ -30,3 +30,5 @@ debug = true
 [patch.crates-io]
 geo = { git = 'https://github.com/georust/geo' }
 geo-types = { git = 'https://github.com/georust/geo' }
+proj = { git = "https://github.com/georust/proj", branch = "cfarwell-send" }
+proj-sys = { git = "https://github.com/georust/proj", branch = "cfarwell-send" }

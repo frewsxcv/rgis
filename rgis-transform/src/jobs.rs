@@ -21,11 +21,21 @@ impl bevy_jobs::Job for ReprojectGeometryJob {
     fn perform(mut self, progress_sender: bevy_jobs::Context) -> bevy_jobs::AsyncReturn<Self::Outcome> {
         Box::pin(async move {
             let total = self.feature_collection.features_iter_mut().count();
+            #[cfg(not(target_arch = "wasm32"))]
+            let p = proj::Proj::new_known_crs(&self.source_crs, &self.target_crs, None).unwrap();
+
             for (i, feature) in self.feature_collection.features_iter_mut().enumerate() {
                 let _ = progress_sender.send_progress((100 * i / total) as u8).await;
 
                 if let Some(ref mut geometry) = &mut feature.0.geometry {
-                    crate::transform(geometry, &self.source_crs, &self.target_crs).unwrap();
+                    #[cfg(target_arch = "wasm32")]
+                    {
+                        crate::transform(geometry, &self.source_crs, &self.target_crs).unwrap();
+                    }
+                    #[cfg(not(target_arch = "wasm32"))]
+                    {
+                        crate::transform(geometry, &p).unwrap();
+                    }
                 }
 
                 feature.0.recalculate_bounding_rect()?;
