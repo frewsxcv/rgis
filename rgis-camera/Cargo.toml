@@ -24,4 +24,6 @@ rgis-layers = { path = "../rgis-layers" }
 rgis-transform = { path = "../rgis-transform" }
 rgis-ui = { path = "../rgis-ui" }
 rgis-units = { path = "../rgis-units" }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 proj = "0.27"
