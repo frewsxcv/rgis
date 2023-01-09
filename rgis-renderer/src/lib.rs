@@ -8,8 +8,8 @@
 
 use bevy::prelude::*;
 
-mod systems;
 mod jobs;
+mod systems;
 mod z_index;
 
 use z_index::ZIndex;

@@ -6,8 +6,8 @@
     clippy::expect_used
 )]
 
-mod systems;
 mod jobs;
+mod systems;
 
 pub struct Plugin;
 

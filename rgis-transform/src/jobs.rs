@@ -20,7 +20,10 @@ impl bevy_jobs::Job for ReprojectGeometryJob {
         "Projecting layer".to_string()
     }
 
-    fn perform(mut self, progress_sender: bevy_jobs::Context) -> bevy_jobs::AsyncReturn<Self::Outcome> {
+    fn perform(
+        mut self,
+        progress_sender: bevy_jobs::Context,
+    ) -> bevy_jobs::AsyncReturn<Self::Outcome> {
         Box::pin(async move {
             let total = self.feature_collection.features_iter_mut().count();
 
