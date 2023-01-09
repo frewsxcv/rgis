@@ -3466,7 +3466,7 @@ checksum = "f1382d1f0a252c4bf97dc20d979a2fdd05b024acd7c2ed0f7595d7817666a157"
 [[package]]
 name = "reqwest"
 version = "0.11.13"
-source = "git+https://github.com/tmpfs/reqwest.git?branch=wasm-bytes-stream#6023a96d3adaf2b6a9708b012879481cb45348fc"
+source = "git+https://github.com/seanmonstar/reqwest.git?branch=master#4d96adfca5b0dfa84172b3ad2fe5773e669439b5"
 dependencies = [
  "base64",
  "bytes",
