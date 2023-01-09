@@ -37,21 +37,17 @@ pub enum TransformError {
     BoundingRect(#[from] geo_features::BoundingRectError),
 }
 
-#[cfg(target_arch = "wasm32")]
-pub fn transform<G: geo::MapCoordsInPlace<f64>>(
-    geometry: &mut G,
-    source_crs: &str,
-    target_crs: &str,
-) -> Result<(), TransformError> {
-    geo_proj_js::transform(geometry, source_crs, target_crs)?;
-    Ok(())
+pub trait Transformer {
+    fn setup(source_crs: &str, target_crs: &str) -> Self;
+    fn transform(&self, geometry: &mut geo::Geometry) -> Result<(), TransformError>;
 }
 
+#[cfg(target_arch = "wasm32")]
+mod proj_js_transformer;
+#[cfg(target_arch = "wasm32")]
+pub type DefaultTransformer = proj_js_transformer::ProjJsTransformer;
+
 #[cfg(not(target_arch = "wasm32"))]
-pub fn transform<G: geo::transform::Transform<f64>>(
-    geometry: &mut G,
-    p: &proj::Proj,
-) -> Result<(), TransformError> {
-    geometry.transform(&p).unwrap();
-    Ok(())
-}
+mod proj_transformer;
+#[cfg(not(target_arch = "wasm32"))]
+pub type DefaultTransformer = proj_transformer::ProjTransformer;
