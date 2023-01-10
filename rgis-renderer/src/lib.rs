@@ -51,7 +51,7 @@ fn spawn_geometry_meshes(
                     } else {
                         RenderEntityType::Point
                     };
-                    let z_index = ZIndex::calculate(layer_index, RenderEntityType::Point); // FIXME: What if selected?
+                    let z_index = ZIndex::calculate(layer_index, entity_type);
                     let mut transform = Transform::from_xyz(coord.x as f32, coord.y as f32, 0.);
                     transform.translation =
                         (coord.x as f32, coord.y as f32, z_index.0 as f32).into();
