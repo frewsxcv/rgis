@@ -100,12 +100,6 @@
 /******/ 					"__wbg_getReader_2dcca5fb18e09eed": function(p0i32) {
 /******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbg_getReader_2dcca5fb18e09eed"](p0i32);
 /******/ 					},
-/******/ 					"__wbg_close_a41954830b65c455": function(p0i32) {
-/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbg_close_a41954830b65c455"](p0i32);
-/******/ 					},
-/******/ 					"__wbg_enqueue_3a8a8e67e44d2567": function(p0i32,p1i32) {
-/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbg_enqueue_3a8a8e67e44d2567"](p0i32,p1i32);
-/******/ 					},
 /******/ 					"__wbg_byobRequest_a3c74c3694777d1b": function(p0i32) {
 /******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbg_byobRequest_a3c74c3694777d1b"](p0i32);
 /******/ 					},
@@ -126,6 +120,12 @@
 /******/ 					},
 /******/ 					"__wbg_byteOffset_ede786cfcf88d3dd": function(p0i32) {
 /******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbg_byteOffset_ede786cfcf88d3dd"](p0i32);
+/******/ 					},
+/******/ 					"__wbg_close_a41954830b65c455": function(p0i32) {
+/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbg_close_a41954830b65c455"](p0i32);
+/******/ 					},
+/******/ 					"__wbg_enqueue_3a8a8e67e44d2567": function(p0i32,p1i32) {
+/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbg_enqueue_3a8a8e67e44d2567"](p0i32,p1i32);
 /******/ 					},
 /******/ 					"__wbg_bytesliteral_efe7d360639bf32b": function() {
 /******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbg_bytesliteral_efe7d360639bf32b"]();
@@ -1297,14 +1297,14 @@
 /******/ 					"__wbindgen_closure_wrapper619": function(p0i32,p1i32,p2i32) {
 /******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_closure_wrapper619"](p0i32,p1i32,p2i32);
 /******/ 					},
-/******/ 					"__wbindgen_closure_wrapper1981": function(p0i32,p1i32,p2i32) {
-/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_closure_wrapper1981"](p0i32,p1i32,p2i32);
+/******/ 					"__wbindgen_closure_wrapper1980": function(p0i32,p1i32,p2i32) {
+/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_closure_wrapper1980"](p0i32,p1i32,p2i32);
 /******/ 					},
-/******/ 					"__wbindgen_closure_wrapper2365": function(p0i32,p1i32,p2i32) {
-/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_closure_wrapper2365"](p0i32,p1i32,p2i32);
+/******/ 					"__wbindgen_closure_wrapper2364": function(p0i32,p1i32,p2i32) {
+/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_closure_wrapper2364"](p0i32,p1i32,p2i32);
 /******/ 					},
-/******/ 					"__wbindgen_closure_wrapper3321": function(p0i32,p1i32,p2i32) {
-/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_closure_wrapper3321"](p0i32,p1i32,p2i32);
+/******/ 					"__wbindgen_closure_wrapper3322": function(p0i32,p1i32,p2i32) {
+/******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_closure_wrapper3322"](p0i32,p1i32,p2i32);
 /******/ 					},
 /******/ 					"__wbindgen_closure_wrapper6160": function(p0i32,p1i32,p2i32) {
 /******/ 						return installedModules["../rgis/pkg/rgis_bg.js"].exports["__wbindgen_closure_wrapper6160"](p0i32,p1i32,p2i32);
@@ -1440,7 +1440,7 @@
 /******/ 				promises.push(installedWasmModuleData);
 /******/ 			else {
 /******/ 				var importObject = wasmImportObjects[wasmModuleId]();
-/******/ 				var req = fetch(__webpack_require__.p + "" + {"../rgis/pkg/rgis_bg.wasm":"dd19474e7dd11e471344"}[wasmModuleId] + ".module.wasm");
+/******/ 				var req = fetch(__webpack_require__.p + "" + {"../rgis/pkg/rgis_bg.wasm":"03a5369f78bed54a32ed"}[wasmModuleId] + ".module.wasm");
 /******/ 				var promise;
 /******/ 				if(importObject instanceof Promise && typeof WebAssembly.compileStreaming === 'function') {
 /******/ 					promise = Promise.all([WebAssembly.compileStreaming(req), importObject]).then(function(items) {
