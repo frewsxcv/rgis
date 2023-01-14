@@ -74,3 +74,25 @@ fn in_place(
         y: result.get(1).as_f64().ok_or(Error)?,
     })
 }
+
+pub fn lookup_crs(query: &str) -> Result<String, Error> {
+    if query.is_empty() {
+        return Err(Error);
+    }
+
+    let proj4 = web_sys::window()
+        .ok_or(Error)?
+        .get("proj4")
+        .ok_or(Error)?
+        .dyn_into::<js_sys::Function>()
+        .map_err(|_| Error)?;
+    let projector = proj4
+        .call1(&wasm_bindgen::JsValue::UNDEFINED, &query.into())
+        .map_err(|_| Error)?;
+    let title = js_sys::Reflect::get(&projector, &"title".into()).map_err(|_| Error)?;
+
+    match title.dyn_into::<js_sys::JsString>() {
+        Ok(n) => Ok(format!("{n} ({query})")),
+        Err(_) => Ok(query.into()),
+    }
+}

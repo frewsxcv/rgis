@@ -3725,6 +3725,7 @@ dependencies = [
  "geo",
  "geo-features",
  "geo-file-loader",
+ "geo-proj-js",
  "geo-projected",
  "rfd",
  "rgis-events",

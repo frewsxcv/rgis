@@ -26,10 +26,7 @@ impl<'a, 'w, 's> BottomPanel<'a, 'w, 's> {
     fn render_crs(&mut self, ui: &mut egui::Ui) {
         // TODO: The ordering is backwards here (the edit button should be specified after)
         //       Is this from the right_to_left call above?
-        let button_response =
-            ui.add_enabled(cfg!(not(target_arch = "wasm32")), egui::Button::new("✏"));
-
-        if button_response.clicked() {
+        if ui.button("✏").clicked() {
             self.open_change_crs_window_event_writer.send_default();
         }
 
