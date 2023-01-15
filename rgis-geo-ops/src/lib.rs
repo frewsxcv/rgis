@@ -21,6 +21,9 @@ pub use outliers::Outliers;
 mod simplify;
 pub use simplify::Simplify;
 
+mod smoothing;
+pub use smoothing::Smoothing;
+
 pub enum Outcome {
     Text(String),
     FeatureCollection(Unprojected<geo_features::FeatureCollection>),

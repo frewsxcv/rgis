@@ -77,10 +77,10 @@ impl Operation for Simplify {
             .push(line_string.simplify(&self.epsilon.unwrap()).into());
     }
 
-    fn visit_multi_line_string(&mut self, polygon: geo::MultiLineString) {
+    fn visit_multi_line_string(&mut self, multi_line_string: geo::MultiLineString) {
         self.simplified
             .0
-            .push(polygon.simplify(&self.epsilon.unwrap()).into());
+            .push(multi_line_string.simplify(&self.epsilon.unwrap()).into());
     }
 
     fn visit_polygon(&mut self, polygon: geo::Polygon) {
