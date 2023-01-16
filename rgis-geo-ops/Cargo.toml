@@ -2,11 +2,10 @@
 name = "rgis-geo-ops"
 version = "0.1.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+publish = false
 
 [dependencies]
-bevy_egui = "0.18"
+bevy_egui = "0.19"
 geo = "0.23"
 geo-features = { path = "../geo-features" }
 geo-geom-type = { path = "../geo-geom-type" }
