@@ -7,12 +7,9 @@ fn handle_toggle_layer_visibility_events(
     mut layers: ResMut<crate::Layers>,
 ) {
     for event in toggle_layer_visibility_event_reader.iter() {
-        let layer = match layers.get_mut(event.0) {
-            Some(l) => l,
-            None => {
-                bevy::log::warn!("Could not find layer");
-                continue;
-            }
+        let Some(layer) = layers.get_mut(event.0) else {
+            bevy::log::warn!("Could not find layer");
+            continue;
         };
         layer.visible = !layer.visible;
         if layer.visible {
@@ -29,26 +26,27 @@ fn handle_update_color_events(
     mut layers: ResMut<crate::Layers>,
 ) {
     for event in update_events.iter() {
-        let layer = match layers.get_mut(event.0) {
+        let rgis_events::UpdateLayerColorEvent::Fill(layer_id, color) = event else { unimplemented!()};
+        let layer = match layers.get_mut(*layer_id) {
             Some(l) => l,
             None => {
                 bevy::log::warn!("Could not find layer");
                 continue;
             }
         };
-        layer.color = event.1;
-        updated_events.send(rgis_events::LayerColorUpdatedEvent(event.0));
+        layer.color = *color;
+        updated_events.send(rgis_events::LayerColorUpdatedEvent::Fill(*layer_id));
     }
 }
 
 fn handle_delete_layer_events(
     mut delete_layer_event_reader: EventReader<rgis_events::DeleteLayerEvent>,
-    mut layer_deleted_event_writer: EventWriter<rgis_events::LayerDeletedEvent>,
+    mut despawn_meshes_event_writer: EventWriter<rgis_events::DespawnMeshesEvent>,
     mut layers: ResMut<crate::Layers>,
 ) {
     for event in delete_layer_event_reader.iter() {
         layers.remove(event.0);
-        layer_deleted_event_writer.send(rgis_events::LayerDeletedEvent(event.0));
+        despawn_meshes_event_writer.send(rgis_events::DespawnMeshesEvent(event.0));
     }
 }
 
@@ -58,8 +56,8 @@ fn handle_move_layer_events(
     mut layers: ResMut<crate::Layers>,
 ) {
     for event in move_layer_event_reader.iter() {
-        let (_, old_z_index) = match layers.get_with_z_index(event.0) {
-            Some(result) => result,
+        let old_z_index = match layers.get_with_index(event.0) {
+            Some(result) => result.1 .0,
             None => {
                 bevy::log::warn!("Could not find layer");
                 continue;
@@ -67,36 +65,49 @@ fn handle_move_layer_events(
         };
 
         let new_z_index = match event.1 {
-            rgis_events::MoveDirection::Up => old_z_index + 1,
-            rgis_events::MoveDirection::Down => old_z_index - 1,
-        };
-
-        let other_layer_id = match layers.data.get(new_z_index) {
-            Some(layer) => layer.id,
-            None => {
-                bevy::log::warn!("Could not find layer");
-                continue;
+            rgis_events::MoveDirection::Up => {
+                if old_z_index < layers.count() - 1 {
+                    old_z_index + 1
+                } else {
+                    old_z_index
+                }
+            }
+            rgis_events::MoveDirection::Down => {
+                if old_z_index > 0 {
+                    old_z_index - 1
+                } else {
+                    old_z_index
+                }
             }
         };
+        if new_z_index != old_z_index {
+            let Some(other_layer_id) = layers.data.get(new_z_index).map(|l| l.id) else {
+                bevy::log::warn!("Could not find layer");
+                continue;
+            };
 
-        layers.data.swap(old_z_index, new_z_index);
+            layers.data.swap(old_z_index, new_z_index);
 
-        layer_z_index_updated_event_writer.send(rgis_events::LayerZIndexUpdatedEvent(event.0));
-        layer_z_index_updated_event_writer
-            .send(rgis_events::LayerZIndexUpdatedEvent(other_layer_id));
+            layer_z_index_updated_event_writer.send(rgis_events::LayerZIndexUpdatedEvent(event.0));
+            layer_z_index_updated_event_writer
+                .send(rgis_events::LayerZIndexUpdatedEvent(other_layer_id));
+        }
     }
 }
 
 fn handle_map_clicked_events(
     mut map_clicked_event_reader: EventReader<rgis_events::MapClickedEvent>,
     mut render_message_event_writer: EventWriter<rgis_events::RenderFeaturePropertiesEvent>,
+    mut feature_clicked_event_writer: EventWriter<rgis_events::FeatureSelectedEvent>,
     layers: Res<crate::Layers>,
 ) {
     for event in map_clicked_event_reader.iter() {
-        if let Some(feature) = layers.feature_from_click(event.0) {
+        if let Some((layer_id, feature)) = layers.feature_from_click(event.0) {
             render_message_event_writer.send(rgis_events::RenderFeaturePropertiesEvent(
-                feature.properties.clone(),
+                feature.properties().clone(),
             ));
+            feature_clicked_event_writer
+                .send(rgis_events::FeatureSelectedEvent(layer_id, feature.id()))
         }
     }
 }
@@ -107,7 +118,7 @@ fn handle_create_layer_events(
     mut layers: ResMut<crate::Layers>,
 ) {
     for event in create_layer_events.drain() {
-        match layers.add(event.unprojected_geometry, event.name, event.source_crs) {
+        match layers.add(event.feature_collection, event.name, event.source_crs) {
             Ok(layer_id) => {
                 layer_created_event_writer.send(rgis_events::LayerCreatedEvent(layer_id))
             }

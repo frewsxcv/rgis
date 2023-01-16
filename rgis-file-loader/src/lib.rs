@@ -8,8 +8,8 @@
 
 use bevy::prelude::*;
 
+mod jobs;
 mod systems;
-mod tasks;
 
 pub struct Plugin;
 

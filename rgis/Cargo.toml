@@ -8,18 +8,17 @@ edition = "2021"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-bevy = { version = "0.8", default-features = false, features = [
+bevy = { version = "0.9", default-features = false, features = [
     "bevy_winit",
     "bevy_core_pipeline",
     "bevy_render",
     "bevy_sprite",
     "bevy_ui",
     "wayland",
+    "png",
 ] }
 geo = "0.23"
-geo-bevy = { path = "../geo-bevy" }
 rgis-camera = { path = "../rgis-camera" }
-rgis-cli = { path = "../rgis-cli" }
 rgis-file-loader = { path = "../rgis-file-loader" }
 rgis-keyboard = { path = "../rgis-keyboard" }
 rgis-layers = { path = "../rgis-layers" }
@@ -33,10 +32,9 @@ rgis-ui = { path = "../rgis-ui" }
 time-logger = { path = "../time-logger" }
 rgis-events = { path = "../rgis-events" }
 
-[target.'cfg(target_arch = "wasm32")'.dependencies]
-bevy-web-resizer = "3.0"
-wasm-bindgen = "0.2"
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+rgis-cli = { path = "../rgis-cli" }
 
-# wasm-opt results in a segfault on Linux in CI
-[package.metadata.wasm-pack.profile.release]
-wasm-opt = false
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+bevy-web-resizer = "4.0"
+wasm-bindgen = "0.2"

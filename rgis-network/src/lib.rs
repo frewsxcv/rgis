@@ -6,52 +6,72 @@
     clippy::expect_used
 )]
 
+use futures_util::StreamExt;
+use std::io;
 pub struct FetchedFile {
     pub name: String,
-    pub bytes: Vec<u8>,
+    pub bytes: bytes::Bytes,
     pub crs: String,
 }
 
-type FetchedFileSender = async_channel::Sender<Result<ehttp::Response, String>>;
-type FetchedFileReceiver = async_channel::Receiver<Result<ehttp::Response, String>>;
-
-pub struct NetworkFetchTask {
+pub struct NetworkFetchJob {
     pub url: String,
     pub crs: String,
     pub name: String,
 }
 
-impl bevy_jobs::Job for NetworkFetchTask {
-    type Outcome = Result<FetchedFile, String>;
+#[derive(thiserror::Error, Debug)]
+pub enum Error {
+    #[error("{0}")]
+    Io(#[from] io::Error),
+    #[error("{0}")]
+    Reqwest(#[from] reqwest::Error),
+}
+
+impl bevy_jobs::Job for NetworkFetchJob {
+    type Outcome = Result<FetchedFile, Error>;
 
     fn name(&self) -> String {
         format!("Fetching '{}'", self.name)
     }
 
-    fn perform(self) -> bevy_jobs::AsyncReturn<Self::Outcome> {
-        let (sender, receiver): (FetchedFileSender, FetchedFileReceiver) =
-            async_channel::unbounded();
+    fn perform(self, ctx: bevy_jobs::Context) -> bevy_jobs::AsyncReturn<Self::Outcome> {
         Box::pin(async move {
-            fetch(self.url, sender);
-            match receiver.recv().await {
-                Ok(response) => Ok(FetchedFile {
-                    bytes: response?.bytes,
+            let fetch = async {
+                let response = reqwest::get(self.url).await?;
+                let total_size = response.content_length().unwrap_or(0);
+                let mut bytes_stream = response.bytes_stream();
+                let mut bytes = Vec::<u8>::with_capacity(total_size as usize);
+
+                while let Some(bytes_chunk) = bytes_stream.next().await {
+                    let mut bytes_chunk = Vec::from(bytes_chunk?);
+                    bytes.append(&mut bytes_chunk);
+                    if total_size > 0 {
+                        let _ = ctx
+                            .send_progress((bytes.len() / total_size as usize) as u8)
+                            .await;
+                    }
+                }
+
+                Ok(FetchedFile {
+                    bytes: bytes::Bytes::from(bytes),
                     crs: self.crs,
                     name: self.name,
-                }),
-                Err(e) => Err(e.to_string()),
+                })
+            };
+            #[cfg(not(target_arch = "wasm32"))]
+            {
+                let runtime = tokio::runtime::Builder::new_current_thread()
+                    .enable_all()
+                    .build()?;
+                runtime.block_on(fetch)
+            }
+            #[cfg(target_arch = "wasm32")]
+            {
+                fetch.await
             }
         })
     }
-}
-
-fn fetch(url: String, fetched_bytes_sender: FetchedFileSender) {
-    let request = ehttp::Request::get(url);
-    ehttp::fetch(request, move |result: ehttp::Result<ehttp::Response>| {
-        if let Err(e) = fetched_bytes_sender.try_send(result) {
-            bevy::log::error!("Failed to send network response to main thread: {:?}", e);
-        }
-    });
 }
 
 pub struct Plugin;

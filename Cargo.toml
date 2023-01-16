@@ -1,12 +1,14 @@
 [workspace]
 members = [
-    "geo-bevy",
     "geo-features",
+    "geo-geom-type",
     "geo-proj-js",
+    "geo-projected",
     "rgis-camera",
     "rgis-cli",
     "rgis-events",
     "rgis-file-loader",
+    "rgis-geo-ops",
     "rgis-keyboard",
     "rgis-layer-id",
     "rgis-layers",
@@ -16,6 +18,7 @@ members = [
     "rgis-renderer",
     "rgis-settings",
     "rgis-ui",
+    "rgis-units",
     "rgis",
     "time-logger",
 ]
@@ -23,3 +26,9 @@ resolver = "2"
 
 [profile.release]
 debug = true
+
+[patch.crates-io]
+geo = { git = 'https://github.com/georust/geo' }
+geo-types = { git = 'https://github.com/georust/geo' }
+proj = { git = "https://github.com/georust/proj", branch = "cfarwell-send" }
+proj-sys = { git = "https://github.com/georust/proj", branch = "cfarwell-send" }

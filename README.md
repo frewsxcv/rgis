@@ -2,6 +2,8 @@
 
 Geospatial data viewer written in Rust. Availble on the web ([rgis.app](https://rgis.app)) or natively on desktop.
 
+<img width="700" alt="Screenshot 2023-01-02 at 12 32 18 PM" src="https://user-images.githubusercontent.com/416575/210263423-16b67cfc-5381-4e0a-8b3e-33f289c3a14b.png">
+
 ## License
 
 rgis is released under [The Anti-Capitalist Software License (version 1.4)](https://anticapitalist.software/).
@@ -27,7 +29,3 @@ Print help information:
 ```sh
 rgis --help
 ```
-
-## Screenshots
-
-<img width="1392" alt="Screen Shot 2021-06-13 at 9 56 42 PM" src="https://user-images.githubusercontent.com/416575/121830120-50ee0600-cc92-11eb-8e0c-3a26fbdbec75.png">

@@ -9,6 +9,8 @@
 use bevy::prelude::*;
 
 mod systems;
+mod utils;
+
 pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
@@ -44,7 +46,7 @@ struct CameraOffset {
 }
 
 impl CameraOffset {
-    fn from_coord(coord: geo::Coordinate) -> Self {
+    fn from_coord(coord: geo::Coord) -> Self {
         CameraOffset {
             x: coord.x as f32,
             y: coord.y as f32,

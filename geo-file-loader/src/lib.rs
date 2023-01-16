@@ -9,7 +9,8 @@
 use std::fmt;
 
 mod geojson;
-// mod shapefile;
+mod gpx;
+mod shapefile;
 mod wkt;
 
 pub use crate::geojson::GeoJsonSource;
@@ -21,6 +22,6 @@ pub trait FileLoader {
 
     const FILE_TYPE_NAME: &'static str;
 
-    fn from_bytes(bytes: Vec<u8>) -> Self;
+    fn from_bytes(bytes: bytes::Bytes) -> Self;
     fn load(self) -> Result<geo_features::FeatureCollection, Self::Error>;
 }

@@ -5,7 +5,7 @@ pub struct LoadFileJob<F: geo_file_loader::FileLoader> {
 }
 
 pub struct LoadFileJobOutcome {
-    pub geometry: geo_features::FeatureCollection,
+    pub feature_collection: geo_projected::Unprojected<geo_features::FeatureCollection>,
     pub name: String,
     pub source_crs: String,
 }
@@ -20,10 +20,10 @@ where
         format!("Loading {} file", F::FILE_TYPE_NAME)
     }
 
-    fn perform(self) -> bevy_jobs::AsyncReturn<Self::Outcome> {
+    fn perform(self, _: bevy_jobs::Context) -> bevy_jobs::AsyncReturn<Self::Outcome> {
         Box::pin(async move {
             Ok(LoadFileJobOutcome {
-                geometry: self.file_loader.load()?,
+                feature_collection: geo_projected::Unprojected::new(self.file_loader.load()?),
                 name: self.name,
                 source_crs: self.source_crs,
             })

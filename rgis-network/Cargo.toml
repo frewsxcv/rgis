@@ -6,13 +6,24 @@ edition = "2021"
 
 [dependencies]
 async-channel = "1"
-bevy = { version = "0.8", default-features = false, features = [
+bevy = { version = "0.9", default-features = false, features = [
     "bevy_winit",
     "bevy_core_pipeline",
     "bevy_render",
     "bevy_sprite",
     "bevy_ui",
     "wayland",
+    "png",
 ] }
-ehttp = "0.2"
+bytes = "1"
+futures-util = "0.3"
+
+# reqwest = { version = "0.11", features = ["stream"] }
+# master branch supports byte streams on WASM
+reqwest = { git = "https://github.com/seanmonstar/reqwest.git", branch = "master", features = ["stream"] }
+
 bevy_jobs = { git = "https://github.com/frewsxcv/bevy_jobs" }
+thiserror = "1"
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+tokio = { version = "1", features = ["full"] }

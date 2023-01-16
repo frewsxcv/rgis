@@ -6,7 +6,6 @@
     clippy::expect_used
 )]
 
-use geo::algorithm::map_coords::MapCoordsInPlace;
 use std::{error, fmt};
 use wasm_bindgen::JsCast;
 
@@ -21,8 +20,8 @@ impl fmt::Display for Error {
 
 impl error::Error for Error {}
 
-pub fn transform(
-    geometry: &mut geo::Geometry,
+pub fn transform<G: geo::MapCoordsInPlace<f64>>(
+    geometry: &mut G,
     source_crs: &str,
     target_crs: &str,
 ) -> Result<(), Error> {
@@ -45,17 +44,15 @@ pub fn transform(
         .dyn_into::<js_sys::Function>()
         .map_err(|_| Error)?;
 
-    geometry.map_coords_in_place(|geo::Coordinate { x, y }| {
-        match in_place((x, y), &forward, &array) {
+    geometry.map_coords_in_place(
+        |geo::Coord { x, y }| match in_place((x, y), &forward, &array) {
             Ok(n) => n,
             Err(e) => {
                 log::error!("Failed to convert coordinate: {:?}", e);
-                geo::Coordinate { x, y }
+                geo::Coord { x, y }
             }
-        }
-    });
-
-    // geometry.try_map_coords_in_place(|(x, y)| in_place((x, y), &forward, &array))?;
+        },
+    );
 
     Ok(())
 }
@@ -64,7 +61,7 @@ fn in_place(
     (x, y): (f64, f64),
     forward: &js_sys::Function,
     array: &js_sys::Array,
-) -> Result<geo::Coordinate, Error> {
+) -> Result<geo::Coord, Error> {
     array.set(0, wasm_bindgen::JsValue::from_f64(x));
     array.set(1, wasm_bindgen::JsValue::from_f64(y));
     let result = forward
@@ -72,8 +69,30 @@ fn in_place(
         .map_err(|_| Error)?
         .dyn_into::<js_sys::Array>()
         .map_err(|_| Error)?;
-    Ok(geo::Coordinate {
+    Ok(geo::Coord {
         x: result.get(0).as_f64().ok_or(Error)?,
         y: result.get(1).as_f64().ok_or(Error)?,
     })
+}
+
+pub fn lookup_crs(query: &str) -> Result<String, Error> {
+    if query.is_empty() {
+        return Err(Error);
+    }
+
+    let proj4 = web_sys::window()
+        .ok_or(Error)?
+        .get("proj4")
+        .ok_or(Error)?
+        .dyn_into::<js_sys::Function>()
+        .map_err(|_| Error)?;
+    let projector = proj4
+        .call1(&wasm_bindgen::JsValue::UNDEFINED, &query.into())
+        .map_err(|_| Error)?;
+    let title = js_sys::Reflect::get(&projector, &"title".into()).map_err(|_| Error)?;
+
+    match title.dyn_into::<js_sys::JsString>() {
+        Ok(n) => Ok(format!("{n} ({query})")),
+        Err(_) => Ok(query.into()),
+    }
 }

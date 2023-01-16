@@ -27,6 +27,9 @@ impl From<rgis_layer_id::LayerId> for CenterCameraEvent {
     }
 }
 
+#[derive(Clone, Copy, Debug)]
+pub struct FeatureSelectedEvent(pub rgis_layer_id::LayerId, pub geo_features::FeatureId);
+
 #[derive(Debug)]
 pub struct LayerBecameHiddenEvent(pub rgis_layer_id::LayerId);
 
@@ -34,12 +37,20 @@ pub struct LayerBecameHiddenEvent(pub rgis_layer_id::LayerId);
 pub struct LayerBecameVisibleEvent(pub rgis_layer_id::LayerId);
 
 /// Change the `Layer`'s color
-pub struct UpdateLayerColorEvent(pub rgis_layer_id::LayerId, pub bevy::prelude::Color);
+pub enum UpdateLayerColorEvent {
+    Fill(rgis_layer_id::LayerId, bevy::prelude::Color),
+    Border(rgis_layer_id::LayerId, bevy::prelude::Color),
+}
 /// After a `Layer`'s color is changed
-pub struct LayerColorUpdatedEvent(pub rgis_layer_id::LayerId);
+#[derive(Clone, Copy)]
+pub enum LayerColorUpdatedEvent {
+    Fill(rgis_layer_id::LayerId),
+    Border(rgis_layer_id::LayerId),
+}
 
 pub struct DeleteLayerEvent(pub rgis_layer_id::LayerId);
-pub struct LayerDeletedEvent(pub rgis_layer_id::LayerId);
+
+pub struct DespawnMeshesEvent(pub rgis_layer_id::LayerId);
 
 pub struct MeshesSpawnedEvent(pub rgis_layer_id::LayerId);
 
@@ -58,7 +69,9 @@ pub struct MoveLayerEvent(pub rgis_layer_id::LayerId, pub MoveDirection);
 
 pub struct LayerZIndexUpdatedEvent(pub rgis_layer_id::LayerId);
 
-pub struct MapClickedEvent(pub geo::Coordinate);
+pub struct MapClickedEvent(pub geo_projected::Projected<geo::Coord>);
+
+pub struct FeaturesDeselectedEvent;
 
 #[derive(Default)]
 pub struct OpenChangeCrsWindow;
@@ -115,31 +128,36 @@ pub struct ZoomCameraEvent {
     /// * `amount ∈ [1]` → no change
     /// * `amount ∈ (0, 1)` → zoom out
     pub amount: f32,
+    pub coord: geo_projected::Projected<geo::Coord>,
 }
 
 impl ZoomCameraEvent {
     #[inline]
-    pub fn new(amount: f32) -> Self {
+    pub fn new(amount: f32, coord: geo_projected::Projected<geo::Coord>) -> Self {
         ZoomCameraEvent {
             // Don't let amount be negative, so add `max`
             amount: (1. + amount / ZOOM_FACTOR).max(0.),
+            coord,
         }
     }
 }
 
 pub struct ChangeCrsEvent {
-    pub crs: String,
+    pub old_crs: String,
+    pub new_crs: String,
 }
 
-pub struct CrsChangedEvent;
+pub struct CrsChangedEvent {
+    pub old_crs: String,
+    pub new_crs: String,
+}
 
 pub struct RenderMessageEvent(pub String);
 
 pub struct RenderFeaturePropertiesEvent(pub geo_features::Properties);
 
 pub struct CreateLayerEvent {
-    // TODO: there should be an option to pass a projected geometry instead of an unprojected geometry
-    pub unprojected_geometry: geo_features::FeatureCollection,
+    pub feature_collection: geo_projected::Unprojected<geo_features::FeatureCollection>,
     pub name: String,
     pub source_crs: String,
 }
@@ -169,7 +187,6 @@ impl bevy::app::Plugin for Plugin {
             .add_event::<MoveLayerEvent>()
             .add_event::<LayerZIndexUpdatedEvent>()
             .add_event::<DeleteLayerEvent>()
-            .add_event::<LayerDeletedEvent>()
             .add_event::<MeshesSpawnedEvent>()
             .add_event::<ChangeCrsEvent>()
             .add_event::<CrsChangedEvent>()
@@ -179,6 +196,9 @@ impl bevy::app::Plugin for Plugin {
             .add_event::<OpenChangeCrsWindow>()
             .add_event::<ShowAddLayerWindow>()
             .add_event::<HideAddLayerWindow>()
-            .add_event::<LayerReprojectedEvent>();
+            .add_event::<LayerReprojectedEvent>()
+            .add_event::<DespawnMeshesEvent>()
+            .add_event::<FeatureSelectedEvent>()
+            .add_event::<FeaturesDeselectedEvent>();
     }
 }

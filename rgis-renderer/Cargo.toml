@@ -6,16 +6,18 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bevy = { version = "0.8", default-features = false, features = [
+bevy = { version = "0.9", default-features = false, features = [
     "bevy_winit",
     "bevy_core_pipeline",
     "bevy_render",
     "bevy_sprite",
     "bevy_ui",
     "wayland",
+    "png",
 ] }
 geo = "0.23"
-geo-bevy = { path = "../geo-bevy" }
+geo-bevy = "0.3"
+geo-projected = { path = "../geo-projected" }
 rgis-events = { path = "../rgis-events" }
 rgis-layer-id = { path = "../rgis-layer-id" }
 rgis-layers = { path = "../rgis-layers" }

@@ -5,16 +5,18 @@ authors = ["Corey Farwell <coreyf@rwell.org>"]
 edition = "2021"
 
 [dependencies]
-bevy = { version = "0.8", default-features = false, features = [
+bevy = { version = "0.9", default-features = false, features = [
     "bevy_winit",
     "bevy_core_pipeline",
     "bevy_render",
     "bevy_sprite",
     "bevy_ui",
     "wayland",
+    "png",
 ] }
 geo-features = { path = "../geo-features" }
 geo-file-loader = { path = "../geo-file-loader" }
+geo-projected = { path = "../geo-projected" }
 rgis-events = { path = "../rgis-events" }
 rgis-network = { path = "../rgis-network" }
 bevy_jobs = { git = "https://github.com/frewsxcv/bevy_jobs" }

@@ -6,26 +6,35 @@ edition = "2021"
 publish = false
 
 [dependencies]
-bevy = { version = "0.8", default-features = false, features = [
+bevy = { version = "0.9", default-features = false, features = [
     "bevy_winit",
     "bevy_core_pipeline",
     "bevy_render",
     "bevy_sprite",
     "bevy_ui",
     "wayland",
+    "png",
 ] }
-bevy_egui = "0.16"
+bevy_egui = "0.18"
 geo-features = { path = "../geo-features" }
 geo-file-loader = { path = "../geo-file-loader" }
+geo-projected = { path = "../geo-projected" }
+dark-light = "1.0"
 rfd = "0.10"
+rgis-geo-ops = { path = "../rgis-geo-ops" }
 rgis-layer-id = { path = "../rgis-layer-id" }
 rgis-layers = { path = "../rgis-layers" }
 rgis-library = { path = "../rgis-library" }
 rgis-events = { path = "../rgis-events" }
 rgis-mouse = { path = "../rgis-mouse" }
 rgis-settings = { path = "../rgis-settings" }
+rgis-units = { path = "../rgis-units" }
 bevy_jobs = { git = "https://github.com/frewsxcv/bevy_jobs" }
-webbrowser = "0.7"
+webbrowser = "0.8"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 geo = { version = "0.23", features = ["use-proj"] }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+geo = { version = "0.23" }
+geo-proj-js = { path = "../geo-proj-js" }

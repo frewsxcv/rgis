@@ -8,15 +8,22 @@ publish = false
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bevy = { version = "0.8", default-features = false, features = [
+bevy = { version = "0.9", default-features = false, features = [
     "bevy_winit",
     "bevy_core_pipeline",
     "bevy_render",
     "bevy_sprite",
     "bevy_ui",
     "wayland",
+    "png",
 ] }
 geo = "0.23"
+geo-projected = { path = "../geo-projected" }
 rgis-events = { path = "../rgis-events" }
 rgis-layers = { path = "../rgis-layers" }
+rgis-transform = { path = "../rgis-transform" }
 rgis-ui = { path = "../rgis-ui" }
+rgis-units = { path = "../rgis-units" }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+proj = "0.27"
