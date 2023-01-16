@@ -95,6 +95,17 @@ enum Format {
     Wkt,
 }
 
+impl Format {
+    fn is_plaintext(self) -> bool {
+        match self {
+            Self::Unselected => unreachable!(),
+            Self::GeoJson => true,
+            Self::Shapefile => false,
+            Self::Wkt => true,
+        }
+    }
+}
+
 impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
     pub(crate) fn render(&mut self) {
         if !*self.is_visible {
