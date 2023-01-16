@@ -70,6 +70,8 @@ pub fn system_set() -> SystemSet {
         .with_system(handle_network_fetch_finished_jobs::<geo_file_loader::GeoJsonSource>)
         .with_system(handle_load_file_events::<geo_file_loader::GeoJsonSource>)
         .with_system(handle_load_file_events::<geo_file_loader::WktSource>)
+        .with_system(handle_load_file_events::<geo_file_loader::ShapefileSource>)
         .with_system(handle_load_file_job_finished_events::<geo_file_loader::GeoJsonSource>)
         .with_system(handle_load_file_job_finished_events::<geo_file_loader::WktSource>)
+        .with_system(handle_load_file_job_finished_events::<geo_file_loader::ShapefileSource>)
 }

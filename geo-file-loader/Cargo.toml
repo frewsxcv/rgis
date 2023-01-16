@@ -11,5 +11,6 @@ geo = "0.23"
 geo-features = { path = "../geo-features" }
 geojson = { version = "0.24", features = ["geo-types"] }
 geozero = { version = "0.9", features = ["with-wkt"] }
+geozero-shp = { git = "https://github.com/georust/geozero.git", branch = "frewsxcv/noowner" }
 serde_json = "1"
 thiserror = "1"
