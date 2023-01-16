@@ -54,20 +54,32 @@ pub(crate) struct AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
     pub events: &'a mut Events<'w2, 's2>,
 }
 
-#[derive(PartialEq, Eq, Default)]
+#[derive(PartialEq, Eq)]
 enum Source {
-    #[default]
     Unselected,
     Library,
     File,
     Text,
 }
 
-#[derive(Default)]
 pub struct State {
     pub text_edit_contents: String,
+    crs_input: String,
     selected_source: Source,
-    selected_format: Format,
+    selected_format: Option<Format>,
+}
+
+const DEFAULT_CRS_INPUT: &str = "EPSG:4326";
+
+impl Default for State {
+    fn default() -> Self {
+        State {
+            text_edit_contents: "".into(),
+            crs_input: DEFAULT_CRS_INPUT.into(),
+            selected_format: None,
+            selected_source: Source::Unselected,
+        }
+    }
 }
 
 #[derive(Default, Resource)]
@@ -76,8 +88,9 @@ pub struct SelectedFile(pub Option<OpenedFile>);
 impl State {
     pub fn reset(&mut self) {
         self.text_edit_contents = String::new();
+        self.crs_input = DEFAULT_CRS_INPUT.into();
         self.selected_source = Source::Unselected;
-        self.selected_format = Format::Unselected;
+        self.selected_format = None;
     }
 }
 
@@ -86,10 +99,8 @@ pub struct OpenedFile {
     file_name: String,
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 enum Format {
-    #[default]
-    Unselected,
     GeoJson,
     Shapefile,
     Wkt,
@@ -98,7 +109,6 @@ enum Format {
 impl Format {
     fn is_plaintext(self) -> bool {
         match self {
-            Self::Unselected => unreachable!(),
             Self::GeoJson => true,
             Self::Shapefile => false,
             Self::Wkt => true,
@@ -128,9 +138,9 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
 
                 // If the user switched to "Text" and and they don't have a plaintext format selected, unselect their selection
                 if self.state.selected_source == Source::Text
-                    && !self.state.selected_format.is_plaintext()
+                    && self.state.selected_format.map(|f| !f.is_plaintext()).unwrap_or(false)
                 {
-                    self.state.selected_format = Format::Unselected;
+                    self.state.selected_format = None;
                 }
 
                 ui.separator();
@@ -151,6 +161,12 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                     return;
                 }
 
+                ui.label("Source CRS:");
+                let crs_input_widget = crate::widgets::CrsInput::new(&mut self.state.crs_input);
+                ui.add(crs_input_widget);
+
+                ui.separator();
+
                 if self.state.selected_source == Source::File
                     || self.state.selected_source == Source::Text
                 {
@@ -160,13 +176,13 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                 if self.state.selected_source == Source::File
                     || self.state.selected_source == Source::Text
                 {
-                    ui.radio_value(&mut self.state.selected_format, Format::GeoJson, "GeoJSON");
+                    ui.radio_value(&mut self.state.selected_format, Some(Format::GeoJson), "GeoJSON");
                 }
 
                 if self.state.selected_source == Source::File {
                     ui.radio_value(
                         &mut self.state.selected_format,
-                        Format::Shapefile,
+                        Some(Format::Shapefile),
                         "Shapefile",
                     );
                 }
@@ -174,12 +190,10 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                 if self.state.selected_source == Source::File
                     || self.state.selected_source == Source::Text
                 {
-                    ui.radio_value(&mut self.state.selected_format, Format::Wkt, "WKT");
+                    ui.radio_value(&mut self.state.selected_format, Some(Format::Wkt), "WKT");
                 }
 
-                if self.state.selected_format == Format::Unselected {
-                    return;
-                }
+                let Some(selected_format) = self.state.selected_format else { return };
 
                 ui.separator();
 
@@ -203,7 +217,7 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                         .clicked()
                     {
                         match self.selected_file.0.take() {
-                            Some(loaded_file) => match self.state.selected_format {
+                            Some(loaded_file) => match selected_format {
                                 Format::GeoJson => {
                                     self.events.load_geo_json_file_event_writer.send(
                                         rgis_events::LoadFileEvent::FromBytes {
@@ -222,7 +236,8 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                                             file_loader: geo_file_loader::ShapefileSource {
                                                 bytes: loaded_file.bytes.into(),
                                             },
-                                            crs: "EPSG:4326".into(),
+                                            // TODO: don't allow the user to add a layer if the CRS isn't valid
+                                            crs: self.state.crs_input.clone(),
                                         },
                                     );
                                 }
@@ -233,11 +248,11 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                                             file_loader: geo_file_loader::WktSource {
                                                 bytes: loaded_file.bytes.into(),
                                             },
-                                            crs: "EPSG:4326".into(),
+                                            // TODO: don't allow the user to add a layer if the CRS isn't valid
+                                            crs: self.state.crs_input.clone(),
                                         },
                                     );
                                 }
-                                Format::Unselected => {}
                             },
                             None => {
                                 bevy::log::error!(
@@ -256,7 +271,7 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                         .show(ui, |ui| {
                             egui::widgets::TextEdit::multiline(&mut self.state.text_edit_contents)
                                 .code_editor()
-                                .hint_text(hint_text(self.state.selected_format))
+                                .hint_text(hint_text(selected_format))
                                 .show(ui);
                         });
 
@@ -269,7 +284,7 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                         .clicked()
                     {
                         let new = mem::take(&mut self.state.text_edit_contents);
-                        match self.state.selected_format {
+                        match selected_format {
                             Format::GeoJson => {
                                 self.events.load_geo_json_file_event_writer.send(
                                     rgis_events::LoadFileEvent::FromBytes {
@@ -277,12 +292,13 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                                         file_loader: geo_file_loader::GeoJsonSource {
                                             bytes: new.into(),
                                         },
-                                        crs: "EPSG:4326".into(),
+                                        // TODO: don't allow the user to add a layer if the CRS isn't valid
+                                        crs: self.state.crs_input.clone(),
                                     },
                                 );
                             }
                             Format::Shapefile => {
-                                todo!()
+                                unreachable!()
                             }
                             Format::Wkt => {
                                 self.events.load_wkt_file_event_writer.send(
@@ -291,11 +307,11 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                                         file_loader: geo_file_loader::WktSource {
                                             bytes: new.into(),
                                         },
-                                        crs: "EPSG:4326".into(),
+                                        // TODO: don't allow the user to add a layer if the CRS isn't valid
+                                        crs: self.state.crs_input.clone(),
                                     },
                                 );
                             }
-                            Format::Unselected => {}
                         }
                         self.events.hide_add_layer_window_events.send_default();
                         self.state.reset();
@@ -312,7 +328,6 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
 
 fn hint_text(format: Format) -> &'static str {
     match format {
-        Format::Unselected => "",
         Format::GeoJson => "{\n  \"type\": \"FeatureCollection\",\n  \"features\": []\n}",
         Format::Shapefile => todo!(),
         Format::Wkt => "LINESTRING (30 10, 10 30, 40 40)",
