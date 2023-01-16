@@ -14,7 +14,7 @@ mod shapefile;
 mod wkt;
 
 pub use crate::geojson::GeoJsonSource;
-// pub use crate::shapefile::ShapefileSource;
+pub use crate::shapefile::ShapefileSource;
 pub use crate::wkt::WktSource;
 
 pub trait FileLoader {

@@ -14,6 +14,11 @@ pub struct Events<'w, 's> {
         's,
         rgis_events::LoadFileEvent<geo_file_loader::WktSource>,
     >,
+    pub load_shapefile_file_event_writer: bevy::ecs::event::EventWriter<
+        'w,
+        's,
+        rgis_events::LoadFileEvent<geo_file_loader::ShapefileSource>,
+    >,
     pub show_add_layer_window_event_reader:
         bevy::ecs::event::EventReader<'w, 's, rgis_events::ShowAddLayerWindow>,
     pub hide_add_layer_window_events:
@@ -86,6 +91,7 @@ enum Format {
     #[default]
     Unselected,
     GeoJson,
+    Shapefile,
     Wkt,
 }
 
@@ -133,6 +139,7 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                     ui.label("Format:");
 
                     ui.radio_value(&mut self.state.selected_format, Format::GeoJson, "GeoJSON");
+                    ui.radio_value(&mut self.state.selected_format, Format::Shapefile, "Shapefile (.shp)");
                     ui.radio_value(&mut self.state.selected_format, Format::Wkt, "WKT");
                 }
 
@@ -168,6 +175,17 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                                         rgis_events::LoadFileEvent::FromBytes {
                                             file_name: loaded_file.file_name,
                                             file_loader: geo_file_loader::GeoJsonSource {
+                                                bytes: loaded_file.bytes.into(),
+                                            },
+                                            crs: "EPSG:4326".into(),
+                                        },
+                                    );
+                                }
+                                Format::Shapefile => {
+                                    self.events.load_shapefile_file_event_writer.send(
+                                        rgis_events::LoadFileEvent::FromBytes {
+                                            file_name: loaded_file.file_name,
+                                            file_loader: geo_file_loader::ShapefileSource {
                                                 bytes: loaded_file.bytes.into(),
                                             },
                                             crs: "EPSG:4326".into(),
@@ -229,6 +247,9 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                                     },
                                 );
                             }
+                            Format::Shapefile => {
+                                todo!()
+                            }
                             Format::Wkt => {
                                 self.events.load_wkt_file_event_writer.send(
                                     rgis_events::LoadFileEvent::FromBytes {
@@ -259,6 +280,7 @@ fn hint_text(format: Format) -> &'static str {
     match format {
         Format::Unselected => "",
         Format::GeoJson => "{\n  \"type\": \"FeatureCollection\",\n  \"features\": []\n}",
+        Format::Shapefile => todo!(),
         Format::Wkt => "LINESTRING (30 10, 10 30, 40 40)",
     }
 }

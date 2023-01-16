@@ -174,6 +174,7 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_event::<LoadFileEvent<geo_file_loader::GeoJsonSource>>()
             .add_event::<LoadFileEvent<geo_file_loader::WktSource>>()
+            .add_event::<LoadFileEvent<geo_file_loader::ShapefileSource>>()
             .add_event::<CreateLayerEvent>()
             .add_event::<LayerCreatedEvent>()
             .add_event::<ToggleLayerVisibilityEvent>()
