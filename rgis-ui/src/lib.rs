@@ -20,6 +20,7 @@ mod operation_window;
 mod side_panel;
 mod systems;
 mod top_panel;
+mod widgets;
 
 pub struct Plugin;
 

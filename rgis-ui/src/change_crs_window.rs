@@ -15,19 +15,10 @@ impl<'a, 'w, 's> ChangeCrsWindow<'a, 'w, 's> {
             .open(self.is_visible)
             .anchor(egui::Align2::LEFT_TOP, [5., 5.])
             .show(self.bevy_egui_ctx.ctx_mut(), |ui| {
-                let edit_field = ui.text_edit_singleline(self.text_field_value);
-                if edit_field.changed() {}
-                // TODO: DONT CALL THIS ON EVERY LOOP
-                let result = lookup_crs(self.text_field_value);
-                let message = match &result {
-                    Ok(n) => format!("✅ {n}"),
-                    Err(e) => format!("❌ {e:?}"),
-                };
-                ui.label(message);
-                if ui
-                    .add_enabled(result.is_ok(), egui::Button::new("Set"))
-                    .clicked()
-                {
+                let widget = crate::widgets::CrsInput::new(self.text_field_value);
+                let is_ok = widget.result.is_ok();
+                ui.add(widget);
+                if ui.add_enabled(is_ok, egui::Button::new("Set")).clicked() {
                     self.change_crs_event_writer
                         .send(rgis_events::ChangeCrsEvent {
                             old_crs: self.rgis_settings.target_crs.clone(),
@@ -36,18 +27,4 @@ impl<'a, 'w, 's> ChangeCrsWindow<'a, 'w, 's> {
                 }
             });
     }
-}
-
-#[cfg(target_arch = "wasm32")]
-fn lookup_crs(query: &str) -> Result<String, geo_proj_js::Error> {
-    geo_proj_js::lookup_crs(query)
-}
-
-#[cfg(not(target_arch = "wasm32"))]
-fn lookup_crs(query: &str) -> Result<String, geo::algorithm::proj::ProjCreateError> {
-    geo::algorithm::proj::Proj::new(query).map(|p| {
-        p.proj_info()
-            .description
-            .unwrap_or_else(|| query.to_string())
-    })
 }
