@@ -137,9 +137,25 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                     || self.state.selected_source == Source::Text
                 {
                     ui.label("Format:");
+                }
 
+                if self.state.selected_source == Source::File
+                    || self.state.selected_source == Source::Text
+                {
                     ui.radio_value(&mut self.state.selected_format, Format::GeoJson, "GeoJSON");
-                    ui.radio_value(&mut self.state.selected_format, Format::Shapefile, "Shapefile (.shp)");
+                }
+
+                if self.state.selected_source == Source::File {
+                    ui.radio_value(
+                        &mut self.state.selected_format,
+                        Format::Shapefile,
+                        "Shapefile",
+                    );
+                }
+
+                if self.state.selected_source == Source::File
+                    || self.state.selected_source == Source::Text
+                {
                     ui.radio_value(&mut self.state.selected_format, Format::Wkt, "WKT");
                 }
 
