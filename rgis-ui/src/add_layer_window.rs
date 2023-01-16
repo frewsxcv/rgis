@@ -115,6 +115,13 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                     return;
                 }
 
+                // If the user switched to "Text" and and they don't have a plaintext format selected, unselect their selection
+                if self.state.selected_source == Source::Text
+                    && !self.state.selected_format.is_plaintext()
+                {
+                    self.state.selected_format = Format::Unselected;
+                }
+
                 ui.separator();
 
                 if self.state.selected_source == Source::Library {
