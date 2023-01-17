@@ -20,7 +20,11 @@ impl<'a, 'w, 's> ChangeCrsWindow<'a, 'w, 's> {
                     self.text_field_value,
                     self.crs_input_outcome,
                 ));
-                let is_ok = self.crs_input_outcome.as_ref().map(|n| n.is_ok()).unwrap_or(false);
+                let is_ok = self
+                    .crs_input_outcome
+                    .as_ref()
+                    .map(|n| n.is_ok())
+                    .unwrap_or(false);
                 if ui.add_enabled(is_ok, egui::Button::new("Set")).clicked() {
                     self.change_crs_event_writer
                         .send(rgis_events::ChangeCrsEvent {
