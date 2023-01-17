@@ -67,6 +67,7 @@ pub struct State {
     crs_input: String,
     selected_source: Source,
     selected_format: Option<Format>,
+    crs_input_outcome: Option<crate::widgets::crs_input::Outcome>,
 }
 
 const DEFAULT_CRS_INPUT: &str = "EPSG:4326";
@@ -76,6 +77,7 @@ impl Default for State {
         State {
             text_edit_contents: "".into(),
             crs_input: DEFAULT_CRS_INPUT.into(),
+            crs_input_outcome: None,
             selected_format: None,
             selected_source: Source::Unselected,
         }
@@ -138,7 +140,11 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
 
                 // If the user switched to "Text" and and they don't have a plaintext format selected, unselect their selection
                 if self.state.selected_source == Source::Text
-                    && self.state.selected_format.map(|f| !f.is_plaintext()).unwrap_or(false)
+                    && self
+                        .state
+                        .selected_format
+                        .map(|f| !f.is_plaintext())
+                        .unwrap_or(false)
                 {
                     self.state.selected_format = None;
                 }
@@ -162,7 +168,10 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                 }
 
                 ui.label("Source CRS:");
-                let crs_input_widget = crate::widgets::CrsInput::new(&mut self.state.crs_input);
+                let crs_input_widget = crate::widgets::CrsInput::new(
+                    &mut self.state.crs_input,
+                    &mut self.state.crs_input_outcome,
+                );
                 ui.add(crs_input_widget);
 
                 ui.separator();
@@ -176,7 +185,11 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                 if self.state.selected_source == Source::File
                     || self.state.selected_source == Source::Text
                 {
-                    ui.radio_value(&mut self.state.selected_format, Some(Format::GeoJson), "GeoJSON");
+                    ui.radio_value(
+                        &mut self.state.selected_format,
+                        Some(Format::GeoJson),
+                        "GeoJSON",
+                    );
                 }
 
                 if self.state.selected_source == Source::File {

@@ -7,6 +7,7 @@ pub(crate) struct ChangeCrsWindow<'a, 'w, 's> {
     pub change_crs_event_writer:
         &'a mut bevy::ecs::event::EventWriter<'w, 's, rgis_events::ChangeCrsEvent>,
     pub rgis_settings: &'a rgis_settings::RgisSettings,
+    pub crs_input_outcome: &'a mut Option<crate::widgets::crs_input::Outcome>,
 }
 
 impl<'a, 'w, 's> ChangeCrsWindow<'a, 'w, 's> {
@@ -15,9 +16,11 @@ impl<'a, 'w, 's> ChangeCrsWindow<'a, 'w, 's> {
             .open(self.is_visible)
             .anchor(egui::Align2::LEFT_TOP, [5., 5.])
             .show(self.bevy_egui_ctx.ctx_mut(), |ui| {
-                let widget = crate::widgets::CrsInput::new(self.text_field_value);
-                let is_ok = widget.result.is_ok();
-                ui.add(widget);
+                ui.add(crate::widgets::CrsInput::new(
+                    self.text_field_value,
+                    self.crs_input_outcome,
+                ));
+                let is_ok = self.crs_input_outcome.as_ref().map(|n| n.is_ok()).unwrap_or(false);
                 if ui.add_enabled(is_ok, egui::Button::new("Set")).clicked() {
                     self.change_crs_event_writer
                         .send(rgis_events::ChangeCrsEvent {

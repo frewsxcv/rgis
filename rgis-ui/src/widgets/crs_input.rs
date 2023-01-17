@@ -1,15 +1,16 @@
 use bevy_egui::egui;
 
 pub struct CrsInput<'a> {
-    pub result: Result<String, LookupCrsError>,
+    pub outcome: &'a mut Option<Outcome>,
     text_field_value: &'a mut String,
 }
 
+pub type Outcome = Result<String, LookupCrsError>;
+
 impl<'a> CrsInput<'a> {
-    pub fn new(text_field_value: &'a mut String) -> Self {
-        let result = lookup_crs(text_field_value);
+    pub fn new(text_field_value: &'a mut String, prev_outcome: &'a mut Option<Outcome>) -> Self {
         CrsInput {
-            result,
+            outcome: prev_outcome,
             text_field_value,
         }
     }
@@ -19,12 +20,20 @@ impl<'a> egui::Widget for CrsInput<'a> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         ui.vertical(|ui| {
             let edit_field = ui.text_edit_singleline(self.text_field_value);
-            if edit_field.changed() {}
-            // TODO: DONT CALL THIS ON EVERY LOOP
-            let message = match &self.result {
+            let outcome = if edit_field.changed() {
+                bevy::log::info!("Looking up CRS: '{}'", self.text_field_value);
+                lookup_crs(self.text_field_value)
+            } else {
+                match self.outcome.take() {
+                    Some(n) => n,
+                    None => return,
+                }
+            };
+            let message = match &outcome {
                 Ok(n) => format!("✅ {n}"),
                 Err(e) => format!("❌ {e:?}"),
             };
+            self.outcome.replace(outcome);
             ui.label(message);
         })
         .response

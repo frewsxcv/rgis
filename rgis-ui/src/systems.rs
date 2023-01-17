@@ -108,6 +108,7 @@ fn render_change_crs_window(
     mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
     mut text_field_value: Local<String>,
     mut change_crs_event_writer: bevy::ecs::event::EventWriter<rgis_events::ChangeCrsEvent>,
+    mut crs_input_outcome: Local<Option<crate::widgets::crs_input::Outcome>>,
 ) {
     if open_change_crs_window_event_reader.iter().next().is_some() {
         *is_visible = true;
@@ -119,6 +120,7 @@ fn render_change_crs_window(
         text_field_value: &mut text_field_value,
         change_crs_event_writer: &mut change_crs_event_writer,
         rgis_settings: &rgis_settings,
+        crs_input_outcome: &mut crs_input_outcome,
     }
     .render();
 }
