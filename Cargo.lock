@@ -2103,7 +2103,7 @@ dependencies = [
 [[package]]
 name = "geozero-shp"
 version = "0.3.1"
-source = "git+https://github.com/georust/geozero.git?branch=frewsxcv/noowner#fc857fcac02b07bbd162476387396123e85f49f2"
+source = "git+https://github.com/georust/geozero.git#f410b7f6b550c14db81f09258f122bb6ba33d295"
 dependencies = [
  "byteorder",
  "dbase",
