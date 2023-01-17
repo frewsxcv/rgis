@@ -20,8 +20,9 @@ impl<'a> egui::Widget for CrsInput<'a> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         ui.vertical(|ui| {
             let edit_field = ui.text_edit_singleline(self.text_field_value);
-            let outcome = if edit_field.changed() {
-                bevy::log::info!("Looking up CRS: '{}'", self.text_field_value);
+            let outcome = if edit_field.changed()
+                || (!self.text_field_value.is_empty() && self.outcome.is_none())
+            {
                 lookup_crs(self.text_field_value)
             } else {
                 match self.outcome.take() {
