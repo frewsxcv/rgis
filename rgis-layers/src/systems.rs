@@ -27,12 +27,9 @@ fn handle_update_color_events(
 ) {
     for event in update_events.iter() {
         let rgis_events::UpdateLayerColorEvent::Fill(layer_id, color) = event else { unimplemented!()};
-        let layer = match layers.get_mut(*layer_id) {
-            Some(l) => l,
-            None => {
-                bevy::log::warn!("Could not find layer");
-                continue;
-            }
+        let Some(layer) = layers.get_mut(*layer_id) else {
+            bevy::log::warn!("Could not find layer");
+            continue;
         };
         layer.color = *color;
         updated_events.send(rgis_events::LayerColorUpdatedEvent::Fill(*layer_id));
