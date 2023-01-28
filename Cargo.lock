@@ -2103,7 +2103,8 @@ dependencies = [
 [[package]]
 name = "geozero-shp"
 version = "0.4.0"
-source = "git+https://github.com/georust/geozero.git#f8bcaaabc6bd6b596957b74f84aef3b2518ffee3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f67c6f600e2227868b11c74dee1dedfd06e89f3d323d275365abb4981b38f3dd"
 dependencies = [
  "byteorder",
  "dbase",
