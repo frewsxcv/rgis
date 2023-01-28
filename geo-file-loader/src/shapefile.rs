@@ -7,7 +7,7 @@ pub struct ShapefileSource {
 impl crate::FileLoader for ShapefileSource {
     type Error = geozero_shp::Error;
 
-    const FILE_TYPE_NAME: &'static str = "WKT";
+    const FILE_TYPE_NAME: &'static str = "Shapefile";
 
     fn from_bytes(bytes: bytes::Bytes) -> Self {
         ShapefileSource { bytes }
