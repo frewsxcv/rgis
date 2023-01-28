@@ -2088,9 +2088,9 @@ dependencies = [
 
 [[package]]
 name = "geozero"
-version = "0.9.6"
+version = "0.9.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "84338a65eb745115dedeb3474a13e025b536130486582bf9d202bf0366b6d3c4"
+checksum = "12672f1ee4aab5ca6cc5376a2b5f04f74b899b1cfadaf5af9ab63c5bf07bc2a5"
 dependencies = [
  "geo-types",
  "geojson",
@@ -2102,8 +2102,8 @@ dependencies = [
 
 [[package]]
 name = "geozero-shp"
-version = "0.3.1"
-source = "git+https://github.com/georust/geozero.git#f410b7f6b550c14db81f09258f122bb6ba33d295"
+version = "0.4.0"
+source = "git+https://github.com/georust/geozero.git#f8bcaaabc6bd6b596957b74f84aef3b2518ffee3"
 dependencies = [
  "byteorder",
  "dbase",
@@ -4303,9 +4303,9 @@ checksum = "4553f467ac8e3d374bc9a177a26801e5d0f9b211aa1673fb137a403afd1c9cf5"
 
 [[package]]
 name = "toml_edit"
-version = "0.18.0"
+version = "0.18.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "729bfd096e40da9c001f778f5cdecbd2957929a24e10e5883d9392220a751581"
+checksum = "56c59d8dd7d0dcbc6428bf7aa2f0e823e26e43b3c9aca15bbc9475d23e5fa12b"
 dependencies = [
  "indexmap",
  "nom8",
