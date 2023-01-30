@@ -20,7 +20,6 @@ pub struct Values {
 
 pub fn run() -> Result<Values, String> {
     let matches = Command::new("rgis")
-        .version("0.1.0")
         .author("Corey Farwell <coreyf@rwell.org>")
         .about("Geospatial data viewer written in Rust")
         .arg(
