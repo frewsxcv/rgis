@@ -57,8 +57,8 @@ pub struct Feature {
 
 impl<'a> geo::CoordsIter<'a> for Feature {
     type Scalar = f64;
-    type Iter = iter::Empty<geo::Coord<Self::Scalar>>;
-    type ExteriorIter = iter::Empty<geo::Coord<Self::Scalar>>;
+    type Iter = Box<dyn Iterator<Item = geo::Coord<Self::Scalar>> + 'a>;
+    type ExteriorIter = Box<dyn Iterator<Item = geo::Coord<Self::Scalar>> + 'a>;
 
     fn coords_count(&'a self) -> usize {
         self.geometry
@@ -68,11 +68,17 @@ impl<'a> geo::CoordsIter<'a> for Feature {
     }
 
     fn coords_iter(&'a self) -> Self::Iter {
-        todo!()
+        match self.geometry {
+            Some(ref g) => Box::new(g.coords_iter()),
+            None => Box::new(iter::empty()),
+        }
     }
 
     fn exterior_coords_iter(&'a self) -> Self::ExteriorIter {
-        todo!()
+        match self.geometry {
+            Some(ref g) => Box::new(g.exterior_coords_iter()),
+            None => Box::new(iter::empty()),
+        }
     }
 }
 
