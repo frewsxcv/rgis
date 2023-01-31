@@ -342,7 +342,7 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
 fn hint_text(format: Format) -> &'static str {
     match format {
         Format::GeoJson => "{\n  \"type\": \"FeatureCollection\",\n  \"features\": []\n}",
-        Format::Shapefile => todo!(),
+        Format::Shapefile => unreachable!("Shapefiles are not textual"),
         Format::Wkt => "LINESTRING (30 10, 10 30, 40 40)",
     }
 }
