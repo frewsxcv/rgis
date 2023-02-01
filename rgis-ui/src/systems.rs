@@ -41,10 +41,11 @@ fn handle_open_file_job(
     mut finished_jobs: bevy_jobs::FinishedJobs,
     mut selected_file: ResMut<crate::add_layer_window::SelectedFile>,
 ) {
-    while let Some(outcome) = finished_jobs.take_next::<crate::add_layer_window::OpenFileJob>() {
-        if let Some(outcome) = outcome {
-            selected_file.0 = Some(outcome);
-        }
+    while let Some(outcome) = finished_jobs
+        .take_next::<crate::add_layer_window::OpenFileJob>()
+        .flatten()
+    {
+        selected_file.0 = Some(outcome);
     }
 }
 
