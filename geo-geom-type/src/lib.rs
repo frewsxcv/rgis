@@ -7,6 +7,7 @@
 )]
 
 bitflags::bitflags! {
+    #[derive(Debug, Copy, Clone)]
     pub struct GeomType: u16 {
         const POINT             = 0b000000001;
         const LINE              = 0b000000010;
