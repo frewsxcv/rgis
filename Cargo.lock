@@ -2113,7 +2113,8 @@ dependencies = [
 [[package]]
 name = "geo-types"
 version = "0.7.9"
-source = "git+https://github.com/georust/geo#c31ac453ac6565cf17f9d983ab16a892b8b1e451"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a5f0b3068e1537a4b861ec3734f4aa9c317d537cf0845bf6fb6221973499d26c"
 dependencies = [
  "approx",
  "num-traits",
@@ -5428,8 +5429,3 @@ dependencies = [
  "quote",
  "syn 1.0.109",
 ]
-
-[[patch.unused]]
-name = "geo"
-version = "0.24.1"
-source = "git+https://github.com/georust/geo#c31ac453ac6565cf17f9d983ab16a892b8b1e451"
