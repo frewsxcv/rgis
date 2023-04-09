@@ -12,8 +12,9 @@ module.exports = {
   plugins: [
     new CopyWebpackPlugin({
       patterns: [{
-        from: '../rgis/assets/*',
-        to: 'assets/*'
+        from: 'assets',
+        to: 'assets',
+        context: '../rgis'
       }, {
         from: 'index.html',
         to: 'index.html',
