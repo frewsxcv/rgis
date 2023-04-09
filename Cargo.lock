@@ -19,17 +19,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c71b1793ee61086797f5c80b6efa2b8ffa6d5dd703f118545808a7f2e27f7046"
 
 [[package]]
-name = "accurate"
-version = "0.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4f209f0bc218ee6cf50db56ec0d9fe10b3cbfb6f3900d019b36c8fdb6d3bc03e"
-dependencies = [
- "cfg-if",
- "ieee754",
- "num-traits",
-]
-
-[[package]]
 name = "adler"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1812,15 +1801,6 @@ dependencies = [
 
 [[package]]
 name = "float_next_after"
-version = "0.1.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4fc612c5837986b7104a87a0df74a5460931f1c5274be12f8d0f40aa2f30d632"
-dependencies = [
- "num-traits",
-]
-
-[[package]]
-name = "float_next_after"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8bf7cc16383c4b8d58b9905a8509f02926ce3058053c056376248d958c9df1e8"
@@ -2031,18 +2011,18 @@ dependencies = [
 
 [[package]]
 name = "geo"
-version = "0.23.1"
+version = "0.24.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b39f57e9624b1a17ce621375464e9878c705d0aaadaf25cb44e4e0005a16de2f"
+checksum = "c7d640a4dd1d1c98b45f4653c841a8ec15f461a71b86bc30533ae64c6f20f268"
 dependencies = [
- "float_next_after 0.1.5",
+ "float_next_after",
  "geo-types",
  "geographiclib-rs",
  "log",
  "num-traits",
  "proj",
  "robust",
- "rstar 0.9.3",
+ "rstar",
 ]
 
 [[package]]
@@ -2051,13 +2031,13 @@ version = "0.24.1"
 source = "git+https://github.com/georust/geo.git?branch=frewsxcv/triangulate#1a501853be21901a5004ea070933487fa9558643"
 dependencies = [
  "earcutr",
- "float_next_after 1.0.0",
+ "float_next_after",
  "geo-types",
  "geographiclib-rs",
  "log",
  "num-traits",
  "robust",
- "rstar 0.10.0",
+ "rstar",
 ]
 
 [[package]]
@@ -2067,14 +2047,14 @@ source = "git+https://github.com/frewsxcv/geo-bevy.git?branch=frewsxcv/earcut#8e
 dependencies = [
  "bevy_log",
  "bevy_render",
- "geo 0.24.1",
+ "geo 0.24.1 (git+https://github.com/georust/geo.git?branch=frewsxcv/triangulate)",
 ]
 
 [[package]]
 name = "geo-features"
 version = "0.1.0"
 dependencies = [
- "geo 0.23.1",
+ "geo 0.24.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -2082,7 +2062,7 @@ name = "geo-file-loader"
 version = "0.1.0"
 dependencies = [
  "bytes",
- "geo 0.23.1",
+ "geo 0.24.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "geo-features",
  "geojson",
  "geozero",
@@ -2097,14 +2077,14 @@ name = "geo-geom-type"
 version = "0.1.0"
 dependencies = [
  "bitflags 2.1.0",
- "geo 0.23.1",
+ "geo 0.24.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "geo-proj-js"
 version = "0.1.0"
 dependencies = [
- "geo 0.23.1",
+ "geo 0.24.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "js-sys",
  "log",
  "wasm-bindgen",
@@ -2115,7 +2095,7 @@ dependencies = [
 name = "geo-projected"
 version = "0.1.0"
 dependencies = [
- "geo 0.23.1",
+ "geo 0.24.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "geo-features",
 ]
 
@@ -2127,8 +2107,7 @@ checksum = "a5f0b3068e1537a4b861ec3734f4aa9c317d537cf0845bf6fb6221973499d26c"
 dependencies = [
  "approx",
  "num-traits",
- "rstar 0.10.0",
- "rstar 0.9.3",
+ "rstar",
  "serde",
 ]
 
@@ -2138,7 +2117,6 @@ version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8ea804e7bd3c6a4ca6a01edfa35231557a8a81d4d3f3e1e2b650d028c42592be"
 dependencies = [
- "accurate",
  "lazy_static",
 ]
 
@@ -2556,12 +2534,6 @@ dependencies = [
  "unicode-bidi",
  "unicode-normalization",
 ]
-
-[[package]]
-name = "ieee754"
-version = "0.2.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9007da9cacbd3e6343da136e98b0d2df013f553d35bdec8b518f07bea768e19c"
 
 [[package]]
 name = "image"
@@ -3569,7 +3541,7 @@ dependencies = [
  "bevy",
  "bevy-web-resizer",
  "bevy_jobs",
- "geo 0.23.1",
+ "geo 0.24.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "rgis-camera",
  "rgis-cli",
  "rgis-events",
@@ -3591,7 +3563,7 @@ name = "rgis-camera"
 version = "0.1.0"
 dependencies = [
  "bevy",
- "geo 0.23.1",
+ "geo 0.24.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "geo-projected",
  "proj",
  "rgis-events",
@@ -3614,7 +3586,7 @@ name = "rgis-events"
 version = "0.1.0"
 dependencies = [
  "bevy",
- "geo 0.23.1",
+ "geo 0.24.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "geo-features",
  "geo-file-loader",
  "geo-projected",
@@ -3642,7 +3614,7 @@ name = "rgis-geo-ops"
 version = "0.1.0"
 dependencies = [
  "bevy_egui",
- "geo 0.23.1",
+ "geo 0.24.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "geo-features",
  "geo-geom-type",
  "geo-projected",
@@ -3669,7 +3641,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "colorous",
- "geo 0.23.1",
+ "geo 0.24.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "geo-features",
  "geo-geom-type",
  "geo-projected",
@@ -3689,7 +3661,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_egui",
- "geo 0.23.1",
+ "geo 0.24.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "geo-projected",
  "rgis-events",
  "rgis-settings",
@@ -3716,7 +3688,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_jobs",
- "geo 0.23.1",
+ "geo 0.24.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "geo-bevy",
  "geo-projected",
  "rgis-events",
@@ -3738,7 +3710,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_jobs",
- "geo 0.23.1",
+ "geo 0.24.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "geo-features",
  "geo-proj-js",
  "geo-projected",
@@ -3759,7 +3731,7 @@ dependencies = [
  "bevy_egui",
  "bevy_jobs",
  "dark-light",
- "geo 0.23.1",
+ "geo 0.24.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "geo-features",
  "geo-file-loader",
  "geo-proj-js",
@@ -3781,7 +3753,7 @@ name = "rgis-units"
 version = "0.1.0"
 dependencies = [
  "bevy",
- "geo 0.23.1",
+ "geo 0.24.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "geo-features",
  "geo-projected",
 ]
@@ -3791,17 +3763,6 @@ name = "robust"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e5864e7ef1a6b7bcf1d6ca3f655e65e724ed3b52546a0d0a663c991522f552ea"
-
-[[package]]
-name = "rstar"
-version = "0.9.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b40f1bfe5acdab44bc63e6699c28b74f75ec43afb59f3eda01e145aff86a25fa"
-dependencies = [
- "heapless",
- "num-traits",
- "smallvec",
-]
 
 [[package]]
 name = "rstar"

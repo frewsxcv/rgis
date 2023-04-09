@@ -17,7 +17,7 @@ bevy = { version = "0.9", default-features = false, features = [
     "wayland",
     "png",
 ] }
-geo = "0.23"
+geo = "0.24"
 rgis-camera = { path = "../rgis-camera" }
 rgis-file-loader = { path = "../rgis-file-loader" }
 rgis-keyboard = { path = "../rgis-keyboard" }
