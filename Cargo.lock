@@ -2012,9 +2012,9 @@ dependencies = [
 [[package]]
 name = "geo"
 version = "0.24.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c7d640a4dd1d1c98b45f4653c841a8ec15f461a71b86bc30533ae64c6f20f268"
+source = "git+https://github.com/georust/geo?branch=frewsxcv/triangulate#1a501853be21901a5004ea070933487fa9558643"
 dependencies = [
+ "earcutr",
  "float_next_after",
  "geo-types",
  "geographiclib-rs",
@@ -2026,35 +2026,20 @@ dependencies = [
 ]
 
 [[package]]
-name = "geo"
-version = "0.24.1"
-source = "git+https://github.com/georust/geo.git?branch=frewsxcv/triangulate#1a501853be21901a5004ea070933487fa9558643"
-dependencies = [
- "earcutr",
- "float_next_after",
- "geo-types",
- "geographiclib-rs",
- "log",
- "num-traits",
- "robust",
- "rstar",
-]
-
-[[package]]
 name = "geo-bevy"
 version = "0.3.0"
 source = "git+https://github.com/frewsxcv/geo-bevy.git?branch=frewsxcv/earcut#8e7f7d78df13eecee80dd4d32c3b43a0ab0fab0b"
 dependencies = [
  "bevy_log",
  "bevy_render",
- "geo 0.24.1 (git+https://github.com/georust/geo.git?branch=frewsxcv/triangulate)",
+ "geo",
 ]
 
 [[package]]
 name = "geo-features"
 version = "0.1.0"
 dependencies = [
- "geo 0.24.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "geo",
 ]
 
 [[package]]
@@ -2062,7 +2047,7 @@ name = "geo-file-loader"
 version = "0.1.0"
 dependencies = [
  "bytes",
- "geo 0.24.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "geo",
  "geo-features",
  "geojson",
  "geozero",
@@ -2077,14 +2062,14 @@ name = "geo-geom-type"
 version = "0.1.0"
 dependencies = [
  "bitflags 2.1.0",
- "geo 0.24.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "geo",
 ]
 
 [[package]]
 name = "geo-proj-js"
 version = "0.1.0"
 dependencies = [
- "geo 0.24.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "geo",
  "js-sys",
  "log",
  "wasm-bindgen",
@@ -2095,7 +2080,7 @@ dependencies = [
 name = "geo-projected"
 version = "0.1.0"
 dependencies = [
- "geo 0.24.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "geo",
  "geo-features",
 ]
 
@@ -3541,7 +3526,7 @@ dependencies = [
  "bevy",
  "bevy-web-resizer",
  "bevy_jobs",
- "geo 0.24.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "geo",
  "rgis-camera",
  "rgis-cli",
  "rgis-events",
@@ -3563,7 +3548,7 @@ name = "rgis-camera"
 version = "0.1.0"
 dependencies = [
  "bevy",
- "geo 0.24.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "geo",
  "geo-projected",
  "proj",
  "rgis-events",
@@ -3586,7 +3571,7 @@ name = "rgis-events"
 version = "0.1.0"
 dependencies = [
  "bevy",
- "geo 0.24.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "geo",
  "geo-features",
  "geo-file-loader",
  "geo-projected",
@@ -3614,7 +3599,7 @@ name = "rgis-geo-ops"
 version = "0.1.0"
 dependencies = [
  "bevy_egui",
- "geo 0.24.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "geo",
  "geo-features",
  "geo-geom-type",
  "geo-projected",
@@ -3641,7 +3626,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "colorous",
- "geo 0.24.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "geo",
  "geo-features",
  "geo-geom-type",
  "geo-projected",
@@ -3661,7 +3646,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_egui",
- "geo 0.24.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "geo",
  "geo-projected",
  "rgis-events",
  "rgis-settings",
@@ -3688,7 +3673,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_jobs",
- "geo 0.24.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "geo",
  "geo-bevy",
  "geo-projected",
  "rgis-events",
@@ -3710,7 +3695,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_jobs",
- "geo 0.24.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "geo",
  "geo-features",
  "geo-proj-js",
  "geo-projected",
@@ -3731,7 +3716,7 @@ dependencies = [
  "bevy_egui",
  "bevy_jobs",
  "dark-light",
- "geo 0.24.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "geo",
  "geo-features",
  "geo-file-loader",
  "geo-proj-js",
@@ -3753,7 +3738,7 @@ name = "rgis-units"
 version = "0.1.0"
 dependencies = [
  "bevy",
- "geo 0.24.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "geo",
  "geo-features",
  "geo-projected",
 ]

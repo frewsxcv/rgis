@@ -24,6 +24,9 @@ pub use simplify::Simplify;
 mod smoothing;
 pub use smoothing::Smoothing;
 
+mod triangulate;
+pub use triangulate::Triangulate;
+
 pub enum Outcome {
     Text(String),
     FeatureCollection(Unprojected<geo_features::FeatureCollection>),

@@ -28,5 +28,6 @@ resolver = "2"
 debug = true
 
 [patch.crates-io]
+geo = { git = "https://github.com/georust/geo", branch = "frewsxcv/triangulate" }
 proj = { git = "https://github.com/georust/proj", branch = "cfarwell-send" }
 proj-sys = { git = "https://github.com/georust/proj", branch = "cfarwell-send" }

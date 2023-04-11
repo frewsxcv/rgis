@@ -164,6 +164,10 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
                                     self.events,
                                     layer,
                                 ).ui(ui);
+                                OperationButton::<rgis_geo_ops::Triangulate>::new(
+                                    self.events,
+                                    layer,
+                                ).ui(ui);
                                 OperationButton::<rgis_geo_ops::UnsignedArea>::new(
                                     self.events,
                                     layer,
