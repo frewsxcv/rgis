@@ -33,8 +33,8 @@ bevy_jobs = { git = "https://github.com/frewsxcv/bevy_jobs" }
 webbrowser = "0.8"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-geo = { version = "0.24", features = ["use-proj"] }
+geo = { version = "0.25", features = ["use-proj"] }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-geo = { version = "0.24" }
+geo = { version = "0.25" }
 geo-proj-js = { path = "../geo-proj-js" }

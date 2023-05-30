@@ -5,4 +5,4 @@ edition = "2021"
 
 [dependencies]
 bitflags = "2"
-geo = "0.24"
+geo = "0.25"

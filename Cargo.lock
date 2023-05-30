@@ -2005,6 +2005,21 @@ dependencies = [
  "geographiclib-rs",
  "log",
  "num-traits",
+ "robust",
+ "rstar",
+]
+
+[[package]]
+name = "geo"
+version = "0.25.0"
+source = "git+https://github.com/georust/geo?branch=main#562e34a605dc1c25e4c68cfa04d24b9b113412e3"
+dependencies = [
+ "earcutr",
+ "float_next_after",
+ "geo-types",
+ "geographiclib-rs",
+ "log",
+ "num-traits",
  "proj",
  "robust",
  "rstar",
@@ -2017,14 +2032,14 @@ source = "git+https://github.com/frewsxcv/geo-bevy.git?branch=frewsxcv/earcut#8e
 dependencies = [
  "bevy_log",
  "bevy_render",
- "geo",
+ "geo 0.24.1",
 ]
 
 [[package]]
 name = "geo-features"
 version = "0.1.0"
 dependencies = [
- "geo",
+ "geo 0.25.0",
 ]
 
 [[package]]
@@ -2032,7 +2047,7 @@ name = "geo-file-loader"
 version = "0.1.0"
 dependencies = [
  "bytes",
- "geo",
+ "geo 0.25.0",
  "geo-features",
  "geojson",
  "geozero",
@@ -2047,14 +2062,14 @@ name = "geo-geom-type"
 version = "0.1.0"
 dependencies = [
  "bitflags 2.3.1",
- "geo",
+ "geo 0.25.0",
 ]
 
 [[package]]
 name = "geo-proj-js"
 version = "0.1.0"
 dependencies = [
- "geo",
+ "geo 0.25.0",
  "js-sys",
  "log",
  "wasm-bindgen",
@@ -2065,7 +2080,7 @@ dependencies = [
 name = "geo-projected"
 version = "0.1.0"
 dependencies = [
- "geo",
+ "geo 0.25.0",
  "geo-features",
 ]
 
@@ -3504,7 +3519,7 @@ dependencies = [
  "bevy",
  "bevy-web-resizer",
  "bevy_jobs",
- "geo",
+ "geo 0.25.0",
  "rgis-camera",
  "rgis-cli",
  "rgis-events",
@@ -3526,7 +3541,7 @@ name = "rgis-camera"
 version = "0.1.0"
 dependencies = [
  "bevy",
- "geo",
+ "geo 0.25.0",
  "geo-projected",
  "proj",
  "rgis-events",
@@ -3549,7 +3564,7 @@ name = "rgis-events"
 version = "0.1.0"
 dependencies = [
  "bevy",
- "geo",
+ "geo 0.25.0",
  "geo-features",
  "geo-file-loader",
  "geo-projected",
@@ -3577,7 +3592,7 @@ name = "rgis-geo-ops"
 version = "0.1.0"
 dependencies = [
  "bevy_egui",
- "geo",
+ "geo 0.25.0",
  "geo-features",
  "geo-geom-type",
  "geo-projected",
@@ -3604,7 +3619,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "colorous",
- "geo",
+ "geo 0.25.0",
  "geo-features",
  "geo-geom-type",
  "geo-projected",
@@ -3624,7 +3639,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_egui",
- "geo",
+ "geo 0.25.0",
  "geo-projected",
  "rgis-events",
  "rgis-settings",
@@ -3651,7 +3666,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_jobs",
- "geo",
+ "geo 0.25.0",
  "geo-bevy",
  "geo-projected",
  "rgis-events",
@@ -3673,7 +3688,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_jobs",
- "geo",
+ "geo 0.25.0",
  "geo-features",
  "geo-proj-js",
  "geo-projected",
@@ -3694,7 +3709,7 @@ dependencies = [
  "bevy_egui",
  "bevy_jobs",
  "dark-light",
- "geo",
+ "geo 0.25.0",
  "geo-features",
  "geo-file-loader",
  "geo-proj-js",
@@ -3716,7 +3731,7 @@ name = "rgis-units"
 version = "0.1.0"
 dependencies = [
  "bevy",
- "geo",
+ "geo 0.25.0",
  "geo-features",
  "geo-projected",
 ]

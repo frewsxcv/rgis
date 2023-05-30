@@ -17,7 +17,7 @@ bevy = { version = "0.9", default-features = false, features = [
 ] }
 geo-features = { path = "../geo-features" }
 geo-projected = { path = "../geo-projected" }
-geo = "0.24"
+geo = "0.25"
 rgis-events = { path = "../rgis-events" }
 rgis-layer-id = { path = "../rgis-layer-id" }
 rgis-layers = { path = "../rgis-layers" }
@@ -26,10 +26,10 @@ bevy_jobs = { git = "https://github.com/frewsxcv/bevy_jobs" }
 thiserror = "1"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-geo = { version = "0.24", features = ["use-proj"] }
+geo = { version = "0.25", features = ["use-proj"] }
 proj = "0.27"
 proj-sys = "0.23"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 geo-proj-js = { path = "../geo-proj-js" }
-geo = "0.24"
+geo = "0.25"
