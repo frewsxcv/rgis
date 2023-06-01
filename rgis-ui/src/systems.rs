@@ -306,27 +306,23 @@ pub fn configure(app: &mut App) {
 
     app.add_system(render_top_panel.in_set(RenderSystemSet::PostRenderingTopBottomPanels));
     app.add_system(render_bottom_panel.in_set(RenderSystemSet::PostRenderingTopBottomPanels));
-    /*
-    app.add_system(
-        SystemSet::new()
-            .label("top_bottom_panels")
-            .after(render_message_window)
-            .with_system(render_top_panel)
-            .with_system(render_bottom_panel),
-    );
 
+    app.add_system(render_side_panel.in_set(RenderSystemSet::PostRenderingTopBottomPanels));
+    app.add_system(render_in_progress.in_set(RenderSystemSet::PostRenderingTopBottomPanels));
+
+    /*
     app.add_system(
         SystemSet::new()
             .with_system(render_debug_window)
             .with_system(handle_open_file_job)
             .with_system(render_message_window)
-            .with_system(render_side_panel.after("top_bottom_panels"))
+            // .with_system(render_side_panel.after("top_bottom_panels"))
             .with_system(render_manage_layer_window.after(render_side_panel))
             .with_system(render_add_layer_window.after(render_manage_layer_window))
             .with_system(render_change_crs_window.after(render_add_layer_window))
             .with_system(render_feature_properties_window.after(render_change_crs_window))
             .with_system(render_operation_window.after(render_feature_properties_window))
-            .with_system(render_in_progress.after("top_bottom_panels"))
+            // .with_system(render_in_progress.after("top_bottom_panels"))
             .label("rgis_ui")
     );
     */
