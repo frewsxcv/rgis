@@ -15,8 +15,7 @@ pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.add_startup_system_set(systems::startup_system_set())
-            .add_system_set(systems::system_set());
+        systems::configure(app);
     }
 }
 

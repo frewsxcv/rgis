@@ -1,5 +1,8 @@
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*, window::PrimaryWindow};
-use bevy_egui::{egui::{self, Widget}, EguiContext};
+use bevy_egui::{
+    egui::{self, Widget},
+    EguiContext,
+};
 
 fn render_bottom_panel(
     mut egui_ctx_query: Query<&mut EguiContext, With<PrimaryWindow>>,
@@ -290,9 +293,13 @@ enum RenderSystemSet {
     PostRenderingTopBottomPanels,
 }
 
+#[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
+struct RenderingUi;
+
 pub fn configure(app: &mut App) {
     app.add_startup_system(set_egui_theme);
 
+    app.configure_set(RenderingUi);
     app.configure_sets(
         (
             RenderSystemSet::RenderingMessageWindow,
@@ -302,30 +309,42 @@ pub fn configure(app: &mut App) {
             .chain(),
     );
 
-    app.add_system(render_message_window.in_set(RenderSystemSet::RenderingMessageWindow));
-
-    app.add_system(render_top_panel.in_set(RenderSystemSet::PostRenderingTopBottomPanels));
-    app.add_system(render_bottom_panel.in_set(RenderSystemSet::PostRenderingTopBottomPanels));
-
-    app.add_system(render_side_panel.in_set(RenderSystemSet::PostRenderingTopBottomPanels));
-    app.add_system(render_in_progress.in_set(RenderSystemSet::PostRenderingTopBottomPanels));
-
-    /*
     app.add_system(
-        SystemSet::new()
-            .with_system(render_debug_window)
-            .with_system(handle_open_file_job)
-            .with_system(render_message_window)
-            // .with_system(render_side_panel.after("top_bottom_panels"))
-            .with_system(render_manage_layer_window.after(render_side_panel))
-            .with_system(render_add_layer_window.after(render_manage_layer_window))
-            .with_system(render_change_crs_window.after(render_add_layer_window))
-            .with_system(render_feature_properties_window.after(render_change_crs_window))
-            .with_system(render_operation_window.after(render_feature_properties_window))
-            // .with_system(render_in_progress.after("top_bottom_panels"))
-            .label("rgis_ui")
+        render_message_window
+            .in_set(RenderSystemSet::RenderingMessageWindow)
+            .in_set(RenderingUi),
     );
-    */
+
+    app.add_system(
+        render_top_panel
+            .in_set(RenderSystemSet::PostRenderingTopBottomPanels)
+            .in_set(RenderingUi),
+    );
+    app.add_system(
+        render_bottom_panel
+            .in_set(RenderSystemSet::PostRenderingTopBottomPanels)
+            .in_set(RenderingUi),
+    );
+
+    app.add_system(
+        render_side_panel
+            .in_set(RenderSystemSet::PostRenderingTopBottomPanels)
+            .in_set(RenderingUi),
+    );
+    app.add_system(
+        render_in_progress
+            .in_set(RenderSystemSet::PostRenderingTopBottomPanels)
+            .in_set(RenderingUi),
+    );
+
+    app.add_system(render_debug_window.in_set(RenderingUi));
+    app.add_system(handle_open_file_job.in_set(RenderingUi));
+
+    // app.add_system(render_manage_layer_window.after(render_side_panel))
+    // app.add_system(render_add_layer_window.after(render_manage_layer_window))
+    // app.add_system(render_change_crs_window.after(render_add_layer_window))
+    // app.add_system(render_feature_properties_window.after(render_change_crs_window))
+    // app.add_system(render_operation_window.after(render_feature_properties_window))
 }
 
 #[derive(Default)]
@@ -338,7 +357,7 @@ struct LastDebugStats {
 const FPS_MAX: f64 = 100.;
 
 fn render_debug_window(
-    mut bevy_egui_ctx: bevy_egui::EguiContext,
+    mut egui_ctx_query: Query<&mut EguiContext, With<PrimaryWindow>>,
     diagnostics: Res<bevy::diagnostic::Diagnostics>,
     mut state: ResMut<crate::DebugStatsWindowState>,
     time: Res<Time>,
@@ -347,6 +366,8 @@ fn render_debug_window(
     if !state.is_visible {
         return;
     }
+
+    let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else { return; };
 
     if state.history.is_empty() || state.timer.tick(time.delta()).just_finished() {
         let fps = diagnostics
@@ -392,7 +413,7 @@ fn render_debug_window(
     egui::Window::new("Debug")
         .default_width(200.)
         .open(&mut state.is_visible)
-        .show(bevy_egui_ctx.get_mut(), move |ui| {
+        .show(egui_ctx.get_mut(), move |ui| {
             DebugTable { last: &last }.ui(ui);
 
             use egui::plot::{Line, Plot, PlotPoints};

@@ -17,13 +17,14 @@ pub fn run() {
     app.add_plugins(MinimalPlugins);
     app.add_plugin(bevy::asset::AssetPlugin::default());
     app.add_plugin(WindowPlugin {
-        window: WindowDescriptor {
-            title: "rgis".to_string(),
-            ..Default::default()
-        },
+        // window: WindowDescriptor {
+            // title: "rgis".to_string(),
+            // ..Default::default()
+        // },
         ..Default::default()
     });
     app.add_plugin(bevy::winit::WinitPlugin::default());
+    app.add_plugin(bevy::a11y::AccessibilityPlugin);
     app.add_plugin(bevy::render::RenderPlugin::default());
     app.add_plugin(bevy::render::texture::ImagePlugin::default());
     app.add_plugin(bevy::log::LogPlugin::default());
@@ -58,10 +59,16 @@ pub fn run() {
         } else {
             return;
         };
-        app.insert_resource(Msaa {
-            samples: cli_values.msaa_sample_count,
-        })
-        .add_plugin(rgis_cli::Plugin(cli_values));
+        let msaa = match cli_values.msaa_sample_count {
+            1 => Msaa::Off,
+            2 => Msaa::Sample2,
+            4 => Msaa::Sample4,
+            8 => Msaa::Sample8,
+            _ => panic!("Encountered unknown MSAA value")
+        };
+            
+        app.insert_resource(msaa);
+        app.add_plugin(rgis_cli::Plugin(cli_values));
     }
 
     app.run();
