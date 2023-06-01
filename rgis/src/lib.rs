@@ -17,10 +17,10 @@ pub fn run() {
     app.add_plugins(MinimalPlugins);
     app.add_plugin(bevy::asset::AssetPlugin::default());
     app.add_plugin(WindowPlugin {
-        // window: WindowDescriptor {
-            // title: "rgis".to_string(),
-            // ..Default::default()
-        // },
+        primary_window: Some(Window {
+            title: "rgis".to_string(),
+            ..Default::default()
+        }),
         ..Default::default()
     });
     app.add_plugin(bevy::winit::WinitPlugin::default());
