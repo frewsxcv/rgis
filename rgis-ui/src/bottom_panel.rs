@@ -1,15 +1,15 @@
 use bevy_egui::egui;
 
-pub(crate) struct BottomPanel<'a, 'w, 's> {
+pub(crate) struct BottomPanel<'a, 'w> {
     pub egui_ctx: &'a egui::Context,
     pub mouse_pos: &'a rgis_mouse::MousePos,
     pub rgis_settings: &'a rgis_settings::RgisSettings,
     pub open_change_crs_window_event_writer:
-        &'a mut bevy::ecs::event::EventWriter<'w, 's, rgis_events::OpenChangeCrsWindow>,
+        &'a mut bevy::ecs::event::EventWriter<'w, rgis_events::OpenChangeCrsWindow>,
     pub bottom_panel_height: &'a mut crate::BottomPanelHeight,
 }
 
-impl<'a, 'w, 's> BottomPanel<'a, 'w, 's> {
+impl<'a, 'w> BottomPanel<'a, 'w> {
     pub(crate) fn render(&mut self) {
         let inner_response = egui::TopBottomPanel::bottom("bottom").show(self.egui_ctx, |ui| {
             egui::menu::bar(ui, |ui| {

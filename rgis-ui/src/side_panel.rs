@@ -4,31 +4,29 @@ use std::marker;
 // const MAX_SIDE_PANEL_WIDTH: f32 = 200.0f32;
 
 #[derive(bevy::ecs::system::SystemParam)]
-pub struct Events<'w, 's> {
+pub struct Events<'w> {
     toggle_layer_visibility_event_writer:
-        bevy::ecs::event::EventWriter<'w, 's, rgis_events::ToggleLayerVisibilityEvent>,
-    center_layer_event_writer:
-        bevy::ecs::event::EventWriter<'w, 's, rgis_events::CenterCameraEvent>,
-    delete_layer_event_writer: bevy::ecs::event::EventWriter<'w, 's, rgis_events::DeleteLayerEvent>,
-    move_layer_event_writer: bevy::ecs::event::EventWriter<'w, 's, rgis_events::MoveLayerEvent>,
-    create_layer_event_writer: bevy::ecs::event::EventWriter<'w, 's, rgis_events::CreateLayerEvent>,
+        bevy::ecs::event::EventWriter<'w, rgis_events::ToggleLayerVisibilityEvent>,
+    center_layer_event_writer: bevy::ecs::event::EventWriter<'w, rgis_events::CenterCameraEvent>,
+    delete_layer_event_writer: bevy::ecs::event::EventWriter<'w, rgis_events::DeleteLayerEvent>,
+    move_layer_event_writer: bevy::ecs::event::EventWriter<'w, rgis_events::MoveLayerEvent>,
+    create_layer_event_writer: bevy::ecs::event::EventWriter<'w, rgis_events::CreateLayerEvent>,
     show_add_layer_window_event_writer:
-        bevy::ecs::event::EventWriter<'w, 's, rgis_events::ShowAddLayerWindow>,
-    render_message_event_writer:
-        bevy::ecs::event::EventWriter<'w, 's, rgis_events::RenderMessageEvent>,
+        bevy::ecs::event::EventWriter<'w, rgis_events::ShowAddLayerWindow>,
+    render_message_event_writer: bevy::ecs::event::EventWriter<'w, rgis_events::RenderMessageEvent>,
     open_operation_window_event_writer:
-        bevy::ecs::event::EventWriter<'w, 's, crate::events::OpenOperationWindowEvent>,
+        bevy::ecs::event::EventWriter<'w, crate::events::OpenOperationWindowEvent>,
 }
 
-pub(crate) struct SidePanel<'a, 'w, 's> {
+pub(crate) struct SidePanel<'a, 'w> {
     pub egui_ctx: &'a egui::Context,
     pub manage_layer_window_state: &'a mut crate::ManageLayerWindowState,
     pub layers: &'a rgis_layers::Layers,
-    pub events: &'a mut Events<'w, 's>,
+    pub events: &'a mut Events<'w>,
     pub side_panel_width: &'a mut crate::SidePanelWidth,
 }
 
-impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
+impl<'a, 'w> SidePanel<'a, 'w> {
     pub(crate) fn render(&mut self) {
         let side_panel = egui::SidePanel::left("left-side-panel").resizable(true);
 
@@ -192,14 +190,14 @@ impl<'a, 'w, 's> SidePanel<'a, 'w, 's> {
     }
 }
 
-struct OperationButton<'a, 'w, 's, Op: rgis_geo_ops::OperationEntry> {
-    events: &'a mut Events<'w, 's>,
+struct OperationButton<'a, 'w, Op: rgis_geo_ops::OperationEntry> {
+    events: &'a mut Events<'w>,
     layer: &'a rgis_layers::Layer,
     operation: marker::PhantomData<Op>,
 }
 
-impl<'a, 'w, 's, Op: rgis_geo_ops::OperationEntry> OperationButton<'a, 'w, 's, Op> {
-    fn new(events: &'a mut Events<'w, 's>, layer: &'a rgis_layers::Layer) -> Self {
+impl<'a, 'w, Op: rgis_geo_ops::OperationEntry> OperationButton<'a, 'w, Op> {
+    fn new(events: &'a mut Events<'w>, layer: &'a rgis_layers::Layer) -> Self {
         OperationButton {
             events,
             layer,
@@ -208,8 +206,8 @@ impl<'a, 'w, 's, Op: rgis_geo_ops::OperationEntry> OperationButton<'a, 'w, 's, O
     }
 }
 
-impl<'a, 'w, 's, Op: rgis_geo_ops::OperationEntry> egui::Widget
-    for OperationButton<'a, 'w, 's, Op>
+impl<'a, 'w, Op: rgis_geo_ops::OperationEntry> egui::Widget
+    for OperationButton<'a, 'w, Op>
 {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         let button = ui.add_enabled(
@@ -257,11 +255,11 @@ impl<'a, 'w, 's, Op: rgis_geo_ops::OperationEntry> egui::Widget
     }
 }
 
-struct AddLayerButton<'a, 'w, 's> {
-    events: &'a mut Events<'w, 's>,
+struct AddLayerButton<'a, 'w> {
+    events: &'a mut Events<'w>,
 }
 
-impl<'a, 'w, 's> egui::Widget for AddLayerButton<'a, 'w, 's> {
+impl<'a, 'w> egui::Widget for AddLayerButton<'a, 'w> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         let button = ui.button("➕ Add Layer");
 

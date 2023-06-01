@@ -6,5 +6,5 @@ edition = "2021"
 publish = false
 
 [dependencies]
-bevy_log = "0.9"
+bevy_log = "0.10"
 instant = "0.1"

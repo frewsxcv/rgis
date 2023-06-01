@@ -1,14 +1,14 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, window::PrimaryWindow};
 
 fn cursor_moved_system(
     mut cursor_moved_event_reader: bevy::ecs::event::EventReader<bevy::window::CursorMoved>,
-    windows: Res<bevy::window::Windows>,
+    mut windows: Query<&mut Window, With<PrimaryWindow>>,
     query: Query<
         &mut bevy::transform::components::Transform,
         bevy::ecs::query::With<bevy::render::camera::Camera>,
     >,
     mut mouse_position: ResMut<crate::MousePos>,
-    mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
+    mut bevy_egui_ctx: bevy_egui::EguiContexts,
 ) {
     if cursor_moved_event_reader.is_empty() {
         return;
@@ -17,14 +17,16 @@ fn cursor_moved_system(
         cursor_moved_event_reader.clear();
         return;
     }
-    let window = windows.primary();
+    let Ok(window) = windows.get_single_mut() else {
+        return;
+    };
     let transform = query.single();
-    if let Some(event) = cursor_moved_event_reader.iter().next_back() {
+    if let Some(event) = cursor_moved_event_reader.iter().last() {
         mouse_position.0 = rgis_units::ScreenCoord {
             x: f64::from(event.position.x),
             y: f64::from(event.position.y),
         }
-        .to_projected_geo_coord(transform, window);
+        .to_projected_geo_coord(transform, &window);
     }
 }
 
@@ -32,13 +34,17 @@ fn mouse_motion_system(
     mut mouse_motion_event_reader: bevy::ecs::event::EventReader<bevy::input::mouse::MouseMotion>,
     mouse_button: Res<bevy::input::Input<bevy::input::mouse::MouseButton>>,
     mut pan_camera_events: bevy::ecs::event::EventWriter<rgis_events::PanCameraEvent>,
-    mut windows: ResMut<bevy::window::Windows>,
-    mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
+    mut windows: Query<&mut Window, With<PrimaryWindow>>,
+    mut bevy_egui_ctx: bevy_egui::EguiContexts,
     rgis_settings: Res<rgis_settings::RgisSettings>,
     mut last_cursor_icon: Local<Option<bevy::window::CursorIcon>>,
 ) {
+    let Ok(mut window) = windows.get_single_mut() else {
+        return;
+    };
+
     if let Some(cursor_icon) = *last_cursor_icon {
-        windows.primary_mut().set_cursor_icon(cursor_icon);
+        window.cursor.icon = cursor_icon;
     }
 
     // If the mouse didn't move, then don't go any further
@@ -63,7 +69,7 @@ fn mouse_motion_system(
         || mouse_button.pressed(bevy::input::mouse::MouseButton::Right)
     {
         set_cursor_icon(
-            &mut windows,
+            &mut window,
             &mut last_cursor_icon,
             bevy::window::CursorIcon::Grabbing,
         );
@@ -91,16 +97,16 @@ fn mouse_motion_system(
         rgis_settings::Tool::Pan => bevy::window::CursorIcon::Grab,
         rgis_settings::Tool::Query => bevy::window::CursorIcon::Crosshair,
     };
-    set_cursor_icon(&mut windows, &mut last_cursor_icon, cursor_icon);
+    set_cursor_icon(&mut window, &mut last_cursor_icon, cursor_icon);
 }
 
 fn set_cursor_icon(
-    windows: &mut bevy::window::Windows,
+    window: &mut Window,
     last_cursor_icon: &mut Option<bevy::window::CursorIcon>,
     cursor_icon: bevy::window::CursorIcon,
 ) {
     *last_cursor_icon = Some(cursor_icon);
-    windows.primary_mut().set_cursor_icon(cursor_icon);
+    window.cursor.icon = cursor_icon;
 }
 
 fn clear_cursor_icon(last_cursor_icon: &mut Option<bevy::window::CursorIcon>) {
@@ -145,10 +151,10 @@ fn mouse_scroll_system(
     }
 }
 
-pub fn system_set() -> bevy::ecs::schedule::SystemSet {
-    bevy::ecs::schedule::SystemSet::new()
-        .with_system(cursor_moved_system)
-        .with_system(mouse_scroll_system)
-        .with_system(mouse_click_system)
-        .with_system(mouse_motion_system.after("rgis_ui")) // Egui mouseover functions are dependent on the UI finished setting up
+pub fn configure(app: &mut App) {
+    app.add_system(cursor_moved_system);
+    app.add_system(mouse_scroll_system);
+    app.add_system(mouse_click_system);
+    // app.add_system(mouse_motion_system.after(rgis_ui::rgis_ui)); // Egui mouseover functions are dependent on the UI finished setting up
+    app.add_system(mouse_motion_system); // Egui mouseover functions are dependent on the UI finished setting up
 }

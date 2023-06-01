@@ -94,7 +94,7 @@ fn handle_layer_became_hidden_event(
 ) {
     for event in event_reader.iter() {
         for (_, mut visibility) in query.iter_mut().filter(|(i, _)| **i == event.0) {
-            visibility.is_visible = false;
+            *visibility = Visibility::Visible;
         }
     }
 }
@@ -105,7 +105,7 @@ fn handle_layer_became_visible_event(
 ) {
     for event in event_reader.iter() {
         for (_, mut visibility) in query.iter_mut().filter(|(i, _)| **i == event.0) {
-            visibility.is_visible = true;
+            *visibility = Visibility::Visible;
         }
     }
 }
@@ -227,16 +227,15 @@ fn handle_feature_clicked_event(
     }
 }
 
-pub fn system_set() -> SystemSet {
-    SystemSet::new()
-        .with_system(layer_loaded)
-        .with_system(handle_layer_became_hidden_event)
-        .with_system(handle_layer_became_visible_event)
-        .with_system(handle_layer_color_updated_event)
-        .with_system(handle_layer_z_index_updated_event)
-        .with_system(handle_despawn_meshes_event)
-        .with_system(handle_mesh_building_job_outcome)
-        .with_system(handle_crs_changed_events)
-        .with_system(handle_camera_scale_changed_event)
-        .with_system(handle_feature_clicked_event)
+pub fn configure(app: &mut App) {
+    app.add_system(layer_loaded);
+    app.add_system(handle_layer_became_hidden_event);
+    app.add_system(handle_layer_became_visible_event);
+    app.add_system(handle_layer_color_updated_event);
+    app.add_system(handle_layer_z_index_updated_event);
+    app.add_system(handle_despawn_meshes_event);
+    app.add_system(handle_mesh_building_job_outcome);
+    app.add_system(handle_crs_changed_events);
+    app.add_system(handle_camera_scale_changed_event);
+    app.add_system(handle_feature_clicked_event);
 }

@@ -28,7 +28,7 @@ pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.add_system_set(systems::system_set());
+        systems::configure(app);
     }
 }
 
@@ -154,7 +154,11 @@ fn spawn_material_mesh_2d_bundle<'w, 's, 'a>(
         material,
         mesh: bevy::sprite::Mesh2dHandle(assets_meshes.add(mesh)),
         transform: Transform::from_xyz(0., 0., z_index.0 as f32),
-        visibility: bevy::render::view::Visibility { is_visible },
+        visibility: if is_visible {
+            Visibility::Visible
+        } else {
+            Visibility::Hidden
+        },
         ..Default::default()
     };
     commands.spawn(mmb)

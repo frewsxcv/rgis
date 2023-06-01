@@ -8,7 +8,7 @@ edition = "2021"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-bevy = { version = "0.9", default-features = false, features = [
+bevy = { version = "0.10", default-features = false, features = [
     "bevy_winit",
     "bevy_core_pipeline",
     "bevy_render",
