@@ -64,9 +64,9 @@ pub fn run() {
             2 => Msaa::Sample2,
             4 => Msaa::Sample4,
             8 => Msaa::Sample8,
-            _ => panic!("Encountered unknown MSAA value")
+            _ => panic!("Encountered unknown MSAA value"),
         };
-            
+
         app.insert_resource(msaa);
         app.add_plugin(rgis_cli::Plugin(cli_values));
     }

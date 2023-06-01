@@ -206,9 +206,7 @@ impl<'a, 'w, Op: rgis_geo_ops::OperationEntry> OperationButton<'a, 'w, Op> {
     }
 }
 
-impl<'a, 'w, Op: rgis_geo_ops::OperationEntry> egui::Widget
-    for OperationButton<'a, 'w, Op>
-{
+impl<'a, 'w, Op: rgis_geo_ops::OperationEntry> egui::Widget for OperationButton<'a, 'w, Op> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         let button = ui.add_enabled(
             Op::ALLOWED_GEOM_TYPES.contains(self.layer.geom_type),
