@@ -317,12 +317,12 @@ pub fn configure(app: &mut App) {
 
     app.add_system(
         render_top_panel
-            .in_set(RenderSystemSet::PostRenderingTopBottomPanels)
+            .in_set(RenderSystemSet::RenderingTopBottomPanels)
             .in_set(RenderingUi),
     );
     app.add_system(
         render_bottom_panel
-            .in_set(RenderSystemSet::PostRenderingTopBottomPanels)
+            .in_set(RenderSystemSet::RenderingTopBottomPanels)
             .in_set(RenderingUi),
     );
 
