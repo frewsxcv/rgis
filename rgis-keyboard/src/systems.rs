@@ -36,6 +36,6 @@ fn process_key_code_input_system(
     }
 }
 
-pub fn system_set() -> SystemSet {
-    SystemSet::new().with_system(process_key_code_input_system)
+pub fn configure(app: &mut App) {
+    app.add_system(process_key_code_input_system);
 }

@@ -1,3 +1,5 @@
+use bevy::prelude::App;
+
 fn handle_layer_created_events(
     mut layer_created_event_reader: bevy::ecs::event::EventReader<rgis_events::LayerCreatedEvent>,
     layers: bevy::ecs::system::Res<rgis_layers::Layers>,
@@ -70,9 +72,8 @@ fn handle_crs_changed_events(
     }
 }
 
-pub fn system_set() -> bevy::ecs::schedule::SystemSet {
-    bevy::ecs::schedule::SystemSet::new()
-        .with_system(handle_layer_created_events)
-        .with_system(handle_reproject_geometry_job_completion_events)
-        .with_system(handle_crs_changed_events)
+pub fn configure(app: &mut App) {
+    app.add_system(handle_layer_created_events);
+    app.add_system(handle_reproject_geometry_job_completion_events);
+    app.add_system(handle_crs_changed_events);
 }

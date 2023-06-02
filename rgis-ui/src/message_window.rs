@@ -15,7 +15,7 @@ impl<'a> MessageWindow<'a> {
                 .id(egui::Id::new("Message window"))
                 .open(&mut self.state.is_visible)
                 .anchor(egui::Align2::CENTER_CENTER, [0., 0.])
-                .show(self.bevy_egui_ctx.ctx_mut(), |ui| {
+                .show(self.bevy_egui_ctx.get_mut(), |ui| {
                     ui.label(message);
                 });
         }

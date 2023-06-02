@@ -22,7 +22,7 @@ impl<'a> ManageLayerWindow<'a> {
         };
         egui::Window::new("Manage Layer")
             .open(&mut self.state.is_visible)
-            .show(self.bevy_egui_ctx.ctx_mut(), |ui| {
+            .show(self.bevy_egui_ctx.get_mut(), |ui| {
                 egui::Grid::new("manage_layer_window_grid")
                     .num_columns(2)
                     .striped(true)

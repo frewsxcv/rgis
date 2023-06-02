@@ -1,8 +1,11 @@
-use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*};
-use bevy_egui::egui::{self, Widget};
+use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*, window::PrimaryWindow};
+use bevy_egui::{
+    egui::{self, Widget},
+    EguiContext,
+};
 
 fn render_bottom_panel(
-    mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
+    mut egui_ctx_query: Query<&mut EguiContext, With<PrimaryWindow>>,
     mouse_pos: Res<rgis_mouse::MousePos>,
     rgis_settings: Res<rgis_settings::RgisSettings>,
     mut open_change_crs_window_event_writer: bevy::ecs::event::EventWriter<
@@ -10,8 +13,10 @@ fn render_bottom_panel(
     >,
     mut bottom_panel_height: ResMut<crate::BottomPanelHeight>,
 ) {
+    let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else { return; };
+
     crate::bottom_panel::BottomPanel {
-        egui_ctx: bevy_egui_ctx.ctx_mut(),
+        egui_ctx: egui_ctx.get_mut(),
         mouse_pos: &mouse_pos,
         rgis_settings: &rgis_settings,
         open_change_crs_window_event_writer: &mut open_change_crs_window_event_writer,
@@ -22,13 +27,15 @@ fn render_bottom_panel(
 
 fn render_side_panel(
     mut manage_layer_window_state: ResMut<crate::ManageLayerWindowState>, // TODO: change this to Local?
-    mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
+    mut egui_ctx_query: Query<&mut EguiContext, With<PrimaryWindow>>,
     layers: Res<rgis_layers::Layers>,
     mut events: crate::side_panel::Events,
     mut side_panel_width: ResMut<crate::SidePanelWidth>,
 ) {
+    let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else { return; };
+
     crate::side_panel::SidePanel {
-        egui_ctx: bevy_egui_ctx.ctx_mut(),
+        egui_ctx: egui_ctx.get_mut(),
         manage_layer_window_state: &mut manage_layer_window_state,
         layers: &layers,
         events: &mut events,
@@ -51,14 +58,16 @@ fn handle_open_file_job(
 
 fn render_manage_layer_window(
     mut state: ResMut<crate::ManageLayerWindowState>, // TODO: change this to Local?
-    mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
+    mut egui_ctx_query: Query<&mut EguiContext, With<PrimaryWindow>>,
     layers: Res<rgis_layers::Layers>,
     mut color_events: ResMut<bevy::ecs::event::Events<rgis_events::UpdateLayerColorEvent>>,
 ) {
+    let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else { return; };
+
     crate::manage_layer_window::ManageLayerWindow {
         state: &mut state,
         layers: &layers,
-        bevy_egui_ctx: &mut bevy_egui_ctx,
+        bevy_egui_ctx: &mut egui_ctx,
         color_events: &mut color_events,
     }
     .render();
@@ -75,11 +84,13 @@ impl Default for IsVisible {
 fn render_add_layer_window(
     mut is_visible: Local<IsVisible>,
     mut selected_file: ResMut<crate::add_layer_window::SelectedFile>,
-    mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
+    mut egui_ctx_query: Query<&mut EguiContext, With<PrimaryWindow>>,
     mut job_spawner: bevy_jobs::JobSpawner,
     mut state: Local<crate::add_layer_window::State>,
     mut events: crate::add_layer_window::Events,
 ) {
+    let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else { return; };
+
     if !events.show_add_layer_window_event_reader.is_empty() {
         is_visible.0 = true;
     }
@@ -93,7 +104,7 @@ fn render_add_layer_window(
         state: &mut state,
         selected_file: &mut selected_file,
         is_visible: &mut is_visible.0,
-        bevy_egui_ctx: &mut bevy_egui_ctx,
+        bevy_egui_ctx: &mut egui_ctx,
         job_spawner: &mut job_spawner,
         events: &mut events,
     }
@@ -106,7 +117,7 @@ fn render_change_crs_window(
         rgis_events::OpenChangeCrsWindow,
     >,
     rgis_settings: Res<rgis_settings::RgisSettings>,
-    mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
+    mut egui_ctx_query: Query<&mut EguiContext, With<PrimaryWindow>>,
     mut text_field_value: Local<String>,
     mut change_crs_event_writer: bevy::ecs::event::EventWriter<rgis_events::ChangeCrsEvent>,
     mut crs_input_outcome: Local<Option<crate::widgets::crs_input::Outcome>>,
@@ -115,9 +126,11 @@ fn render_change_crs_window(
         *is_visible = true;
     }
 
+    let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else { return; };
+
     crate::change_crs_window::ChangeCrsWindow {
         is_visible: &mut is_visible,
-        bevy_egui_ctx: &mut bevy_egui_ctx,
+        bevy_egui_ctx: &mut egui_ctx,
         text_field_value: &mut text_field_value,
         change_crs_event_writer: &mut change_crs_event_writer,
         rgis_settings: &rgis_settings,
@@ -128,7 +141,7 @@ fn render_change_crs_window(
 
 fn render_feature_properties_window(
     mut state: Local<crate::FeaturePropertiesWindowState>,
-    mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
+    mut egui_ctx_query: Query<&mut EguiContext, With<PrimaryWindow>>,
     mut render_message_events: ResMut<
         bevy::ecs::event::Events<rgis_events::RenderFeaturePropertiesEvent>,
     >,
@@ -137,25 +150,31 @@ fn render_feature_properties_window(
         state.is_visible = true;
         state.properties = Some(event.0);
     }
+
+    let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else { return; };
+
     crate::feature_properties_window::FeaturePropertiesWindow {
         state: &mut state,
-        bevy_egui_ctx: &mut bevy_egui_ctx,
+        bevy_egui_ctx: &mut egui_ctx,
     }
     .render();
 }
 
 fn render_message_window(
     mut state: Local<crate::MessageWindowState>,
-    mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
+    mut egui_ctx_query: Query<&mut EguiContext, With<PrimaryWindow>>,
     mut render_message_events: ResMut<bevy::ecs::event::Events<rgis_events::RenderMessageEvent>>,
 ) {
     if let Some(event) = render_message_events.drain().last() {
         state.message = Some(event.0);
         state.is_visible = true;
     }
+
+    let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else { return; };
+
     crate::message_window::MessageWindow {
         state: &mut state,
-        bevy_egui_ctx: &mut bevy_egui_ctx,
+        bevy_egui_ctx: &mut egui_ctx,
     }
     .render();
 }
@@ -163,7 +182,7 @@ fn render_message_window(
 fn render_operation_window(
     mut state: Local<crate::OperationWindowState>,
     mut events: ResMut<Events<crate::events::OpenOperationWindowEvent>>,
-    mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
+    mut egui_ctx_query: Query<&mut EguiContext, With<PrimaryWindow>>,
     create_layer_event_writer: EventWriter<rgis_events::CreateLayerEvent>,
     render_message_event_writer: EventWriter<rgis_events::RenderMessageEvent>,
 ) {
@@ -173,8 +192,10 @@ fn render_operation_window(
         state.feature_collection = event.feature_collection; // Should this be `Some()`? Otherwise we'll always have something stored
     }
 
+    let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else { return; };
+
     crate::operation_window::OperationWindow {
-        bevy_egui_ctx: &mut bevy_egui_ctx,
+        bevy_egui_ctx: &mut egui_ctx,
         state: &mut state,
         create_layer_event_writer,
         render_message_event_writer,
@@ -184,7 +205,7 @@ fn render_operation_window(
 
 fn render_in_progress(
     query: Query<&bevy_jobs::InProgressJob>,
-    mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
+    mut egui_ctx_query: Query<&mut EguiContext, With<PrimaryWindow>>,
 ) {
     let mut in_progress_job_iter = query.iter().peekable();
 
@@ -192,11 +213,13 @@ fn render_in_progress(
         return;
     }
 
+    let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else { return; };
+
     egui::Window::new("Running jobs")
         .open(&mut true)
         .title_bar(false)
         .anchor(egui::Align2::RIGHT_BOTTOM, [-5., -5.])
-        .show(bevy_egui_ctx.ctx_mut(), |ui| {
+        .show(egui_ctx.get_mut(), |ui| {
             for in_progress_job in in_progress_job_iter {
                 let name = &in_progress_job.name;
                 let progress = in_progress_job.progress;
@@ -219,17 +242,23 @@ fn render_in_progress(
 }
 
 fn render_top_panel(
-    mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
+    mut egui_ctx_query: Query<&mut EguiContext, With<PrimaryWindow>>,
     mut app_exit_events: ResMut<bevy::ecs::event::Events<bevy::app::AppExit>>,
-    mut windows: ResMut<Windows>,
+    mut windows: Query<&mut Window, With<PrimaryWindow>>,
     mut app_settings: ResMut<rgis_settings::RgisSettings>,
     mut top_panel_height: ResMut<crate::TopPanelHeight>,
     mut debug_stats_window_state: ResMut<crate::DebugStatsWindowState>,
 ) {
+    let Ok(mut window) = windows.get_single_mut() else {
+        return;
+    };
+
+    let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else { return; };
+
     crate::top_panel::TopPanel {
-        bevy_egui_ctx: &mut bevy_egui_ctx,
+        bevy_egui_ctx: &mut egui_ctx,
         app_exit_events: &mut app_exit_events,
-        windows: &mut windows,
+        window: &mut window,
         app_settings: &mut app_settings,
         top_panel_height: &mut top_panel_height,
         debug_stats_window_state: &mut debug_stats_window_state,
@@ -238,9 +267,11 @@ fn render_top_panel(
 }
 
 fn set_egui_theme(
-    mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
+    mut egui_ctx_query: Query<&mut EguiContext, With<PrimaryWindow>>,
     mut clear_color: ResMut<ClearColor>,
 ) {
+    let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else { return; };
+
     let egui_visuals = match dark_light::detect() {
         dark_light::Mode::Dark => egui::Visuals::dark(),
         dark_light::Mode::Light | dark_light::Mode::Default => egui::Visuals::light(),
@@ -248,15 +279,86 @@ fn set_egui_theme(
     // Set the background color of the map
     clear_color.0 = egui_color_to_bevy_color(egui_visuals.extreme_bg_color);
     // Set the egui theme
-    bevy_egui_ctx.ctx_mut().set_visuals(egui_visuals);
+    egui_ctx.get_mut().set_visuals(egui_visuals);
 }
 
 fn egui_color_to_bevy_color(egui_color: bevy_egui::egui::Color32) -> bevy::render::color::Color {
     bevy::render::color::Color::rgb_u8(egui_color.r(), egui_color.g(), egui_color.b())
 }
 
-pub fn startup_system_set() -> SystemSet {
-    SystemSet::new().with_system(set_egui_theme)
+#[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
+enum RenderSystemSet {
+    RenderingMessageWindow,
+    RenderingTopBottomPanels,
+    SideBarProgressBar,
+    Windows,
+}
+
+#[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
+struct RenderingUi;
+
+pub fn configure(app: &mut App) {
+    app.add_startup_system(set_egui_theme);
+
+    app.configure_sets(
+        (
+            RenderSystemSet::RenderingMessageWindow,
+            RenderSystemSet::RenderingTopBottomPanels,
+            RenderSystemSet::SideBarProgressBar,
+            RenderSystemSet::Windows,
+        )
+            .chain(),
+    );
+
+    app.add_system(
+        render_message_window
+            .in_set(RenderSystemSet::RenderingMessageWindow)
+    );
+
+    app.add_system(
+        render_top_panel
+            .in_set(RenderSystemSet::RenderingTopBottomPanels)
+    );
+    app.add_system(
+        render_bottom_panel
+            .in_set(RenderSystemSet::RenderingTopBottomPanels)
+    );
+
+    app.add_system(
+        render_side_panel
+            .in_set(RenderSystemSet::SideBarProgressBar)
+    );
+    app.add_system(
+        render_in_progress
+            .in_set(RenderSystemSet::SideBarProgressBar)
+    );
+
+    app.add_system(handle_open_file_job);
+
+    app.add_system(
+        render_manage_layer_window
+            .in_set(RenderSystemSet::Windows)
+    );
+    app.add_system(
+        render_add_layer_window
+            .in_set(RenderSystemSet::Windows)
+    );
+    app.add_system(
+        render_change_crs_window
+            .in_set(RenderSystemSet::Windows)
+    );
+    app.add_system(
+        render_feature_properties_window
+            .in_set(RenderSystemSet::Windows)
+    );
+    app.add_system(
+        render_operation_window
+            .in_set(RenderSystemSet::Windows)
+    );
+    app.add_system(
+        render_debug_window
+            .in_set(RenderSystemSet::Windows)
+    );
 }
 
 #[derive(Default)]
@@ -269,7 +371,7 @@ struct LastDebugStats {
 const FPS_MAX: f64 = 100.;
 
 fn render_debug_window(
-    mut bevy_egui_ctx: ResMut<bevy_egui::EguiContext>,
+    mut egui_ctx_query: Query<&mut EguiContext, With<PrimaryWindow>>,
     diagnostics: Res<bevy::diagnostic::Diagnostics>,
     mut state: ResMut<crate::DebugStatsWindowState>,
     time: Res<Time>,
@@ -278,6 +380,8 @@ fn render_debug_window(
     if !state.is_visible {
         return;
     }
+
+    let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else { return; };
 
     if state.history.is_empty() || state.timer.tick(time.delta()).just_finished() {
         let fps = diagnostics
@@ -323,7 +427,7 @@ fn render_debug_window(
     egui::Window::new("Debug")
         .default_width(200.)
         .open(&mut state.is_visible)
-        .show(bevy_egui_ctx.ctx_mut(), move |ui| {
+        .show(egui_ctx.get_mut(), move |ui| {
             DebugTable { last: &last }.ui(ui);
 
             use egui::plot::{Line, Plot, PlotPoints};
@@ -344,28 +448,6 @@ fn render_debug_window(
                 .view_aspect(2.) // Width is twice as big as height
                 .show(ui, |plot_ui| plot_ui.line(line));
         });
-}
-
-pub fn system_sets() -> [SystemSet; 2] {
-    [
-        SystemSet::new()
-            .label("top_bottom_panels")
-            .after(render_message_window)
-            .with_system(render_top_panel)
-            .with_system(render_bottom_panel),
-        SystemSet::new()
-            .with_system(render_debug_window)
-            .with_system(handle_open_file_job)
-            .with_system(render_message_window)
-            .with_system(render_side_panel.after("top_bottom_panels"))
-            .with_system(render_manage_layer_window.after(render_side_panel))
-            .with_system(render_add_layer_window.after(render_manage_layer_window))
-            .with_system(render_change_crs_window.after(render_add_layer_window))
-            .with_system(render_feature_properties_window.after(render_change_crs_window))
-            .with_system(render_operation_window.after(render_feature_properties_window))
-            .with_system(render_in_progress.after("top_bottom_panels"))
-            .label("rgis_ui"),
-    ]
 }
 
 struct DebugTable<'a> {

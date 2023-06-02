@@ -65,13 +65,12 @@ fn handle_load_file_job_finished_events<F: geo_file_loader::FileLoader + Send + 
     }
 }
 
-pub fn system_set() -> SystemSet {
-    SystemSet::new()
-        .with_system(handle_network_fetch_finished_jobs::<geo_file_loader::GeoJsonSource>)
-        .with_system(handle_load_file_events::<geo_file_loader::GeoJsonSource>)
-        .with_system(handle_load_file_events::<geo_file_loader::WktSource>)
-        .with_system(handle_load_file_events::<geo_file_loader::ShapefileSource>)
-        .with_system(handle_load_file_job_finished_events::<geo_file_loader::GeoJsonSource>)
-        .with_system(handle_load_file_job_finished_events::<geo_file_loader::WktSource>)
-        .with_system(handle_load_file_job_finished_events::<geo_file_loader::ShapefileSource>)
+pub fn configure(app: &mut App) {
+    app.add_system(handle_network_fetch_finished_jobs::<geo_file_loader::GeoJsonSource>);
+    app.add_system(handle_load_file_events::<geo_file_loader::GeoJsonSource>);
+    app.add_system(handle_load_file_events::<geo_file_loader::WktSource>);
+    app.add_system(handle_load_file_events::<geo_file_loader::ShapefileSource>);
+    app.add_system(handle_load_file_job_finished_events::<geo_file_loader::GeoJsonSource>);
+    app.add_system(handle_load_file_job_finished_events::<geo_file_loader::WktSource>);
+    app.add_system(handle_load_file_job_finished_events::<geo_file_loader::ShapefileSource>);
 }

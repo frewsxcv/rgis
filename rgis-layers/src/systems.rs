@@ -124,12 +124,11 @@ fn handle_create_layer_events(
     }
 }
 
-pub fn system_set() -> SystemSet {
-    SystemSet::new()
-        .with_system(handle_toggle_layer_visibility_events)
-        .with_system(handle_update_color_events)
-        .with_system(handle_move_layer_events)
-        .with_system(handle_delete_layer_events)
-        .with_system(handle_map_clicked_events)
-        .with_system(handle_create_layer_events)
+pub fn configure(app: &mut App) {
+    app.add_system(handle_toggle_layer_visibility_events);
+    app.add_system(handle_update_color_events);
+    app.add_system(handle_move_layer_events);
+    app.add_system(handle_delete_layer_events);
+    app.add_system(handle_map_clicked_events);
+    app.add_system(handle_create_layer_events);
 }

@@ -243,8 +243,8 @@ pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(Layers::new())
-            .add_system_set(systems::system_set());
+        app.insert_resource(Layers::new());
+        systems::configure(app);
     }
 }
 

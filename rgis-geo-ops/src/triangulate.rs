@@ -20,7 +20,7 @@ pub struct Triangulate {
 
 impl Operation for Triangulate {
     fn visit_polygon(&mut self, polygon: geo::Polygon) {
-        self.triangles.extend(polygon.earcut_traingles_iter());
+        self.triangles.extend(polygon.earcut_triangles_iter());
     }
 
     fn visit_multi_polygon(&mut self, multi_polygon: geo::MultiPolygon) {

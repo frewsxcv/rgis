@@ -1,9 +1,10 @@
+use bevy::prelude::*;
 use bevy_egui::egui;
 
 pub(crate) struct TopPanel<'a> {
     pub app_exit_events: &'a mut bevy::ecs::event::Events<bevy::app::AppExit>,
     pub bevy_egui_ctx: &'a mut bevy_egui::EguiContext,
-    pub windows: &'a mut bevy::window::Windows,
+    pub window: &'a mut Window,
     pub app_settings: &'a mut rgis_settings::RgisSettings,
     pub top_panel_height: &'a mut crate::TopPanelHeight,
     pub debug_stats_window_state: &'a mut crate::DebugStatsWindowState,
@@ -12,7 +13,7 @@ pub(crate) struct TopPanel<'a> {
 impl<'a> TopPanel<'a> {
     pub(crate) fn render(&mut self) {
         let inner_response =
-            egui::TopBottomPanel::top("top_panel").show(self.bevy_egui_ctx.ctx_mut(), |ui| {
+            egui::TopBottomPanel::top("top_panel").show(self.bevy_egui_ctx.get_mut(), |ui| {
                 egui::menu::bar(ui, |ui| {
                     let prev_current_tool = self.app_settings.current_tool;
 
@@ -24,7 +25,7 @@ impl<'a> TopPanel<'a> {
                     });
                     ui.menu_button("View", |ui| {
                         ui.add(FullScreenButton {
-                            windows: self.windows,
+                            window: self.window,
                         });
                     });
                     ui.menu_button("Help", |ui| {
@@ -86,19 +87,18 @@ impl<'a> egui::Widget for ExitButton<'a> {
 }
 
 struct FullScreenButton<'a> {
-    windows: &'a mut bevy::window::Windows,
+    window: &'a mut bevy::window::Window,
 }
 
 impl<'a> egui::Widget for FullScreenButton<'a> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         ui.add_enabled_ui(cfg!(not(target_arch = "wasm32")), |ui| {
             if ui.button("Full screen").clicked() {
-                let window = self.windows.primary_mut();
-                window.set_mode(if window.mode() == bevy::window::WindowMode::Fullscreen {
+                self.window.mode = if self.window.mode == bevy::window::WindowMode::Fullscreen {
                     bevy::window::WindowMode::Windowed
                 } else {
                     bevy::window::WindowMode::Fullscreen
-                });
+                };
             }
         })
         .response

@@ -1,17 +1,13 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, window::PrimaryWindow};
 use rgis_transform::Transformer;
 
-pub fn system_set() -> bevy::ecs::schedule::SystemSet {
-    bevy::ecs::schedule::SystemSet::new()
-        .with_system(center_camera)
-        .with_system(pan_camera_system)
-        .with_system(handle_meshes_spawned_events)
-        .with_system(zoom_camera_system)
-        .with_system(handle_change_crs_event)
-}
-
-pub fn startup_system_set() -> bevy::ecs::schedule::SystemSet {
-    bevy::ecs::schedule::SystemSet::new().with_system(init_camera)
+pub fn configure(app: &mut App) {
+    app.add_startup_system(init_camera);
+    app.add_system(center_camera);
+    app.add_system(pan_camera_system);
+    app.add_system(handle_meshes_spawned_events);
+    app.add_system(zoom_camera_system);
+    app.add_system(handle_change_crs_event);
 }
 
 fn init_camera(mut commands: Commands) {
@@ -24,12 +20,14 @@ fn handle_change_crs_event(
         &mut bevy::transform::components::Transform,
         bevy::ecs::query::With<bevy::render::camera::Camera>,
     >,
-    windows: Res<bevy::window::Windows>,
+    windows: Query<&Window, With<PrimaryWindow>>,
     ui_margins: rgis_ui::UiMargins,
 ) {
-    let Some(event) = change_crs_event_reader.iter().next_back() else { return };
+    let Some(event) = change_crs_event_reader.iter().last() else { return };
+    let Ok(window) = windows.get_single() else {
+        return;
+    };
     let mut transform = query.single_mut();
-    let window = windows.primary();
     let map_area = rgis_units::MapArea {
         window,
         left_offset_px: ui_margins.left.0,
@@ -124,9 +122,12 @@ fn center_camera(
         &mut bevy::transform::components::Transform,
         bevy::ecs::query::With<bevy::render::camera::Camera>,
     >,
-    windows: Res<bevy::window::Windows>,
+    windows: Query<&Window, With<PrimaryWindow>>,
     ui_margins: rgis_ui::UiMargins,
 ) {
+    let Ok(window) = windows.get_single() else {
+        return;
+    };
     for projected_feature in event_reader
         .iter()
         .filter_map(|event| layers.get(event.0))
@@ -134,11 +135,10 @@ fn center_camera(
     {
         let Ok(bounding_rect) = projected_feature.bounding_rect() else { continue };
         let mut transform = query.single_mut();
-        let window = windows.primary();
 
         debug!("Moving camera to look at new layer");
         let map_area = rgis_units::MapArea {
-            window,
+            window: &window,
             right_offset_px: 0.,
             left_offset_px: ui_margins.left.0,
             bottom_offset_px: ui_margins.bottom.0,

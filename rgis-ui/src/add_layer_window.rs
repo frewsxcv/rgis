@@ -6,17 +6,12 @@ use std::mem;
 pub struct Events<'w, 's> {
     pub load_geo_json_file_event_writer: bevy::ecs::event::EventWriter<
         'w,
-        's,
         rgis_events::LoadFileEvent<geo_file_loader::GeoJsonSource>,
     >,
-    pub load_wkt_file_event_writer: bevy::ecs::event::EventWriter<
-        'w,
-        's,
-        rgis_events::LoadFileEvent<geo_file_loader::WktSource>,
-    >,
+    pub load_wkt_file_event_writer:
+        bevy::ecs::event::EventWriter<'w, rgis_events::LoadFileEvent<geo_file_loader::WktSource>>,
     pub load_shapefile_file_event_writer: bevy::ecs::event::EventWriter<
         'w,
-        's,
         rgis_events::LoadFileEvent<geo_file_loader::ShapefileSource>,
     >,
     pub show_add_layer_window_event_reader:
@@ -127,7 +122,7 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
         egui::Window::new("Add Layer")
             .open(self.is_visible)
             .anchor(egui::Align2::LEFT_TOP, [5., 5.])
-            .show(self.bevy_egui_ctx.ctx_mut(), |ui| {
+            .show(self.bevy_egui_ctx.get_mut(), |ui| {
                 ui.label("Layer source:");
 
                 ui.radio_value(&mut self.state.selected_source, Source::Library, "Library");

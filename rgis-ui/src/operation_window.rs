@@ -1,15 +1,14 @@
 use bevy_egui::egui;
 
-pub(crate) struct OperationWindow<'w, 's> {
+pub(crate) struct OperationWindow<'w> {
     pub bevy_egui_ctx: &'w mut bevy_egui::EguiContext,
     pub state: &'w mut crate::OperationWindowState,
-    pub create_layer_event_writer:
-        bevy::ecs::event::EventWriter<'w, 's, rgis_events::CreateLayerEvent>,
+    pub create_layer_event_writer: bevy::ecs::event::EventWriter<'w, rgis_events::CreateLayerEvent>,
     pub render_message_event_writer:
-        bevy::ecs::event::EventWriter<'w, 's, rgis_events::RenderMessageEvent>,
+        bevy::ecs::event::EventWriter<'w, rgis_events::RenderMessageEvent>,
 }
 
-impl<'w, 's> OperationWindow<'w, 's> {
+impl<'w> OperationWindow<'w> {
     pub(crate) fn render(&mut self) {
         if !self.state.is_visible {
             self.state.operation = None;
@@ -42,7 +41,7 @@ impl<'w, 's> OperationWindow<'w, 's> {
                 egui::Window::new("Operation")
                     .open(&mut self.state.is_visible)
                     .anchor(egui::Align2::LEFT_TOP, [5., 5.])
-                    .show(self.bevy_egui_ctx.ctx_mut(), |ui| {
+                    .show(self.bevy_egui_ctx.get_mut(), |ui| {
                         operation.ui(ui, &self.state.feature_collection);
                     });
             }

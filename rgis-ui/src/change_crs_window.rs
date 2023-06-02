@@ -1,21 +1,21 @@
 use bevy_egui::egui;
 
-pub(crate) struct ChangeCrsWindow<'a, 'w, 's> {
+pub(crate) struct ChangeCrsWindow<'a, 'w> {
     pub is_visible: &'a mut bool,
     pub bevy_egui_ctx: &'a mut bevy_egui::EguiContext,
     pub text_field_value: &'a mut String,
     pub change_crs_event_writer:
-        &'a mut bevy::ecs::event::EventWriter<'w, 's, rgis_events::ChangeCrsEvent>,
+        &'a mut bevy::ecs::event::EventWriter<'w, rgis_events::ChangeCrsEvent>,
     pub rgis_settings: &'a rgis_settings::RgisSettings,
     pub crs_input_outcome: &'a mut Option<crate::widgets::crs_input::Outcome>,
 }
 
-impl<'a, 'w, 's> ChangeCrsWindow<'a, 'w, 's> {
+impl<'a, 'w> ChangeCrsWindow<'a, 'w> {
     pub(crate) fn render(&mut self) {
         egui::Window::new("Change CRS")
             .open(self.is_visible)
             .anchor(egui::Align2::LEFT_TOP, [5., 5.])
-            .show(self.bevy_egui_ctx.ctx_mut(), |ui| {
+            .show(self.bevy_egui_ctx.get_mut(), |ui| {
                 ui.add(crate::widgets::CrsInput::new(
                     self.text_field_value,
                     self.crs_input_outcome,

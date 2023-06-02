@@ -16,7 +16,7 @@ impl<'a> FeaturePropertiesWindow<'a> {
             .id(egui::Id::new("Layer Feature Properties Window"))
             .open(&mut self.state.is_visible)
             .anchor(egui::Align2::LEFT_TOP, [MARGIN, MARGIN])
-            .show(self.bevy_egui_ctx.ctx_mut(), |ui| {
+            .show(self.bevy_egui_ctx.get_mut(), |ui| {
                 ui.add(FeaturePropertiesTable { properties })
             });
     }
