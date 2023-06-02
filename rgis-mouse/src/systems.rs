@@ -30,6 +30,7 @@ fn cursor_moved_system(
     }
 }
 
+// FIXME: Cursor icon setting isn't working
 fn mouse_motion_system(
     mut mouse_motion_event_reader: bevy::ecs::event::EventReader<bevy::input::mouse::MouseMotion>,
     mouse_button: Res<bevy::input::Input<bevy::input::mouse::MouseButton>>,
@@ -155,6 +156,5 @@ pub fn configure(app: &mut App) {
     app.add_system(cursor_moved_system);
     app.add_system(mouse_scroll_system);
     app.add_system(mouse_click_system);
-    // app.add_system(mouse_motion_system.after(rgis_ui::rgis_ui)); // Egui mouseover functions are dependent on the UI finished setting up
-    app.add_system(mouse_motion_system); // Egui mouseover functions are dependent on the UI finished setting up
+    app.add_system(mouse_motion_system);
 }

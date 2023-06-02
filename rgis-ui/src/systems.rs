@@ -300,7 +300,6 @@ struct RenderingUi;
 pub fn configure(app: &mut App) {
     app.add_startup_system(set_egui_theme);
 
-    app.configure_set(RenderingUi);
     app.configure_sets(
         (
             RenderSystemSet::RenderingMessageWindow,
@@ -314,62 +313,51 @@ pub fn configure(app: &mut App) {
     app.add_system(
         render_message_window
             .in_set(RenderSystemSet::RenderingMessageWindow)
-            .in_set(RenderingUi),
     );
 
     app.add_system(
         render_top_panel
             .in_set(RenderSystemSet::RenderingTopBottomPanels)
-            .in_set(RenderingUi),
     );
     app.add_system(
         render_bottom_panel
             .in_set(RenderSystemSet::RenderingTopBottomPanels)
-            .in_set(RenderingUi),
     );
 
     app.add_system(
         render_side_panel
             .in_set(RenderSystemSet::SideBarProgressBar)
-            .in_set(RenderingUi),
     );
     app.add_system(
         render_in_progress
             .in_set(RenderSystemSet::SideBarProgressBar)
-            .in_set(RenderingUi),
     );
 
-    app.add_system(handle_open_file_job.in_set(RenderingUi));
+    app.add_system(handle_open_file_job);
 
     app.add_system(
         render_manage_layer_window
             .in_set(RenderSystemSet::Windows)
-            .in_set(RenderingUi),
     );
     app.add_system(
         render_add_layer_window
             .in_set(RenderSystemSet::Windows)
-            .in_set(RenderingUi),
     );
     app.add_system(
         render_change_crs_window
             .in_set(RenderSystemSet::Windows)
-            .in_set(RenderingUi),
     );
     app.add_system(
         render_feature_properties_window
             .in_set(RenderSystemSet::Windows)
-            .in_set(RenderingUi),
     );
     app.add_system(
         render_operation_window
             .in_set(RenderSystemSet::Windows)
-            .in_set(RenderingUi),
     );
     app.add_system(
         render_debug_window
             .in_set(RenderSystemSet::Windows)
-            .in_set(RenderingUi),
     );
 }
 
