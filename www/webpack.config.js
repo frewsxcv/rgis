@@ -18,6 +18,9 @@ module.exports = {
       }, {
         from: 'index.html',
         to: 'index.html',
+      }, {
+        from: 'index.js',
+        to: 'index.js',
       }]
     }),
   ],
