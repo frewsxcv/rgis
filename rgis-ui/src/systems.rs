@@ -290,7 +290,8 @@ fn egui_color_to_bevy_color(egui_color: bevy_egui::egui::Color32) -> bevy::rende
 enum RenderSystemSet {
     RenderingMessageWindow,
     RenderingTopBottomPanels,
-    PostRenderingTopBottomPanels,
+    SideBarProgressBar,
+    Windows,
 }
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
@@ -304,7 +305,8 @@ pub fn configure(app: &mut App) {
         (
             RenderSystemSet::RenderingMessageWindow,
             RenderSystemSet::RenderingTopBottomPanels,
-            RenderSystemSet::PostRenderingTopBottomPanels,
+            RenderSystemSet::SideBarProgressBar,
+            RenderSystemSet::Windows,
         )
             .chain(),
     );
@@ -328,23 +330,47 @@ pub fn configure(app: &mut App) {
 
     app.add_system(
         render_side_panel
-            .in_set(RenderSystemSet::PostRenderingTopBottomPanels)
+            .in_set(RenderSystemSet::SideBarProgressBar)
             .in_set(RenderingUi),
     );
     app.add_system(
         render_in_progress
-            .in_set(RenderSystemSet::PostRenderingTopBottomPanels)
+            .in_set(RenderSystemSet::SideBarProgressBar)
             .in_set(RenderingUi),
     );
 
-    app.add_system(render_debug_window.in_set(RenderingUi));
     app.add_system(handle_open_file_job.in_set(RenderingUi));
 
-    // app.add_system(render_manage_layer_window.after(render_side_panel))
-    // app.add_system(render_add_layer_window.after(render_manage_layer_window))
-    // app.add_system(render_change_crs_window.after(render_add_layer_window))
-    // app.add_system(render_feature_properties_window.after(render_change_crs_window))
-    // app.add_system(render_operation_window.after(render_feature_properties_window))
+    app.add_system(
+        render_manage_layer_window
+            .in_set(RenderSystemSet::Windows)
+            .in_set(RenderingUi),
+    );
+    app.add_system(
+        render_add_layer_window
+            .in_set(RenderSystemSet::Windows)
+            .in_set(RenderingUi),
+    );
+    app.add_system(
+        render_change_crs_window
+            .in_set(RenderSystemSet::Windows)
+            .in_set(RenderingUi),
+    );
+    app.add_system(
+        render_feature_properties_window
+            .in_set(RenderSystemSet::Windows)
+            .in_set(RenderingUi),
+    );
+    app.add_system(
+        render_operation_window
+            .in_set(RenderSystemSet::Windows)
+            .in_set(RenderingUi),
+    );
+    app.add_system(
+        render_debug_window
+            .in_set(RenderSystemSet::Windows)
+            .in_set(RenderingUi),
+    );
 }
 
 #[derive(Default)]
