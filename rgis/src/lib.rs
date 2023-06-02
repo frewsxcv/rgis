@@ -47,11 +47,6 @@ pub fn run() {
     app.add_plugin(bevy::diagnostic::DiagnosticsPlugin);
     app.add_plugin(bevy::diagnostic::FrameTimeDiagnosticsPlugin);
 
-    #[cfg(target_arch = "wasm32")]
-    {
-        app.add_plugin(bevy_web_resizer::Plugin);
-    }
-
     #[cfg(not(target_arch = "wasm32"))]
     {
         let cli_values = if let Ok(c) = rgis_cli::run() {

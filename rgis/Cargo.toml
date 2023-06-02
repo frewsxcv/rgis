@@ -36,5 +36,5 @@ rgis-events = { path = "../rgis-events" }
 rgis-cli = { path = "../rgis-cli" }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-bevy-web-resizer = "4.0"
+bevy-web-resizer = "5.0"
 wasm-bindgen = "0.2"
