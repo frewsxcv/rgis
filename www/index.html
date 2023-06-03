@@ -6,8 +6,7 @@
     <style>
       html, body {
         margin: 0;
-        padding: 0;
-        overflow: hidden;
+        height: 100%;
       }
 
       /* Allow dark/light mode. Mainly for the initial background color before the app has loaded. */
@@ -18,6 +17,7 @@
   </head>
   <body>
     <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
+    <canvas id="rgis"></canvas>
     <script>
       /* oncontextmenu: disable right click menu */
       document.body.addEventListener("contextmenu", e => e.preventDefault());
