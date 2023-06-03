@@ -23,8 +23,8 @@ pub fn run() {
         }),
         ..Default::default()
     });
-    app.add_plugin(bevy::winit::WinitPlugin::default());
     app.add_plugin(bevy::a11y::AccessibilityPlugin);
+    app.add_plugin(bevy::winit::WinitPlugin::default());
     app.add_plugin(bevy::render::RenderPlugin::default());
     app.add_plugin(bevy::render::texture::ImagePlugin::default());
     app.add_plugin(bevy::log::LogPlugin::default());
