@@ -19,6 +19,7 @@ pub fn run() {
     app.add_plugin(WindowPlugin {
         primary_window: Some(Window {
             title: "rgis".to_string(),
+            fit_canvas_to_parent: true,
             ..Default::default()
         }),
         ..Default::default()
