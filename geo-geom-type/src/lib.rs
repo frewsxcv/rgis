@@ -7,7 +7,7 @@
 )]
 
 bitflags::bitflags! {
-    #[derive(Debug, Copy, Clone)]
+    #[derive(Debug, Copy, Clone, PartialEq, Eq)]
     pub struct GeomType: u16 {
         const POINT             = 0b000000001;
         const LINE              = 0b000000010;
@@ -18,6 +18,23 @@ bitflags::bitflags! {
         const MULTI_POLYGON     = 0b001000000;
         const RECT              = 0b010000000;
         const TRIANGLE          = 0b100000000;
+    }
+}
+
+impl std::fmt::Display for GeomType {
+    fn fmt(&self, mut f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            n if *n == GeomType::POINT => write!(&mut f, "Point"),
+            n if *n == GeomType::LINE => write!(&mut f, "Line"),
+            n if *n == GeomType::LINE_STRING => write!(&mut f, "LineString"),
+            n if *n == GeomType::POLYGON => write!(&mut f, "Polygon"),
+            n if *n == GeomType::MULTI_POINT => write!(&mut f, "MultiPoint"),
+            n if *n == GeomType::MULTI_LINE_STRING => write!(&mut f, "MultiLineString"),
+            n if *n == GeomType::MULTI_POLYGON => write!(&mut f, "MultiPolygon"),
+            n if *n == GeomType::RECT => write!(&mut f, "Rectangle"),
+            n if *n == GeomType::TRIANGLE => write!(&mut f, "Triangle"),
+            _ => unreachable!("Unknown geometry type"),
+        }
     }
 }
 

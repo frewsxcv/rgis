@@ -70,7 +70,7 @@ impl<'a, 'w> SidePanel<'a, 'w> {
         egui::CollapsingHeader::new(&layer.name)
             .id_source(layer.id) // Instead of using the layer name as the ID (which is not unique), use the layer ID
             .show(ui, |ui| {
-                ui.label(format!("Type: {:?}", layer.geom_type));
+                ui.label(format!("Type: {}", layer.geom_type));
 
                 ui.with_layout(Layout::top_down_justified(Align::Center), |ui| {
                     if ui.button("✏ Manage").clicked() {
