@@ -31,13 +31,13 @@ fn handle_mesh_building_job_outcome(
     asset_server: Res<AssetServer>,
 ) {
     while let Some(outcome) = finished_jobs.take_next::<MeshBuildingJob>() {
-        let Ok(crate::jobs::MeshBuildingJobOutcome {
-            prepared_meshes, layer_id, is_selected
+        let Some(crate::jobs::MeshBuildingJobOutcome {
+            geometry_mesh, layer_id, is_selected
         }) = outcome else { continue };
         let Some((layer, layer_index)) = layers.get_with_index(layer_id) else { continue };
 
         crate::spawn_geometry_meshes(
-            prepared_meshes,
+            geometry_mesh,
             &mut materials,
             layer,
             &mut commands,

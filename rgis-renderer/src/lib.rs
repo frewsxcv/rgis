@@ -33,7 +33,7 @@ impl bevy::app::Plugin for Plugin {
 }
 
 fn spawn_geometry_meshes(
-    prepared_meshes: Vec<geo_bevy::PreparedMesh>,
+    geometry_mesh: geo_bevy::GeometryMesh,
     materials: &mut Assets<ColorMaterial>,
     layer: &rgis_layers::Layer,
     commands: &mut Commands,
@@ -42,34 +42,56 @@ fn spawn_geometry_meshes(
     asset_server: &AssetServer,
     is_selected: bool,
 ) {
-    for prepared_mesh in prepared_meshes {
-        match prepared_mesh {
-            geo_bevy::PreparedMesh::Point(points) => {
-                for geo::Point(coord) in points {
-                    let entity_type = if is_selected {
-                        RenderEntityType::SelectedPoint
-                    } else {
-                        RenderEntityType::Point
-                    };
-                    let z_index = ZIndex::calculate(layer_index, entity_type);
-                    let mut transform = Transform::from_xyz(coord.x as f32, coord.y as f32, 0.);
-                    transform.translation =
-                        (coord.x as f32, coord.y as f32, z_index.0 as f32).into();
-                    let mut entity_commands =
-                        spawn_sprite_bundle(asset_server, transform, commands, layer.color);
-                    entity_commands.insert(layer.id);
-                    entity_commands.insert(entity_type);
-                }
-            }
-            geo_bevy::PreparedMesh::Polygon { mesh, color } => {
+    match geometry_mesh {
+        geo_bevy::GeometryMesh::Point(points) => {
+            for geo::Point(coord) in points {
                 let entity_type = if is_selected {
-                    RenderEntityType::SelectedPolygon
+                    RenderEntityType::SelectedPoint
                 } else {
-                    RenderEntityType::Polygon
+                    RenderEntityType::Point
                 };
+                let z_index = ZIndex::calculate(layer_index, entity_type);
+                let mut transform = Transform::from_xyz(coord.x as f32, coord.y as f32, 0.);
+                transform.translation = (coord.x as f32, coord.y as f32, z_index.0 as f32).into();
+                let mut entity_commands =
+                    spawn_sprite_bundle(asset_server, transform, commands, layer.color);
+                entity_commands.insert(layer.id);
+                entity_commands.insert(entity_type);
+            }
+        }
+        geo_bevy::GeometryMesh::Polygon(polygon_mesh) => {
+            let entity_type = if is_selected {
+                RenderEntityType::SelectedPolygon
+            } else {
+                RenderEntityType::Polygon
+            };
+            // Fill
+            spawn_helper(
+                materials,
+                layer.color,
+                layer_index,
+                polygon_mesh.mesh,
+                commands,
+                assets_meshes,
+                layer,
+                entity_type,
+            );
+            // Exterior border
+            spawn_helper(
+                materials,
+                Color::BLACK,
+                layer_index,
+                polygon_mesh.exterior_mesh,
+                commands,
+                assets_meshes,
+                layer,
+                entity_type,
+            );
+            // Interior borders
+            for mesh in polygon_mesh.interior_meshes {
                 spawn_helper(
                     materials,
-                    color,
+                    Color::BLACK,
                     layer_index,
                     mesh,
                     commands,
@@ -78,23 +100,23 @@ fn spawn_geometry_meshes(
                     entity_type,
                 );
             }
-            geo_bevy::PreparedMesh::LineString { mesh, color } => {
-                let entity_type = if is_selected {
-                    RenderEntityType::SelectedLineString
-                } else {
-                    RenderEntityType::LineString
-                };
-                spawn_helper(
-                    materials,
-                    color,
-                    layer_index,
-                    mesh,
-                    commands,
-                    assets_meshes,
-                    layer,
-                    entity_type,
-                );
-            }
+        }
+        geo_bevy::GeometryMesh::LineString(line_string_mesh) => {
+            let entity_type = if is_selected {
+                RenderEntityType::SelectedLineString
+            } else {
+                RenderEntityType::LineString
+            };
+            spawn_helper(
+                materials,
+                layer.color,
+                layer_index,
+                line_string_mesh,
+                commands,
+                assets_meshes,
+                layer,
+                entity_type,
+            );
         }
     }
 }

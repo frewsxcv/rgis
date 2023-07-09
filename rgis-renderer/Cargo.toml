@@ -16,7 +16,7 @@ bevy = { version = "0.10", default-features = false, features = [
     "png",
 ] }
 geo = "0.25"
-geo-bevy = { git = "https://github.com/frewsxcv/geo-bevy.git", branch = "frewsxcv/earcut" }
+geo-bevy = "0.5.0"
 geo-projected = { path = "../geo-projected" }
 rgis-events = { path = "../rgis-events" }
 rgis-layer-id = { path = "../rgis-layer-id" }

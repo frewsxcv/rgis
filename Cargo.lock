@@ -415,6 +415,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy-earcutr"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8f47446ffa5f8ccbd326e4d7193602edb48f05aef251efe2a8243532caac95c7"
+dependencies = [
+ "bevy",
+ "earcutr",
+]
+
+[[package]]
 name = "bevy_a11y"
 version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1967,35 +1977,22 @@ dependencies = [
 ]
 
 [[package]]
-name = "geo"
-version = "0.25.1"
-source = "git+https://github.com/georust/geo.git#3a9ce418821ca53810be215ba0d1b591191870f6"
-dependencies = [
- "earcutr",
- "float_next_after",
- "geo-types",
- "geographiclib-rs",
- "log",
- "num-traits",
- "robust",
- "rstar",
-]
-
-[[package]]
 name = "geo-bevy"
-version = "0.3.0"
-source = "git+https://github.com/frewsxcv/geo-bevy.git?branch=frewsxcv/earcut#6a60c3eb930129cd64aa587321317dc9f618c491"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9d048b1b995a64a879a173dc18b27cd29364aa6893028311a0635a938165ad4a"
 dependencies = [
- "bevy_log",
- "bevy_render",
- "geo 0.25.1 (git+https://github.com/georust/geo.git)",
+ "bevy",
+ "bevy-earcutr",
+ "geo",
+ "geo-types",
 ]
 
 [[package]]
 name = "geo-features"
 version = "0.1.0"
 dependencies = [
- "geo 0.25.1 (git+https://github.com/georust/geo?branch=main)",
+ "geo",
 ]
 
 [[package]]
@@ -2003,7 +2000,7 @@ name = "geo-file-loader"
 version = "0.1.0"
 dependencies = [
  "bytes",
- "geo 0.25.1 (git+https://github.com/georust/geo?branch=main)",
+ "geo",
  "geo-features",
  "geojson",
  "geozero",
@@ -2018,14 +2015,14 @@ name = "geo-geom-type"
 version = "0.1.0"
 dependencies = [
  "bitflags 2.3.3",
- "geo 0.25.1 (git+https://github.com/georust/geo?branch=main)",
+ "geo",
 ]
 
 [[package]]
 name = "geo-proj-js"
 version = "0.1.0"
 dependencies = [
- "geo 0.25.1 (git+https://github.com/georust/geo?branch=main)",
+ "geo",
  "js-sys",
  "log",
  "wasm-bindgen",
@@ -2036,7 +2033,7 @@ dependencies = [
 name = "geo-projected"
 version = "0.1.0"
 dependencies = [
- "geo 0.25.1 (git+https://github.com/georust/geo?branch=main)",
+ "geo",
  "geo-features",
 ]
 
@@ -3570,7 +3567,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_jobs",
- "geo 0.25.1 (git+https://github.com/georust/geo?branch=main)",
+ "geo",
  "rgis-camera",
  "rgis-cli",
  "rgis-events",
@@ -3592,7 +3589,7 @@ name = "rgis-camera"
 version = "0.1.0"
 dependencies = [
  "bevy",
- "geo 0.25.1 (git+https://github.com/georust/geo?branch=main)",
+ "geo",
  "geo-projected",
  "proj",
  "rgis-events",
@@ -3615,7 +3612,7 @@ name = "rgis-events"
 version = "0.1.0"
 dependencies = [
  "bevy",
- "geo 0.25.1 (git+https://github.com/georust/geo?branch=main)",
+ "geo",
  "geo-features",
  "geo-file-loader",
  "geo-projected",
@@ -3643,7 +3640,7 @@ name = "rgis-geo-ops"
 version = "0.1.0"
 dependencies = [
  "bevy_egui",
- "geo 0.25.1 (git+https://github.com/georust/geo?branch=main)",
+ "geo",
  "geo-features",
  "geo-geom-type",
  "geo-projected",
@@ -3670,7 +3667,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "colorous",
- "geo 0.25.1 (git+https://github.com/georust/geo?branch=main)",
+ "geo",
  "geo-features",
  "geo-geom-type",
  "geo-projected",
@@ -3690,7 +3687,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_egui",
- "geo 0.25.1 (git+https://github.com/georust/geo?branch=main)",
+ "geo",
  "geo-projected",
  "rgis-events",
  "rgis-settings",
@@ -3717,7 +3714,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_jobs",
- "geo 0.25.1 (git+https://github.com/georust/geo?branch=main)",
+ "geo",
  "geo-bevy",
  "geo-projected",
  "rgis-events",
@@ -3739,7 +3736,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_jobs",
- "geo 0.25.1 (git+https://github.com/georust/geo?branch=main)",
+ "geo",
  "geo-features",
  "geo-proj-js",
  "geo-projected",
@@ -3760,7 +3757,7 @@ dependencies = [
  "bevy_egui",
  "bevy_jobs",
  "dark-light",
- "geo 0.25.1 (git+https://github.com/georust/geo?branch=main)",
+ "geo",
  "geo-features",
  "geo-file-loader",
  "geo-proj-js",
@@ -3782,7 +3779,7 @@ name = "rgis-units"
 version = "0.1.0"
 dependencies = [
  "bevy",
- "geo 0.25.1 (git+https://github.com/georust/geo?branch=main)",
+ "geo",
  "geo-features",
  "geo-projected",
 ]
