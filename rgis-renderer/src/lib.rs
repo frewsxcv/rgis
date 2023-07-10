@@ -51,10 +51,14 @@ fn spawn_geometry_meshes(
                     RenderEntityType::Point
                 };
                 let z_index = ZIndex::calculate(layer_index, entity_type);
-                let mut transform = Transform::from_xyz(coord.x as f32, coord.y as f32, 0.);
-                transform.translation = (coord.x as f32, coord.y as f32, z_index.0 as f32).into();
-                let mut entity_commands =
-                    spawn_sprite_bundle(asset_server, transform, commands, layer.color.fill.unwrap());
+                let transform =
+                    Transform::from_xyz(coord.x as f32, coord.y as f32, z_index.0 as f32);
+                let mut entity_commands = spawn_sprite_bundle(
+                    asset_server,
+                    transform,
+                    commands,
+                    layer.color.fill.unwrap(),
+                );
                 entity_commands.insert(layer.id);
                 entity_commands.insert(entity_type);
             }
