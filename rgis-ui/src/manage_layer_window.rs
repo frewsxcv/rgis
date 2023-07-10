@@ -33,25 +33,79 @@ impl<'a> ManageLayerWindow<'a> {
                         ui.label("CRS");
                         ui.label(&layer.crs);
                         ui.end_row();
-                        ui.label("Color");
-                        let mut old_color = layer.color.as_linear_rgba_f32();
-                        if ui
-                            .color_edit_button_rgba_unmultiplied(&mut old_color)
-                            .changed()
-                        {
-                            self.color_events
-                                .send(rgis_events::UpdateLayerColorEvent::Fill(
-                                    layer.id,
-                                    bevy::prelude::Color::rgba_linear(
-                                        old_color[0],
-                                        old_color[1],
-                                        old_color[2],
-                                        old_color[3],
-                                    ),
-                                ));
+                        if layer.geom_type.has_fill() {
+                            ui.label("Fill color");
+                            ui.add(
+                                FillColorWidget {
+                                    layer_id,
+                                    color: layer.color.fill.unwrap(),
+                                    color_events: self.color_events,
+                                }
+                            );
+                            ui.end_row();
                         }
+                        ui.label("Stroke color");
+                        ui.add(
+                            StrokeColorWidget {
+                                layer_id,
+                                color: layer.color.stroke,
+                                color_events: self.color_events,
+                            }
+                        );
                         ui.end_row();
                     });
             });
+    }
+}
+
+struct StrokeColorWidget<'a> {
+    layer_id: rgis_layer_id::LayerId,
+    color: bevy::prelude::Color,
+    pub color_events: &'a mut bevy::ecs::event::Events<rgis_events::UpdateLayerColorEvent>,
+}
+
+impl<'a> egui::Widget for StrokeColorWidget<'a> {
+    fn ui(self, ui: &mut egui::Ui) -> egui::Response {
+        let mut old_color = self.color.as_linear_rgba_f32();
+        let response = ui.color_edit_button_rgba_unmultiplied(&mut old_color);
+        if response.changed() {
+            self.color_events
+                .send(rgis_events::UpdateLayerColorEvent::Stroke(
+                    self.layer_id,
+                    bevy::prelude::Color::rgba_linear(
+                        old_color[0],
+                        old_color[1],
+                        old_color[2],
+                        old_color[3],
+                    ),
+                ));
+        }
+        response
+    }
+}
+
+struct FillColorWidget<'a> {
+    layer_id: rgis_layer_id::LayerId,
+    color: bevy::prelude::Color,
+    pub color_events: &'a mut bevy::ecs::event::Events<rgis_events::UpdateLayerColorEvent>,
+}
+
+impl<'a> egui::Widget for FillColorWidget<'a> {
+    fn ui(self, ui: &mut egui::Ui) -> egui::Response {
+        let mut old_color = self.color.as_linear_rgba_f32();
+        let response = ui.color_edit_button_rgba_unmultiplied(&mut old_color);
+        if response.changed() {
+            self.color_events
+                .send(rgis_events::UpdateLayerColorEvent::Fill(
+                    self.layer_id,
+                    bevy::prelude::Color::rgba_linear(
+                        old_color[0],
+                        old_color[1],
+                        old_color[2],
+                        old_color[3],
+                    ),
+                ));
+        }
+        response
     }
 }

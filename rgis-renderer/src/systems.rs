@@ -9,12 +9,11 @@ fn layer_loaded(
 ) {
     for layer in event_reader.iter().flat_map(|event| layers.get(event.0)) {
         let Some(feature_collection) = layer.projected_feature_collection.as_ref() else {
-            continue
-         };
+            continue;
+        };
 
         job_spawner.spawn(MeshBuildingJob {
             layer_id: layer.id,
-            color: layer.color,
             geometry: feature_collection.to_geometry_collection_geometry(),
             is_selected: false,
         })
@@ -32,9 +31,16 @@ fn handle_mesh_building_job_outcome(
 ) {
     while let Some(outcome) = finished_jobs.take_next::<MeshBuildingJob>() {
         let Some(crate::jobs::MeshBuildingJobOutcome {
-            geometry_mesh, layer_id, is_selected
-        }) = outcome else { continue };
-        let Some((layer, layer_index)) = layers.get_with_index(layer_id) else { continue };
+            geometry_mesh,
+            layer_id,
+            is_selected,
+        }) = outcome
+        else {
+            continue;
+        };
+        let Some((layer, layer_index)) = layers.get_with_index(layer_id) else {
+            continue;
+        };
 
         crate::spawn_geometry_meshes(
             geometry_mesh,
@@ -59,7 +65,9 @@ fn handle_layer_z_index_updated_event(
     layers: Res<rgis_layers::Layers>,
 ) {
     for event in layer_z_index_updated_event_reader.iter() {
-        let Some((_, layer_index)) = layers.get_with_index(event.0) else { continue };
+        let Some((_, layer_index)) = layers.get_with_index(event.0) else {
+            continue;
+        };
 
         for (_, mut transform, render_entity) in query.iter_mut().filter(|(i, _, _)| **i == event.0)
         {
@@ -122,32 +130,34 @@ fn handle_layer_color_updated_event(
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     for event in event_reader.iter() {
-        match event {
-            rgis_events::LayerColorUpdatedEvent::Fill(layer_id) => {
-                // FIXME: this doesn't handle linestrings
-                let Some(layer) = layers.get(*layer_id) else { continue };
+        let (layer_id, is_fill) = match event {
+            rgis_events::LayerColorUpdatedEvent::Fill(layer_id) => (layer_id, true),
+            rgis_events::LayerColorUpdatedEvent::Stroke(layer_id) => (layer_id, false),
+        };
+        let Some(layer) = layers.get(*layer_id) else {
+            continue;
+        };
+
+        if layer.geom_type == geo_geom_type::GeomType::POINT {
+            for (_, mut sprite) in sprite_query.iter_mut().filter(|(i, _)| **i == layer.id) {
+                sprite.color = layer.color.fill.unwrap();
+            }
+        } else {
+            if is_fill {
                 for (_, handle, _) in color_material_query.iter().filter(|(i, _, entity_type)| {
                     **i == layer.id && **entity_type == RenderEntityType::Polygon
                 }) {
                     if let Some(color_material) = materials.get_mut(handle) {
-                        color_material.color = layer.color
+                        color_material.color = layer.color.fill.unwrap();
                     }
                 }
-                for (_, mut sprite) in sprite_query.iter_mut().filter(|(i, _)| **i == layer.id) {
-                    sprite.color = layer.color;
-                }
-            }
-            rgis_events::LayerColorUpdatedEvent::Border(layer_id) => {
-                let Some(layer) = layers.get(*layer_id) else { continue };
+            } else {
                 for (_, handle, _) in color_material_query.iter().filter(|(i, _, entity_type)| {
                     **i == layer.id && **entity_type == RenderEntityType::LineString
                 }) {
                     if let Some(color_material) = materials.get_mut(handle) {
-                        color_material.color = layer.color
+                        color_material.color = layer.color.stroke;
                     }
-                }
-                for (_, mut sprite) in sprite_query.iter_mut().filter(|(i, _)| **i == layer.id) {
-                    sprite.color = layer.color;
                 }
             }
         }
@@ -207,9 +217,15 @@ fn handle_feature_clicked_event(
     query: SelectedFeatureQuery,
 ) {
     for event in event_reader.iter() {
-        let Some(layer) = layers.get(event.0) else { return };
-        let Some(feature) = layer.get_projected_feature(event.1) else { return };
-        let Some(geometry) = feature.geometry() else { return };
+        let Some(layer) = layers.get(event.0) else {
+            return;
+        };
+        let Some(feature) = layer.get_projected_feature(event.1) else {
+            return;
+        };
+        let Some(geometry) = feature.geometry() else {
+            return;
+        };
         for (entity, entity_type) in query.iter() {
             match entity_type {
                 RenderEntityType::SelectedPolygon
@@ -220,7 +236,6 @@ fn handle_feature_clicked_event(
         }
         job_spawner.spawn(MeshBuildingJob {
             layer_id: event.0,
-            color: bevy::render::color::Color::PINK,
             geometry: geometry.cloned(),
             is_selected: true,
         });

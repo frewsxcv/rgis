@@ -157,7 +157,17 @@ impl Layers {
         let layer = Layer {
             unprojected_feature_collection: unprojected,
             projected_feature_collection: None,
-            color: colorous_color_to_bevy_color(next_colorous_color()),
+            color: if geom_type.has_fill() {
+                LayerColor {
+                    fill: Some(colorous_color_to_bevy_color(next_colorous_color())),
+                    stroke: Color::BLACK,                    
+                }
+            } else {
+                LayerColor {
+                    fill: None,
+                    stroke: colorous_color_to_bevy_color(next_colorous_color()),
+                }
+            },
             name,
             visible: true,
             id: layer_id,
@@ -182,11 +192,17 @@ impl Layers {
 pub type Metadata = serde_json::Map<String, serde_json::Value>;
 
 #[derive(Clone, Debug)]
+pub struct LayerColor {
+    pub fill: Option<Color>,
+    pub stroke: Color,
+}
+
+#[derive(Clone, Debug)]
 pub struct Layer {
     pub unprojected_feature_collection: geo_projected::Unprojected<geo_features::FeatureCollection>,
     pub projected_feature_collection:
         Option<geo_projected::Projected<geo_features::FeatureCollection>>,
-    pub color: Color,
+    pub color: LayerColor,
     pub id: rgis_layer_id::LayerId,
     pub name: String,
     pub visible: bool,

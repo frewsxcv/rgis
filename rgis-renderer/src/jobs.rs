@@ -1,6 +1,5 @@
 pub struct MeshBuildingJob {
     pub layer_id: rgis_layer_id::LayerId,
-    pub color: bevy::render::color::Color,
     pub geometry: geo_projected::Projected<geo::Geometry>,
     pub is_selected: bool,
 }

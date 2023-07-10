@@ -39,13 +39,13 @@ pub struct LayerBecameVisibleEvent(pub rgis_layer_id::LayerId);
 /// Change the `Layer`'s color
 pub enum UpdateLayerColorEvent {
     Fill(rgis_layer_id::LayerId, bevy::prelude::Color),
-    Border(rgis_layer_id::LayerId, bevy::prelude::Color),
+    Stroke(rgis_layer_id::LayerId, bevy::prelude::Color),
 }
 /// After a `Layer`'s color is changed
 #[derive(Clone, Copy)]
 pub enum LayerColorUpdatedEvent {
     Fill(rgis_layer_id::LayerId),
-    Border(rgis_layer_id::LayerId),
+    Stroke(rgis_layer_id::LayerId),
 }
 
 pub struct DeleteLayerEvent(pub rgis_layer_id::LayerId);

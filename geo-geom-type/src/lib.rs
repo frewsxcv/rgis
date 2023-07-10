@@ -38,6 +38,17 @@ impl std::fmt::Display for GeomType {
     }
 }
 
+impl GeomType {
+    pub fn has_fill(self) -> bool {
+        self.contains(GeomType::POLYGON)
+            || self.contains(GeomType::MULTI_POLYGON)
+            || self.contains(GeomType::RECT)
+            || self.contains(GeomType::TRIANGLE)
+            || self.contains(GeomType::POINT)
+            || self.contains(GeomType::MULTI_POINT)
+    }
+}
+
 pub fn determine<'a>(geometries: impl IntoIterator<Item = &'a geo::Geometry>) -> GeomType {
     geometries.into_iter().fold(GeomType::empty(), |acc, next| {
         acc | match next {

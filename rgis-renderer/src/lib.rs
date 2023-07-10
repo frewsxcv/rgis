@@ -54,50 +54,55 @@ fn spawn_geometry_meshes(
                 let mut transform = Transform::from_xyz(coord.x as f32, coord.y as f32, 0.);
                 transform.translation = (coord.x as f32, coord.y as f32, z_index.0 as f32).into();
                 let mut entity_commands =
-                    spawn_sprite_bundle(asset_server, transform, commands, layer.color);
+                    spawn_sprite_bundle(asset_server, transform, commands, layer.color.fill.unwrap());
                 entity_commands.insert(layer.id);
                 entity_commands.insert(entity_type);
             }
         }
         geo_bevy::GeometryMesh::Polygon(polygon_mesh) => {
-            let entity_type = if is_selected {
+            let polygon_entity_type = if is_selected {
                 RenderEntityType::SelectedPolygon
             } else {
                 RenderEntityType::Polygon
             };
+            let line_string_entity_type = if is_selected {
+                RenderEntityType::SelectedLineString
+            } else {
+                RenderEntityType::LineString
+            };
             // Fill
             spawn_helper(
                 materials,
-                layer.color,
+                layer.color.fill.unwrap(),
                 layer_index,
                 polygon_mesh.mesh,
                 commands,
                 assets_meshes,
                 layer,
-                entity_type,
+                polygon_entity_type,
             );
             // Exterior border
             spawn_helper(
                 materials,
-                Color::BLACK,
+                layer.color.stroke,
                 layer_index,
                 polygon_mesh.exterior_mesh,
                 commands,
                 assets_meshes,
                 layer,
-                entity_type,
+                line_string_entity_type,
             );
             // Interior borders
             for mesh in polygon_mesh.interior_meshes {
                 spawn_helper(
                     materials,
-                    Color::BLACK,
+                    layer.color.stroke,
                     layer_index,
                     mesh,
                     commands,
                     assets_meshes,
                     layer,
-                    entity_type,
+                    line_string_entity_type,
                 );
             }
         }
@@ -109,7 +114,7 @@ fn spawn_geometry_meshes(
             };
             spawn_helper(
                 materials,
-                layer.color,
+                layer.color.stroke,
                 layer_index,
                 line_string_mesh,
                 commands,

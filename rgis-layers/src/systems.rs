@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+use crate::LayerColor;
+
 fn handle_toggle_layer_visibility_events(
     mut toggle_layer_visibility_event_reader: EventReader<rgis_events::ToggleLayerVisibilityEvent>,
     mut layer_became_visible_event_writer: EventWriter<rgis_events::LayerBecameVisibleEvent>,
@@ -26,13 +28,25 @@ fn handle_update_color_events(
     mut layers: ResMut<crate::Layers>,
 ) {
     for event in update_events.iter() {
-        let rgis_events::UpdateLayerColorEvent::Fill(layer_id, color) = event else { unimplemented!()};
-        let Some(layer) = layers.get_mut(*layer_id) else {
-            bevy::log::warn!("Could not find layer");
-            continue;
+        let event = match event {
+            rgis_events::UpdateLayerColorEvent::Stroke(layer_id, color) => {
+                let Some(layer) = layers.get_mut(*layer_id) else {
+                    bevy::log::warn!("Could not find layer");
+                    continue;
+                };
+                layer.color.stroke = *color;
+                rgis_events::LayerColorUpdatedEvent::Stroke(*layer_id)
+            },
+            rgis_events::UpdateLayerColorEvent::Fill(layer_id, color) => {
+                let Some(layer) = layers.get_mut(*layer_id) else {
+                    bevy::log::warn!("Could not find layer");
+                    continue;
+                };
+                layer.color.fill = Some(*color);
+                rgis_events::LayerColorUpdatedEvent::Fill(*layer_id)
+            },
         };
-        layer.color = *color;
-        updated_events.send(rgis_events::LayerColorUpdatedEvent::Fill(*layer_id));
+        updated_events.send(event);
     }
 }
 
