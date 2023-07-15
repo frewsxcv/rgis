@@ -47,7 +47,10 @@ fn spawn_geometry_meshes(
         geo_bevy::GeometryMesh::Point(points) => {
             for geo::Point(coord) in points {
                 let (stroke_entity_type, fill_entity_type) = if is_selected {
-                    (RenderEntityType::SelectedPoint, RenderEntityType::SelectedPoint)
+                    (
+                        RenderEntityType::SelectedPoint,
+                        RenderEntityType::SelectedPoint,
+                    )
                 } else {
                     (RenderEntityType::PointStroke, RenderEntityType::PointFill)
                 };
@@ -56,15 +59,10 @@ fn spawn_geometry_meshes(
                 let z_index = ZIndex::calculate(layer_index, stroke_entity_type);
                 let transform =
                     Transform::from_xyz(coord.x as f32, coord.y as f32, z_index.0 as f32);
-                let mut entity_commands = spawn_sprite_bundle(
-                    asset_server,
-                    transform,
-                    commands,
-                    layer.color.stroke,
-                );
+                let mut entity_commands =
+                    spawn_sprite_bundle(asset_server, transform, commands, layer.color.stroke);
                 entity_commands.insert(layer.id);
                 entity_commands.insert(stroke_entity_type);
-
 
                 // Fill
                 let z_index = ZIndex::calculate(layer_index, fill_entity_type);

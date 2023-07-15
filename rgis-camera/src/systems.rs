@@ -23,7 +23,9 @@ fn handle_change_crs_event(
     windows: Query<&Window, With<PrimaryWindow>>,
     ui_margins: rgis_ui::UiMargins,
 ) {
-    let Some(event) = change_crs_event_reader.iter().last() else { return };
+    let Some(event) = change_crs_event_reader.iter().last() else {
+        return;
+    };
     let Ok(window) = windows.get_single() else {
         return;
     };
@@ -133,7 +135,9 @@ fn center_camera(
         .filter_map(|event| layers.get(event.0))
         .filter_map(|layer| layer.get_projected_feature_collection_or_log())
     {
-        let Ok(bounding_rect) = projected_feature.bounding_rect() else { continue };
+        let Ok(bounding_rect) = projected_feature.bounding_rect() else {
+            continue;
+        };
         let mut transform = query.single_mut();
 
         debug!("Moving camera to look at new layer");

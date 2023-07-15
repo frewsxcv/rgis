@@ -36,7 +36,7 @@ fn handle_update_color_events(
                 };
                 layer.color.stroke = *color;
                 rgis_events::LayerColorUpdatedEvent::Stroke(*layer_id)
-            },
+            }
             rgis_events::UpdateLayerColorEvent::Fill(layer_id, color) => {
                 let Some(layer) = layers.get_mut(*layer_id) else {
                     bevy::log::warn!("Could not find layer");
@@ -44,7 +44,7 @@ fn handle_update_color_events(
                 };
                 layer.color.fill = Some(*color);
                 rgis_events::LayerColorUpdatedEvent::Fill(*layer_id)
-            },
+            }
         };
         updated_events.send(event);
     }

@@ -117,7 +117,7 @@ fn geojson_feature_properties_to_geo_features_properties(
     geojson_feature: &mut geojson::Feature,
 ) -> Result<geo_features::Properties, JsonNumberToFloatError> {
     let Some(properties) = geojson_feature.properties.take() else {
-        return Ok(Default::default())
+        return Ok(Default::default());
     };
     properties
         .into_iter()

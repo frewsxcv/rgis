@@ -14,7 +14,9 @@ impl<'w> OperationWindow<'w> {
             self.state.operation = None;
             return;
         }
-        let Some(ref mut operation) = self.state.operation else { return };
+        let Some(ref mut operation) = self.state.operation else {
+            return;
+        };
         match operation.next_action() {
             rgis_geo_ops::Action::Perform => {
                 // TODO: perform in background job

@@ -160,7 +160,7 @@ impl Layers {
             color: if geom_type.has_fill() {
                 LayerColor {
                     fill: Some(colorous_color_to_bevy_color(next_colorous_color())),
-                    stroke: Color::BLACK,                    
+                    stroke: Color::BLACK,
                 }
             } else {
                 LayerColor {

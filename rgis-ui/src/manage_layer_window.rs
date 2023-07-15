@@ -35,23 +35,19 @@ impl<'a> ManageLayerWindow<'a> {
                         ui.end_row();
                         if layer.geom_type.has_fill() {
                             ui.label("Fill color");
-                            ui.add(
-                                FillColorWidget {
-                                    layer_id,
-                                    color: layer.color.fill.unwrap(),
-                                    color_events: self.color_events,
-                                }
-                            );
+                            ui.add(FillColorWidget {
+                                layer_id,
+                                color: layer.color.fill.unwrap(),
+                                color_events: self.color_events,
+                            });
                             ui.end_row();
                         }
                         ui.label("Stroke color");
-                        ui.add(
-                            StrokeColorWidget {
-                                layer_id,
-                                color: layer.color.stroke,
-                                color_events: self.color_events,
-                            }
-                        );
+                        ui.add(StrokeColorWidget {
+                            layer_id,
+                            color: layer.color.stroke,
+                            color_events: self.color_events,
+                        });
                         ui.end_row();
                     });
             });

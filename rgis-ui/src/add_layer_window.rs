@@ -201,7 +201,9 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                     ui.radio_value(&mut self.state.selected_format, Some(Format::Wkt), "WKT");
                 }
 
-                let Some(selected_format) = self.state.selected_format else { return };
+                let Some(selected_format) = self.state.selected_format else {
+                    return;
+                };
 
                 ui.separator();
 

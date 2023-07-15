@@ -13,7 +13,9 @@ fn render_bottom_panel(
     >,
     mut bottom_panel_height: ResMut<crate::BottomPanelHeight>,
 ) {
-    let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else { return; };
+    let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else {
+        return;
+    };
 
     crate::bottom_panel::BottomPanel {
         egui_ctx: egui_ctx.get_mut(),
@@ -32,7 +34,9 @@ fn render_side_panel(
     mut events: crate::side_panel::Events,
     mut side_panel_width: ResMut<crate::SidePanelWidth>,
 ) {
-    let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else { return; };
+    let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else {
+        return;
+    };
 
     crate::side_panel::SidePanel {
         egui_ctx: egui_ctx.get_mut(),
@@ -62,7 +66,9 @@ fn render_manage_layer_window(
     layers: Res<rgis_layers::Layers>,
     mut color_events: ResMut<bevy::ecs::event::Events<rgis_events::UpdateLayerColorEvent>>,
 ) {
-    let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else { return; };
+    let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else {
+        return;
+    };
 
     crate::manage_layer_window::ManageLayerWindow {
         state: &mut state,
@@ -89,7 +95,9 @@ fn render_add_layer_window(
     mut state: Local<crate::add_layer_window::State>,
     mut events: crate::add_layer_window::Events,
 ) {
-    let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else { return; };
+    let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else {
+        return;
+    };
 
     if !events.show_add_layer_window_event_reader.is_empty() {
         is_visible.0 = true;
@@ -126,7 +134,9 @@ fn render_change_crs_window(
         *is_visible = true;
     }
 
-    let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else { return; };
+    let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else {
+        return;
+    };
 
     crate::change_crs_window::ChangeCrsWindow {
         is_visible: &mut is_visible,
@@ -151,7 +161,9 @@ fn render_feature_properties_window(
         state.properties = Some(event.0);
     }
 
-    let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else { return; };
+    let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else {
+        return;
+    };
 
     crate::feature_properties_window::FeaturePropertiesWindow {
         state: &mut state,
@@ -170,7 +182,9 @@ fn render_message_window(
         state.is_visible = true;
     }
 
-    let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else { return; };
+    let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else {
+        return;
+    };
 
     crate::message_window::MessageWindow {
         state: &mut state,
@@ -192,7 +206,9 @@ fn render_operation_window(
         state.feature_collection = event.feature_collection; // Should this be `Some()`? Otherwise we'll always have something stored
     }
 
-    let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else { return; };
+    let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else {
+        return;
+    };
 
     crate::operation_window::OperationWindow {
         bevy_egui_ctx: &mut egui_ctx,
@@ -213,7 +229,9 @@ fn render_in_progress(
         return;
     }
 
-    let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else { return; };
+    let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else {
+        return;
+    };
 
     egui::Window::new("Running jobs")
         .open(&mut true)
@@ -253,7 +271,9 @@ fn render_top_panel(
         return;
     };
 
-    let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else { return; };
+    let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else {
+        return;
+    };
 
     crate::top_panel::TopPanel {
         bevy_egui_ctx: &mut egui_ctx,
@@ -270,7 +290,9 @@ fn set_egui_theme(
     mut egui_ctx_query: Query<&mut EguiContext, With<PrimaryWindow>>,
     mut clear_color: ResMut<ClearColor>,
 ) {
-    let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else { return; };
+    let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else {
+        return;
+    };
 
     let egui_visuals = match dark_light::detect() {
         dark_light::Mode::Dark => egui::Visuals::dark(),
@@ -310,55 +332,22 @@ pub fn configure(app: &mut App) {
             .chain(),
     );
 
-    app.add_system(
-        render_message_window
-            .in_set(RenderSystemSet::RenderingMessageWindow)
-    );
+    app.add_system(render_message_window.in_set(RenderSystemSet::RenderingMessageWindow));
 
-    app.add_system(
-        render_top_panel
-            .in_set(RenderSystemSet::RenderingTopBottomPanels)
-    );
-    app.add_system(
-        render_bottom_panel
-            .in_set(RenderSystemSet::RenderingTopBottomPanels)
-    );
+    app.add_system(render_top_panel.in_set(RenderSystemSet::RenderingTopBottomPanels));
+    app.add_system(render_bottom_panel.in_set(RenderSystemSet::RenderingTopBottomPanels));
 
-    app.add_system(
-        render_side_panel
-            .in_set(RenderSystemSet::SideBarProgressBar)
-    );
-    app.add_system(
-        render_in_progress
-            .in_set(RenderSystemSet::SideBarProgressBar)
-    );
+    app.add_system(render_side_panel.in_set(RenderSystemSet::SideBarProgressBar));
+    app.add_system(render_in_progress.in_set(RenderSystemSet::SideBarProgressBar));
 
     app.add_system(handle_open_file_job);
 
-    app.add_system(
-        render_manage_layer_window
-            .in_set(RenderSystemSet::Windows)
-    );
-    app.add_system(
-        render_add_layer_window
-            .in_set(RenderSystemSet::Windows)
-    );
-    app.add_system(
-        render_change_crs_window
-            .in_set(RenderSystemSet::Windows)
-    );
-    app.add_system(
-        render_feature_properties_window
-            .in_set(RenderSystemSet::Windows)
-    );
-    app.add_system(
-        render_operation_window
-            .in_set(RenderSystemSet::Windows)
-    );
-    app.add_system(
-        render_debug_window
-            .in_set(RenderSystemSet::Windows)
-    );
+    app.add_system(render_manage_layer_window.in_set(RenderSystemSet::Windows));
+    app.add_system(render_add_layer_window.in_set(RenderSystemSet::Windows));
+    app.add_system(render_change_crs_window.in_set(RenderSystemSet::Windows));
+    app.add_system(render_feature_properties_window.in_set(RenderSystemSet::Windows));
+    app.add_system(render_operation_window.in_set(RenderSystemSet::Windows));
+    app.add_system(render_debug_window.in_set(RenderSystemSet::Windows));
 }
 
 #[derive(Default)]
@@ -381,7 +370,9 @@ fn render_debug_window(
         return;
     }
 
-    let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else { return; };
+    let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else {
+        return;
+    };
 
     if state.history.is_empty() || state.timer.tick(time.delta()).just_finished() {
         let fps = diagnostics
