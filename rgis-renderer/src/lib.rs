@@ -18,7 +18,8 @@ use z_index::ZIndex;
 pub enum RenderEntityType {
     Polygon,
     LineString,
-    Point,
+    PointFill,
+    PointStroke,
     SelectedPolygon,
     SelectedLineString,
     SelectedPoint,
@@ -45,14 +46,31 @@ fn spawn_geometry_meshes(
     match geometry_mesh {
         geo_bevy::GeometryMesh::Point(points) => {
             for geo::Point(coord) in points {
-                let entity_type = if is_selected {
-                    RenderEntityType::SelectedPoint
+                let (stroke_entity_type, fill_entity_type) = if is_selected {
+                    (RenderEntityType::SelectedPoint, RenderEntityType::SelectedPoint)
                 } else {
-                    RenderEntityType::Point
+                    (RenderEntityType::PointStroke, RenderEntityType::PointFill)
                 };
-                let z_index = ZIndex::calculate(layer_index, entity_type);
+
+                // Stroke
+                let z_index = ZIndex::calculate(layer_index, stroke_entity_type);
                 let transform =
                     Transform::from_xyz(coord.x as f32, coord.y as f32, z_index.0 as f32);
+                let mut entity_commands = spawn_sprite_bundle(
+                    asset_server,
+                    transform,
+                    commands,
+                    layer.color.stroke,
+                );
+                entity_commands.insert(layer.id);
+                entity_commands.insert(stroke_entity_type);
+
+
+                // Fill
+                let z_index = ZIndex::calculate(layer_index, fill_entity_type);
+                let mut transform =
+                    Transform::from_xyz(coord.x as f32, coord.y as f32, z_index.0 as f32);
+                transform.scale *= 0.7; // Fill should be smaller than stroke.
                 let mut entity_commands = spawn_sprite_bundle(
                     asset_server,
                     transform,
@@ -60,7 +78,7 @@ fn spawn_geometry_meshes(
                     layer.color.fill.unwrap(),
                 );
                 entity_commands.insert(layer.id);
-                entity_commands.insert(entity_type);
+                entity_commands.insert(fill_entity_type);
             }
         }
         geo_bevy::GeometryMesh::Polygon(polygon_mesh) => {

@@ -126,7 +126,7 @@ fn handle_layer_color_updated_event(
         &Handle<ColorMaterial>,
         &RenderEntityType,
     )>,
-    mut sprite_query: Query<(&rgis_layer_id::LayerId, &mut Sprite)>,
+    mut sprite_query: Query<(&rgis_layer_id::LayerId, &mut Sprite, &RenderEntityType)>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     for event in event_reader.iter() {
@@ -139,8 +139,19 @@ fn handle_layer_color_updated_event(
         };
 
         if layer.geom_type == geo_geom_type::GeomType::POINT {
-            for (_, mut sprite) in sprite_query.iter_mut().filter(|(i, _)| **i == layer.id) {
-                sprite.color = layer.color.fill.unwrap();
+            let render_entity_type = if is_fill {
+                RenderEntityType::PointFill
+            } else {
+                RenderEntityType::PointStroke
+            };
+            for (_, mut sprite, _) in sprite_query.iter_mut().filter(|(i, _, entity_type)| {
+                **i == layer.id && **entity_type == render_entity_type
+            }) {
+                sprite.color = if is_fill {
+                    layer.color.fill.unwrap()
+                } else {
+                    layer.color.stroke
+                };
             }
         } else {
             if is_fill {

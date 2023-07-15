@@ -12,36 +12,40 @@ impl ZIndex {
     //   z=3:
     //   z=4:
     //   z=5:
+    //   z=6:
     //
     // Layer (index 1, Point):
-    //   z=6:
     //   z=7:
-    //   z=8: Point
-    //   z=9:
-    //   z=10:
+    //   z=8:
+    //   z=9: PointStroke
+    //   z=10: PointFill
     //   z=11:
+    //   z=12:
+    //   z=13:
     //
     // Layer (index 2, selected Polygon):
-    //   z=12: Polygon
-    //   z=13: LineString
-    //   z=14:
-    //   z=15: Selected Polygon
-    //   z=16: Selected LineString
+    //   z=14: Polygon
+    //   z=15: LineString
+    //   z=16:
     //   z=17:
+    //   z=18: Selected Polygon
+    //   z=19: Selected LineString
+    //   z=20:
     pub fn calculate(
         // Lower index is below higher index.
         layer_index: rgis_layers::LayerIndex,
         entity_type: RenderEntityType,
     ) -> Self {
         ZIndex(
-            layer_index.0 * 6
+            layer_index.0 * 7
                 + match entity_type {
                     RenderEntityType::Polygon => 0,
                     RenderEntityType::LineString => 1,
-                    RenderEntityType::Point => 2,
-                    RenderEntityType::SelectedPolygon => 3,
-                    RenderEntityType::SelectedLineString => 4,
-                    RenderEntityType::SelectedPoint => 5,
+                    RenderEntityType::PointStroke => 2,
+                    RenderEntityType::PointFill => 3,
+                    RenderEntityType::SelectedPolygon => 4,
+                    RenderEntityType::SelectedLineString => 5,
+                    RenderEntityType::SelectedPoint => 6,
                 },
         )
     }
