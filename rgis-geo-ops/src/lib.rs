@@ -49,8 +49,28 @@ pub trait Operation {
         &mut self,
         feature_collection: Unprojected<geo_features::FeatureCollection>,
     ) -> Result<Outcome, Box<dyn error::Error>> {
+        self.visit_feature_collection(feature_collection.clone()); // TODO: don't clone here
         for feature in feature_collection.into_features_iter() {
-            self.visit_feature(feature);
+            self.visit_feature(feature.clone()); // TODO: don't clone here
+            if let Some(geometry) = feature.0.geometry {
+                self.visit_geometry(geometry.clone()); // TODO: don't clone here
+                match geometry {
+                    geo::Geometry::Point(g) => self.visit_point(g),
+                    geo::Geometry::Line(g) => self.visit_line(g),
+                    geo::Geometry::LineString(g) => self.visit_line_string(g),
+                    geo::Geometry::Polygon(g) => self.visit_polygon(g),
+                    geo::Geometry::MultiPoint(g) => self.visit_multi_point(g),
+                    geo::Geometry::MultiLineString(g) => self.visit_multi_line_string(g),
+                    geo::Geometry::MultiPolygon(g) => self.visit_multi_polygon(g),
+                    geo::Geometry::Rect(g) => self.visit_rect(g),
+                    geo::Geometry::Triangle(g) => self.visit_triangle(g),
+                    geo::Geometry::GeometryCollection(geometry_collection) => {
+                        for geometry in geometry_collection {
+                            self.visit_geometry(geometry);
+                        }
+                    }
+                }
+            }
         }
         self.finalize()
     }
@@ -68,30 +88,15 @@ pub trait Operation {
     ) {
     }
 
-    fn visit_feature(&mut self, feature: Unprojected<geo_features::Feature>) {
-        if let Some(g) = feature.0.geometry {
-            self.visit_geometry(g);
-        }
+    fn visit_feature_collection(
+        &mut self,
+        _feature_collection: Unprojected<geo_features::FeatureCollection>,
+    ) {
     }
 
-    fn visit_geometry(&mut self, geometry: geo::Geometry) {
-        match geometry {
-            geo::Geometry::Point(g) => self.visit_point(g),
-            geo::Geometry::Line(g) => self.visit_line(g),
-            geo::Geometry::LineString(g) => self.visit_line_string(g),
-            geo::Geometry::Polygon(g) => self.visit_polygon(g),
-            geo::Geometry::MultiPoint(g) => self.visit_multi_point(g),
-            geo::Geometry::MultiLineString(g) => self.visit_multi_line_string(g),
-            geo::Geometry::MultiPolygon(g) => self.visit_multi_polygon(g),
-            geo::Geometry::Rect(g) => self.visit_rect(g),
-            geo::Geometry::Triangle(g) => self.visit_triangle(g),
-            geo::Geometry::GeometryCollection(geometry_collection) => {
-                for geometry in geometry_collection {
-                    self.visit_geometry(geometry);
-                }
-            }
-        }
-    }
+    fn visit_feature(&mut self, _feature: Unprojected<geo_features::Feature>) {}
+
+    fn visit_geometry(&mut self, _geometry: geo::Geometry) {}
 
     fn visit_point(&mut self, _point: geo::Point) {}
 
