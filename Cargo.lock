@@ -2088,9 +2088,25 @@ dependencies = [
  "geographiclib-rs",
  "log",
  "num-traits",
+ "robust 0.2.3",
+ "rstar 0.10.0",
+]
+
+[[package]]
+name = "geo"
+version = "0.26.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1645cf1d7fea7dac1a66f7357f3df2677ada708b8d9db8e9b043878930095a96"
+dependencies = [
+ "earcutr",
+ "float_next_after",
+ "geo-types",
+ "geographiclib-rs",
+ "log",
+ "num-traits",
  "proj",
- "robust",
- "rstar",
+ "robust 1.1.0",
+ "rstar 0.11.0",
 ]
 
 [[package]]
@@ -2101,7 +2117,7 @@ checksum = "f3460e42c416b5a0a8cbf0d0e0141f210cf81c087b82222909db5a4f86b8564e"
 dependencies = [
  "bevy",
  "bevy-earcutr",
- "geo",
+ "geo 0.25.1",
  "geo-types",
 ]
 
@@ -2109,7 +2125,7 @@ dependencies = [
 name = "geo-features"
 version = "0.1.0"
 dependencies = [
- "geo",
+ "geo 0.26.0",
 ]
 
 [[package]]
@@ -2117,7 +2133,7 @@ name = "geo-file-loader"
 version = "0.1.0"
 dependencies = [
  "bytes",
- "geo",
+ "geo 0.26.0",
  "geo-features",
  "geojson",
  "geozero",
@@ -2132,14 +2148,14 @@ name = "geo-geom-type"
 version = "0.1.0"
 dependencies = [
  "bitflags 2.4.1",
- "geo",
+ "geo 0.26.0",
 ]
 
 [[package]]
 name = "geo-proj-js"
 version = "0.1.0"
 dependencies = [
- "geo",
+ "geo 0.26.0",
  "js-sys",
  "log",
  "wasm-bindgen",
@@ -2150,7 +2166,7 @@ dependencies = [
 name = "geo-projected"
 version = "0.1.0"
 dependencies = [
- "geo",
+ "geo 0.26.0",
  "geo-features",
 ]
 
@@ -2162,7 +2178,8 @@ checksum = "9705398c5c7b26132e74513f4ee7c1d7dafd786004991b375c172be2be0eecaa"
 dependencies = [
  "approx",
  "num-traits",
- "rstar",
+ "rstar 0.10.0",
+ "rstar 0.11.0",
  "serde",
 ]
 
@@ -3757,7 +3774,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_jobs",
- "geo",
+ "geo 0.26.0",
  "rgis-camera",
  "rgis-cli",
  "rgis-events",
@@ -3779,7 +3796,7 @@ name = "rgis-camera"
 version = "0.1.0"
 dependencies = [
  "bevy",
- "geo",
+ "geo 0.26.0",
  "geo-projected",
  "proj",
  "rgis-events",
@@ -3802,7 +3819,7 @@ name = "rgis-events"
 version = "0.1.0"
 dependencies = [
  "bevy",
- "geo",
+ "geo 0.26.0",
  "geo-features",
  "geo-file-loader",
  "geo-projected",
@@ -3830,7 +3847,7 @@ name = "rgis-geo-ops"
 version = "0.1.0"
 dependencies = [
  "bevy_egui",
- "geo",
+ "geo 0.26.0",
  "geo-features",
  "geo-geom-type",
  "geo-projected",
@@ -3857,7 +3874,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "colorous",
- "geo",
+ "geo 0.26.0",
  "geo-features",
  "geo-geom-type",
  "geo-projected",
@@ -3877,7 +3894,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_egui",
- "geo",
+ "geo 0.26.0",
  "geo-projected",
  "rgis-events",
  "rgis-settings",
@@ -3904,7 +3921,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_jobs",
- "geo",
+ "geo 0.26.0",
  "geo-bevy",
  "geo-geom-type",
  "geo-projected",
@@ -3927,7 +3944,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_jobs",
- "geo",
+ "geo 0.26.0",
  "geo-features",
  "geo-proj-js",
  "geo-projected",
@@ -3949,7 +3966,7 @@ dependencies = [
  "bevy_jobs",
  "dark-light",
  "egui_plot",
- "geo",
+ "geo 0.26.0",
  "geo-features",
  "geo-file-loader",
  "geo-proj-js",
@@ -3971,7 +3988,7 @@ name = "rgis-units"
 version = "0.1.0"
 dependencies = [
  "bevy",
- "geo",
+ "geo 0.26.0",
  "geo-features",
  "geo-projected",
 ]
@@ -3981,6 +3998,12 @@ name = "robust"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e5864e7ef1a6b7bcf1d6ca3f655e65e724ed3b52546a0d0a663c991522f552ea"
+
+[[package]]
+name = "robust"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cbf4a6aa5f6d6888f39e980649f3ad6b666acdce1d78e95b8a2cb076e687ae30"
 
 [[package]]
 name = "ron"
@@ -3999,6 +4022,17 @@ name = "rstar"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1f39465655a1e3d8ae79c6d9e007f4953bfc5d55297602df9dc38f9ae9f1359a"
+dependencies = [
+ "heapless",
+ "num-traits",
+ "smallvec",
+]
+
+[[package]]
+name = "rstar"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "73111312eb7a2287d229f06c00ff35b51ddee180f017ab6dec1f69d62ac098d6"
 dependencies = [
  "heapless",
  "num-traits",
@@ -5693,8 +5727,3 @@ dependencies = [
  "quote",
  "syn 1.0.109",
 ]
-
-[[patch.unused]]
-name = "geo"
-version = "0.26.0"
-source = "git+https://github.com/georust/geo?branch=main#16b2d055b99ce1f17cdd6ac008b1ef0b63bf5754"

@@ -13,6 +13,6 @@ bevy = { version = "0.11", default-features = false, features = [
     "wayland",
     "png",
 ] }
-geo = "0.25"
+geo = "0.26"
 geo-features = { path = "../geo-features" }
 geo-projected = { path = "../geo-projected" }
