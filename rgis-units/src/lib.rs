@@ -9,7 +9,9 @@
 // From top-left
 #[derive(Copy, Clone, Debug)]
 pub struct ScreenCoord {
+    /// Pixels, positive is rightward
     pub x: f64,
+    /// Pixels, positive is downward
     pub y: f64,
 }
 
