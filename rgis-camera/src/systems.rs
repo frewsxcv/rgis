@@ -80,9 +80,9 @@ fn zoom_camera_system(
     }
     let mut transform = query.single_mut();
     let mut camera_offset = crate::CameraOffset::from_transform(&transform);
-    let mut mouse_offset = camera_offset.clone();
+    let mut mouse_offset = camera_offset;
     let before_scale = crate::CameraScale::from_transform(&transform);
-    let mut camera_scale = before_scale.clone();
+    let mut camera_scale = before_scale;
     let mut set = false;
     for event in zoom_camera_event_reader.iter() {
         if !set {
