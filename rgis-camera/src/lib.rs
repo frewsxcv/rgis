@@ -19,7 +19,7 @@ impl bevy::app::Plugin for Plugin {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 struct CameraScale(pub f32);
 
 impl CameraScale {
@@ -36,7 +36,7 @@ impl CameraScale {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 struct CameraOffset {
     /// Units: world coordinates
     pub x: f32,

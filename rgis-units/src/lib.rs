@@ -16,10 +16,6 @@ pub struct ScreenCoord {
 }
 
 impl ScreenCoord {
-    fn to_dvec2(self) -> bevy::math::DVec2 {
-        bevy::math::DVec2::new(self.x, self.y)
-    }
-
     pub fn to_projected_geo_coord(
         self,
         transform: &bevy::transform::components::Transform,
@@ -29,10 +25,10 @@ impl ScreenCoord {
 
         // the default orthographic projection is in pixels from the center;
         // just undo the translation
-        let p = self.to_dvec2() - size / 2.0;
+        let d_vec = bevy::math::DVec2::new(self.x, window.height() as f64 - self.y) - size / 2.0;
 
         // apply the camera transform
-        let pos_wld = transform.compute_matrix().as_dmat4() * p.extend(0.0).extend(1.0);
+        let pos_wld = transform.compute_matrix().as_dmat4() * d_vec.extend(0.0).extend(1.0);
 
         geo_projected::Projected(geo::Coord {
             x: pos_wld.x,
