@@ -24,7 +24,7 @@ impl Operation for Outliers {
     }
 
     fn visit_multi_point(&mut self, multi_point: geo::MultiPoint) {
-        self.points.extend(multi_point.0.into_iter());
+        self.points.extend(multi_point.0);
     }
 
     fn finalize(&mut self) -> Result<Outcome, Box<dyn error::Error>> {

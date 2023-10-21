@@ -6,6 +6,8 @@
     clippy::expect_used
 )]
 
+use bevy::prelude::Update;
+
 mod jobs;
 mod systems;
 
@@ -14,7 +16,7 @@ pub struct Plugin;
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut bevy::app::App) {
         systems::configure(app);
-        app.add_startup_system(set_proj_log_level);
+        app.add_systems(Update, set_proj_log_level);
     }
 }
 

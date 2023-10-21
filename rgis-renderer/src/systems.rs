@@ -153,22 +153,20 @@ fn handle_layer_color_updated_event(
                     layer.color.stroke
                 };
             }
-        } else {
-            if is_fill {
-                for (_, handle, _) in color_material_query.iter().filter(|(i, _, entity_type)| {
-                    **i == layer.id && **entity_type == RenderEntityType::Polygon
-                }) {
-                    if let Some(color_material) = materials.get_mut(handle) {
-                        color_material.color = layer.color.fill.unwrap();
-                    }
+        } else if is_fill {
+            for (_, handle, _) in color_material_query.iter().filter(|(i, _, entity_type)| {
+                **i == layer.id && **entity_type == RenderEntityType::Polygon
+            }) {
+                if let Some(color_material) = materials.get_mut(handle) {
+                    color_material.color = layer.color.fill.unwrap();
                 }
-            } else {
-                for (_, handle, _) in color_material_query.iter().filter(|(i, _, entity_type)| {
-                    **i == layer.id && **entity_type == RenderEntityType::LineString
-                }) {
-                    if let Some(color_material) = materials.get_mut(handle) {
-                        color_material.color = layer.color.stroke;
-                    }
+            }
+        } else {
+            for (_, handle, _) in color_material_query.iter().filter(|(i, _, entity_type)| {
+                **i == layer.id && **entity_type == RenderEntityType::LineString
+            }) {
+                if let Some(color_material) = materials.get_mut(handle) {
+                    color_material.color = layer.color.stroke;
                 }
             }
         }
