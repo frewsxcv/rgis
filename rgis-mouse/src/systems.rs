@@ -153,8 +153,8 @@ fn mouse_scroll_system(
 }
 
 pub fn configure(app: &mut App) {
-    app.add_system(cursor_moved_system);
-    app.add_system(mouse_scroll_system);
-    app.add_system(mouse_click_system);
-    app.add_system(mouse_motion_system);
+    app.add_systems(Update, cursor_moved_system);
+    app.add_systems(Update, mouse_scroll_system);
+    app.add_systems(Update, mouse_click_system);
+    app.add_systems(Update, mouse_motion_system);
 }

@@ -323,6 +323,7 @@ pub fn configure(app: &mut App) {
     app.add_startup_system(set_egui_theme);
 
     app.configure_sets(
+        Update,
         (
             RenderSystemSet::RenderingMessageWindow,
             RenderSystemSet::RenderingTopBottomPanels,
@@ -361,7 +362,7 @@ const FPS_MAX: f64 = 100.;
 
 fn render_debug_window(
     mut egui_ctx_query: Query<&mut EguiContext, With<PrimaryWindow>>,
-    diagnostics: Res<bevy::diagnostic::Diagnostics>,
+    diagnostics: Res<bevy::diagnostic::DiagnosticsStore>,
     mut state: ResMut<crate::DebugStatsWindowState>,
     time: Res<Time>,
     mut last: Local<LastDebugStats>,
@@ -409,7 +410,7 @@ fn render_debug_window(
             .history
             .iter()
             .enumerate()
-            .map(|(x, y)| egui::plot::PlotPoint::new(x as f64, y.min(FPS_MAX)))
+            .map(|(x, y)| egui_plot::PlotPoint::new(x as f64, y.min(FPS_MAX)))
             .collect::<Vec<_>>()
     } else {
         vec![]
@@ -421,7 +422,7 @@ fn render_debug_window(
         .show(egui_ctx.get_mut(), move |ui| {
             DebugTable { last: &last }.ui(ui);
 
-            use egui::plot::{Line, Plot, PlotPoints};
+            use egui_plot::{Line, Plot, PlotPoints};
             let line = Line::new(PlotPoints::Owned(sin));
             Plot::new("fps_plot")
                 .allow_drag(false)
@@ -430,8 +431,8 @@ fn render_debug_window(
                 .allow_zoom(false)
                 .set_margin_fraction((0., 0.).into())
                 .show_x(false)
-                .x_axis_formatter(|_, _| "".into())
-                .y_axis_formatter(|n, _| format!("{n:?}"))
+                .x_axis_formatter(|_, _, _| "".into())
+                .y_axis_formatter(|n, _, _| format!("{n:?}"))
                 .include_x(0.)
                 .include_x(crate::DEBUG_STATS_HISTORY_LEN as f64)
                 .include_y(0.)

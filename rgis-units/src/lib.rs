@@ -108,7 +108,9 @@ impl<'a> MapArea<'a> {
 pub struct ScreenLength(pub f32);
 
 pub struct ScreenSize {
+    /// Pixels
     pub width: f32,
+    /// Pixels
     pub height: f32,
 }
 
@@ -118,12 +120,5 @@ impl ScreenSize {
             width: width.0,
             height: height.0,
         }
-    }
-
-    pub fn to_bevy_size(&self) -> bevy::ui::Size {
-        bevy::ui::Size::new(
-            bevy::ui::Val::Px(self.width),
-            bevy::ui::Val::Px(self.height),
-        )
     }
 }

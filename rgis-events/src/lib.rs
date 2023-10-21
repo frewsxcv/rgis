@@ -11,13 +11,13 @@ use bevy::prelude::*;
 // Magic number used to normalize the host's scroll value.
 const ZOOM_FACTOR: f32 = 500.;
 
-#[derive(Debug)]
+#[derive(Debug, Event)]
 pub struct LayerCreatedEvent(pub rgis_layer_id::LayerId);
 
-#[derive(Debug)]
+#[derive(Event, Debug)]
 pub struct ToggleLayerVisibilityEvent(pub rgis_layer_id::LayerId);
 
-#[derive(Debug)]
+#[derive(Event, Debug)]
 pub struct CenterCameraEvent(pub rgis_layer_id::LayerId);
 
 impl From<rgis_layer_id::LayerId> for CenterCameraEvent {
@@ -27,31 +27,35 @@ impl From<rgis_layer_id::LayerId> for CenterCameraEvent {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Event, Debug)]
 pub struct FeatureSelectedEvent(pub rgis_layer_id::LayerId, pub geo_features::FeatureId);
 
-#[derive(Debug)]
+#[derive(Event, Debug)]
 pub struct LayerBecameHiddenEvent(pub rgis_layer_id::LayerId);
 
-#[derive(Debug)]
+#[derive(Event, Debug)]
 pub struct LayerBecameVisibleEvent(pub rgis_layer_id::LayerId);
 
 /// Change the `Layer`'s color
+#[derive(Event)]
 pub enum UpdateLayerColorEvent {
     Fill(rgis_layer_id::LayerId, bevy::prelude::Color),
     Stroke(rgis_layer_id::LayerId, bevy::prelude::Color),
 }
 /// After a `Layer`'s color is changed
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Event)]
 pub enum LayerColorUpdatedEvent {
     Fill(rgis_layer_id::LayerId),
     Stroke(rgis_layer_id::LayerId),
 }
 
+#[derive(Event)]
 pub struct DeleteLayerEvent(pub rgis_layer_id::LayerId);
 
+#[derive(Event)]
 pub struct DespawnMeshesEvent(pub rgis_layer_id::LayerId);
 
+#[derive(Event)]
 pub struct MeshesSpawnedEvent(pub rgis_layer_id::LayerId);
 
 impl From<rgis_layer_id::LayerId> for MeshesSpawnedEvent {
@@ -65,18 +69,23 @@ pub enum MoveDirection {
     Up,
     Down,
 }
+
+#[derive(Event)]
 pub struct MoveLayerEvent(pub rgis_layer_id::LayerId, pub MoveDirection);
 
+#[derive(Event)]
 pub struct LayerZIndexUpdatedEvent(pub rgis_layer_id::LayerId);
 
+#[derive(Event)]
 pub struct MapClickedEvent(pub geo_projected::Projected<geo::Coord>);
 
+#[derive(Event)]
 pub struct FeaturesDeselectedEvent;
 
-#[derive(Default)]
+#[derive(Default, Event)]
 pub struct OpenChangeCrsWindow;
 
-#[derive(Debug)]
+#[derive(Event, Debug)]
 pub enum LoadFileEvent<F: geo_file_loader::FileLoader> {
     FromNetwork {
         name: String,
@@ -92,7 +101,7 @@ pub enum LoadFileEvent<F: geo_file_loader::FileLoader> {
 
 pub struct Plugin;
 
-#[derive(Debug)]
+#[derive(Event, Debug)]
 pub struct PanCameraEvent {
     // X offset for camera position. Positive is right, negative is left.
     pub x: f32,
@@ -122,7 +131,7 @@ impl PanCameraEvent {
     }
 }
 
-#[derive(Debug)]
+#[derive(Event, Debug)]
 pub struct ZoomCameraEvent {
     /// * `amount ∈ (1, ∞)` → zoom in
     /// * `amount ∈ [1]` → no change
@@ -142,32 +151,38 @@ impl ZoomCameraEvent {
     }
 }
 
+#[derive(Event)]
 pub struct ChangeCrsEvent {
     pub old_crs: String,
     pub new_crs: String,
 }
 
+#[derive(Event)]
 pub struct CrsChangedEvent {
     pub old_crs: String,
     pub new_crs: String,
 }
 
+#[derive(Event)]
 pub struct RenderMessageEvent(pub String);
 
+#[derive(Event)]
 pub struct RenderFeaturePropertiesEvent(pub geo_features::Properties);
 
+#[derive(Event)]
 pub struct CreateLayerEvent {
     pub feature_collection: geo_projected::Unprojected<geo_features::FeatureCollection>,
     pub name: String,
     pub source_crs: String,
 }
 
+#[derive(Event)]
 pub struct LayerReprojectedEvent(pub rgis_layer_id::LayerId);
 
-#[derive(Default)]
+#[derive(Default, Event)]
 pub struct ShowAddLayerWindow;
 
-#[derive(Default)]
+#[derive(Default, Event)]
 pub struct HideAddLayerWindow;
 
 impl bevy::app::Plugin for Plugin {
