@@ -32,6 +32,6 @@ impl bevy::prelude::Plugin for Plugin {
             target_crs: DEFAULT_TARGET_CRS.into(),
             current_tool: Tool::Pan,
         })
-        .add_system(systems::handle_crs_changed_events);
+        .add_systems(Update, systems::handle_crs_changed_events);
     }
 }

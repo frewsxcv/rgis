@@ -1,4 +1,4 @@
-use bevy::prelude::App;
+use bevy::prelude::{App, Update};
 
 fn handle_layer_created_events(
     mut layer_created_event_reader: bevy::ecs::event::EventReader<rgis_events::LayerCreatedEvent>,
@@ -73,7 +73,12 @@ fn handle_crs_changed_events(
 }
 
 pub fn configure(app: &mut App) {
-    app.add_system(handle_layer_created_events);
-    app.add_system(handle_reproject_geometry_job_completion_events);
-    app.add_system(handle_crs_changed_events);
+    app.add_systems(
+        Update,
+        (
+            handle_layer_created_events,
+            handle_reproject_geometry_job_completion_events,
+            handle_crs_changed_events,
+        ),
+    );
 }

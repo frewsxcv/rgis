@@ -37,5 +37,5 @@ fn process_key_code_input_system(
 }
 
 pub fn configure(app: &mut App) {
-    app.add_system(process_key_code_input_system);
+    app.add_systems(Update, process_key_code_input_system);
 }

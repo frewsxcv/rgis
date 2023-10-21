@@ -320,7 +320,7 @@ enum RenderSystemSet {
 struct RenderingUi;
 
 pub fn configure(app: &mut App) {
-    app.add_startup_system(set_egui_theme);
+    app.add_systems(Startup, set_egui_theme);
 
     app.configure_sets(
         Update,
