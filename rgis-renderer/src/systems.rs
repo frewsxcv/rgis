@@ -254,14 +254,19 @@ fn handle_feature_clicked_event(
 }
 
 pub fn configure(app: &mut App) {
-    app.add_system(layer_loaded);
-    app.add_system(handle_layer_became_hidden_event);
-    app.add_system(handle_layer_became_visible_event);
-    app.add_system(handle_layer_color_updated_event);
-    app.add_system(handle_layer_z_index_updated_event);
-    app.add_system(handle_despawn_meshes_event);
-    app.add_system(handle_mesh_building_job_outcome);
-    app.add_system(handle_crs_changed_events);
-    app.add_system(handle_camera_scale_changed_event);
-    app.add_system(handle_feature_clicked_event);
+    app.add_systems(
+        Update,
+        (
+            layer_loaded,
+            handle_layer_became_hidden_event,
+            handle_layer_became_visible_event,
+            handle_layer_color_updated_event,
+            handle_layer_z_index_updated_event,
+            handle_despawn_meshes_event,
+            handle_mesh_building_job_outcome,
+            handle_crs_changed_events,
+            handle_camera_scale_changed_event,
+            handle_feature_clicked_event,
+        ),
+    );
 }

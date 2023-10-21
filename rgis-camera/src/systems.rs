@@ -2,12 +2,17 @@ use bevy::{prelude::*, window::PrimaryWindow};
 use rgis_transform::Transformer;
 
 pub fn configure(app: &mut App) {
-    app.add_startup_system(init_camera);
-    app.add_system(center_camera);
-    app.add_system(pan_camera_system);
-    app.add_system(handle_meshes_spawned_events);
-    app.add_system(zoom_camera_system);
-    app.add_system(handle_change_crs_event);
+    app.add_systems(Startup, init_camera);
+    app.add_systems(
+        Update,
+        (
+            center_camera,
+            pan_camera_system,
+            handle_meshes_spawned_events,
+            zoom_camera_system,
+            handle_change_crs_event,
+        ),
+    );
 }
 
 fn init_camera(mut commands: Commands) {
@@ -142,7 +147,7 @@ fn center_camera(
 
         debug!("Moving camera to look at new layer");
         let map_area = rgis_units::MapArea {
-            window: &window,
+            window,
             right_offset_px: 0.,
             left_offset_px: ui_margins.left.0,
             bottom_offset_px: ui_margins.bottom.0,

@@ -333,22 +333,23 @@ pub fn configure(app: &mut App) {
             .chain(),
     );
 
-    app.add_system(render_message_window.in_set(RenderSystemSet::RenderingMessageWindow));
-
-    app.add_system(render_top_panel.in_set(RenderSystemSet::RenderingTopBottomPanels));
-    app.add_system(render_bottom_panel.in_set(RenderSystemSet::RenderingTopBottomPanels));
-
-    app.add_system(render_side_panel.in_set(RenderSystemSet::SideBarProgressBar));
-    app.add_system(render_in_progress.in_set(RenderSystemSet::SideBarProgressBar));
-
-    app.add_system(handle_open_file_job);
-
-    app.add_system(render_manage_layer_window.in_set(RenderSystemSet::Windows));
-    app.add_system(render_add_layer_window.in_set(RenderSystemSet::Windows));
-    app.add_system(render_change_crs_window.in_set(RenderSystemSet::Windows));
-    app.add_system(render_feature_properties_window.in_set(RenderSystemSet::Windows));
-    app.add_system(render_operation_window.in_set(RenderSystemSet::Windows));
-    app.add_system(render_debug_window.in_set(RenderSystemSet::Windows));
+    app.add_systems(
+        Update,
+        (
+            render_message_window.in_set(RenderSystemSet::RenderingMessageWindow),
+            render_top_panel.in_set(RenderSystemSet::RenderingTopBottomPanels),
+            render_bottom_panel.in_set(RenderSystemSet::RenderingTopBottomPanels),
+            render_side_panel.in_set(RenderSystemSet::SideBarProgressBar),
+            render_in_progress.in_set(RenderSystemSet::SideBarProgressBar),
+            handle_open_file_job,
+            render_manage_layer_window.in_set(RenderSystemSet::Windows),
+            render_add_layer_window.in_set(RenderSystemSet::Windows),
+            render_change_crs_window.in_set(RenderSystemSet::Windows),
+            render_feature_properties_window.in_set(RenderSystemSet::Windows),
+            render_operation_window.in_set(RenderSystemSet::Windows),
+            render_debug_window.in_set(RenderSystemSet::Windows),
+        ),
+    );
 }
 
 #[derive(Default)]

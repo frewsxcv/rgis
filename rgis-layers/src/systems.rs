@@ -1,7 +1,5 @@
 use bevy::prelude::*;
 
-use crate::LayerColor;
-
 fn handle_toggle_layer_visibility_events(
     mut toggle_layer_visibility_event_reader: EventReader<rgis_events::ToggleLayerVisibilityEvent>,
     mut layer_became_visible_event_writer: EventWriter<rgis_events::LayerBecameVisibleEvent>,
@@ -139,10 +137,15 @@ fn handle_create_layer_events(
 }
 
 pub fn configure(app: &mut App) {
-    app.add_system(handle_toggle_layer_visibility_events);
-    app.add_system(handle_update_color_events);
-    app.add_system(handle_move_layer_events);
-    app.add_system(handle_delete_layer_events);
-    app.add_system(handle_map_clicked_events);
-    app.add_system(handle_create_layer_events);
+    app.add_systems(
+        Update,
+        (
+            handle_toggle_layer_visibility_events,
+            handle_update_color_events,
+            handle_move_layer_events,
+            handle_delete_layer_events,
+            handle_map_clicked_events,
+            handle_create_layer_events,
+        ),
+    );
 }
