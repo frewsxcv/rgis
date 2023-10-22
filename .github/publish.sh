@@ -1,5 +1,6 @@
 #!/bin/sh -ex
 
 rm -rf www/dist/
-wasm-pack build --release rgis
+# https://github.com/bevyengine/bevy/issues/9188
+RUSTFLAGS=--cfg=web_sys_unstable_apis wasm-pack build --release rgis
 (cd www && npm run build)
