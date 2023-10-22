@@ -19,6 +19,6 @@ impl crate::FileLoader for ShapefileSource {
         let mut geo_writer = geozero::geo_types::GeoWriter::new();
         for _ in shapefile_reader.iter_geometries(&mut geo_writer) {}
         let geometry = geo_writer.take_geometry().unwrap();
-        Ok(geo_features::FeatureCollection::from_geometry(geometry).unwrap())
+        Ok(geo_features::FeatureCollection::from_geometry(geometry))
     }
 }

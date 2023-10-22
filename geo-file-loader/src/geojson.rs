@@ -30,8 +30,6 @@ pub enum LoadGeoJsonError {
     #[error("{0}")]
     SerdeJson(#[from] serde_json::Error),
     #[error("{0}")]
-    BoundingRect(#[from] geo_features::BoundingRectError),
-    #[error("{0}")]
     JsonNumberToFloat(#[from] JsonNumberToFloatError),
 }
 
@@ -94,7 +92,7 @@ fn geojson_geometry_to_geo_feature_collection(
     let geo_geometry: geo::Geometry = geojson_geometry.try_into().map_err(Box::new)?;
     let feature = geo_features::FeatureBuilder::new()
         .with_geometry(geo_geometry)
-        .build()?;
+        .build();
     Ok(geo_features::FeatureCollection::from_feature(feature))
 }
 
@@ -110,7 +108,7 @@ fn geojson_feature_to_geo_feature(
     {
         feature_builder = feature_builder.with_geometry(geo_geometry);
     }
-    Ok(feature_builder.build()?)
+    Ok(feature_builder.build())
 }
 
 fn geojson_feature_properties_to_geo_features_properties(

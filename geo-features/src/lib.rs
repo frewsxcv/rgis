@@ -33,17 +33,17 @@ impl FeatureBuilder {
         FeatureBuilder { properties, ..self }
     }
 
-    pub fn build(self) -> Result<Feature, BoundingRectError> {
+    pub fn build(self) -> Feature {
         let bounding_rect = self
             .geometry
             .as_ref()
             .and_then(|geometry| geometry.bounding_rect());
-        Ok(Feature {
+        Feature {
             id: FeatureId::new(),
             geometry: self.geometry,
             properties: self.properties,
             bounding_rect,
-        })
+        }
     }
 }
 
@@ -93,12 +93,11 @@ pub enum Value {
 pub type Properties = collections::HashMap<String, Value>;
 
 impl Feature {
-    pub fn recalculate_bounding_rect(&mut self) -> Result<(), BoundingRectError> {
+    pub fn recalculate_bounding_rect(&mut self) {
         self.bounding_rect = self
             .geometry
             .as_ref()
             .and_then(|geometry| geometry.bounding_rect());
-        Ok(())
     }
 }
 
@@ -182,9 +181,9 @@ impl fmt::Display for BoundingRectError {
 impl std::error::Error for BoundingRectError {}
 
 impl FeatureCollection {
-    pub fn from_geometry(geometry: geo::Geometry) -> Result<Self, BoundingRectError> {
-        let feature = FeatureBuilder::new().with_geometry(geometry).build()?;
-        Ok(Self::from_feature(feature))
+    pub fn from_geometry(geometry: geo::Geometry) -> Self {
+        let feature = FeatureBuilder::new().with_geometry(geometry).build();
+        Self::from_feature(feature)
     }
 
     pub fn from_feature(feature: Feature) -> Self {
@@ -216,9 +215,8 @@ impl FeatureCollection {
         )
     }
 
-    pub fn recalculate_bounding_rect(&mut self) -> Result<(), BoundingRectError> {
+    pub fn recalculate_bounding_rect(&mut self) {
         self.bounding_rect = bounding_rect_from_features(&self.features);
-        Ok(())
     }
 }
 

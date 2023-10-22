@@ -130,46 +130,42 @@ impl<'a, 'w> SidePanel<'a, 'w> {
                                     if let Ok(bounding_rect) =
                                         layer.unprojected_feature_collection.bounding_rect()
                                     {
-                                        if let Ok(feature_collection) = geo_projected::Unprojected::<
+                                        let feature_collection = geo_projected::Unprojected::<
                                             geo_features::FeatureCollection,
                                         >::from_geometry(
                                             bounding_rect.0.into()
-                                        ) {
-                                            self.events.create_layer_event_writer.send(
-                                                rgis_events::CreateLayerEvent {
-                                                    feature_collection,           // todo
-                                                    name: "Bounding rect".into(), // todo
-                                                    source_crs: layer.crs.clone(),
-                                                },
-                                            );
-                                        }
+                                        );
+                                        self.events.create_layer_event_writer.send(
+                                            rgis_events::CreateLayerEvent {
+                                                feature_collection,           // todo
+                                                name: "Bounding rect".into(), // todo
+                                                source_crs: layer.crs.clone(),
+                                            },
+                                        );
                                     }
                                 }
 
                                 OperationButton::<rgis_geo_ops::ConvexHull>::new(
                                     self.events,
                                     layer,
-                                ).ui(ui);
-                                OperationButton::<rgis_geo_ops::Outliers>::new(
-                                    self.events,
-                                    layer,
-                                ).ui(ui);
-                                OperationButton::<rgis_geo_ops::Simplify>::new(
-                                    self.events,
-                                    layer,
-                                ).ui(ui);
-                                OperationButton::<rgis_geo_ops::Smoothing>::new(
-                                    self.events,
-                                    layer,
-                                ).ui(ui);
+                                )
+                                .ui(ui);
+                                OperationButton::<rgis_geo_ops::Outliers>::new(self.events, layer)
+                                    .ui(ui);
+                                OperationButton::<rgis_geo_ops::Simplify>::new(self.events, layer)
+                                    .ui(ui);
+                                OperationButton::<rgis_geo_ops::Smoothing>::new(self.events, layer)
+                                    .ui(ui);
                                 OperationButton::<rgis_geo_ops::Triangulate>::new(
                                     self.events,
                                     layer,
-                                ).ui(ui);
+                                )
+                                .ui(ui);
                                 OperationButton::<rgis_geo_ops::UnsignedArea>::new(
                                     self.events,
                                     layer,
-                                ).ui(ui);
+                                )
+                                .ui(ui);
                             });
                         });
                 });

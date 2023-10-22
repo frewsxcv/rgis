@@ -5,8 +5,6 @@ use geozero::GeozeroDatasource;
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error("{0}")]
-    BoundingRect(#[from] geo_features::BoundingRectError),
-    #[error("{0}")]
     Geozero(#[from] geozero::error::GeozeroError),
 }
 
@@ -29,7 +27,7 @@ impl crate::FileLoader for WktSource {
         let mut geo_writer = geozero::geo_types::GeoWriter::new();
         wkt_reader.process(&mut geo_writer)?;
         match geo_writer.take_geometry() {
-            Some(geometry) => Ok(geo_features::FeatureCollection::from_geometry(geometry)?),
+            Some(geometry) => Ok(geo_features::FeatureCollection::from_geometry(geometry)),
             None => Ok(geo_features::FeatureCollection::default()),
         }
     }

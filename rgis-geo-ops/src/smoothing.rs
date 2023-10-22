@@ -53,7 +53,7 @@ impl Operation for Smoothing {
         Ok(Outcome::FeatureCollection(geo_projected::Unprojected::new(
             geo_features::FeatureCollection::from_geometry(geo::Geometry::GeometryCollection(
                 smoothed,
-            ))?,
+            )),
         )))
     }
 }

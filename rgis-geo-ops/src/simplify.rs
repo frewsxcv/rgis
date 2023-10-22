@@ -103,7 +103,7 @@ impl Operation for Simplify {
         Ok(Outcome::FeatureCollection(geo_projected::Unprojected::new(
             geo_features::FeatureCollection::from_geometry(geo::Geometry::GeometryCollection(
                 simplified,
-            ))?,
+            )),
         )))
     }
 }

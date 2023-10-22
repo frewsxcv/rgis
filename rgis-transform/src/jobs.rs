@@ -36,10 +36,10 @@ impl bevy_jobs::Job for ReprojectGeometryJob {
                     transformer.transform(geometry)?;
                 }
 
-                feature.0.recalculate_bounding_rect()?;
+                feature.0.recalculate_bounding_rect();
             }
 
-            self.feature_collection.0.recalculate_bounding_rect()?;
+            self.feature_collection.0.recalculate_bounding_rect();
 
             Ok(ReprojectGeometryJobOutcome {
                 feature_collection: self.feature_collection.into_projected(),

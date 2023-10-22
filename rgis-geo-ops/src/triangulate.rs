@@ -38,7 +38,7 @@ impl Operation for Triangulate {
         );
 
         Ok(Outcome::FeatureCollection(geo_projected::Unprojected::new(
-            geo_features::FeatureCollection::from_geometry(multi_polygon.into())?,
+            geo_features::FeatureCollection::from_geometry(multi_polygon.into()),
         )))
     }
 }

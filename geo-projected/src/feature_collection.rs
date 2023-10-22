@@ -37,8 +37,8 @@ macro_rules! feature_collection_impl {
         impl $outer_ty<$specific_inner_ty> {
             pub fn from_geometry(
                 geometry: geo::Geometry,
-            ) -> Result<$outer_ty<$general_inner_ty>, geo_features::BoundingRectError> {
-                <$general_inner_ty>::from_geometry(geometry).map($outer_ty)
+            ) -> $outer_ty<$general_inner_ty> {
+                $outer_ty(<$general_inner_ty>::from_geometry(geometry))
             }
 
             pub fn features_iter(&self) -> impl Iterator<Item = $outer_ty<&geo_features::Feature>> {

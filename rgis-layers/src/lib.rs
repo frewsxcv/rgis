@@ -151,7 +151,7 @@ impl Layers {
         unprojected: geo_projected::Unprojected<geo_features::FeatureCollection>,
         name: String,
         source_crs: String,
-    ) -> Result<rgis_layer_id::LayerId, geo_features::BoundingRectError> {
+    ) -> rgis_layer_id::LayerId {
         let layer_id = self.next_layer_id();
         let geom_type = geo_geom_type::determine(unprojected.as_raw().geometry_iter());
         let layer = Layer {
@@ -175,7 +175,7 @@ impl Layers {
             geom_type,
         };
         self.data.push(layer);
-        Ok(layer_id)
+        layer_id
     }
 
     pub fn clear_projected(&mut self) {

@@ -35,8 +35,6 @@ pub enum TransformError {
     #[cfg(not(target_arch = "wasm32"))]
     #[error("{0}")]
     Proj(#[from] geo::algorithm::proj::TransformError),
-    #[error("{0}")]
-    BoundingRect(#[from] geo_features::BoundingRectError),
 }
 
 pub trait Transformer {
