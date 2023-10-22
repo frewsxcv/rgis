@@ -152,6 +152,8 @@ impl<'a, 'w> SidePanel<'a, 'w> {
                                 .ui(ui);
                                 OperationButton::<rgis_geo_ops::Outliers>::new(self.events, layer)
                                     .ui(ui);
+                                OperationButton::<rgis_geo_ops::Rotate>::new(self.events, layer)
+                                    .ui(ui);
                                 OperationButton::<rgis_geo_ops::Simplify>::new(self.events, layer)
                                     .ui(ui);
                                 OperationButton::<rgis_geo_ops::Smoothing>::new(self.events, layer)
