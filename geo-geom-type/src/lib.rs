@@ -23,17 +23,18 @@ bitflags::bitflags! {
 
 impl std::fmt::Display for GeomType {
     fn fmt(&self, mut f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            n if *n == GeomType::POINT => write!(&mut f, "Point"),
-            n if *n == GeomType::LINE => write!(&mut f, "Line"),
-            n if *n == GeomType::LINE_STRING => write!(&mut f, "LineString"),
-            n if *n == GeomType::POLYGON => write!(&mut f, "Polygon"),
-            n if *n == GeomType::MULTI_POINT => write!(&mut f, "MultiPoint"),
-            n if *n == GeomType::MULTI_LINE_STRING => write!(&mut f, "MultiLineString"),
-            n if *n == GeomType::MULTI_POLYGON => write!(&mut f, "MultiPolygon"),
-            n if *n == GeomType::RECT => write!(&mut f, "Rectangle"),
-            n if *n == GeomType::TRIANGLE => write!(&mut f, "Triangle"),
-            _ => unreachable!("Unknown geometry type"),
+        match *self {
+            GeomType::POINT => write!(&mut f, "Point"),
+            GeomType::LINE => write!(&mut f, "Line"),
+            GeomType::LINE_STRING => write!(&mut f, "LineString"),
+            GeomType::POLYGON => write!(&mut f, "Polygon"),
+            GeomType::MULTI_POINT => write!(&mut f, "MultiPoint"),
+            GeomType::MULTI_LINE_STRING => write!(&mut f, "MultiLineString"),
+            GeomType::MULTI_POLYGON => write!(&mut f, "MultiPolygon"),
+            GeomType::RECT => write!(&mut f, "Rectangle"),
+            GeomType::TRIANGLE => write!(&mut f, "Triangle"),
+            _ => write!(&mut f, "(Unimplemented type"), // FIXME
+            // _ => unreachable!("Unknown geometry type"),
         }
     }
 }
