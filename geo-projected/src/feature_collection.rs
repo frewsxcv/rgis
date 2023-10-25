@@ -35,9 +35,7 @@ feature_collection_impl_ref_mut!(Unprojected, &mut geo_features::FeatureCollecti
 macro_rules! feature_collection_impl {
     ($outer_ty:ident, $general_inner_ty:ty, $specific_inner_ty:ty) => {
         impl $outer_ty<$specific_inner_ty> {
-            pub fn from_geometry(
-                geometry: geo::Geometry,
-            ) -> $outer_ty<$general_inner_ty> {
+            pub fn from_geometry(geometry: geo::Geometry) -> $outer_ty<$general_inner_ty> {
                 $outer_ty(<$general_inner_ty>::from_geometry(geometry))
             }
 

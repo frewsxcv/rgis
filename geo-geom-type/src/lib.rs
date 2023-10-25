@@ -34,7 +34,7 @@ impl std::fmt::Display for GeomType {
             GeomType::RECT => write!(&mut f, "Rectangle"),
             GeomType::TRIANGLE => write!(&mut f, "Triangle"),
             _ => write!(&mut f, "(Unimplemented type"), // FIXME
-            // _ => unreachable!("Unknown geometry type"),
+                                                        // _ => unreachable!("Unknown geometry type"),
         }
     }
 }
