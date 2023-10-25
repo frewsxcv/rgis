@@ -25,7 +25,7 @@ impl ScreenCoord {
 
         // the default orthographic projection is in pixels from the center;
         // just undo the translation
-        let d_vec = bevy::math::DVec2::new(self.x, window.height() as f64 - self.y) - size / 2.0;
+        let d_vec = bevy::math::DVec2::new(self.x, f64::from(window.height()) - self.y) - size / 2.0;
 
         // apply the camera transform
         let pos_wld = transform.compute_matrix().as_dmat4() * d_vec.extend(0.0).extend(1.0);
