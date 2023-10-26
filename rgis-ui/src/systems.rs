@@ -45,7 +45,7 @@ fn render_side_panel(
         layers: &layers,
         events: &mut events,
         side_panel_width: &mut side_panel_width,
-        show_manage_layer_window_event_writer: show_manage_layer_window_event_writer,
+        show_manage_layer_window_event_writer,
     }
     .render();
 }
