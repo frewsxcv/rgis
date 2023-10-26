@@ -16,6 +16,8 @@ pub struct Events<'w> {
     render_message_event_writer: bevy::ecs::event::EventWriter<'w, rgis_events::RenderMessageEvent>,
     open_operation_window_event_writer:
         bevy::ecs::event::EventWriter<'w, crate::events::OpenOperationWindowEvent>,
+    show_manage_layer_window_event_writer:
+        bevy::ecs::event::EventWriter<'w, rgis_events::ShowManageLayerWindowEvent>,
 }
 
 pub(crate) struct SidePanel<'a, 'w> {
@@ -23,8 +25,6 @@ pub(crate) struct SidePanel<'a, 'w> {
     pub layers: &'a rgis_layers::Layers,
     pub events: &'a mut Events<'w>,
     pub side_panel_width: &'a mut crate::SidePanelWidth,
-    pub show_manage_layer_window_event_writer:
-        bevy::ecs::event::EventWriter<'a, rgis_events::ShowManageLayerWindowEvent>,
 }
 
 impl<'a, 'w> SidePanel<'a, 'w> {
@@ -75,7 +75,8 @@ impl<'a, 'w> SidePanel<'a, 'w> {
 
                 ui.with_layout(Layout::top_down_justified(Align::Center), |ui| {
                     if ui.button("✏ Manage").clicked() {
-                        self.show_manage_layer_window_event_writer
+                        self.events
+                            .show_manage_layer_window_event_writer
                             .send(rgis_events::ShowManageLayerWindowEvent(layer.id));
                     }
 

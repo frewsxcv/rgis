@@ -32,9 +32,6 @@ fn render_side_panel(
     layers: Res<rgis_layers::Layers>,
     mut events: crate::side_panel::Events,
     mut side_panel_width: ResMut<crate::SidePanelWidth>,
-    show_manage_layer_window_event_writer: bevy::ecs::event::EventWriter<
-        rgis_events::ShowManageLayerWindowEvent,
-    >,
 ) {
     let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else {
         return;
@@ -45,7 +42,6 @@ fn render_side_panel(
         layers: &layers,
         events: &mut events,
         side_panel_width: &mut side_panel_width,
-        show_manage_layer_window_event_writer,
     }
     .render();
 }
