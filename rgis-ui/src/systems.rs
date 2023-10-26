@@ -28,11 +28,13 @@ fn render_bottom_panel(
 }
 
 fn render_side_panel(
-    mut manage_layer_window_state: ResMut<crate::ManageLayerWindowState>, // TODO: change this to Local?
     mut egui_ctx_query: Query<&mut EguiContext, With<PrimaryWindow>>,
     layers: Res<rgis_layers::Layers>,
     mut events: crate::side_panel::Events,
     mut side_panel_width: ResMut<crate::SidePanelWidth>,
+    show_manage_layer_window_event_writer: bevy::ecs::event::EventWriter<
+        rgis_events::ShowManageLayerWindowEvent,
+    >,
 ) {
     let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else {
         return;
@@ -40,10 +42,10 @@ fn render_side_panel(
 
     crate::side_panel::SidePanel {
         egui_ctx: egui_ctx.get_mut(),
-        manage_layer_window_state: &mut manage_layer_window_state,
         layers: &layers,
         events: &mut events,
         side_panel_width: &mut side_panel_width,
+        show_manage_layer_window_event_writer: show_manage_layer_window_event_writer,
     }
     .render();
 }
@@ -61,14 +63,22 @@ fn handle_open_file_job(
 }
 
 fn render_manage_layer_window(
-    mut state: ResMut<crate::ManageLayerWindowState>, // TODO: change this to Local?
+    mut state: Local<crate::ManageLayerWindowState>,
     mut egui_ctx_query: Query<&mut EguiContext, With<PrimaryWindow>>,
     layers: Res<rgis_layers::Layers>,
     mut color_events: ResMut<bevy::ecs::event::Events<rgis_events::UpdateLayerColorEvent>>,
+    mut show_manage_layer_window_event_reader: bevy::ecs::event::EventReader<
+        rgis_events::ShowManageLayerWindowEvent,
+    >,
 ) {
     let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else {
         return;
     };
+
+    if let Some(event) = show_manage_layer_window_event_reader.iter().last() {
+        state.is_visible = true;
+        state.layer_id = Some(event.0);
+    }
 
     crate::manage_layer_window::ManageLayerWindow {
         state: &mut state,

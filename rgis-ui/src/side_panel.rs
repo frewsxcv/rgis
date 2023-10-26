@@ -20,10 +20,11 @@ pub struct Events<'w> {
 
 pub(crate) struct SidePanel<'a, 'w> {
     pub egui_ctx: &'a egui::Context,
-    pub manage_layer_window_state: &'a mut crate::ManageLayerWindowState,
     pub layers: &'a rgis_layers::Layers,
     pub events: &'a mut Events<'w>,
     pub side_panel_width: &'a mut crate::SidePanelWidth,
+    pub show_manage_layer_window_event_writer:
+        bevy::ecs::event::EventWriter<'a, rgis_events::ShowManageLayerWindowEvent>,
 }
 
 impl<'a, 'w> SidePanel<'a, 'w> {
@@ -74,8 +75,8 @@ impl<'a, 'w> SidePanel<'a, 'w> {
 
                 ui.with_layout(Layout::top_down_justified(Align::Center), |ui| {
                     if ui.button("✏ Manage").clicked() {
-                        self.manage_layer_window_state.is_visible = true;
-                        self.manage_layer_window_state.layer_id = Some(layer.id);
+                        self.show_manage_layer_window_event_writer
+                            .send(rgis_events::ShowManageLayerWindowEvent(layer.id));
                     }
 
                     ui.horizontal(|ui| {

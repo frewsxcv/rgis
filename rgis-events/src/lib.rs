@@ -14,6 +14,9 @@ const ZOOM_FACTOR: f32 = 500.;
 #[derive(Debug, Event)]
 pub struct LayerCreatedEvent(pub rgis_layer_id::LayerId);
 
+#[derive(Debug, Event)]
+pub struct ShowManageLayerWindowEvent(pub rgis_layer_id::LayerId);
+
 #[derive(Event, Debug)]
 pub struct ToggleLayerVisibilityEvent(pub rgis_layer_id::LayerId);
 
@@ -215,6 +218,7 @@ impl bevy::app::Plugin for Plugin {
             .add_event::<LayerReprojectedEvent>()
             .add_event::<DespawnMeshesEvent>()
             .add_event::<FeatureSelectedEvent>()
-            .add_event::<FeaturesDeselectedEvent>();
+            .add_event::<FeaturesDeselectedEvent>()
+            .add_event::<ShowManageLayerWindowEvent>();
     }
 }
