@@ -218,12 +218,27 @@ type SelectedFeatureQuery<'world, 'state, 'a> = Query<
     Or<(With<Handle<ColorMaterial>>, With<Handle<Image>>)>,
 >;
 
-fn handle_feature_clicked_event(
+fn handle_feature_selected_event_despawn(
+    event_reader: EventReader<rgis_events::FeatureSelectedEvent>,
+    mut commands: Commands,
+    query: SelectedFeatureQuery,
+) {
+    if !event_reader.is_empty() {
+        for (entity, entity_type) in query.iter() {
+            match entity_type {
+                RenderEntityType::SelectedPolygon
+                | RenderEntityType::SelectedLineString
+                | RenderEntityType::SelectedPoint => commands.entity(entity).despawn(),
+                _ => (),
+            }
+        }
+    }
+}
+
+fn handle_feature_selected_event_spawn(
     mut event_reader: EventReader<rgis_events::FeatureSelectedEvent>,
     layers: Res<rgis_layers::Layers>,
     mut job_spawner: bevy_jobs::JobSpawner,
-    mut commands: Commands,
-    query: SelectedFeatureQuery,
 ) {
     for event in event_reader.iter() {
         let Some(layer) = layers.get(event.0) else {
@@ -235,14 +250,6 @@ fn handle_feature_clicked_event(
         let Some(geometry) = feature.geometry() else {
             return;
         };
-        for (entity, entity_type) in query.iter() {
-            match entity_type {
-                RenderEntityType::SelectedPolygon
-                | RenderEntityType::SelectedLineString
-                | RenderEntityType::SelectedPoint => commands.entity(entity).despawn(),
-                _ => (),
-            }
-        }
         job_spawner.spawn(MeshBuildingJob {
             layer_id: event.0,
             geometry: geometry.cloned(),
@@ -264,7 +271,8 @@ pub fn configure(app: &mut App) {
             handle_mesh_building_job_outcome,
             handle_crs_changed_events,
             handle_camera_scale_changed_event,
-            handle_feature_clicked_event,
+            handle_feature_selected_event_despawn,
+            handle_feature_selected_event_spawn,
         ),
     );
 }
