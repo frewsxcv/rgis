@@ -19,12 +19,12 @@ pub struct Outliers {
 }
 
 impl Operation for Outliers {
-    fn visit_point(&mut self, point: geo::Point) {
-        self.points.push(point);
+    fn visit_point(&mut self, point: &geo::Point) {
+        self.points.push(*point);
     }
 
-    fn visit_multi_point(&mut self, multi_point: geo::MultiPoint) {
-        self.points.extend(multi_point.0);
+    fn visit_multi_point(&mut self, multi_point: &geo::MultiPoint) {
+        self.points.extend(multi_point.0.iter());
     }
 
     fn finalize(&mut self) -> Result<Outcome, Box<dyn error::Error>> {

@@ -71,21 +71,21 @@ impl Operation for Simplify {
         };
     }
 
-    fn visit_line_string(&mut self, line_string: geo::LineString) {
+    fn visit_line_string(&mut self, line_string: &geo::LineString) {
         let Some(epsilon) = self.epsilon else { return };
         self.simplified
             .0
             .push(line_string.simplify(&epsilon).into());
     }
 
-    fn visit_multi_line_string(&mut self, multi_line_string: geo::MultiLineString) {
+    fn visit_multi_line_string(&mut self, multi_line_string: &geo::MultiLineString) {
         let Some(epsilon) = self.epsilon else { return };
         self.simplified
             .0
             .push(multi_line_string.simplify(&epsilon).into());
     }
 
-    fn visit_polygon(&mut self, polygon: geo::Polygon) {
+    fn visit_polygon(&mut self, polygon: &geo::Polygon) {
         let Some(epsilon) = self.epsilon else { return };
         let simplified = polygon.simplify(&epsilon);
         debug_assert!(simplified.exterior().0.len() >= 4);
@@ -95,7 +95,7 @@ impl Operation for Simplify {
         self.simplified.0.push(simplified.into());
     }
 
-    fn visit_multi_polygon(&mut self, multi_polygon: geo::MultiPolygon) {
+    fn visit_multi_polygon(&mut self, multi_polygon: &geo::MultiPolygon) {
         let Some(epsilon) = self.epsilon else { return };
         self.simplified
             .0

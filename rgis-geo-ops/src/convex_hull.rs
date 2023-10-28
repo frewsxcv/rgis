@@ -16,8 +16,8 @@ impl OperationEntry for ConvexHull {
 }
 
 impl Operation for ConvexHull {
-    fn visit_geometry(&mut self, geometry: geo::Geometry) {
-        self.geometries.push(geometry);
+    fn visit_geometry(&mut self, geometry: &geo::Geometry) {
+        self.geometries.push(geometry.clone());
     }
 
     fn finalize(&mut self) -> Result<Outcome, Box<dyn error::Error>> {

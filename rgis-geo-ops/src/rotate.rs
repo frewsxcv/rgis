@@ -19,7 +19,7 @@ impl OperationEntry for Rotate {
 impl Operation for Rotate {
     fn visit_feature_collection(
         &mut self,
-        feature_collection: geo_projected::Unprojected<geo_features::FeatureCollection>,
+        feature_collection: &geo_projected::Unprojected<geo_features::FeatureCollection>,
     ) {
         self.rotated = feature_collection.0.to_geometry_collection();
         self.rotated.rotate_around_centroid_mut(45.);

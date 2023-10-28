@@ -23,21 +23,21 @@ impl OperationEntry for UnsignedArea {
 }
 
 impl Operation for UnsignedArea {
-    fn visit_polygon(&mut self, polygon: geo::Polygon) {
+    fn visit_polygon(&mut self, polygon: &geo::Polygon) {
         self.total_area += polygon.unsigned_area();
     }
 
-    fn visit_multi_polygon(&mut self, multi_polygon: geo::MultiPolygon) {
+    fn visit_multi_polygon(&mut self, multi_polygon: &geo::MultiPolygon) {
         for polygon in multi_polygon {
             self.total_area += polygon.unsigned_area();
         }
     }
 
-    fn visit_triangle(&mut self, triangle: geo::Triangle) {
+    fn visit_triangle(&mut self, triangle: &geo::Triangle) {
         self.total_area += triangle.unsigned_area();
     }
 
-    fn visit_rect(&mut self, rect: geo::Rect) {
+    fn visit_rect(&mut self, rect: &geo::Rect) {
         self.total_area += rect.unsigned_area();
     }
 

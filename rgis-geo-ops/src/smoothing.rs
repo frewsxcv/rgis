@@ -24,25 +24,25 @@ impl OperationEntry for Smoothing {
 const NUM_ITERATIONS: usize = 2;
 
 impl Operation for Smoothing {
-    fn visit_line_string(&mut self, line_string: geo::LineString) {
+    fn visit_line_string(&mut self, line_string: &geo::LineString) {
         self.smoothed
             .0
             .push(line_string.chaikin_smoothing(NUM_ITERATIONS).into());
     }
 
-    fn visit_multi_line_string(&mut self, multi_line_string: geo::MultiLineString) {
+    fn visit_multi_line_string(&mut self, multi_line_string: &geo::MultiLineString) {
         self.smoothed
             .0
             .push(multi_line_string.chaikin_smoothing(NUM_ITERATIONS).into());
     }
 
-    fn visit_polygon(&mut self, polygon: geo::Polygon) {
+    fn visit_polygon(&mut self, polygon: &geo::Polygon) {
         self.smoothed
             .0
             .push(polygon.chaikin_smoothing(NUM_ITERATIONS).into());
     }
 
-    fn visit_multi_polygon(&mut self, multi_polygon: geo::MultiPolygon) {
+    fn visit_multi_polygon(&mut self, multi_polygon: &geo::MultiPolygon) {
         self.smoothed
             .0
             .push(multi_polygon.chaikin_smoothing(NUM_ITERATIONS).into());

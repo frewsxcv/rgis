@@ -52,24 +52,24 @@ pub trait Operation {
         &mut self,
         feature_collection: Unprojected<geo_features::FeatureCollection>,
     ) -> Result<Outcome, Box<dyn error::Error>> {
-        self.visit_feature_collection(feature_collection.clone()); // TODO: don't clone here
+        self.visit_feature_collection(&feature_collection);
         for feature in feature_collection.into_features_iter() {
-            self.visit_feature(feature.clone()); // TODO: don't clone here
+            self.visit_feature(&feature);
             if let Some(geometry) = feature.0.geometry {
-                self.visit_geometry(geometry.clone()); // TODO: don't clone here
+                self.visit_geometry(&geometry);
                 match geometry {
-                    geo::Geometry::Point(g) => self.visit_point(g),
-                    geo::Geometry::Line(g) => self.visit_line(g),
-                    geo::Geometry::LineString(g) => self.visit_line_string(g),
-                    geo::Geometry::Polygon(g) => self.visit_polygon(g),
-                    geo::Geometry::MultiPoint(g) => self.visit_multi_point(g),
-                    geo::Geometry::MultiLineString(g) => self.visit_multi_line_string(g),
-                    geo::Geometry::MultiPolygon(g) => self.visit_multi_polygon(g),
-                    geo::Geometry::Rect(g) => self.visit_rect(g),
-                    geo::Geometry::Triangle(g) => self.visit_triangle(g),
+                    geo::Geometry::Point(g) => self.visit_point(&g),
+                    geo::Geometry::Line(g) => self.visit_line(&g),
+                    geo::Geometry::LineString(g) => self.visit_line_string(&g),
+                    geo::Geometry::Polygon(g) => self.visit_polygon(&g),
+                    geo::Geometry::MultiPoint(g) => self.visit_multi_point(&g),
+                    geo::Geometry::MultiLineString(g) => self.visit_multi_line_string(&g),
+                    geo::Geometry::MultiPolygon(g) => self.visit_multi_polygon(&g),
+                    geo::Geometry::Rect(g) => self.visit_rect(&g),
+                    geo::Geometry::Triangle(g) => self.visit_triangle(&g),
                     geo::Geometry::GeometryCollection(geometry_collection) => {
                         for geometry in geometry_collection {
-                            self.visit_geometry(geometry);
+                            self.visit_geometry(&geometry);
                         }
                     }
                 }
@@ -93,29 +93,29 @@ pub trait Operation {
 
     fn visit_feature_collection(
         &mut self,
-        _feature_collection: Unprojected<geo_features::FeatureCollection>,
+        _feature_collection: &Unprojected<geo_features::FeatureCollection>,
     ) {
     }
 
-    fn visit_feature(&mut self, _feature: Unprojected<geo_features::Feature>) {}
+    fn visit_feature(&mut self, _feature: &Unprojected<geo_features::Feature>) {}
 
-    fn visit_geometry(&mut self, _geometry: geo::Geometry) {}
+    fn visit_geometry(&mut self, _geometry: &geo::Geometry) {}
 
-    fn visit_point(&mut self, _point: geo::Point) {}
+    fn visit_point(&mut self, _point: &geo::Point) {}
 
-    fn visit_line(&mut self, _line: geo::Line) {}
+    fn visit_line(&mut self, _line: &geo::Line) {}
 
-    fn visit_line_string(&mut self, _line_string: geo::LineString) {}
+    fn visit_line_string(&mut self, _line_string: &geo::LineString) {}
 
-    fn visit_polygon(&mut self, _polygon: geo::Polygon) {}
+    fn visit_polygon(&mut self, _polygon: &geo::Polygon) {}
 
-    fn visit_multi_point(&mut self, _multi_point: geo::MultiPoint) {}
+    fn visit_multi_point(&mut self, _multi_point: &geo::MultiPoint) {}
 
-    fn visit_multi_line_string(&mut self, _multi_line_string: geo::MultiLineString) {}
+    fn visit_multi_line_string(&mut self, _multi_line_string: &geo::MultiLineString) {}
 
-    fn visit_multi_polygon(&mut self, _multi_polygon: geo::MultiPolygon) {}
+    fn visit_multi_polygon(&mut self, _multi_polygon: &geo::MultiPolygon) {}
 
-    fn visit_rect(&mut self, _rect: geo::Rect) {}
+    fn visit_rect(&mut self, _rect: &geo::Rect) {}
 
-    fn visit_triangle(&mut self, _triagnle: geo::Triangle) {}
+    fn visit_triangle(&mut self, _triangle: &geo::Triangle) {}
 }
