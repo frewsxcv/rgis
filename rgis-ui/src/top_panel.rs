@@ -42,7 +42,9 @@ impl<'a> TopPanel<'a> {
                     if ui
                         .add_enabled(
                             self.app_settings.current_tool != rgis_settings::Tool::Pan,
-                            egui::Button::new("🔁 Pan Tool"),
+                            egui::Button::new("🔁 Pan Tool").selected(
+                                self.app_settings.current_tool == rgis_settings::Tool::Pan,
+                            ),
                         )
                         .clicked()
                     {
@@ -52,7 +54,9 @@ impl<'a> TopPanel<'a> {
                     if ui
                         .add_enabled(
                             self.app_settings.current_tool != rgis_settings::Tool::Query,
-                            egui::Button::new("ℹ Query Tool"),
+                            egui::Button::new("ℹ Query Tool").selected(
+                                self.app_settings.current_tool == rgis_settings::Tool::Query,
+                            ),
                         )
                         .clicked()
                     {
