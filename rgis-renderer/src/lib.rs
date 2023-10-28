@@ -33,6 +33,8 @@ impl bevy::app::Plugin for Plugin {
     }
 }
 
+const SELECTED_COLOR: Color = Color::PINK;
+
 fn spawn_geometry_meshes(
     geometry_mesh: geo_bevy::GeometryMesh,
     materials: &mut Assets<ColorMaterial>,
@@ -73,7 +75,11 @@ fn spawn_geometry_meshes(
                     asset_server,
                     transform,
                     commands,
-                    layer.color.fill.unwrap(),
+                    if is_selected {
+                        SELECTED_COLOR
+                    } else {
+                        layer.color.fill.unwrap()
+                    },
                 );
                 entity_commands.insert(layer.id);
                 entity_commands.insert(fill_entity_type);
@@ -93,7 +99,11 @@ fn spawn_geometry_meshes(
             // Fill
             spawn_helper(
                 materials,
-                layer.color.fill.unwrap(),
+                if is_selected {
+                    SELECTED_COLOR
+                } else {
+                    layer.color.fill.unwrap()
+                },
                 layer_index,
                 polygon_mesh.mesh,
                 commands,
@@ -134,7 +144,11 @@ fn spawn_geometry_meshes(
             };
             spawn_helper(
                 materials,
-                layer.color.stroke,
+                if is_selected {
+                    SELECTED_COLOR
+                } else {
+                    layer.color.stroke
+                },
                 layer_index,
                 line_string_mesh,
                 commands,
