@@ -243,6 +243,7 @@ fn render_in_progress(
         .open(&mut true)
         .title_bar(false)
         .anchor(egui::Align2::RIGHT_BOTTOM, [-5., -5.])
+        .resizable(false)
         .show(egui_ctx.get_mut(), |ui| {
             for in_progress_job in in_progress_job_iter {
                 let name = &in_progress_job.name;
