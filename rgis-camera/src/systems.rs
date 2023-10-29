@@ -44,7 +44,11 @@ fn handle_change_crs_event(
     };
     let rect = map_area.projected_geo_rect(&transform, window);
 
-    let transformer = rgis_transform::DefaultTransformer::setup(&event.old_crs, &event.new_crs);
+    let Ok(transformer) = rgis_transform::DefaultTransformer::setup(&event.old_crs, &event.new_crs)
+    else {
+        bevy::log::error!("Could not create projection transformer");
+        return;
+    };
     if let Err(e) = transformer.transform(&mut (rect.0.into())) {
         bevy::log::error!("Enountered error when transforming: {}", e);
     }

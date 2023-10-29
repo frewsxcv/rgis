@@ -27,7 +27,8 @@ impl bevy_jobs::Job for ReprojectGeometryJob {
         Box::pin(async move {
             let total = self.feature_collection.features_iter_mut().count();
 
-            let transformer = crate::DefaultTransformer::setup(&self.source_crs, &self.target_crs);
+            let transformer = crate::DefaultTransformer::setup(&self.source_crs, &self.target_crs)
+                .map_err(crate::TransformError::SetupError)?;
 
             for (i, feature) in self.feature_collection.features_iter_mut().enumerate() {
                 let _ = progress_sender.send_progress((100 * i / total) as u8).await;

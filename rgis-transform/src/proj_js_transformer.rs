@@ -1,14 +1,19 @@
+use std::error;
+
 pub struct ProjJsTransformer {
     source_crs: String,
     target_crs: String,
 }
 
 impl crate::Transformer for ProjJsTransformer {
-    fn setup(source_crs: &str, target_crs: &str) -> Self {
-        ProjJsTransformer {
+    fn setup(
+        source_crs: &str,
+        target_crs: &str,
+    ) -> Result<Self, Box<dyn error::Error + Send + Sync>> {
+        Ok(ProjJsTransformer {
             source_crs: source_crs.to_owned(),
             target_crs: target_crs.to_owned(),
-        }
+        })
     }
 
     fn transform(&self, geometry: &mut geo::Geometry) -> Result<(), crate::TransformError> {

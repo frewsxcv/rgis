@@ -7,6 +7,7 @@
 )]
 
 use bevy::prelude::Update;
+use std::error;
 
 mod jobs;
 mod systems;
@@ -29,6 +30,8 @@ fn set_proj_log_level() {
 
 #[derive(thiserror::Error, Debug)]
 pub enum TransformError {
+    #[error("{0}")]
+    SetupError(Box<dyn error::Error + Send + Sync>),
     #[cfg(target_arch = "wasm32")]
     #[error("{0}")]
     GeoProjJs(#[from] geo_proj_js::Error),
@@ -38,7 +41,9 @@ pub enum TransformError {
 }
 
 pub trait Transformer {
-    fn setup(source_crs: &str, target_crs: &str) -> Self;
+    fn setup(source_crs: &str, target_crs: &str) -> Result<Self, Box<dyn error::Error + Send + Sync>>
+    where
+        Self: Sized;
     fn transform(&self, geometry: &mut geo::Geometry) -> Result<(), TransformError>;
 }
 
