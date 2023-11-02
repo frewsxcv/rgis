@@ -7,7 +7,7 @@ pub(crate) struct TopPanel<'a> {
     pub window: &'a mut Window,
     pub app_settings: &'a mut rgis_settings::RgisSettings,
     pub top_panel_height: &'a mut crate::TopPanelHeight,
-    pub debug_stats_window_state: &'a mut crate::DebugStatsWindowState,
+    pub debug_stats_window_state: &'a mut crate::debug_window::DebugStatsWindowState,
 }
 
 impl<'a> TopPanel<'a> {
