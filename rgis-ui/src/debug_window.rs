@@ -1,8 +1,5 @@
-use bevy::{
-    diagnostic::FrameTimeDiagnosticsPlugin, ecs::system::SystemParam, prelude::*,
-    window::PrimaryWindow,
-};
-use bevy_egui::{egui, EguiContext};
+use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, ecs::system::SystemParam, prelude::*};
+use bevy_egui::egui;
 use std::collections;
 
 #[derive(Default)]
@@ -14,7 +11,6 @@ struct LastDebugStats {
 
 #[derive(SystemParam)]
 pub struct DebugWindow<'w, 's> {
-    egui_ctx_query: Query<'w, 's, &'static mut EguiContext, With<PrimaryWindow>>,
     diagnostics: Res<'w, bevy::diagnostic::DiagnosticsStore>,
     state: ResMut<'w, DebugStatsWindowState>,
     time: Res<'w, Time>,
@@ -59,59 +55,48 @@ impl<'w, 's> egui::Widget for DebugWindow<'w, 's> {
             }
         }
 
-        let sin = if self.state.is_visible {
+        let sin =
             self.state
                 .history
                 .iter()
                 .enumerate()
                 .map(|(x, y)| egui_plot::PlotPoint::new(x as f64, y.min(FPS_MAX)))
-                .collect::<Vec<_>>()
-        } else {
-            vec![]
-        };
+                .collect::<Vec<_>>();
 
-        egui::Window::new("Debug")
-            .default_width(200.)
-            .open(&mut self.state.is_visible)
-            .show(ui.ctx(), move |ui| {
-                DebugTable { last: &self.last }.ui(ui);
+        ui.vertical(|ui| {
+            DebugTable { last: &self.last }.ui(ui);
 
-                use egui_plot::{Line, Plot, PlotPoints};
-                let line = Line::new(PlotPoints::Owned(sin));
-                Plot::new("fps_plot")
-                    .allow_drag(false)
-                    .allow_boxed_zoom(false)
-                    .allow_scroll(false)
-                    .allow_zoom(false)
-                    .set_margin_fraction((0., 0.).into())
-                    .show_x(false)
-                    .x_axis_formatter(|_, _, _| "".into())
-                    .y_axis_formatter(|n, _, _| format!("{n:?}"))
-                    .include_x(0.)
-                    .include_x(crate::DEBUG_STATS_HISTORY_LEN as f64)
-                    .include_y(0.)
-                    .include_y(FPS_MAX)
-                    .view_aspect(2.) // Width is twice as big as height
-                    .show(ui, |plot_ui| plot_ui.line(line));
-            })
-            .unwrap()
-            .response
+            use egui_plot::{Line, Plot, PlotPoints};
+            let line = Line::new(PlotPoints::Owned(sin));
+            Plot::new("fps_plot")
+                .allow_drag(false)
+                .allow_boxed_zoom(false)
+                .allow_scroll(false)
+                .allow_zoom(false)
+                .set_margin_fraction((0., 0.).into())
+                .show_x(false)
+                .x_axis_formatter(|_, _, _| "".into())
+                .y_axis_formatter(|n, _, _| format!("{n:?}"))
+                .include_x(0.)
+                .include_x(crate::DEBUG_STATS_HISTORY_LEN as f64)
+                .include_y(0.)
+                .include_y(FPS_MAX)
+                .view_aspect(2.) // Width is twice as big as height
+                .show(ui, |plot_ui| plot_ui.line(line));
+        })
+        .response
     }
 }
 
 impl crate::Window for DebugWindow<'_, '_> {
     type Item<'w, 's> = DebugWindow<'w, 's>;
 
-    fn is_visible(&self) -> bool {
-        self.state.is_visible
+    fn title(&self) -> &str {
+        "Debug"
     }
 
-    fn set_visible(&mut self, visible: bool) {
-        self.state.is_visible = visible;
-    }
-
-    fn egui_ctx(&mut self) -> Mut<bevy_egui::EguiContext> {
-        self.egui_ctx_query.single_mut()
+    fn default_width(&self) -> f32 {
+        200.
     }
 }
 
@@ -147,6 +132,5 @@ impl<'a> egui::Widget for DebugTable<'a> {
 #[derive(Resource)]
 pub struct DebugStatsWindowState {
     pub timer: Timer,
-    pub is_visible: bool,
     pub history: collections::VecDeque<f64>,
 }

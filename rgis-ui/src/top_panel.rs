@@ -1,16 +1,16 @@
 use bevy::prelude::*;
 use bevy_egui::egui;
 
-pub(crate) struct TopPanel<'a> {
+pub(crate) struct TopPanel<'a, 'w, 's> {
     pub app_exit_events: &'a mut bevy::ecs::event::Events<bevy::app::AppExit>,
     pub bevy_egui_ctx: &'a mut bevy_egui::EguiContext,
     pub window: &'a mut Window,
     pub app_settings: &'a mut rgis_settings::RgisSettings,
     pub top_panel_height: &'a mut crate::TopPanelHeight,
-    pub debug_stats_window_state: &'a mut crate::debug_window::DebugStatsWindowState,
+    pub is_debug_window_open: &'a mut crate::IsWindowOpen<crate::debug_window::DebugWindow<'w, 's>>,
 }
 
-impl<'a> TopPanel<'a> {
+impl<'a, 'w, 's> TopPanel<'a, 'w, 's> {
     pub(crate) fn render(&mut self) {
         let inner_response =
             egui::TopBottomPanel::top("top_panel").show(self.bevy_egui_ctx.get_mut(), |ui| {
@@ -30,7 +30,7 @@ impl<'a> TopPanel<'a> {
                     });
                     ui.menu_button("Help", |ui| {
                         if ui.button("Debug stats").clicked() {
-                            self.debug_stats_window_state.is_visible = true;
+                            self.is_debug_window_open.0 = true;
                         }
                         if ui.button("Source code").clicked() {
                             let _ = webbrowser::open("https://github.com/frewsxcv/rgis");

@@ -1,6 +1,9 @@
-use bevy::{prelude::*, window::PrimaryWindow, ecs::system::{SystemParam, StaticSystemParam}};
-use bevy_egui::{egui, EguiContext};
 use crate::Window;
+use bevy::{prelude::*, window::PrimaryWindow};
+use bevy_egui::{
+    egui::{self, Widget},
+    EguiContext,
+};
 
 fn render_bottom_panel(
     mut egui_ctx_query: Query<&mut EguiContext, With<PrimaryWindow>>,
@@ -270,7 +273,9 @@ fn render_top_panel(
     mut windows: Query<&mut bevy::window::Window, With<PrimaryWindow>>,
     mut app_settings: ResMut<rgis_settings::RgisSettings>,
     mut top_panel_height: ResMut<crate::TopPanelHeight>,
-    mut debug_stats_window_state: ResMut<crate::debug_window::DebugStatsWindowState>,
+    mut is_debug_window_open: ResMut<
+        crate::IsWindowOpen<crate::debug_window::DebugWindow<'static, 'static>>,
+    >,
 ) {
     let Ok(mut window) = windows.get_single_mut() else {
         return;
@@ -286,7 +291,7 @@ fn render_top_panel(
         window: &mut window,
         app_settings: &mut app_settings,
         top_panel_height: &mut top_panel_height,
-        debug_stats_window_state: &mut debug_stats_window_state,
+        is_debug_window_open: &mut is_debug_window_open,
     }
     .render();
 }
@@ -355,26 +360,25 @@ pub fn configure(app: &mut App) {
         ),
     );
 
-    // app.add_systems(Update, tmp);
+    app.insert_resource(crate::IsWindowOpen::<crate::debug_window::DebugWindow>::closed());
     app.add_systems(Update, render_window::<crate::debug_window::DebugWindow>);
 }
 
-#[derive(bevy::ecs::system::SystemParam)]
-struct Foo<'w, 's> {
-    commands: Commands<'w, 's>,
-}
-
-#[derive(Default)]
-struct LastDebugStats {
-    fps: f64,
-    frame_time: f64,
-    frame_count: f64,
-}
-
-fn render_window<W: crate::Window + 'static>(
-    mut window: <W as crate::Window>::Item<'_, '_>,
+fn render_window<W: Window + 'static>(
+    window: <W as crate::Window>::Item<'_, '_>,
+    mut egui_ctx_query: Query<&'static mut EguiContext, With<PrimaryWindow>>,
+    mut is_window_open: ResMut<crate::IsWindowOpen<W>>,
 ) {
-    if window.is_visible() {
-        window.render();
+    if is_window_open.0 {
+        let mut egui_ctx = egui_ctx_query.single_mut();
+
+        egui::Window::new(window.title())
+            .default_width(window.default_width())
+            .open(&mut is_window_open.0)
+            // .anchor(egui::Align2::RIGHT_TOP, [-5., 5.])
+            .resizable(false)
+            .show(egui_ctx.get_mut(), |ui| {
+                window.ui(ui);
+            });
     }
 }

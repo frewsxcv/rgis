@@ -24,20 +24,13 @@ mod systems;
 mod top_panel;
 mod widgets;
 
-trait Window: egui::Widget + SystemParam {
+trait Window: egui::Widget + SystemParam + Send + Sync {
     type Item<'world, 'state>: Window<State = Self::State>;
 
-    fn is_visible(&self) -> bool;
-    fn set_visible(&mut self, visible: bool);
-    fn egui_ctx(&mut self) -> Mut<bevy_egui::EguiContext>;
-    fn render(&mut self) {
-        if self.is_visible() {
-            egui::Window::new("Window").show(self.egui_ctx().get_mut(), |ui| {
-                ui.label("FOO");
-            });
-        }
-    }
+    fn title(&self) -> &str;
+    fn default_width(&self) -> f32;
 }
+
 pub struct Plugin;
 
 #[derive(Copy, Clone, Resource)]
@@ -106,11 +99,19 @@ impl bevy::app::Plugin for Plugin {
             // TODO: remove the below resource and replace with Local state
             .insert_resource(debug_window::DebugStatsWindowState {
                 timer: Timer::from_seconds(0.3, TimerMode::Repeating),
-                is_visible: false,
                 history: collections::VecDeque::with_capacity(DEBUG_STATS_HISTORY_LEN),
             })
             .add_event::<events::OpenOperationWindowEvent>();
 
         systems::configure(app);
+    }
+}
+
+#[derive(Resource)]
+pub(crate) struct IsWindowOpen<W: Window + Send + Sync>(pub bool, marker::PhantomData<W>);
+
+impl<W: Window + Send + Sync> IsWindowOpen<W> {
+    fn closed() -> Self {
+        Self(false, marker::PhantomData)
     }
 }
