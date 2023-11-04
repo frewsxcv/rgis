@@ -6,7 +6,10 @@ pub struct ProjTransformer {
 }
 
 impl crate::Transformer for ProjTransformer {
-    fn setup(source_crs: &str, target_crs: &str) -> Result<Self, Box<dyn error::Error + Send + Sync>> {
+    fn setup(
+        source_crs: &str,
+        target_crs: &str,
+    ) -> Result<Self, Box<dyn error::Error + Send + Sync>> {
         Ok(ProjTransformer {
             proj_transformer: proj::Proj::new_known_crs(source_crs, target_crs, None)?,
         })

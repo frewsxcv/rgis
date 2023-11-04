@@ -41,7 +41,10 @@ pub enum TransformError {
 }
 
 pub trait Transformer {
-    fn setup(source_crs: &str, target_crs: &str) -> Result<Self, Box<dyn error::Error + Send + Sync>>
+    fn setup(
+        source_crs: &str,
+        target_crs: &str,
+    ) -> Result<Self, Box<dyn error::Error + Send + Sync>>
     where
         Self: Sized;
     fn transform(&self, geometry: &mut geo::Geometry) -> Result<(), TransformError>;

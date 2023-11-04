@@ -55,13 +55,13 @@ impl<'w, 's> egui::Widget for DebugWindow<'w, 's> {
             }
         }
 
-        let sin =
-            self.state
-                .history
-                .iter()
-                .enumerate()
-                .map(|(x, y)| egui_plot::PlotPoint::new(x as f64, y.min(FPS_MAX)))
-                .collect::<Vec<_>>();
+        let sin = self
+            .state
+            .history
+            .iter()
+            .enumerate()
+            .map(|(x, y)| egui_plot::PlotPoint::new(x as f64, y.min(FPS_MAX)))
+            .collect::<Vec<_>>();
 
         ui.vertical(|ui| {
             DebugTable { last: &self.last }.ui(ui);
