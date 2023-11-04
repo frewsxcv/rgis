@@ -375,7 +375,6 @@ fn render_window<W: Window + 'static>(
         egui::Window::new(window.title())
             .default_width(window.default_width())
             .open(&mut is_window_open.0)
-            // .anchor(egui::Align2::RIGHT_TOP, [-5., 5.])
             .resizable(false)
             .show(egui_ctx.get_mut(), |ui| {
                 window.ui(ui);
