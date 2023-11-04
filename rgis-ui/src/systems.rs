@@ -1,4 +1,5 @@
-use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, prelude::*, window::PrimaryWindow};
+use crate::Window;
+use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_egui::{
     egui::{self, Widget},
     EguiContext,
@@ -85,7 +86,7 @@ fn render_manage_layer_window(
     .render();
 }
 
-struct IsVisible(bool);
+struct IsVisible(pub bool);
 
 impl Default for IsVisible {
     fn default() -> Self {
@@ -106,18 +107,18 @@ fn render_add_layer_window(
     };
 
     if !events.show_add_layer_window_event_reader.is_empty() {
-        is_visible.0 = true;
+        (*is_visible).0 = true;
     }
 
     if !events.hide_add_layer_window_events.is_empty() {
         state.reset();
-        is_visible.0 = false;
+        (*is_visible).0 = false;
     }
 
     crate::add_layer_window::AddLayerWindow {
         state: &mut state,
         selected_file: &mut selected_file,
-        is_visible: &mut is_visible.0,
+        is_visible: &mut (*is_visible).0,
         bevy_egui_ctx: &mut egui_ctx,
         job_spawner: &mut job_spawner,
         events: &mut events,
@@ -269,10 +270,12 @@ fn render_in_progress(
 fn render_top_panel(
     mut egui_ctx_query: Query<&mut EguiContext, With<PrimaryWindow>>,
     mut app_exit_events: ResMut<bevy::ecs::event::Events<bevy::app::AppExit>>,
-    mut windows: Query<&mut Window, With<PrimaryWindow>>,
+    mut windows: Query<&mut bevy::window::Window, With<PrimaryWindow>>,
     mut app_settings: ResMut<rgis_settings::RgisSettings>,
     mut top_panel_height: ResMut<crate::TopPanelHeight>,
-    mut debug_stats_window_state: ResMut<crate::DebugStatsWindowState>,
+    mut is_debug_window_open: ResMut<
+        crate::IsWindowOpen<crate::debug_window::DebugWindow<'static, 'static>>,
+    >,
 ) {
     let Ok(mut window) = windows.get_single_mut() else {
         return;
@@ -288,7 +291,7 @@ fn render_top_panel(
         window: &mut window,
         app_settings: &mut app_settings,
         top_panel_height: &mut top_panel_height,
-        debug_stats_window_state: &mut debug_stats_window_state,
+        is_debug_window_open: &mut is_debug_window_open,
     }
     .render();
 }
@@ -354,127 +357,28 @@ pub fn configure(app: &mut App) {
             render_change_crs_window.in_set(RenderSystemSet::Windows),
             render_feature_properties_window.in_set(RenderSystemSet::Windows),
             render_operation_window.in_set(RenderSystemSet::Windows),
-            render_debug_window.in_set(RenderSystemSet::Windows),
         ),
     );
+
+    app.insert_resource(crate::IsWindowOpen::<crate::debug_window::DebugWindow>::closed());
+    app.add_systems(Update, render_window::<crate::debug_window::DebugWindow>);
 }
 
-#[derive(Default)]
-struct LastDebugStats {
-    fps: f64,
-    frame_time: f64,
-    frame_count: f64,
-}
-
-const FPS_MAX: f64 = 100.;
-
-fn render_debug_window(
-    mut egui_ctx_query: Query<&mut EguiContext, With<PrimaryWindow>>,
-    diagnostics: Res<bevy::diagnostic::DiagnosticsStore>,
-    mut state: ResMut<crate::DebugStatsWindowState>,
-    time: Res<Time>,
-    mut last: Local<LastDebugStats>,
+fn render_window<W: Window + 'static>(
+    window: <W as crate::Window>::Item<'_, '_>,
+    mut egui_ctx_query: Query<&'static mut EguiContext, With<PrimaryWindow>>,
+    mut is_window_open: ResMut<crate::IsWindowOpen<W>>,
 ) {
-    if !state.is_visible {
-        return;
-    }
+    if is_window_open.0 {
+        let mut egui_ctx = egui_ctx_query.single_mut();
 
-    let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else {
-        return;
-    };
-
-    if state.history.is_empty() || state.timer.tick(time.delta()).just_finished() {
-        let fps = diagnostics
-            .get(FrameTimeDiagnosticsPlugin::FPS)
-            .and_then(|d| d.measurement())
-            .map(|m| m.value);
-        let frame_time = diagnostics
-            .get(FrameTimeDiagnosticsPlugin::FRAME_TIME)
-            .and_then(|d| d.measurement())
-            .map(|m| m.value);
-        let frame_count = diagnostics
-            .get(FrameTimeDiagnosticsPlugin::FRAME_COUNT)
-            .and_then(|d| d.measurement())
-            .map(|m| m.value);
-
-        if let Some(fps) = fps {
-            state.history.push_back(fps);
-            last.fps = fps;
-        }
-        if let Some(frame_time) = frame_time {
-            last.frame_time = frame_time;
-        }
-        if let Some(frame_count) = frame_count {
-            last.frame_count = frame_count;
-        }
-
-        if state.history.len() >= crate::DEBUG_STATS_HISTORY_LEN {
-            let _ = state.history.pop_front();
-        }
-    }
-
-    let sin = if state.is_visible {
-        state
-            .history
-            .iter()
-            .enumerate()
-            .map(|(x, y)| egui_plot::PlotPoint::new(x as f64, y.min(FPS_MAX)))
-            .collect::<Vec<_>>()
-    } else {
-        vec![]
-    };
-
-    egui::Window::new("Debug")
-        .default_width(200.)
-        .open(&mut state.is_visible)
-        .show(egui_ctx.get_mut(), move |ui| {
-            DebugTable { last: &last }.ui(ui);
-
-            use egui_plot::{Line, Plot, PlotPoints};
-            let line = Line::new(PlotPoints::Owned(sin));
-            Plot::new("fps_plot")
-                .allow_drag(false)
-                .allow_boxed_zoom(false)
-                .allow_scroll(false)
-                .allow_zoom(false)
-                .set_margin_fraction((0., 0.).into())
-                .show_x(false)
-                .x_axis_formatter(|_, _, _| "".into())
-                .y_axis_formatter(|n, _, _| format!("{n:?}"))
-                .include_x(0.)
-                .include_x(crate::DEBUG_STATS_HISTORY_LEN as f64)
-                .include_y(0.)
-                .include_y(FPS_MAX)
-                .view_aspect(2.) // Width is twice as big as height
-                .show(ui, |plot_ui| plot_ui.line(line));
-        });
-}
-
-struct DebugTable<'a> {
-    last: &'a LastDebugStats,
-}
-
-impl<'a> egui::Widget for DebugTable<'a> {
-    fn ui(self, ui: &mut egui::Ui) -> egui::Response {
-        egui::Grid::new("some_unique_id")
-            .striped(true)
-            .show(ui, |ui| {
-                ui.label("Metric");
-                ui.label("Value");
-                ui.end_row();
-
-                ui.label("FPS");
-                ui.label(format!("{:.2} frames/sec.", self.last.fps));
-                ui.end_row();
-
-                ui.label("Frame time");
-                ui.label(format!("{:.3} sec.", self.last.frame_time));
-                ui.end_row();
-
-                ui.label("Frame count");
-                ui.label(format!("{} frames", self.last.frame_count));
-                ui.end_row();
-            })
-            .response
+        egui::Window::new(window.title())
+            .default_width(window.default_width())
+            .open(&mut is_window_open.0)
+            // .anchor(egui::Align2::RIGHT_TOP, [-5., 5.])
+            .resizable(false)
+            .show(egui_ctx.get_mut(), |ui| {
+                window.ui(ui);
+            });
     }
 }

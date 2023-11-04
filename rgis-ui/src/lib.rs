@@ -6,12 +6,14 @@
     clippy::expect_used
 )]
 
-use bevy::prelude::*;
+use bevy::{ecs::system::SystemParam, prelude::*};
+use bevy_egui::egui;
 use std::{collections, marker};
 
 mod add_layer_window;
 mod bottom_panel;
 mod change_crs_window;
+mod debug_window;
 mod events;
 mod feature_properties_window;
 mod manage_layer_window;
@@ -21,6 +23,13 @@ mod side_panel;
 mod systems;
 mod top_panel;
 mod widgets;
+
+trait Window: egui::Widget + SystemParam + Send + Sync {
+    type Item<'world, 'state>: Window<State = Self::State>;
+
+    fn title(&self) -> &str;
+    fn default_width(&self) -> f32;
+}
 
 pub struct Plugin;
 
@@ -71,13 +80,6 @@ pub struct FeaturePropertiesWindowState {
     is_visible: bool,
 }
 
-#[derive(Resource)]
-pub struct DebugStatsWindowState {
-    timer: Timer,
-    is_visible: bool,
-    history: collections::VecDeque<f64>,
-}
-
 #[derive(Default)]
 struct OperationWindowState {
     is_visible: bool,
@@ -94,13 +96,22 @@ impl bevy::app::Plugin for Plugin {
             .insert_resource(TopPanelHeight(0.))
             .insert_resource(BottomPanelHeight(0.))
             .insert_resource(SidePanelWidth(0.))
-            .insert_resource(DebugStatsWindowState {
+            // TODO: remove the below resource and replace with Local state
+            .insert_resource(debug_window::DebugStatsWindowState {
                 timer: Timer::from_seconds(0.3, TimerMode::Repeating),
-                is_visible: false,
                 history: collections::VecDeque::with_capacity(DEBUG_STATS_HISTORY_LEN),
             })
             .add_event::<events::OpenOperationWindowEvent>();
 
         systems::configure(app);
+    }
+}
+
+#[derive(Resource)]
+pub(crate) struct IsWindowOpen<W: Window + Send + Sync>(pub bool, marker::PhantomData<W>);
+
+impl<W: Window + Send + Sync> IsWindowOpen<W> {
+    fn closed() -> Self {
+        Self(false, marker::PhantomData)
     }
 }
