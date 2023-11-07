@@ -26,7 +26,7 @@ pub fn run() {
         ..Default::default()
     });
     app.add_plugins(bevy::a11y::AccessibilityPlugin);
-    app.add_plugins(bevy::winit::WinitPlugin);
+    app.add_plugins(bevy::winit::WinitPlugin::default());
     app.add_plugins(bevy::render::RenderPlugin::default());
     app.add_plugins(bevy::render::texture::ImagePlugin::default());
     app.add_plugins(bevy::log::LogPlugin::default());

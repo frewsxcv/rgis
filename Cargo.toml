@@ -28,6 +28,5 @@ resolver = "2"
 debug = true
 
 [patch.crates-io]
-bevy_egui = { git = "https://github.com/frewsxcv/bevy_egui", branch = "patch-1" }
 proj = { git = "https://github.com/georust/proj", branch = "cfarwell-send" }
 proj-sys = { git = "https://github.com/georust/proj", branch = "cfarwell-send" }

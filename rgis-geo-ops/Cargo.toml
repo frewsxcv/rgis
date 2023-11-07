@@ -5,7 +5,7 @@ edition = "2021"
 publish = false
 
 [dependencies]
-bevy_egui = "0.22"
+bevy_egui = "0.23"
 geo = "0.26"
 geo-features = { path = "../geo-features" }
 geo-geom-type = { path = "../geo-geom-type" }
