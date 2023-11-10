@@ -10,13 +10,19 @@ pub fn configure(app: &mut App) {
             pan_camera_system,
             handle_meshes_spawned_events,
             zoom_camera_system,
-            handle_change_crs_event,
+            handle_change_crs_event.pipe(log_error),
         ),
     );
 }
 
 fn init_camera(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
+}
+
+fn log_error(result: In<Result<(), Box<dyn std::error::Error + Send + Sync>>>) {
+    if let Err(e) = result.0 {
+        bevy::log::error!("{}", e);
+    }
 }
 
 fn handle_change_crs_event(
@@ -27,13 +33,11 @@ fn handle_change_crs_event(
     >,
     windows: Query<&Window, With<PrimaryWindow>>,
     ui_margins: rgis_ui::UiMargins,
-) {
+) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let Some(event) = change_crs_event_reader.iter().last() else {
-        return;
+        return Ok(());
     };
-    let Ok(window) = windows.get_single() else {
-        return;
-    };
+    let window = windows.get_single()?;
     let mut transform = query.single_mut();
     let map_area = rgis_units::MapArea {
         window,
@@ -44,16 +48,12 @@ fn handle_change_crs_event(
     };
     let rect = map_area.projected_geo_rect(&transform, window);
 
-    let Ok(transformer) = rgis_transform::DefaultTransformer::setup(&event.old_crs, &event.new_crs)
-    else {
-        bevy::log::error!("Could not create projection transformer");
-        return;
-    };
-    if let Err(e) = transformer.transform(&mut (rect.0.into())) {
-        bevy::log::error!("Enountered error when transforming: {}", e);
-    }
+    let transformer = rgis_transform::DefaultTransformer::setup(&event.old_crs, &event.new_crs)?;
+    transformer.transform(&mut (rect.0.into()))?;
 
     crate::utils::center_camera_on_projected_world_rect(rect, &mut transform, map_area);
+
+    Ok(())
 }
 
 fn pan_camera_system(
