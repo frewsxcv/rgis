@@ -6,7 +6,7 @@
     clippy::expect_used
 )]
 
-use geo::{Coord, MapCoords, MapCoordsInPlace};
+use geo::{Coord, MapCoords};
 use std::error;
 
 mod jobs;

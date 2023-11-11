@@ -7,7 +7,7 @@ fn layer_loaded(
     mut event_reader: EventReader<rgis_events::LayerReprojectedEvent>,
     mut job_spawner: bevy_jobs::JobSpawner,
 ) {
-    for layer in event_reader.iter().flat_map(|event| layers.get(event.0)) {
+    for layer in event_reader.read().flat_map(|event| layers.get(event.0)) {
         let Some(feature_collection) = layer.projected_feature_collection.as_ref() else {
             continue;
         };
@@ -64,7 +64,7 @@ fn handle_layer_z_index_updated_event(
     mut query: Query<(&rgis_layer_id::LayerId, &mut Transform, &RenderEntityType)>,
     layers: Res<rgis_layers::Layers>,
 ) {
-    for event in layer_z_index_updated_event_reader.iter() {
+    for event in layer_z_index_updated_event_reader.read() {
         let Some((_, layer_index)) = layers.get_with_index(event.0) else {
             continue;
         };
@@ -89,7 +89,7 @@ fn handle_despawn_meshes_event(
     mut commands: Commands,
     query: LayerEntitiesWithColorMaterialsOrImagesQuery,
 ) {
-    for event in layer_deleted_event_reader.iter() {
+    for event in layer_deleted_event_reader.read() {
         for (_, entity) in query.iter().filter(|(i, _)| **i == event.0) {
             commands.entity(entity).despawn();
         }
@@ -100,7 +100,7 @@ fn handle_layer_became_hidden_event(
     mut event_reader: EventReader<rgis_events::LayerBecameHiddenEvent>,
     mut query: Query<(&rgis_layer_id::LayerId, &mut bevy::render::view::Visibility)>,
 ) {
-    for event in event_reader.iter() {
+    for event in event_reader.read() {
         for (_, mut visibility) in query.iter_mut().filter(|(i, _)| **i == event.0) {
             *visibility = Visibility::Visible;
         }
@@ -111,7 +111,7 @@ fn handle_layer_became_visible_event(
     mut event_reader: EventReader<rgis_events::LayerBecameVisibleEvent>,
     mut query: Query<(&rgis_layer_id::LayerId, &mut bevy::render::view::Visibility)>,
 ) {
-    for event in event_reader.iter() {
+    for event in event_reader.read() {
         for (_, mut visibility) in query.iter_mut().filter(|(i, _)| **i == event.0) {
             *visibility = Visibility::Visible;
         }
@@ -129,7 +129,7 @@ fn handle_layer_color_updated_event(
     mut sprite_query: Query<(&rgis_layer_id::LayerId, &mut Sprite, &RenderEntityType)>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    for event in event_reader.iter() {
+    for event in event_reader.read() {
         let (layer_id, is_fill) = match event {
             rgis_events::LayerColorUpdatedEvent::Fill(layer_id) => (layer_id, true),
             rgis_events::LayerColorUpdatedEvent::Stroke(layer_id) => (layer_id, false),
@@ -178,7 +178,7 @@ fn handle_crs_changed_events(
     query: Query<(&rgis_layer_id::LayerId, Entity), With<Handle<ColorMaterial>>>,
     mut commands: Commands,
 ) {
-    for _ in crs_changed_event_reader.iter() {
+    for _ in crs_changed_event_reader.read() {
         // FIXME: there's a race condition here where we'll delete newly generated projected geometry
         // meshes if this gets executed after we project the new geometries. We should add a filter
         // in here for the old CRS.
@@ -240,7 +240,7 @@ fn handle_feature_selected_event_spawn(
     layers: Res<rgis_layers::Layers>,
     mut job_spawner: bevy_jobs::JobSpawner,
 ) {
-    for event in event_reader.iter() {
+    for event in event_reader.read() {
         let Some(layer) = layers.get(event.0) else {
             return;
         };

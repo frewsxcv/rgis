@@ -21,7 +21,7 @@ fn cursor_moved_system(
         return;
     };
     let transform = query.single();
-    if let Some(event) = cursor_moved_event_reader.iter().last() {
+    if let Some(event) = cursor_moved_event_reader.read().last() {
         mouse_position.0 = rgis_units::ScreenCoord {
             x: f64::from(event.position.x),
             y: f64::from(event.position.y),
@@ -76,7 +76,7 @@ fn mouse_motion_system(
         );
         let mut x_sum = 0.;
         let mut y_sum = 0.;
-        for event in mouse_motion_event_reader.iter() {
+        for event in mouse_motion_event_reader.read() {
             // If the mouse is dragging rightward, `delta.x` will be positive. In this case, we
             // want the map to move right, and the camera to move left. We need to negate the
             // delta X value.
@@ -133,7 +133,7 @@ fn mouse_scroll_system(
     mouse_position: Res<crate::MousePos>,
 ) {
     let y_amount = mouse_scroll_event_reader
-        .iter()
+        .read()
         .map(|event| {
             if let bevy::input::mouse::MouseScrollUnit::Line = event.unit {
                 // Magic number was chosen because it resulted in a reasonable scrolling velocity

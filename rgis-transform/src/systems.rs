@@ -6,7 +6,7 @@ fn handle_layer_created_events(
     rgis_settings: bevy::ecs::system::Res<rgis_settings::RgisSettings>,
     mut job_spawner: bevy_jobs::JobSpawner,
 ) {
-    for event in layer_created_event_reader.iter() {
+    for event in layer_created_event_reader.read() {
         let Some(layer) = layers.get(event.0) else {
             continue;
         };
@@ -58,7 +58,7 @@ fn handle_crs_changed_events(
     rgis_settings: bevy::ecs::system::Res<rgis_settings::RgisSettings>,
     mut job_spawner: bevy_jobs::JobSpawner,
 ) {
-    if crs_changed_event_reader.iter().next().is_some() {
+    if crs_changed_event_reader.read().next().is_some() {
         layers.clear_projected();
 
         for layer in layers.iter() {

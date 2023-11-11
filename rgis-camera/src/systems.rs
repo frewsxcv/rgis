@@ -34,7 +34,7 @@ fn handle_change_crs_event(
     windows: Query<&Window, With<PrimaryWindow>>,
     ui_margins: rgis_ui::UiMargins,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    let Some(event) = change_crs_event_reader.iter().last() else {
+    let Some(event) = change_crs_event_reader.read().last() else {
         return Ok(());
     };
     let window = windows.get_single()?;
@@ -71,7 +71,7 @@ fn pan_camera_system(
     let mut camera_offset = crate::CameraOffset::from_transform(&transform);
     let camera_scale = crate::CameraScale::from_transform(&transform);
 
-    for event in pan_camera_event_reader.iter() {
+    for event in pan_camera_event_reader.read() {
         camera_offset.pan_x(event.x, camera_scale);
         camera_offset.pan_y(event.y, camera_scale);
     }
@@ -94,7 +94,7 @@ fn zoom_camera_system(
     let before_scale = crate::CameraScale::from_transform(&transform);
     let mut camera_scale = before_scale;
     let mut set = false;
-    for event in zoom_camera_event_reader.iter() {
+    for event in zoom_camera_event_reader.read() {
         if !set {
             set = true;
             mouse_offset = crate::CameraOffset::from_coord(event.coord.0);
@@ -119,7 +119,7 @@ fn handle_meshes_spawned_events(
     mut center_camera_event_writer: bevy::ecs::event::EventWriter<rgis_events::CenterCameraEvent>,
     mut has_moved: bevy::ecs::system::Local<bool>,
 ) {
-    for event in meshes_spawned_event_reader.iter() {
+    for event in meshes_spawned_event_reader.read() {
         if !(*has_moved) {
             center_camera_event_writer.send(event.0.into());
             *has_moved = true;
@@ -141,7 +141,7 @@ fn center_camera(
         return;
     };
     for projected_feature in event_reader
-        .iter()
+        .read()
         .filter_map(|event| layers.get(event.0))
         .filter_map(|layer| layer.get_projected_feature_collection_or_log())
     {

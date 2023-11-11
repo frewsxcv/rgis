@@ -72,7 +72,7 @@ fn render_manage_layer_window(
         return;
     };
 
-    if let Some(event) = show_manage_layer_window_event_reader.iter().last() {
+    if let Some(event) = show_manage_layer_window_event_reader.read().last() {
         state.is_visible = true;
         state.layer_id = Some(event.0);
     }
@@ -137,7 +137,7 @@ fn render_change_crs_window(
     mut change_crs_event_writer: bevy::ecs::event::EventWriter<rgis_events::ChangeCrsEvent>,
     mut crs_input_outcome: Local<Option<crate::widgets::crs_input::Outcome>>,
 ) {
-    if open_change_crs_window_event_reader.iter().next().is_some() {
+    if open_change_crs_window_event_reader.read().next().is_some() {
         *is_visible = true;
     }
 

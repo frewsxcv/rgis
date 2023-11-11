@@ -6,7 +6,7 @@ fn handle_toggle_layer_visibility_events(
     mut layer_became_hidden_event_writer: EventWriter<rgis_events::LayerBecameHiddenEvent>,
     mut layers: ResMut<crate::Layers>,
 ) {
-    for event in toggle_layer_visibility_event_reader.iter() {
+    for event in toggle_layer_visibility_event_reader.read() {
         let Some(layer) = layers.get_mut(event.0) else {
             bevy::log::warn!("Could not find layer");
             continue;
@@ -25,7 +25,7 @@ fn handle_update_color_events(
     mut updated_events: EventWriter<rgis_events::LayerColorUpdatedEvent>,
     mut layers: ResMut<crate::Layers>,
 ) {
-    for event in update_events.iter() {
+    for event in update_events.read() {
         let event = match event {
             rgis_events::UpdateLayerColorEvent::Stroke(layer_id, color) => {
                 let Some(layer) = layers.get_mut(*layer_id) else {
@@ -53,7 +53,7 @@ fn handle_delete_layer_events(
     mut despawn_meshes_event_writer: EventWriter<rgis_events::DespawnMeshesEvent>,
     mut layers: ResMut<crate::Layers>,
 ) {
-    for event in delete_layer_event_reader.iter() {
+    for event in delete_layer_event_reader.read() {
         layers.remove(event.0);
         despawn_meshes_event_writer.send(rgis_events::DespawnMeshesEvent(event.0));
     }
@@ -64,7 +64,7 @@ fn handle_move_layer_events(
     mut layer_z_index_updated_event_writer: EventWriter<rgis_events::LayerZIndexUpdatedEvent>,
     mut layers: ResMut<crate::Layers>,
 ) {
-    for event in move_layer_event_reader.iter() {
+    for event in move_layer_event_reader.read() {
         let old_z_index = match layers.get_with_index(event.0) {
             Some(result) => result.1 .0,
             None => {
@@ -110,7 +110,7 @@ fn handle_map_clicked_events(
     mut feature_clicked_event_writer: EventWriter<rgis_events::FeatureSelectedEvent>,
     layers: Res<crate::Layers>,
 ) {
-    for event in map_clicked_event_reader.iter() {
+    for event in map_clicked_event_reader.read() {
         if let Some((layer_id, feature)) = layers.feature_from_click(event.0) {
             render_message_event_writer.send(rgis_events::RenderFeaturePropertiesEvent(
                 feature.properties().clone(),
