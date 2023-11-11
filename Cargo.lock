@@ -3573,7 +3573,7 @@ checksum = "f89dff0959d98c9758c88826cc002e2c3d0b9dfac4139711d1f30de442f1139b"
 [[package]]
 name = "proj4rs"
 version = "0.1.1"
-source = "git+https://github.com/frewsxcv/proj4rs?branch=frewsxcv/code#3b549551eaeb8b6e74220005fdab25a721926001"
+source = "git+https://github.com/frewsxcv/proj4rs?branch=fixes#3d5542c77619e79ff9d76b63e88bb4b2893f53f9"
 dependencies = [
  "console_log",
  "crs-definitions",

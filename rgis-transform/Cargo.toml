@@ -24,4 +24,5 @@ rgis-layers = { path = "../rgis-layers" }
 rgis-settings = { path = "../rgis-settings" }
 bevy_jobs = { git = "https://github.com/frewsxcv/bevy_jobs" }
 thiserror = "1"
-proj4rs = { git = "https://github.com/frewsxcv/proj4rs", branch = "frewsxcv/code", features = ["crs-definitions"] }
+proj4rs = { git = "https://github.com/frewsxcv/proj4rs", branch = "fixes", features = ["crs-definitions"] }
+# proj4rs = { path = "../../../3liz/proj4rs", features = ["crs-definitions"] }
