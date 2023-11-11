@@ -29,9 +29,15 @@ fn handle_load_file_events<F: geo_file_loader::FileLoader + Send + Sync + 'stati
 {
     for event in load_event_reader.drain() {
         match event {
-            rgis_events::LoadFileEvent::FromNetwork { url, crs_epsg_code, name } => {
-                job_spawner.spawn(rgis_network::NetworkFetchJob { url, crs_epsg_code, name })
-            }
+            rgis_events::LoadFileEvent::FromNetwork {
+                url,
+                crs_epsg_code,
+                name,
+            } => job_spawner.spawn(rgis_network::NetworkFetchJob {
+                url,
+                crs_epsg_code,
+                name,
+            }),
             rgis_events::LoadFileEvent::FromBytes {
                 file_name,
                 file_loader,

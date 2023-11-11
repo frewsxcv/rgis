@@ -32,7 +32,9 @@ impl<'a> egui::Widget for CrsInput<'a> {
                 || (!self.text_field_value.is_empty() && self.outcome.is_none())
             {
                 match u16::from_str(self.text_field_value) {
-                    Ok(parsed) => proj4rs::Proj::from_epsg_code(parsed).map_err(|e| Box::new(e).into()),
+                    Ok(parsed) => {
+                        proj4rs::Proj::from_epsg_code(parsed).map_err(|e| Box::new(e).into())
+                    }
                     Err(e) => Err(Box::new(e)),
                 }
             } else if let Some(n) = self.outcome.take() {

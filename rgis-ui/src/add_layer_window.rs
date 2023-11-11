@@ -248,7 +248,8 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                                                 bytes: loaded_file.bytes.into(),
                                             },
                                             // TODO: don't allow the user to add a layer if the CRS isn't valid
-                                            crs_epsg_code: u16::from_str(&self.state.crs_input).unwrap(),
+                                            crs_epsg_code: u16::from_str(&self.state.crs_input)
+                                                .unwrap(),
                                         },
                                     );
                                 }
@@ -260,7 +261,8 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                                                 bytes: loaded_file.bytes.into(),
                                             },
                                             // TODO: don't allow the user to add a layer if the CRS isn't valid
-                                            crs_epsg_code: u16::from_str(&self.state.crs_input).unwrap(),
+                                            crs_epsg_code: u16::from_str(&self.state.crs_input)
+                                                .unwrap(),
                                         },
                                     );
                                 }
@@ -304,7 +306,8 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                                             bytes: new.into(),
                                         },
                                         // TODO: don't allow the user to add a layer if the CRS isn't valid
-                                        crs_epsg_code: u16::from_str(&self.state.crs_input).unwrap(),
+                                        crs_epsg_code: u16::from_str(&self.state.crs_input)
+                                            .unwrap(),
                                     },
                                 );
                             }
@@ -319,7 +322,8 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                                             bytes: new.into(),
                                         },
                                         // TODO: don't allow the user to add a layer if the CRS isn't valid
-                                        crs_epsg_code: u16::from_str(&self.state.crs_input).unwrap(),
+                                        crs_epsg_code: u16::from_str(&self.state.crs_input)
+                                            .unwrap(),
                                     },
                                 );
                             }

@@ -6,7 +6,7 @@
     clippy::expect_used
 )]
 
-use geo::{Coord, MapCoordsInPlace, MapCoords};
+use geo::{Coord, MapCoords, MapCoordsInPlace};
 use std::error;
 
 mod jobs;
@@ -62,7 +62,8 @@ impl crate::Transformer for ProjTransformer {
                 coord.x = coord.x.to_radians();
                 coord.y = coord.y.to_radians();
             }
-            let (x, y) = proj4rs::adaptors::transform_xy(&self.source, &self.target, coord.x, coord.y)?;
+            let (x, y) =
+                proj4rs::adaptors::transform_xy(&self.source, &self.target, coord.x, coord.y)?;
             Ok(Coord { x, y })
         })?;
 
