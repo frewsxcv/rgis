@@ -14,8 +14,8 @@ fn handle_layer_created_events(
         job_spawner.spawn(crate::jobs::ReprojectGeometryJob {
             feature_collection: layer.unprojected_feature_collection.clone(),
             layer_id: event.0,
-            source_crs: layer.crs.clone(),
-            target_crs: rgis_settings.target_crs.clone(),
+            source_epsg_code: layer.crs_epsg_code.clone(),
+            target_epsg_code: rgis_settings.target_crs_epsg_code.clone(),
         })
     }
 }
@@ -37,7 +37,7 @@ fn handle_reproject_geometry_job_completion_events(
             }
         };
 
-        if outcome.target_crs != rgis_settings.target_crs {
+        if outcome.target_crs_epsg_code != rgis_settings.target_crs_epsg_code {
             bevy::log::error!("Encountered a reprojected geometry with a different CRS than the current target CRS");
             continue;
         }
@@ -65,8 +65,8 @@ fn handle_crs_changed_events(
             job_spawner.spawn(crate::jobs::ReprojectGeometryJob {
                 feature_collection: layer.unprojected_feature_collection.clone(),
                 layer_id: layer.id,
-                source_crs: layer.crs.clone(),
-                target_crs: rgis_settings.target_crs.clone(),
+                source_epsg_code: layer.crs_epsg_code,
+                target_epsg_code: rgis_settings.target_crs_epsg_code,
             })
         }
     }

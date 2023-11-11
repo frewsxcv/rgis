@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy_egui::egui;
 use std::mem;
+use std::str::FromStr;
 
 #[derive(bevy::ecs::system::SystemParam)]
 pub struct Events<'w, 's> {
@@ -65,7 +66,7 @@ pub struct State {
     crs_input_outcome: Option<crate::widgets::crs_input::Outcome>,
 }
 
-const DEFAULT_CRS_INPUT: &str = "EPSG:4326";
+const DEFAULT_CRS_INPUT: &str = "4326";
 
 impl Default for State {
     fn default() -> Self {
@@ -153,7 +154,7 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                                 rgis_events::LoadFileEvent::FromNetwork {
                                     name: entry.name.into(),
                                     url: entry.url.into(),
-                                    crs: entry.crs.into(),
+                                    crs_epsg_code: entry.crs.into(),
                                 },
                             );
                             self.events.hide_add_layer_window_events.send_default();
@@ -235,7 +236,7 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                                             file_loader: geo_file_loader::GeoJsonSource {
                                                 bytes: loaded_file.bytes.into(),
                                             },
-                                            crs: "EPSG:4326".into(),
+                                            crs_epsg_code: 4326,
                                         },
                                     );
                                 }
@@ -247,7 +248,7 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                                                 bytes: loaded_file.bytes.into(),
                                             },
                                             // TODO: don't allow the user to add a layer if the CRS isn't valid
-                                            crs: self.state.crs_input.clone(),
+                                            crs_epsg_code: u16::from_str(&self.state.crs_input).unwrap(),
                                         },
                                     );
                                 }
@@ -259,7 +260,7 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                                                 bytes: loaded_file.bytes.into(),
                                             },
                                             // TODO: don't allow the user to add a layer if the CRS isn't valid
-                                            crs: self.state.crs_input.clone(),
+                                            crs_epsg_code: u16::from_str(&self.state.crs_input).unwrap(),
                                         },
                                     );
                                 }
@@ -303,7 +304,7 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                                             bytes: new.into(),
                                         },
                                         // TODO: don't allow the user to add a layer if the CRS isn't valid
-                                        crs: self.state.crs_input.clone(),
+                                        crs_epsg_code: u16::from_str(&self.state.crs_input).unwrap(),
                                     },
                                 );
                             }
@@ -318,7 +319,7 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                                             bytes: new.into(),
                                         },
                                         // TODO: don't allow the user to add a layer if the CRS isn't valid
-                                        crs: self.state.crs_input.clone(),
+                                        crs_epsg_code: u16::from_str(&self.state.crs_input).unwrap(),
                                     },
                                 );
                             }

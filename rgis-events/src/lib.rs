@@ -93,12 +93,12 @@ pub enum LoadFileEvent<F: geo_file_loader::FileLoader> {
     FromNetwork {
         name: String,
         url: String,
-        crs: String,
+        crs_epsg_code: u16,
     },
     FromBytes {
         file_name: String,
         file_loader: F,
-        crs: String,
+        crs_epsg_code: u16,
     },
 }
 
@@ -156,14 +156,14 @@ impl ZoomCameraEvent {
 
 #[derive(Event)]
 pub struct ChangeCrsEvent {
-    pub old_crs: String,
-    pub new_crs: String,
+    pub old_crs_epsg_code: u16,
+    pub new_crs_epsg_code: u16,
 }
 
 #[derive(Event)]
 pub struct CrsChangedEvent {
-    pub old_crs: String,
-    pub new_crs: String,
+    pub old_crs_epsg_code: u16,
+    pub new_crs_epsg_code: u16,
 }
 
 #[derive(Event)]
@@ -176,7 +176,7 @@ pub struct RenderFeaturePropertiesEvent(pub geo_features::Properties);
 pub struct CreateLayerEvent {
     pub feature_collection: geo_projected::Unprojected<geo_features::FeatureCollection>,
     pub name: String,
-    pub source_crs: String,
+    pub source_crs_epsg_code: u16,
 }
 
 #[derive(Event)]

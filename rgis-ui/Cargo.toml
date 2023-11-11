@@ -32,10 +32,5 @@ rgis-settings = { path = "../rgis-settings" }
 rgis-units = { path = "../rgis-units" }
 bevy_jobs = { git = "https://github.com/frewsxcv/bevy_jobs" }
 webbrowser = "0.8"
-
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-geo = { version = "0.26", features = ["use-proj"] }
-
-[target.'cfg(target_arch = "wasm32")'.dependencies]
 geo = { version = "0.26" }
-geo-proj-js = { path = "../geo-proj-js" }
+proj4rs = { git = "https://github.com/frewsxcv/proj4rs", branch = "frewsxcv/code", features = ["crs-definitions"] }

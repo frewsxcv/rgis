@@ -1,4 +1,5 @@
 use bevy_egui::egui;
+use std::str::FromStr;
 
 pub(crate) struct ChangeCrsWindow<'a, 'w> {
     pub is_visible: &'a mut bool,
@@ -26,10 +27,14 @@ impl<'a, 'w> ChangeCrsWindow<'a, 'w> {
                     .map(|n| n.is_ok())
                     .unwrap_or(false);
                 if ui.add_enabled(is_ok, egui::Button::new("Set")).clicked() {
+                    let Ok(value) = u16::from_str(&self.text_field_value) else {
+                        bevy::log::error!("Could not parse u16 value");
+                        return;
+                    };
                     self.change_crs_event_writer
                         .send(rgis_events::ChangeCrsEvent {
-                            old_crs: self.rgis_settings.target_crs.clone(),
-                            new_crs: self.text_field_value.clone(),
+                            old_crs_epsg_code: self.rgis_settings.target_crs_epsg_code,
+                            new_crs_epsg_code: value,
                         })
                 }
             });

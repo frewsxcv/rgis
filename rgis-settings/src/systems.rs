@@ -4,10 +4,10 @@ pub fn handle_crs_changed_events(
     mut settings: bevy::ecs::system::ResMut<crate::RgisSettings>,
 ) {
     if let Some(event) = change_crs_event_reader.iter().last() {
-        settings.target_crs = event.new_crs.clone();
+        settings.target_crs_epsg_code = event.new_crs_epsg_code;
         crs_changed_event_writer.send(rgis_events::CrsChangedEvent {
-            old_crs: event.old_crs.clone(),
-            new_crs: event.new_crs.clone(),
+            old_crs_epsg_code: event.old_crs_epsg_code,
+            new_crs_epsg_code: event.new_crs_epsg_code,
         });
     }
 }

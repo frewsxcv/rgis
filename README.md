@@ -10,8 +10,6 @@ rgis is released under [The Anti-Capitalist Software License (version 1.4)](http
 
 ## Install
 
-Install `proj` (e.g. `brew intall proj`).
-
 ```sh
 cargo install --git https://github.com/frewsxcv/rgis
 ```

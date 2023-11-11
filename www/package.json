@@ -14,8 +14,6 @@
     "hello-wasm-pack": "^0.1.0",
     "webpack": "^5",
     "webpack-cli": "^5",
-    "webpack-dev-server": "^4",
-    "proj4": "^2",
-    "proj4js-definitions": "^0.1.0"
+    "webpack-dev-server": "^4"
   }
 }

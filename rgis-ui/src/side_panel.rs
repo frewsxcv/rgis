@@ -141,7 +141,7 @@ impl<'a, 'w> SidePanel<'a, 'w> {
                                             rgis_events::CreateLayerEvent {
                                                 feature_collection,           // todo
                                                 name: "Bounding rect".into(), // todo
-                                                source_crs: layer.crs.clone(),
+                                                source_crs_epsg_code: layer.crs_epsg_code,
                                             },
                                         );
                                     }
@@ -234,7 +234,7 @@ impl<'a, 'w, Op: rgis_geo_ops::OperationEntry> egui::Widget for OperationButton<
                                 rgis_events::CreateLayerEvent {
                                     feature_collection,
                                     name: Op::NAME.into(),
-                                    source_crs: self.layer.crs.clone(),
+                                    source_crs_epsg_code: self.layer.crs_epsg_code,
                                 },
                             );
                         }

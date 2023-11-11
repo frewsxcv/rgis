@@ -6,7 +6,7 @@
     clippy::expect_used
 )]
 
-use bevy::prelude::Update;
+use geo::{Coord, MapCoordsInPlace, MapCoords};
 use std::error;
 
 mod jobs;
@@ -17,14 +17,6 @@ pub struct Plugin;
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut bevy::app::App) {
         systems::configure(app);
-        app.add_systems(Update, set_proj_log_level);
-    }
-}
-
-fn set_proj_log_level() {
-    #[cfg(not(target_arch = "wasm32"))]
-    unsafe {
-        proj_sys::proj_log_level(std::ptr::null_mut(), proj_sys::PJ_LOG_LEVEL_PJ_LOG_NONE);
     }
 }
 
@@ -32,30 +24,50 @@ fn set_proj_log_level() {
 pub enum TransformError {
     #[error("{0}")]
     SetupError(Box<dyn error::Error + Send + Sync>),
-    #[cfg(target_arch = "wasm32")]
     #[error("{0}")]
-    GeoProjJs(#[from] geo_proj_js::Error),
-    #[cfg(not(target_arch = "wasm32"))]
-    #[error("{0}")]
-    Proj(#[from] geo::algorithm::proj::TransformError),
+    Proj4rs(#[from] proj4rs::errors::Error),
 }
 
 pub trait Transformer {
     fn setup(
-        source_crs: &str,
-        target_crs: &str,
+        source_epsg_code: u16,
+        target_epsg_code: u16,
     ) -> Result<Self, Box<dyn error::Error + Send + Sync>>
     where
         Self: Sized;
     fn transform(&self, geometry: &mut geo::Geometry) -> Result<(), TransformError>;
 }
 
-#[cfg(target_arch = "wasm32")]
-mod proj_js_transformer;
-#[cfg(target_arch = "wasm32")]
-pub type DefaultTransformer = proj_js_transformer::ProjJsTransformer;
+pub struct ProjTransformer {
+    source: proj4rs::Proj,
+    target: proj4rs::Proj,
+}
 
-#[cfg(not(target_arch = "wasm32"))]
-mod proj_transformer;
-#[cfg(not(target_arch = "wasm32"))]
-pub type DefaultTransformer = proj_transformer::ProjTransformer;
+impl crate::Transformer for ProjTransformer {
+    // TODO: Remove the Box error return value
+    fn setup(
+        source_crs: u16,
+        target_crs: u16,
+    ) -> Result<Self, Box<dyn error::Error + Send + Sync>> {
+        Ok(ProjTransformer {
+            source: proj4rs::Proj::from_epsg_code(source_crs)?,
+            target: proj4rs::Proj::from_epsg_code(target_crs)?,
+        })
+    }
+
+    fn transform(&self, geometry: &mut geo::Geometry) -> Result<(), crate::TransformError> {
+        // TODO: Replace with try_map_coords_inplace
+        let mut transformed = geometry.try_map_coords::<crate::TransformError>(|mut coord| {
+            if self.source.is_latlong() {
+                coord.x = coord.x.to_radians();
+                coord.y = coord.y.to_radians();
+            }
+            let (x, y) = proj4rs::adaptors::transform_xy(&self.source, &self.target, coord.x, coord.y)?;
+            Ok(Coord { x, y })
+        })?;
+
+        std::mem::swap(&mut transformed, geometry);
+
+        Ok(())
+    }
+}

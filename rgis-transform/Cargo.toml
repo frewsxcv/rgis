@@ -24,12 +24,4 @@ rgis-layers = { path = "../rgis-layers" }
 rgis-settings = { path = "../rgis-settings" }
 bevy_jobs = { git = "https://github.com/frewsxcv/bevy_jobs" }
 thiserror = "1"
-
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-geo = { version = "0.26", features = ["use-proj"] }
-proj = "0.27"
-proj-sys = "0.23"
-
-[target.'cfg(target_arch = "wasm32")'.dependencies]
-geo-proj-js = { path = "../geo-proj-js" }
-geo = "0.26"
+proj4rs = { git = "https://github.com/frewsxcv/proj4rs", branch = "frewsxcv/code", features = ["crs-definitions"] }

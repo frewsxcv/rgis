@@ -150,7 +150,7 @@ impl Layers {
         &mut self,
         unprojected: geo_projected::Unprojected<geo_features::FeatureCollection>,
         name: String,
-        source_crs: String,
+        source_crs_epsg_code: u16,
     ) -> rgis_layer_id::LayerId {
         let layer_id = self.next_layer_id();
         let geom_type = geo_geom_type::determine(unprojected.as_raw().geometry_iter());
@@ -171,7 +171,7 @@ impl Layers {
             name,
             visible: true,
             id: layer_id,
-            crs: source_crs,
+            crs_epsg_code: source_crs_epsg_code,
             geom_type,
         };
         self.data.push(layer);
@@ -206,7 +206,7 @@ pub struct Layer {
     pub id: rgis_layer_id::LayerId,
     pub name: String,
     pub visible: bool,
-    pub crs: String,
+    pub crs_epsg_code: u16,
     pub geom_type: geo_geom_type::GeomType,
 }
 

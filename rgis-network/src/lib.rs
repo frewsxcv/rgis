@@ -11,12 +11,12 @@ use std::io;
 pub struct FetchedFile {
     pub name: String,
     pub bytes: bytes::Bytes,
-    pub crs: String,
+    pub crs_epsg_code: u16,
 }
 
 pub struct NetworkFetchJob {
     pub url: String,
-    pub crs: String,
+    pub crs_epsg_code: u16,
     pub name: String,
 }
 
@@ -55,7 +55,7 @@ impl bevy_jobs::Job for NetworkFetchJob {
 
                 Ok(FetchedFile {
                     bytes: bytes::Bytes::from(bytes),
-                    crs: self.crs,
+                    crs_epsg_code: self.crs_epsg_code,
                     name: self.name,
                 })
             };

@@ -31,7 +31,7 @@ impl<'a> ManageLayerWindow<'a> {
                         ui.label(&layer.name);
                         ui.end_row();
                         ui.label("CRS");
-                        ui.label(&layer.crs);
+                        ui.label(&format!("EPSG {}", layer.crs_epsg_code));
                         ui.end_row();
                         if layer.geom_type.has_fill() {
                             if let Some(fill) = layer.color.fill {

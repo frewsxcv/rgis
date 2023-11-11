@@ -12,7 +12,7 @@ fn handle_network_fetch_finished_jobs<F: geo_file_loader::FileLoader + Send + Sy
             Ok(fetched) => load_event_reader.send(rgis_events::LoadFileEvent::FromBytes {
                 file_loader: F::from_bytes(fetched.bytes),
                 file_name: fetched.name,
-                crs: fetched.crs,
+                crs_epsg_code: fetched.crs_epsg_code,
             }),
             Err(e) => {
                 bevy::log::error!("Could not fetch file: {:?}", e);
@@ -29,16 +29,16 @@ fn handle_load_file_events<F: geo_file_loader::FileLoader + Send + Sync + 'stati
 {
     for event in load_event_reader.drain() {
         match event {
-            rgis_events::LoadFileEvent::FromNetwork { url, crs, name } => {
-                job_spawner.spawn(rgis_network::NetworkFetchJob { url, crs, name })
+            rgis_events::LoadFileEvent::FromNetwork { url, crs_epsg_code, name } => {
+                job_spawner.spawn(rgis_network::NetworkFetchJob { url, crs_epsg_code, name })
             }
             rgis_events::LoadFileEvent::FromBytes {
                 file_name,
                 file_loader,
-                crs,
+                crs_epsg_code,
             } => job_spawner.spawn(crate::jobs::LoadFileJob {
                 file_loader,
-                source_crs: crs,
+                source_crs_epsg_code: crs_epsg_code,
                 name: file_name,
             }),
         }
@@ -56,7 +56,7 @@ fn handle_load_file_job_finished_events<F: geo_file_loader::FileLoader + Send + 
             Ok(outcome) => create_layer_event_writer.send(rgis_events::CreateLayerEvent {
                 name: outcome.name,
                 feature_collection: outcome.feature_collection,
-                source_crs: outcome.source_crs,
+                source_crs_epsg_code: outcome.source_crs_epsg_code,
             }),
             Err(e) => {
                 bevy::log::error!("Encountered error when loading file: {:?}", e);

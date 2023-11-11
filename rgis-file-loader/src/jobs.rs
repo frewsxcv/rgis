@@ -1,13 +1,13 @@
 pub struct LoadFileJob<F: geo_file_loader::FileLoader> {
     pub file_loader: F,
     pub name: String,
-    pub source_crs: String,
+    pub source_crs_epsg_code: u16,
 }
 
 pub struct LoadFileJobOutcome {
     pub feature_collection: geo_projected::Unprojected<geo_features::FeatureCollection>,
     pub name: String,
-    pub source_crs: String,
+    pub source_crs_epsg_code: u16,
 }
 
 impl<F: geo_file_loader::FileLoader + Sync + Send + 'static> bevy_jobs::Job for LoadFileJob<F>
@@ -25,7 +25,7 @@ where
             Ok(LoadFileJobOutcome {
                 feature_collection: geo_projected::Unprojected::new(self.file_loader.load()?),
                 name: self.name,
-                source_crs: self.source_crs,
+                source_crs_epsg_code: self.source_crs_epsg_code,
             })
         })
     }

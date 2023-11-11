@@ -30,7 +30,7 @@ impl<'a, 'w> BottomPanel<'a, 'w> {
             self.open_change_crs_window_event_writer.send_default();
         }
 
-        ui.label(format!("🌍 CRS: {}", self.rgis_settings.target_crs));
+        ui.label(format!("🌍 CRS: EPSG:{}", self.rgis_settings.target_crs_epsg_code));
     }
 
     fn render_mouse_position(&mut self, ui: &mut egui::Ui) {

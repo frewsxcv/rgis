@@ -27,7 +27,7 @@ impl<'w> OperationWindow<'w> {
                             .send(rgis_events::CreateLayerEvent {
                                 feature_collection,
                                 name: "FOOOOO".into(),          // FIXME
-                                source_crs: "EPSG:4326".into(), // FIXME
+                                source_crs_epsg_code: 4326, // FIXME
                             });
                     }
                     Ok(rgis_geo_ops::Outcome::Text(text)) => self
