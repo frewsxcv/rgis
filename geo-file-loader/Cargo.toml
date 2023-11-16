@@ -7,7 +7,7 @@ publish = false
 [dependencies]
 bytes = "1"
 time-logger = { path = "../time-logger" }
-geo = "0.26"
+geo = "0.27"
 geo-features = { path = "../geo-features" }
 geojson = { version = "0.24", features = ["geo-types"] }
 geozero = { version = "0.9", features = ["with-wkt"] }

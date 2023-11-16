@@ -23,4 +23,4 @@ rgis-events = { path = "../rgis-events" }
 rgis-layer-id = { path = "../rgis-layer-id" }
 thiserror = "1"
 serde_json = "1"
-geo = "0.26"
+geo = "0.27"

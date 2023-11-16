@@ -55,26 +55,26 @@ pub struct Feature {
     pub bounding_rect: Option<geo::Rect>,
 }
 
-impl<'a> geo::CoordsIter<'a> for Feature {
+impl geo::CoordsIter for Feature {
     type Scalar = f64;
-    type Iter = Box<dyn Iterator<Item = geo::Coord<Self::Scalar>> + 'a>;
-    type ExteriorIter = Box<dyn Iterator<Item = geo::Coord<Self::Scalar>> + 'a>;
+    type Iter<'a> = Box<dyn Iterator<Item = geo::Coord<Self::Scalar>> + 'a>;
+    type ExteriorIter<'a> = Box<dyn Iterator<Item = geo::Coord<Self::Scalar>> + 'a>;
 
-    fn coords_count(&'a self) -> usize {
+    fn coords_count(&self) -> usize {
         self.geometry
             .as_ref()
             .map(|g| g.coords_count())
             .unwrap_or(0)
     }
 
-    fn coords_iter(&'a self) -> Self::Iter {
+    fn coords_iter(&self) -> Self::Iter<'_> {
         match self.geometry {
             Some(ref g) => Box::new(g.coords_iter()),
             None => Box::new(iter::empty()),
         }
     }
 
-    fn exterior_coords_iter(&'a self) -> Self::ExteriorIter {
+    fn exterior_coords_iter(&self) -> Self::ExteriorIter<'_> {
         match self.geometry {
             Some(ref g) => Box::new(g.exterior_coords_iter()),
             None => Box::new(iter::empty()),
@@ -131,20 +131,20 @@ impl FeatureCollection {
     }
 }
 
-impl<'a> geo::CoordsIter<'a> for FeatureCollection {
+impl geo::CoordsIter for FeatureCollection {
     type Scalar = f64;
-    type Iter = iter::Empty<geo::Coord<Self::Scalar>>;
-    type ExteriorIter = iter::Empty<geo::Coord<Self::Scalar>>;
+    type Iter<'a> = iter::Empty<geo::Coord<Self::Scalar>>;
+    type ExteriorIter<'a> = iter::Empty<geo::Coord<Self::Scalar>>;
 
-    fn coords_count(&'a self) -> usize {
+    fn coords_count(&self) -> usize {
         self.features.iter().map(|f| f.coords_count()).sum()
     }
 
-    fn coords_iter(&'a self) -> Self::Iter {
+    fn coords_iter(&self) -> Self::Iter<'_> {
         todo!()
     }
 
-    fn exterior_coords_iter(&'a self) -> Self::ExteriorIter {
+    fn exterior_coords_iter(&self) -> Self::ExteriorIter<'_> {
         todo!()
     }
 }

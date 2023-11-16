@@ -2120,9 +2120,9 @@ dependencies = [
 
 [[package]]
 name = "geo"
-version = "0.25.1"
+version = "0.27.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a5d07d2288645058f3c78bc64eadd615335791cd5adb632e9865840afbc13dad"
+checksum = "4841b40fdbccd4b7042bd6195e4de91da54af34c50632e371bcbfcdfb558b873"
 dependencies = [
  "earcutr",
  "float_next_after",
@@ -2130,43 +2130,27 @@ dependencies = [
  "geographiclib-rs",
  "log",
  "num-traits",
- "robust 0.2.3",
- "rstar 0.10.0",
-]
-
-[[package]]
-name = "geo"
-version = "0.26.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1645cf1d7fea7dac1a66f7357f3df2677ada708b8d9db8e9b043878930095a96"
-dependencies = [
- "earcutr",
- "float_next_after",
- "geo-types",
- "geographiclib-rs",
- "log",
- "num-traits",
- "robust 1.1.0",
- "rstar 0.11.0",
+ "robust",
+ "rstar",
+ "spade",
 ]
 
 [[package]]
 name = "geo-bevy"
-version = "0.7.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b1403405026d6abd9a5523b6b7ab60853fb1ac5072acb16b7af48d49cb123fe0"
+checksum = "c0457f05ebfe4c6b8fa5fab0369fd24f6ecd6a8eba020b26fbfc7ecffacc4079"
 dependencies = [
  "bevy",
  "bevy-earcutr",
- "geo 0.25.1",
- "geo-types",
+ "geo",
 ]
 
 [[package]]
 name = "geo-features"
 version = "0.1.0"
 dependencies = [
- "geo 0.26.0",
+ "geo",
 ]
 
 [[package]]
@@ -2174,7 +2158,7 @@ name = "geo-file-loader"
 version = "0.1.0"
 dependencies = [
  "bytes",
- "geo 0.26.0",
+ "geo",
  "geo-features",
  "geojson",
  "geozero",
@@ -2189,27 +2173,26 @@ name = "geo-geom-type"
 version = "0.1.0"
 dependencies = [
  "bitflags 2.4.1",
- "geo 0.26.0",
+ "geo",
 ]
 
 [[package]]
 name = "geo-projected"
 version = "0.1.0"
 dependencies = [
- "geo 0.26.0",
+ "geo",
  "geo-features",
 ]
 
 [[package]]
 name = "geo-types"
-version = "0.7.11"
+version = "0.7.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9705398c5c7b26132e74513f4ee7c1d7dafd786004991b375c172be2be0eecaa"
+checksum = "567495020b114f1ce9bed679b29975aa0bfae06ac22beacd5cfde5dabe7b05d6"
 dependencies = [
  "approx",
  "num-traits",
- "rstar 0.10.0",
- "rstar 0.11.0",
+ "rstar",
  "serde",
 ]
 
@@ -3802,7 +3785,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_jobs",
- "geo 0.26.0",
+ "geo",
  "rgis-camera",
  "rgis-cli",
  "rgis-events",
@@ -3824,7 +3807,7 @@ name = "rgis-camera"
 version = "0.1.0"
 dependencies = [
  "bevy",
- "geo 0.26.0",
+ "geo",
  "geo-projected",
  "rgis-events",
  "rgis-layers",
@@ -3846,7 +3829,7 @@ name = "rgis-events"
 version = "0.1.0"
 dependencies = [
  "bevy",
- "geo 0.26.0",
+ "geo",
  "geo-features",
  "geo-file-loader",
  "geo-projected",
@@ -3874,7 +3857,7 @@ name = "rgis-geo-ops"
 version = "0.1.0"
 dependencies = [
  "bevy_egui",
- "geo 0.26.0",
+ "geo",
  "geo-features",
  "geo-geom-type",
  "geo-projected",
@@ -3901,7 +3884,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "colorous",
- "geo 0.26.0",
+ "geo",
  "geo-features",
  "geo-geom-type",
  "geo-projected",
@@ -3921,7 +3904,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_egui",
- "geo 0.26.0",
+ "geo",
  "geo-projected",
  "rgis-events",
  "rgis-settings",
@@ -3947,7 +3930,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_jobs",
- "geo 0.26.0",
+ "geo",
  "geo-bevy",
  "geo-geom-type",
  "geo-projected",
@@ -3970,7 +3953,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_jobs",
- "geo 0.26.0",
+ "geo",
  "geo-features",
  "geo-projected",
  "proj4rs",
@@ -3990,7 +3973,7 @@ dependencies = [
  "bevy_jobs",
  "dark-light",
  "egui_plot",
- "geo 0.26.0",
+ "geo",
  "geo-features",
  "geo-file-loader",
  "geo-projected",
@@ -4012,16 +3995,10 @@ name = "rgis-units"
 version = "0.1.0"
 dependencies = [
  "bevy",
- "geo 0.26.0",
+ "geo",
  "geo-features",
  "geo-projected",
 ]
-
-[[package]]
-name = "robust"
-version = "0.2.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e5864e7ef1a6b7bcf1d6ca3f655e65e724ed3b52546a0d0a663c991522f552ea"
 
 [[package]]
 name = "robust"
@@ -4039,17 +4016,6 @@ dependencies = [
  "bitflags 2.4.1",
  "serde",
  "serde_derive",
-]
-
-[[package]]
-name = "rstar"
-version = "0.10.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1f39465655a1e3d8ae79c6d9e007f4953bfc5d55297602df9dc38f9ae9f1359a"
-dependencies = [
- "heapless",
- "num-traits",
- "smallvec",
 ]
 
 [[package]]
@@ -4370,6 +4336,18 @@ checksum = "7b5fac59a5cb5dd637972e5fca70daf0523c9067fcdc4842f053dae04a18f8e9"
 dependencies = [
  "libc",
  "windows-sys 0.48.0",
+]
+
+[[package]]
+name = "spade"
+version = "2.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "544b7011aca0c409a39df31cccdbf9962ea2f78597711ef2a58750d3cafd5b44"
+dependencies = [
+ "hashbrown 0.14.2",
+ "num-traits",
+ "robust",
+ "smallvec",
 ]
 
 [[package]]
