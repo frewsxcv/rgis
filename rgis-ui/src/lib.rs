@@ -8,7 +8,7 @@
 
 use bevy::{ecs::system::SystemParam, prelude::*};
 use bevy_egui::egui;
-use std::{collections, marker};
+use std::marker;
 
 mod add_layer_window;
 mod bottom_panel;
@@ -87,8 +87,6 @@ struct OperationWindowState {
     feature_collection: geo_projected::Unprojected<geo_features::FeatureCollection>,
 }
 
-const DEBUG_STATS_HISTORY_LEN: usize = 100;
-
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(bevy_egui::EguiPlugin)
@@ -96,11 +94,6 @@ impl bevy::app::Plugin for Plugin {
             .insert_resource(TopPanelHeight(0.))
             .insert_resource(BottomPanelHeight(0.))
             .insert_resource(SidePanelWidth(0.))
-            // TODO: remove the below resource and replace with Local state
-            .insert_resource(debug_window::DebugStatsWindowState {
-                timer: Timer::from_seconds(0.3, TimerMode::Repeating),
-                history: collections::VecDeque::with_capacity(DEBUG_STATS_HISTORY_LEN),
-            })
             .add_event::<events::OpenOperationWindowEvent>();
 
         systems::configure(app);

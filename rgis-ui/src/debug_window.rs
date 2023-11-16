@@ -9,10 +9,26 @@ struct LastDebugStats {
     frame_count: f64,
 }
 
+pub struct DebugStatsWindowState {
+    pub timer: Timer,
+    pub history: collections::VecDeque<f64>,
+}
+
+const DEBUG_STATS_HISTORY_LEN: usize = 100;
+
+impl Default for DebugStatsWindowState {
+    fn default() -> Self {
+        DebugStatsWindowState {
+            timer: Timer::from_seconds(0.3, TimerMode::Repeating),
+            history: collections::VecDeque::with_capacity(DEBUG_STATS_HISTORY_LEN),
+        }
+    }
+}
+
 #[derive(SystemParam)]
 pub struct DebugWindow<'w, 's> {
     diagnostics: Res<'w, bevy::diagnostic::DiagnosticsStore>,
-    state: ResMut<'w, DebugStatsWindowState>,
+    state: Local<'s, DebugStatsWindowState>,
     time: Res<'w, Time>,
     last: Local<'s, LastDebugStats>,
 }
@@ -50,7 +66,7 @@ impl<'w, 's> egui::Widget for DebugWindow<'w, 's> {
                 self.last.frame_count = frame_count;
             }
 
-            if self.state.history.len() >= crate::DEBUG_STATS_HISTORY_LEN {
+            if self.state.history.len() >= DEBUG_STATS_HISTORY_LEN {
                 let _ = self.state.history.pop_front();
             }
         }
@@ -78,7 +94,7 @@ impl<'w, 's> egui::Widget for DebugWindow<'w, 's> {
                 .x_axis_formatter(|_, _, _| "".into())
                 .y_axis_formatter(|n, _, _| format!("{n:?}"))
                 .include_x(0.)
-                .include_x(crate::DEBUG_STATS_HISTORY_LEN as f64)
+                .include_x(DEBUG_STATS_HISTORY_LEN as f64)
                 .include_y(0.)
                 .include_y(FPS_MAX)
                 .view_aspect(2.) // Width is twice as big as height
@@ -127,10 +143,4 @@ impl<'a> egui::Widget for DebugTable<'a> {
             })
             .response
     }
-}
-
-#[derive(Resource)]
-pub struct DebugStatsWindowState {
-    pub timer: Timer,
-    pub history: collections::VecDeque<f64>,
 }
