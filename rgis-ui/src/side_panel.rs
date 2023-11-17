@@ -57,17 +57,128 @@ impl<'a, 'w> SidePanel<'a, 'w> {
 
     fn render_layers(&mut self, ui: &mut egui::Ui) {
         for (i, layer) in self.layers.iter_top_to_bottom().enumerate() {
-            self.render_layer(ui, layer, i > 0, i < self.layers.count() - 1);
+            Layer {
+                is_move_down_enabled: i < self.layers.count() - 1,
+                is_move_up_enabled: i > 0,
+                layer,
+                events: &mut self.events,
+            }
+            .ui(ui);
+            ui.separator();
         }
     }
+}
 
-    fn render_layer(
-        &mut self,
-        ui: &mut egui::Ui,
-        layer: &rgis_layers::Layer,
-        is_move_up_enabled: bool,
-        is_move_down_enabled: bool,
-    ) {
+struct OperationButton<'a, 'w, Op: rgis_geo_ops::OperationEntry> {
+    events: &'a mut Events<'w>,
+    layer: &'a rgis_layers::Layer,
+    operation: marker::PhantomData<Op>,
+}
+
+impl<'a, 'w, Op: rgis_geo_ops::OperationEntry> OperationButton<'a, 'w, Op> {
+    fn new(events: &'a mut Events<'w>, layer: &'a rgis_layers::Layer) -> Self {
+        OperationButton {
+            events,
+            layer,
+            operation: Default::default(),
+        }
+    }
+}
+
+impl<'a, 'w, Op: rgis_geo_ops::OperationEntry> egui::Widget for OperationButton<'a, 'w, Op> {
+    fn ui(self, ui: &mut egui::Ui) -> egui::Response {
+        let button = ui.add_enabled(
+            Op::ALLOWED_GEOM_TYPES.contains(self.layer.geom_type),
+            egui::Button::new(Op::NAME),
+        );
+        if button.clicked() {
+            let mut operation = Op::build();
+            match operation.next_action() {
+                rgis_geo_ops::Action::RenderUi => {
+                    self.events.open_operation_window_event_writer.send(
+                        crate::events::OpenOperationWindowEvent {
+                            operation,
+                            feature_collection: self.layer.unprojected_feature_collection.clone(), // TODO: clone?
+                        },
+                    )
+                }
+                rgis_geo_ops::Action::Perform => {
+                    // TODO: perform in background job
+                    let outcome =
+                        operation.perform(self.layer.unprojected_feature_collection.clone()); // TODO: clone?
+
+                    match outcome {
+                        Ok(rgis_geo_ops::Outcome::FeatureCollection(feature_collection)) => {
+                            self.events.create_layer_event_writer.send(
+                                rgis_events::CreateLayerEvent {
+                                    feature_collection,
+                                    name: Op::NAME.into(),
+                                    source_crs_epsg_code: self.layer.crs_epsg_code,
+                                },
+                            );
+                        }
+                        Ok(rgis_geo_ops::Outcome::Text(text)) => self
+                            .events
+                            .render_message_event_writer
+                            .send(rgis_events::RenderMessageEvent(text)),
+                        Err(e) => {
+                            bevy::log::error!("Encountered an error during the operation: {}", e);
+                        }
+                    }
+                }
+            }
+        }
+        button
+    }
+}
+
+struct AddLayerButton<'a, 'w> {
+    events: &'a mut Events<'w>,
+}
+
+impl<'a, 'w> egui::Widget for AddLayerButton<'a, 'w> {
+    fn ui(self, ui: &mut egui::Ui) -> egui::Response {
+        let button = ui.button("➕ Add Layer");
+
+        if button.clicked() {
+            self.events
+                .show_add_layer_window_event_writer
+                .send_default();
+        }
+
+        button
+    }
+}
+
+struct Layer<'a, 'w> {
+    layer: &'a rgis_layers::Layer,
+    is_move_up_enabled: bool,
+    is_move_down_enabled: bool,
+    events: &'a mut Events<'w>,
+}
+
+impl<'a, 'w> Layer<'a, 'w> {
+    fn toggle_layer_visibility(&mut self, layer: &rgis_layers::Layer) {
+        self.events
+            .toggle_layer_visibility_event_writer
+            .send(rgis_events::ToggleLayerVisibilityEvent(layer.id));
+    }
+
+    fn delete_layer(&mut self, layer: &rgis_layers::Layer) {
+        self.events
+            .delete_layer_event_writer
+            .send(rgis_events::DeleteLayerEvent(layer.id));
+    }
+}
+
+impl<'a, 'w> Widget for Layer<'a, 'w> {
+    fn ui(mut self, ui: &mut egui::Ui) -> egui::Response {
+        let Layer {
+            layer,
+            is_move_up_enabled,
+            is_move_down_enabled,
+            events: _,
+        } = self;
         egui::CollapsingHeader::new(&layer.name)
             .id_source(layer.id) // Instead of using the layer name as the ID (which is not unique), use the layer ID
             .show(ui, |ui| {
@@ -173,100 +284,7 @@ impl<'a, 'w> SidePanel<'a, 'w> {
                             });
                         });
                 });
-            });
-        ui.separator();
-    }
-
-    fn toggle_layer_visibility(&mut self, layer: &rgis_layers::Layer) {
-        self.events
-            .toggle_layer_visibility_event_writer
-            .send(rgis_events::ToggleLayerVisibilityEvent(layer.id));
-    }
-
-    fn delete_layer(&mut self, layer: &rgis_layers::Layer) {
-        self.events
-            .delete_layer_event_writer
-            .send(rgis_events::DeleteLayerEvent(layer.id));
-    }
-}
-
-struct OperationButton<'a, 'w, Op: rgis_geo_ops::OperationEntry> {
-    events: &'a mut Events<'w>,
-    layer: &'a rgis_layers::Layer,
-    operation: marker::PhantomData<Op>,
-}
-
-impl<'a, 'w, Op: rgis_geo_ops::OperationEntry> OperationButton<'a, 'w, Op> {
-    fn new(events: &'a mut Events<'w>, layer: &'a rgis_layers::Layer) -> Self {
-        OperationButton {
-            events,
-            layer,
-            operation: Default::default(),
-        }
-    }
-}
-
-impl<'a, 'w, Op: rgis_geo_ops::OperationEntry> egui::Widget for OperationButton<'a, 'w, Op> {
-    fn ui(self, ui: &mut egui::Ui) -> egui::Response {
-        let button = ui.add_enabled(
-            Op::ALLOWED_GEOM_TYPES.contains(self.layer.geom_type),
-            egui::Button::new(Op::NAME),
-        );
-        if button.clicked() {
-            let mut operation = Op::build();
-            match operation.next_action() {
-                rgis_geo_ops::Action::RenderUi => {
-                    self.events.open_operation_window_event_writer.send(
-                        crate::events::OpenOperationWindowEvent {
-                            operation,
-                            feature_collection: self.layer.unprojected_feature_collection.clone(), // TODO: clone?
-                        },
-                    )
-                }
-                rgis_geo_ops::Action::Perform => {
-                    // TODO: perform in background job
-                    let outcome =
-                        operation.perform(self.layer.unprojected_feature_collection.clone()); // TODO: clone?
-
-                    match outcome {
-                        Ok(rgis_geo_ops::Outcome::FeatureCollection(feature_collection)) => {
-                            self.events.create_layer_event_writer.send(
-                                rgis_events::CreateLayerEvent {
-                                    feature_collection,
-                                    name: Op::NAME.into(),
-                                    source_crs_epsg_code: self.layer.crs_epsg_code,
-                                },
-                            );
-                        }
-                        Ok(rgis_geo_ops::Outcome::Text(text)) => self
-                            .events
-                            .render_message_event_writer
-                            .send(rgis_events::RenderMessageEvent(text)),
-                        Err(e) => {
-                            bevy::log::error!("Encountered an error during the operation: {}", e);
-                        }
-                    }
-                }
-            }
-        }
-        button
-    }
-}
-
-struct AddLayerButton<'a, 'w> {
-    events: &'a mut Events<'w>,
-}
-
-impl<'a, 'w> egui::Widget for AddLayerButton<'a, 'w> {
-    fn ui(self, ui: &mut egui::Ui) -> egui::Response {
-        let button = ui.button("➕ Add Layer");
-
-        if button.clicked() {
-            self.events
-                .show_add_layer_window_event_writer
-                .send_default();
-        }
-
-        button
+            })
+            .header_response
     }
 }
