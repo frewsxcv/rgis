@@ -211,6 +211,10 @@ pub struct Layer {
 }
 
 impl Layer {
+    pub fn is_active(&self) -> bool {
+        self.projected_feature_collection.is_some()
+    }
+
     #[inline]
     pub fn get_projected_feature_collection_or_log(
         &self,

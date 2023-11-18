@@ -182,6 +182,11 @@ impl<'a, 'w> Widget for Layer<'a, 'w> {
         egui::CollapsingHeader::new(&layer.name)
             .id_source(layer.id) // Instead of using the layer name as the ID (which is not unique), use the layer ID
             .show(ui, |ui| {
+                if !layer.is_active() {
+                    ui.spinner();
+                    return
+                }
+
                 ui.label(format!("Type: {}", layer.geom_type));
 
                 ui.with_layout(Layout::top_down_justified(Align::Center), |ui| {
