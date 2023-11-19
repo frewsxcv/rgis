@@ -8,6 +8,17 @@
 
 use futures_util::StreamExt;
 use std::io;
+
+lazy_static ::lazy_static! {
+    #[cfg(not(target_arch = "wasm32"))]
+    pub static ref TOKIO_RUNTIME: tokio::runtime::Runtime = {
+        tokio::runtime::Builder::new_multi_thread()
+            .enable_all()
+            .build()
+            .unwrap()
+    };
+}
+
 pub struct FetchedFile {
     pub name: String,
     pub bytes: bytes::Bytes,
@@ -61,10 +72,7 @@ impl bevy_jobs::Job for NetworkFetchJob {
             };
             #[cfg(not(target_arch = "wasm32"))]
             {
-                let runtime = tokio::runtime::Builder::new_current_thread()
-                    .enable_all()
-                    .build()?;
-                runtime.block_on(fetch)
+                TOKIO_RUNTIME.block_on(fetch)
             }
             #[cfg(target_arch = "wasm32")]
             {
