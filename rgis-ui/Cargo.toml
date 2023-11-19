@@ -27,7 +27,6 @@ rgis-layer-id = { path = "../rgis-layer-id" }
 rgis-layers = { path = "../rgis-layers" }
 rgis-library = { path = "../rgis-library" }
 rgis-events = { path = "../rgis-events" }
-# TODO remove rgis-mouse
 rgis-mouse = { path = "../rgis-mouse" }
 rgis-settings = { path = "../rgis-settings" }
 rgis-units = { path = "../rgis-units" }
