@@ -1,5 +1,3 @@
-use crate::Transformer;
-
 pub struct ReprojectGeometryJob {
     pub feature_collection: geo_projected::Unprojected<geo_features::FeatureCollection>,
     pub layer_id: rgis_layer_id::LayerId,

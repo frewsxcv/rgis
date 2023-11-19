@@ -28,24 +28,14 @@ pub enum TransformError {
     Proj4rs(#[from] proj4rs::errors::Error),
 }
 
-pub trait Transformer {
-    fn setup(
-        source_epsg_code: u16,
-        target_epsg_code: u16,
-    ) -> Result<Self, Box<dyn error::Error + Send + Sync>>
-    where
-        Self: Sized;
-    fn transform(&self, geometry: &mut geo::Geometry) -> Result<(), TransformError>;
-}
-
 pub struct ProjTransformer {
     source: proj4rs::Proj,
     target: proj4rs::Proj,
 }
 
-impl crate::Transformer for ProjTransformer {
+impl ProjTransformer {
     // TODO: Remove the Box error return value
-    fn setup(
+    pub fn setup(
         source_crs: u16,
         target_crs: u16,
     ) -> Result<Self, Box<dyn error::Error + Send + Sync>> {
@@ -55,7 +45,7 @@ impl crate::Transformer for ProjTransformer {
         })
     }
 
-    fn transform(&self, geometry: &mut geo::Geometry) -> Result<(), crate::TransformError> {
+    pub fn transform(&self, geometry: &mut geo::Geometry) -> Result<(), crate::TransformError> {
         // TODO: Replace with try_map_coords_inplace
         let mut transformed = geometry.try_map_coords::<crate::TransformError>(|mut coord| {
             if self.source.is_latlong() {
