@@ -259,7 +259,7 @@ version = "1.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fc5ea910c42e5ab19012bab31f53cb4d63d54c3a27730f9a833a88efcf4bb52d"
 dependencies = [
- "async-lock 3.1.0",
+ "async-lock 3.1.1",
  "async-task",
  "concurrent-queue",
  "fastrand 2.0.1",
@@ -305,7 +305,7 @@ version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "41ed9d5715c2d329bf1b4da8d60455b99b187f27ba726df2883799af9af60997"
 dependencies = [
- "async-lock 3.1.0",
+ "async-lock 3.1.1",
  "cfg-if 1.0.0",
  "concurrent-queue",
  "futures-io",
@@ -330,9 +330,9 @@ dependencies = [
 
 [[package]]
 name = "async-lock"
-version = "3.1.0"
+version = "3.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "deb2ab2aa8a746e221ab826c73f48bc6ba41be6763f0855cb249eb6d154cf1d7"
+checksum = "655b9c7fe787d3b25cc0f804a1a8401790f0c5bc395beb5a64dc77d8de079105"
 dependencies = [
  "event-listener 3.1.0",
  "event-listener-strategy",
@@ -752,10 +752,13 @@ dependencies = [
 [[package]]
 name = "bevy_jobs"
 version = "0.1.0"
-source = "git+https://github.com/frewsxcv/bevy_jobs#6d7ca1430538adf85b2055f98732a29eb3f08688"
+source = "git+https://github.com/frewsxcv/bevy_jobs#cee3f15a14baf4b28bec1ca6fd62500b458a89d3"
 dependencies = [
  "async-channel 1.9.0",
- "bevy",
+ "bevy_app",
+ "bevy_ecs",
+ "bevy_log",
+ "bevy_tasks",
  "instant",
 ]
 
@@ -1222,7 +1225,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6a37913e8dc4ddcc604f0c6d3bf2887c995153af3611de9e23c352b44c1b9118"
 dependencies = [
  "async-channel 2.1.0",
- "async-lock 3.1.0",
+ "async-lock 3.1.1",
  "async-task",
  "fastrand 2.0.1",
  "futures-io",
