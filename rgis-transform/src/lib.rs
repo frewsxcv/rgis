@@ -7,7 +7,6 @@
 )]
 
 use geo::{Coord, MapCoords};
-use std::error;
 
 mod jobs;
 mod systems;
