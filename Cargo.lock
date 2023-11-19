@@ -1555,6 +1555,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "crs-definitions"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "52a5c99491ee16d7f1549494bcab90bdfb2f283ef48a25fc6c870e7e7c9f12bb"
+
+[[package]]
 name = "crypto-common"
 version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3574,6 +3580,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5671a0abb7237e96721fe63a5013440602b3be2d73025e28272d679c300994a6"
 dependencies = [
  "console_log",
+ "crs-definitions",
  "js-sys",
  "lazy_static",
  "thiserror",
