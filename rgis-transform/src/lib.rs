@@ -23,8 +23,6 @@ impl bevy::app::Plugin for Plugin {
 #[derive(thiserror::Error, Debug)]
 pub enum TransformError {
     #[error("{0}")]
-    SetupError(Box<dyn error::Error + Send + Sync>),
-    #[error("{0}")]
     Proj4rs(#[from] proj4rs::errors::Error),
 }
 
@@ -34,20 +32,15 @@ pub struct ProjTransformer {
 }
 
 impl ProjTransformer {
-    // TODO: Remove the Box error return value
-    pub fn setup(
-        source_crs: u16,
-        target_crs: u16,
-    ) -> Result<Self, Box<dyn error::Error + Send + Sync>> {
+    pub fn setup(source_crs: u16, target_crs: u16) -> proj4rs::errors::Result<Self> {
         Ok(ProjTransformer {
             source: proj4rs::Proj::from_epsg_code(source_crs)?,
             target: proj4rs::Proj::from_epsg_code(target_crs)?,
         })
     }
 
-    pub fn transform(&self, geometry: &mut geo::Geometry) -> Result<(), crate::TransformError> {
-        // TODO: Replace with try_map_coords_inplace
-        let mut transformed = geometry.try_map_coords::<crate::TransformError>(|mut coord| {
+    pub fn transform(&self, geometry: &mut geo::Geometry) -> proj4rs::errors::Result<()> {
+        let mut transformed = geometry.try_map_coords::<proj4rs::errors::Error>(|mut coord| {
             if self.source.is_latlong() {
                 coord.x = coord.x.to_radians();
                 coord.y = coord.y.to_radians();
