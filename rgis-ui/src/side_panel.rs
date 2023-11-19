@@ -184,7 +184,7 @@ impl<'a, 'w> Widget for Layer<'a, 'w> {
             .show(ui, |ui| {
                 if !layer.is_active() {
                     ui.spinner();
-                    return
+                    return;
                 }
 
                 ui.label(format!("Type: {}", layer.geom_type));
