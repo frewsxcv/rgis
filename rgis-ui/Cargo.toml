@@ -32,6 +32,6 @@ rgis-settings = { path = "../rgis-settings" }
 rgis-units = { path = "../rgis-units" }
 bevy_jobs = { git = "https://github.com/frewsxcv/bevy_jobs" }
 webbrowser = "0.8"
-geo = { version = "0.27" }
+geo = "0.27"
 proj4rs = { git = "https://github.com/frewsxcv/proj4rs", branch = "fixes", features = ["crs-definitions"] }
 # proj4rs = { path = "../../../3liz/proj4rs", features = ["crs-definitions"] }
