@@ -40,6 +40,7 @@ impl ProjTransformer {
     }
 
     pub fn transform(&self, geometry: &mut geo::Geometry) -> proj4rs::errors::Result<()> {
+        // FIXME: use try_map_coords_in_place
         let mut transformed = geometry.try_map_coords::<proj4rs::errors::Error>(|mut coord| {
             if self.source.is_latlong() {
                 coord.x = coord.x.to_radians();
