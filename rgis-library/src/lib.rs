@@ -12,7 +12,7 @@ pub struct LibraryEntry {
     pub crs: u16,
 }
 
-pub const ENTRIES: [LibraryEntry; 8] = [LibraryEntry {
+pub const ENTRIES: [LibraryEntry; 9] = [LibraryEntry {
     name: "USA States",
     url: "https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json",
     crs: 4326,
@@ -43,5 +43,9 @@ pub const ENTRIES: [LibraryEntry; 8] = [LibraryEntry {
 }, LibraryEntry {
     name: "Washington DC street centerlines",
     url: "https://raw.githubusercontent.com/benbalter/dc-maps/master/maps/street-centerlines.geojson",
+    crs: 4326,
+}, LibraryEntry {
+    name: "NYC Street Centerline (CSCL)",
+    url: "https://storage.googleapis.com/rgis-library/NYC%20Street%20Centerline%20(CSCL).geojson",
     crs: 4326,
 }];
