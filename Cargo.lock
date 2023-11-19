@@ -3589,6 +3589,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "proj4rs"
+version = "0.1.2"
+source = "git+https://github.com/3liz/proj4rs#6ca9352ca59f3dc512e84c4a67741c8293457a40"
+dependencies = [
+ "console_log",
+ "crs-definitions",
+ "js-sys",
+ "lazy_static",
+ "thiserror",
+ "wasm-bindgen",
+ "web-sys",
+ "wee_alloc",
+]
+
+[[package]]
 name = "quote"
 version = "1.0.33"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3977,7 +3992,7 @@ dependencies = [
  "geo",
  "geo-features",
  "geo-projected",
- "proj4rs",
+ "proj4rs 0.1.1",
  "rgis-events",
  "rgis-layer-id",
  "rgis-layers",
@@ -3998,7 +4013,7 @@ dependencies = [
  "geo-features",
  "geo-file-loader",
  "geo-projected",
- "proj4rs",
+ "proj4rs 0.1.2",
  "rfd",
  "rgis-events",
  "rgis-geo-ops",
