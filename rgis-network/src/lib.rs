@@ -9,8 +9,8 @@
 use futures_util::StreamExt;
 use std::io;
 
+#[cfg(not(target_arch = "wasm32"))]
 lazy_static::lazy_static! {
-    #[cfg(not(target_arch = "wasm32"))]
     pub static ref TOKIO_RUNTIME: tokio::runtime::Runtime = {
         tokio::runtime::Builder::new_multi_thread()
             .enable_all()
