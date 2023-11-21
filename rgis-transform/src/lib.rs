@@ -8,6 +8,8 @@
 
 use geo::{Coord, MapCoords};
 
+pub use proj4rs::errors::Error as TransformError;
+
 mod jobs;
 mod systems;
 
@@ -17,12 +19,6 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut bevy::app::App) {
         systems::configure(app);
     }
-}
-
-#[derive(thiserror::Error, Debug)]
-pub enum TransformError {
-    #[error("{0}")]
-    Proj4rs(#[from] proj4rs::errors::Error),
 }
 
 pub struct ProjTransformer {

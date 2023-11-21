@@ -3912,7 +3912,6 @@ dependencies = [
  "rgis-events",
  "rgis-layer-id",
  "serde_json",
- "thiserror",
 ]
 
 [[package]]
@@ -3983,7 +3982,6 @@ dependencies = [
  "rgis-layer-id",
  "rgis-layers",
  "rgis-settings",
- "thiserror",
 ]
 
 [[package]]
