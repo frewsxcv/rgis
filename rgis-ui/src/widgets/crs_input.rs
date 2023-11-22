@@ -7,8 +7,7 @@ pub struct CrsInput<'a> {
     text_field_value: &'a mut String,
 }
 
-pub type Outcome =
-    Result<(transform::Minimal, transform::OpHandle), Box<dyn std::error::Error + Send + Sync>>;
+pub type Outcome = Result<(transform::Minimal, transform::OpHandle), Error>;
 
 impl<'a> CrsInput<'a> {
     pub fn new(text_field_value: &'a mut String, prev_outcome: &'a mut Option<Outcome>) -> Self {
@@ -29,15 +28,14 @@ impl<'a> egui::Widget for CrsInput<'a> {
                 })
                 .inner;
 
-            let outcome: Outcome = if edit_field.changed()
+            let outcome = if edit_field.changed()
                 || (!self.text_field_value.is_empty() && self.outcome.is_none())
             {
-                match u16::from_str(self.text_field_value) {
-                    Ok(parsed) => {
-                        transform::lookup_epsg_code(parsed).map_err(|e| Box::new(e).into())
-                    }
-                    Err(e) => Err(Box::new(e)),
-                }
+                u16::from_str(self.text_field_value)
+                    .map_err(Error::ParseIntError)
+                    .and_then(|parsed| {
+                        transform::lookup_epsg_code(parsed).map_err(Error::TransformError)
+                    })
             } else if let Some(n) = self.outcome.take() {
                 n
             } else {
@@ -53,4 +51,12 @@ impl<'a> egui::Widget for CrsInput<'a> {
         })
         .response
     }
+}
+
+#[derive(thiserror::Error, Debug)]
+pub enum Error {
+    #[error("{0}")]
+    ParseIntError(std::num::ParseIntError),
+    #[error("{0}")]
+    TransformError(transform::Error),
 }

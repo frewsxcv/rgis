@@ -4102,6 +4102,7 @@ dependencies = [
  "rgis-mouse",
  "rgis-settings",
  "rgis-units",
+ "thiserror",
  "transform",
  "webbrowser",
 ]
