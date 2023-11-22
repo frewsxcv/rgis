@@ -8,7 +8,7 @@
 
 use geo::{Coord, MapCoords};
 
-pub use geodesy::{Minimal, OpHandle, Context};
+pub use geodesy::{Context, Minimal, OpHandle};
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
@@ -44,8 +44,10 @@ mod noop {
 
 impl Transformer {
     pub fn setup(source_crs: u16, target_crs: u16) -> Result<Self, Error> {
-        let source = crs_definitions::from_code(source_crs).ok_or(Error::UnknownEpsgCode(source_crs))?;
-        let target = crs_definitions::from_code(target_crs).ok_or(Error::UnknownEpsgCode(target_crs))?;
+        let source =
+            crs_definitions::from_code(source_crs).ok_or(Error::UnknownEpsgCode(source_crs))?;
+        let target =
+            crs_definitions::from_code(target_crs).ok_or(Error::UnknownEpsgCode(target_crs))?;
         let mut ctx = geodesy_ctx();
         let source_geodesy_string = geodesy::parse_proj(source.proj4)?;
         let source_op_handle = ctx.op(&source_geodesy_string)?;

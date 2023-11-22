@@ -1,13 +1,14 @@
 use bevy_egui::egui;
-use transform::Context;
 use std::str::FromStr;
+use transform::Context;
 
 pub struct CrsInput<'a> {
     pub outcome: &'a mut Option<Outcome>,
     text_field_value: &'a mut String,
 }
 
-pub type Outcome = Result<(transform::Minimal, transform::OpHandle), Box<dyn std::error::Error + Send + Sync>>;
+pub type Outcome =
+    Result<(transform::Minimal, transform::OpHandle), Box<dyn std::error::Error + Send + Sync>>;
 
 impl<'a> CrsInput<'a> {
     pub fn new(text_field_value: &'a mut String, prev_outcome: &'a mut Option<Outcome>) -> Self {
