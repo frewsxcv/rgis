@@ -28,14 +28,10 @@ impl<'a> egui::Widget for CrsInput<'a> {
                 })
                 .inner;
 
-            let outcome = if edit_field.changed()
+            let outcome: Outcome = if edit_field.changed()
                 || (!self.text_field_value.is_empty() && self.outcome.is_none())
             {
-                u16::from_str(self.text_field_value)
-                    .map_err(Error::ParseIntError)
-                    .and_then(|parsed| {
-                        transform::lookup_epsg_code(parsed).map_err(Error::TransformError)
-                    })
+                parse_epsg_input_value(&self.text_field_value)
             } else if let Some(n) = self.outcome.take() {
                 n
             } else {
@@ -56,7 +52,13 @@ impl<'a> egui::Widget for CrsInput<'a> {
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error("{0}")]
-    ParseIntError(std::num::ParseIntError),
+    ParseIntError(#[from] std::num::ParseIntError),
     #[error("{0}")]
-    TransformError(transform::Error),
+    TransformError(#[from] transform::Error),
+}
+
+fn parse_epsg_input_value(input: &str) -> Outcome {
+    let parsed = u16::from_str(input)?;
+    let outcome = transform::lookup_epsg_code(parsed)?;
+    Ok(outcome)
 }
