@@ -33,4 +33,4 @@ rgis-units = { path = "../rgis-units" }
 bevy_jobs = { git = "https://github.com/frewsxcv/bevy_jobs" }
 webbrowser = "0.8"
 geo = "0.27"
-proj4rs = { version = "0.1.2", features = ["crs-definitions"] }
+transform = { path = "../transform" }

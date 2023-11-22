@@ -1,5 +1,5 @@
 use bevy_egui::egui;
-use proj4rs::Proj;
+use transform::Context;
 use std::str::FromStr;
 
 pub struct CrsInput<'a> {
@@ -7,7 +7,7 @@ pub struct CrsInput<'a> {
     text_field_value: &'a mut String,
 }
 
-pub type Outcome = Result<Proj, Box<dyn std::error::Error + Send + Sync>>;
+pub type Outcome = Result<(transform::Minimal, transform::OpHandle), Box<dyn std::error::Error + Send + Sync>>;
 
 impl<'a> CrsInput<'a> {
     pub fn new(text_field_value: &'a mut String, prev_outcome: &'a mut Option<Outcome>) -> Self {
@@ -33,7 +33,7 @@ impl<'a> egui::Widget for CrsInput<'a> {
             {
                 match u16::from_str(self.text_field_value) {
                     Ok(parsed) => {
-                        proj4rs::Proj::from_epsg_code(parsed).map_err(|e| Box::new(e).into())
+                        transform::lookup_epsg_code(parsed).map_err(|e| Box::new(e).into())
                     }
                     Err(e) => Err(Box::new(e)),
                 }
@@ -44,7 +44,7 @@ impl<'a> egui::Widget for CrsInput<'a> {
             };
 
             let message = match &outcome {
-                Ok(n) => format!("✅ {}", n.projname()),
+                Ok((ctx, op_handle)) => format!("✅ {:?}", ctx.steps(*op_handle)),
                 Err(e) => format!("❌ {e:?}"),
             };
             self.outcome.replace(outcome);

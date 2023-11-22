@@ -12,7 +12,7 @@ pub struct ReprojectGeometryJobOutcome {
 }
 
 impl bevy_jobs::Job for ReprojectGeometryJob {
-    type Outcome = Result<ReprojectGeometryJobOutcome, crate::TransformError>;
+    type Outcome = Result<ReprojectGeometryJobOutcome, transform::Error>;
 
     fn name(&self) -> String {
         "Projecting layer".to_string()
@@ -26,7 +26,7 @@ impl bevy_jobs::Job for ReprojectGeometryJob {
             let total = self.feature_collection.features_iter_mut().count();
 
             let transformer =
-                crate::ProjTransformer::setup(self.source_epsg_code, self.target_epsg_code)?;
+                transform::Transformer::setup(self.source_epsg_code, self.target_epsg_code)?;
 
             for (i, feature) in self.feature_collection.features_iter_mut().enumerate() {
                 let _ = progress_sender.send_progress((100 * i / total) as u8).await;

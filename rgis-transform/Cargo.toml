@@ -23,6 +23,4 @@ rgis-layer-id = { path = "../rgis-layer-id" }
 rgis-layers = { path = "../rgis-layers" }
 rgis-settings = { path = "../rgis-settings" }
 bevy_jobs = { git = "https://github.com/frewsxcv/bevy_jobs" }
-# proj4rs = { version = "0.1.2", features = ["crs-definitions"] }
-geodesy = "0.11"
-crs-definitions = "0.3"
+transform = { path = "../transform" }
