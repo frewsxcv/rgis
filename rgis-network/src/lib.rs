@@ -58,8 +58,9 @@ impl bevy_jobs::Job for NetworkFetchJob {
                     let mut bytes_chunk = Vec::from(bytes_chunk?);
                     bytes.append(&mut bytes_chunk);
                     if total_size > 0 {
+                        let percent = 100 * bytes.len() / total_size as usize;
                         let _ = ctx
-                            .send_progress((bytes.len() / total_size as usize) as u8)
+                            .send_progress(percent as u8)
                             .await;
                     }
                 }
