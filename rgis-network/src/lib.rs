@@ -72,13 +72,17 @@ async fn build_request_future(
     let total_size = response.content_length().unwrap_or(0);
     let mut bytes_stream = response.bytes_stream();
     let mut bytes = Vec::<u8>::with_capacity(total_size as usize);
+    let mut last_percent: u8 = 0;
 
     while let Some(bytes_chunk) = bytes_stream.next().await {
         let mut bytes_chunk = Vec::from(bytes_chunk?);
         bytes.append(&mut bytes_chunk);
         if total_size > 0 {
-            let percent = 100 * bytes.len() / total_size as usize;
-            let _ = ctx.send_progress(percent as u8).await;
+            let new_percent = (100 * bytes.len() / total_size as usize) as u8;
+            if new_percent != last_percent {
+                let _ = ctx.send_progress(new_percent).await;
+                last_percent = new_percent;
+            }
         }
     }
 
