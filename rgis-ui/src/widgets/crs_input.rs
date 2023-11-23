@@ -21,31 +21,12 @@ impl<'a> CrsInput<'a> {
 impl<'a> egui::Widget for CrsInput<'a> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         ui.vertical(|ui| {
-            let outcome = ui
-                .horizontal(|ui| {
-                    ui.label("EPSG:");
-                    let edit_field = ui.text_edit_singleline(self.text_field_value);
+            ui.add(EpsgCodeInputFieldWidget {
+                text_field_value: self.text_field_value,
+                outcome: self.outcome,
+            });
 
-                    if edit_field.changed()
-                        || (!self.text_field_value.is_empty() && self.outcome.is_none())
-                    {
-                        ui.add(ValidIconWidget);
-                        Some(parse_epsg_input_value(&self.text_field_value))
-                    } else if let Some(n) = self.outcome.take() {
-                        if n.is_ok() {
-                            ui.add(ValidIconWidget);
-                        } else {
-                            ui.add(InvalidIconWidget);
-                        }
-                        Some(n)
-                    } else {
-                        ui.add(InvalidIconWidget);
-                        None
-                    }
-                })
-                .inner;
-        
-            let Some(outcome) = outcome else { return };
+            let Some(outcome) = self.outcome else { return };
 
             match &outcome {
                 Ok((ctx, op_handle)) => {
@@ -59,7 +40,38 @@ impl<'a> egui::Widget for CrsInput<'a> {
                     ui.label(format!("{e}"));
                 }
             }
-            self.outcome.replace(outcome);
+        })
+        .response
+    }
+}
+
+struct EpsgCodeInputFieldWidget<'a> {
+    text_field_value: &'a mut String,
+    outcome: &'a mut Option<Outcome>,
+}
+
+impl<'a> egui::Widget for EpsgCodeInputFieldWidget<'a> {
+    fn ui(self, ui: &mut egui::Ui) -> egui::Response {
+        ui.horizontal(|ui| {
+            ui.label("EPSG:");
+            let edit_field = ui.text_edit_singleline(self.text_field_value);
+
+            *self.outcome = if edit_field.changed()
+                || (!self.text_field_value.is_empty() && self.outcome.is_none())
+            {
+                ui.add(ValidIconWidget);
+                Some(parse_epsg_input_value(&self.text_field_value))
+            } else if let Some(n) = self.outcome.take() {
+                if n.is_ok() {
+                    ui.add(ValidIconWidget);
+                } else {
+                    ui.add(InvalidIconWidget);
+                }
+                Some(n)
+            } else {
+                ui.add(InvalidIconWidget);
+                None
+            };
         })
         .response
     }
