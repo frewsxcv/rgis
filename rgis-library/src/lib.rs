@@ -12,7 +12,7 @@ pub struct LibraryEntry {
     pub crs: u16,
 }
 
-pub const ENTRIES: [LibraryEntry; 9] = [LibraryEntry {
+pub const ENTRIES: [LibraryEntry; 13] = [LibraryEntry {
     name: "USA States",
     url: "https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json",
     crs: 4326,
@@ -45,7 +45,23 @@ pub const ENTRIES: [LibraryEntry; 9] = [LibraryEntry {
     url: "https://raw.githubusercontent.com/benbalter/dc-maps/master/maps/street-centerlines.geojson",
     crs: 4326,
 }, LibraryEntry {
-    name: "NYC Street Centerline (CSCL)",
-    url: "https://storage.googleapis.com/rgis-library/NYC%20Street%20Centerline%20(CSCL).geojson",
+    name: "NYC Street Centerline",
+    url: "https://storage.googleapis.com/rgis-library/NYC/Street-Centerline.geojson",
+    crs: 4326,
+}, LibraryEntry {
+    name: "NYC Parks",
+    url: "https://storage.googleapis.com/rgis-library/NYC/Parks.geojson",
+    crs: 4326,
+}, LibraryEntry {
+    name: "NYC Shoreline",
+    url: "https://storage.googleapis.com/rgis-library/NYC/Shoreline.geojson",
+    crs: 4326,
+}, LibraryEntry {
+    name: "NYC Sidewalk",
+    url: "https://storage.googleapis.com/rgis-library/NYC/Sidewalk.geojson",
+    crs: 4326,
+}, LibraryEntry {
+    name: "NYC Subway Lines",
+    url: "https://storage.googleapis.com/rgis-library/NYC/Subway-Lines.geojson",
     crs: 4326,
 }];
