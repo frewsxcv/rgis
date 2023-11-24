@@ -102,6 +102,6 @@ async fn await_future<Output>(
     }
     #[cfg(target_arch = "wasm32")]
     {
-        fetch.await
+        future.await
     }
 }
