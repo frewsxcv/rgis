@@ -25,23 +25,6 @@ pub struct Transformer {
     target: geodesy::OpHandle,
 }
 
-mod noop {
-    pub const GAMUT: [geodesy::OpParameter; 0] = [];
-
-    pub fn new(
-        parameters: &geodesy::RawParameters,
-        _ctx: &dyn geodesy::Context,
-    ) -> Result<geodesy::Op, geodesy::Error> {
-        geodesy::Op::plain(
-            parameters,
-            geodesy::InnerOp::default(),
-            Some(geodesy::InnerOp::default()),
-            &GAMUT,
-            _ctx,
-        )
-    }
-}
-
 impl Transformer {
     pub fn setup(source_crs: u16, target_crs: u16) -> Result<Self, Error> {
         let source =
@@ -89,10 +72,5 @@ pub fn lookup_epsg_code(epsg_code: u16) -> Result<(geodesy::Minimal, geodesy::Op
 }
 
 fn geodesy_ctx() -> geodesy::Minimal {
-    let mut ctx = geodesy::Minimal::new();
-    // https://github.com/Rennzie/geodesy-wasm/blob/82f9ef050372d53144969dba60807c7dac38c910/src/geodesy/operators/mod.rs#L7-L19
-    //
-    // https://github.com/busstoptaktik/geodesy/issues/79
-    ctx.register_op("longlat", geodesy::OpConstructor(noop::new));
-    ctx
+    geodesy::Minimal::new()
 }
