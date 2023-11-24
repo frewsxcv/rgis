@@ -4035,7 +4035,6 @@ dependencies = [
  "bevy_jobs",
  "bytes",
  "futures-util",
- "lazy_static",
  "reqwest",
  "thiserror",
  "tokio",

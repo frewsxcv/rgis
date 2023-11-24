@@ -7,17 +7,10 @@
 )]
 
 use futures_util::StreamExt;
-use std::io;
+use std::{io, sync};
 
 #[cfg(not(target_arch = "wasm32"))]
-lazy_static::lazy_static! {
-    pub static ref TOKIO_RUNTIME: tokio::runtime::Runtime = {
-        tokio::runtime::Builder::new_multi_thread()
-            .enable_all()
-            .build()
-            .unwrap()
-    };
-}
+static TOKIO_RUNTIME: sync::OnceLock<tokio::runtime::Runtime> = sync::OnceLock::new();
 
 pub struct FetchedFile {
     pub name: String,
@@ -98,7 +91,14 @@ async fn await_future<Output>(
 ) -> Output {
     #[cfg(not(target_arch = "wasm32"))]
     {
-        TOKIO_RUNTIME.block_on(future)
+        TOKIO_RUNTIME
+            .get_or_init(|| {
+                tokio::runtime::Builder::new_multi_thread()
+                    .enable_all()
+                    .build()
+                    .unwrap()
+            })
+            .block_on(future)
     }
     #[cfg(target_arch = "wasm32")]
     {
