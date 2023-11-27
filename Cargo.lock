@@ -1668,9 +1668,9 @@ checksum = "7e962a19be5cfc3f3bf6dd8f61eb50107f356ad6270fbb3ed41476571db78be5"
 
 [[package]]
 name = "dbase"
-version = "0.3.0"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e3c1a2a9e9238982f599f25b54ec2c7cf1518cc97084cf0c8da475f8a3727fe7"
+checksum = "86bc97a72d9aca92b9a8095b3bfe8f691c54bb15eefaacec53882604062428bf"
 dependencies = [
  "byteorder",
  "time",
@@ -2351,9 +2351,9 @@ dependencies = [
 
 [[package]]
 name = "geozero"
-version = "0.9.9"
+version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "153e8363d3cf965f18f87578e11577450df8ff123d4c2de5e9fb8128b61fe296"
+checksum = "4b1b9a1eeae9ad09e12ec50243956105184b26440f81f978cd3aae009b214d4d"
 dependencies = [
  "geo-types",
  "geojson",
@@ -2366,8 +2366,7 @@ dependencies = [
 [[package]]
 name = "geozero-shp"
 version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f67c6f600e2227868b11c74dee1dedfd06e89f3d323d275365abb4981b38f3dd"
+source = "git+https://github.com/georust/geozero.git#b137e258b2a480415687dec456981e67d5977361"
 dependencies = [
  "byteorder",
  "dbase",
