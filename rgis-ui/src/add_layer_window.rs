@@ -351,23 +351,39 @@ impl<'a, 'w, 's> egui::Widget for LibraryWidget<'a, 'w, 's> {
             for folder in rgis_library::get() {
                 ui.collapsing(format!("📁 {}", folder.name), |ui| {
                     for entry in &folder.entries {
-                        ui.horizontal(|ui| {
-                            if ui.button("➕ Add").clicked() {
-                                self.events.load_geo_json_file_event_writer.send(
-                                    rgis_events::LoadFileEvent::FromNetwork {
-                                        name: format!("{}: {}", folder.name, entry.name),
-                                        url: entry.url.into(),
-                                        crs_epsg_code: entry.crs.into(),
-                                    },
-                                );
-                                self.events.hide_add_layer_window_events.send_default();
-                            }
-                            ui.label(entry.name);
+                        ui.add(LibraryEntryWidget {
+                            folder,
+                            entry,
+                            events: self.events,
                         });
                     }
                 });
             }
         })
         .response
+    }
+}
+
+struct LibraryEntryWidget<'a, 'w, 's> {
+    entry: &'a rgis_library::Entry,
+    folder: &'a rgis_library::Folder,
+    events: &'a mut Events<'w, 's>,
+}
+
+impl<'a, 'w, 's> egui::Widget for LibraryEntryWidget<'a, 'w, 's> {
+    fn ui(self, ui: &mut egui::Ui) -> egui::Response {
+        ui.horizontal(|ui| {
+            if ui.button("➕ Add").clicked() {
+                self.events.load_geo_json_file_event_writer.send(
+                    rgis_events::LoadFileEvent::FromNetwork {
+                        name: format!("{}: {}", self.folder.name, self.entry.name),
+                        url: self.entry.url.into(),
+                        crs_epsg_code: self.entry.crs.into(),
+                    },
+                );
+                self.events.hide_add_layer_window_events.send_default();
+            }
+            ui.label(self.entry.name);
+        }).response
     }
 }
