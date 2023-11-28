@@ -2271,10 +2271,8 @@ dependencies = [
  "bytes",
  "geo",
  "geo-features",
- "geojson",
  "geozero",
  "geozero-shp",
- "serde_json",
  "thiserror",
  "time-logger",
 ]
@@ -2341,7 +2339,6 @@ version = "0.24.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a5d728c1df1fbf328d74151efe6cb0586f79ee813346ea981add69bd22c9241b"
 dependencies = [
- "geo-types",
  "log",
  "serde",
  "serde_json",
