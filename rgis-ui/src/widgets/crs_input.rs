@@ -60,7 +60,7 @@ impl<'a> egui::Widget for EpsgCodeInputFieldWidget<'a> {
                 || (!self.text_field_value.is_empty() && self.outcome.is_none())
             {
                 ui.add(ValidIconWidget);
-                Some(parse_epsg_input_value(&self.text_field_value))
+                Some(parse_epsg_input_value(self.text_field_value))
             } else if let Some(n) = self.outcome.take() {
                 if n.is_ok() {
                     ui.add(ValidIconWidget);

@@ -61,7 +61,7 @@ impl<'a, 'w> SidePanel<'a, 'w> {
                 is_move_down_enabled: i < self.layers.count() - 1,
                 is_move_up_enabled: i > 0,
                 layer,
-                events: &mut self.events,
+                events: self.events,
             }
             .ui(ui);
             ui.separator();

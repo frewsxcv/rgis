@@ -27,7 +27,7 @@ impl<'a, 'w> ChangeCrsWindow<'a, 'w> {
                     .map(|n| n.is_ok())
                     .unwrap_or(false);
                 if ui.add_enabled(is_ok, egui::Button::new("Set")).clicked() {
-                    let Ok(value) = u16::from_str(&self.text_field_value) else {
+                    let Ok(value) = u16::from_str(self.text_field_value) else {
                         bevy::log::error!("Could not parse u16 value");
                         return;
                     };

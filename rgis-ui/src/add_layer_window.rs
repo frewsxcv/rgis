@@ -149,7 +149,7 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
 
                 if self.state.selected_source == Source::Library {
                     ui.add(LibraryWidget {
-                        events: &mut self.events,
+                        events: self.events,
                     });
                     return;
                 }
@@ -378,7 +378,7 @@ impl<'a, 'w, 's> egui::Widget for LibraryEntryWidget<'a, 'w, 's> {
                     rgis_events::LoadFileEvent::FromNetwork {
                         name: format!("{}: {}", self.folder.name, self.entry.name),
                         url: self.entry.url.into(),
-                        crs_epsg_code: self.entry.crs.into(),
+                        crs_epsg_code: self.entry.crs,
                     },
                 );
                 self.events.hide_add_layer_window_events.send_default();

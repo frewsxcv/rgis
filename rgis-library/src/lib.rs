@@ -120,6 +120,6 @@ fn build() -> Vec<Folder> {
 
 pub fn get() -> &'static Vec<Folder> {
     static LIBRARY: sync::OnceLock<Vec<Folder>> = sync::OnceLock::new();
-    LIBRARY.get_or_init(|| build())
+    LIBRARY.get_or_init(build)
 }
 

@@ -14,8 +14,8 @@ fn handle_layer_created_events(
         job_spawner.spawn(crate::jobs::ReprojectGeometryJob {
             feature_collection: layer.unprojected_feature_collection.clone(),
             layer_id: event.0,
-            source_epsg_code: layer.crs_epsg_code.clone(),
-            target_epsg_code: rgis_settings.target_crs_epsg_code.clone(),
+            source_epsg_code: layer.crs_epsg_code,
+            target_epsg_code: rgis_settings.target_crs_epsg_code,
         })
     }
 }
