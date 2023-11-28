@@ -51,17 +51,6 @@ pub struct UiMargins<'w, 's> {
     marker: marker::PhantomData<&'s usize>,
 }
 
-impl<'w, 's> UiMargins<'w, 's> {
-    // pub fn to_ui_rect(&self) -> bevy::ui::UiRect {
-    //     bevy::ui::UiRect {
-    //         left: Val::Px(self.left.0),
-    //         top: Val::Px(self.top.0),
-    //         bottom: Val::Px(self.bottom.0),
-    //         right: Val::Px(0.),
-    //     }
-    // }
-}
-
 #[derive(Default, Resource)]
 pub struct MessageWindowState {
     is_visible: bool,
