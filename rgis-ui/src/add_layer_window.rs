@@ -384,6 +384,7 @@ impl<'a, 'w, 's> egui::Widget for LibraryEntryWidget<'a, 'w, 's> {
                 self.events.hide_add_layer_window_events.send_default();
             }
             ui.label(self.entry.name);
-        }).response
+        })
+        .response
     }
 }
