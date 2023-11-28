@@ -377,7 +377,7 @@ fn render_window<W: Window + 'static>(
             .open(&mut is_window_open.0)
             .resizable(false)
             .show(egui_ctx.get_mut(), |ui| {
-                window.ui(ui);
+                ui.add(window);
             });
     }
 }

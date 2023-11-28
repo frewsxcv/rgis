@@ -42,10 +42,9 @@ impl<'a, 'w> SidePanel<'a, 'w> {
         ui.vertical_centered_justified(|ui| {
             egui::ScrollArea::vertical().show(ui, |ui| {
                 self.render_layers_heading(ui);
-                (AddLayerButton {
+                ui.add(AddLayerButton {
                     events: self.events,
-                })
-                .ui(ui);
+                });
                 self.render_layers(ui);
             });
         });
@@ -57,13 +56,12 @@ impl<'a, 'w> SidePanel<'a, 'w> {
 
     fn render_layers(&mut self, ui: &mut egui::Ui) {
         for (i, layer) in self.layers.iter_top_to_bottom().enumerate() {
-            Layer {
+            ui.add(Layer {
                 is_move_down_enabled: i < self.layers.count() - 1,
                 is_move_up_enabled: i > 0,
                 layer,
                 events: self.events,
-            }
-            .ui(ui);
+            });
             ui.separator();
         }
     }
@@ -263,29 +261,22 @@ impl<'a, 'w> Widget for Layer<'a, 'w> {
                                     }
                                 }
 
-                                OperationButton::<rgis_geo_ops::ConvexHull>::new(
+                                ui.add(OperationButton::<rgis_geo_ops::ConvexHull>::new(
                                     self.events,
                                     layer,
-                                )
-                                .ui(ui);
-                                OperationButton::<rgis_geo_ops::Outliers>::new(self.events, layer)
-                                    .ui(ui);
-                                OperationButton::<rgis_geo_ops::Rotate>::new(self.events, layer)
-                                    .ui(ui);
-                                OperationButton::<rgis_geo_ops::Simplify>::new(self.events, layer)
-                                    .ui(ui);
-                                OperationButton::<rgis_geo_ops::Smoothing>::new(self.events, layer)
-                                    .ui(ui);
-                                OperationButton::<rgis_geo_ops::Triangulate>::new(
+                                ));
+                                ui.add(OperationButton::<rgis_geo_ops::Outliers>::new(self.events, layer));
+                                ui.add(OperationButton::<rgis_geo_ops::Rotate>::new(self.events, layer));
+                                ui.add(OperationButton::<rgis_geo_ops::Simplify>::new(self.events, layer));
+                                ui.add(OperationButton::<rgis_geo_ops::Smoothing>::new(self.events, layer));
+                                ui.add(OperationButton::<rgis_geo_ops::Triangulate>::new(
                                     self.events,
                                     layer,
-                                )
-                                .ui(ui);
-                                OperationButton::<rgis_geo_ops::UnsignedArea>::new(
+                                ));
+                                ui.add(OperationButton::<rgis_geo_ops::UnsignedArea>::new(
                                     self.events,
                                     layer,
-                                )
-                                .ui(ui);
+                                ));
                             });
                         });
                 });

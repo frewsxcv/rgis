@@ -80,7 +80,7 @@ impl<'w, 's> egui::Widget for DebugWindow<'w, 's> {
             .collect::<Vec<_>>();
 
         ui.vertical(|ui| {
-            DebugTable { last: &self.last }.ui(ui);
+            ui.add(DebugTable { last: &self.last });
 
             use egui_plot::{Line, Plot, PlotPoints};
             let line = Line::new(PlotPoints::Owned(sin));
