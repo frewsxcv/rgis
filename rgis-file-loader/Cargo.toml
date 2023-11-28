@@ -23,3 +23,4 @@ bevy_jobs = { git = "https://github.com/frewsxcv/bevy_jobs" }
 serde_json = "1"
 time-logger = { path = "../time-logger" }
 thiserror = "1"
+bytes = "1"

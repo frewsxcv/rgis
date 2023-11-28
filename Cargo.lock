@@ -3982,6 +3982,7 @@ name = "rgis-events"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bytes",
  "geo",
  "geo-features",
  "geo-file-loader",
@@ -3995,6 +3996,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_jobs",
+ "bytes",
  "geo-features",
  "geo-file-loader",
  "geo-projected",

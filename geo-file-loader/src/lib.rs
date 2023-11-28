@@ -6,8 +6,6 @@
     clippy::expect_used
 )]
 
-use std::fmt;
-
 mod geojson;
 mod gpx;
 mod shapefile;
@@ -18,12 +16,23 @@ pub use crate::shapefile::ShapefileSource;
 pub use crate::wkt::WktSource;
 pub use crate::gpx::GpxSource;
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum FileFormat {
     GeoJson,
     Shapefile,
     Wkt,
     Gpx,
+}
+
+
+#[derive(thiserror::Error, Debug)]
+pub enum Error {
+    #[error("{0}")]
+    Geozero(#[from] geozero::error::GeozeroError),
+    #[error("{0}")]
+    Shapefile(#[from] geozero_shp::Error),
+    #[error("No geometry found in GeoJSON file")]
+    NoGeometry,
 }
 
 impl FileFormat {
@@ -35,13 +44,30 @@ impl FileFormat {
             Self::Wkt => true,
         }
     }
+
+    pub const fn display_name(self) -> &'static str {
+        match self {
+            Self::GeoJson => "GeoJSON",
+            Self::Gpx => "GPX",
+            Self::Shapefile => "Shapefile",
+            Self::Wkt => "WKT",
+        }
+    }
 }
 
-pub trait FileLoader {
-    type Error: fmt::Debug;
+pub fn load_file(
+    file_format: FileFormat,
+    bytes: bytes::Bytes,
+) -> Result<geo_features::FeatureCollection, Error> {
+    match file_format {
+        FileFormat::GeoJson => Ok(GeoJsonSource::from_bytes(bytes).load()?),
+        FileFormat::Gpx => Ok(GpxSource::from_bytes(bytes).load()?),
+        FileFormat::Shapefile => Ok(ShapefileSource::from_bytes(bytes).load()?),
+        FileFormat::Wkt => Ok(WktSource::from_bytes(bytes).load()?),
+    }
+}
 
-    const FILE_TYPE_NAME: &'static str;
-
+trait FileLoader {
     fn from_bytes(bytes: bytes::Bytes) -> Self;
-    fn load(self) -> Result<geo_features::FeatureCollection, Self::Error>;
+    fn load(self) -> Result<geo_features::FeatureCollection, Error>;
 }

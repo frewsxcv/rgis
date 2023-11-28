@@ -13,15 +13,11 @@ pub struct WktSource {
 }
 
 impl crate::FileLoader for WktSource {
-    type Error = Error;
-
-    const FILE_TYPE_NAME: &'static str = "WKT";
-
     fn from_bytes(bytes: bytes::Bytes) -> Self {
         WktSource { bytes }
     }
 
-    fn load(self) -> Result<geo_features::FeatureCollection, Self::Error> {
+    fn load(self) -> Result<geo_features::FeatureCollection, crate::Error> {
         let mut bytes_cursor = io::Cursor::new(&self.bytes);
         let mut wkt_reader = geozero::wkt::WktReader(&mut bytes_cursor);
         let mut geo_writer = geozero::geo_types::GeoWriter::new();

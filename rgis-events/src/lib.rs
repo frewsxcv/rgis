@@ -89,7 +89,7 @@ pub struct FeaturesDeselectedEvent;
 pub struct OpenChangeCrsWindow;
 
 #[derive(Event, Debug)]
-pub enum LoadFileEvent<F: geo_file_loader::FileLoader> {
+pub enum LoadFileEvent {
     FromNetwork {
         name: String,
         url: String,
@@ -97,7 +97,8 @@ pub enum LoadFileEvent<F: geo_file_loader::FileLoader> {
     },
     FromBytes {
         file_name: String,
-        file_loader: F,
+        file_format: geo_file_loader::FileFormat,
+        bytes: bytes::Bytes,
         crs_epsg_code: u16,
     },
 }
@@ -190,10 +191,7 @@ pub struct HideAddLayerWindow;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<LoadFileEvent<geo_file_loader::GeoJsonSource>>()
-            .add_event::<LoadFileEvent<geo_file_loader::WktSource>>()
-            .add_event::<LoadFileEvent<geo_file_loader::ShapefileSource>>()
-            .add_event::<LoadFileEvent<geo_file_loader::GpxSource>>()
+        app.add_event::<LoadFileEvent>()
             .add_event::<CreateLayerEvent>()
             .add_event::<LayerCreatedEvent>()
             .add_event::<ToggleLayerVisibilityEvent>()

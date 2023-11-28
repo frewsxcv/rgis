@@ -1,23 +1,12 @@
 use bevy::prelude::*;
 use bevy_egui::egui;
+use geo_file_loader::FileFormat;
 use std::mem;
 use std::str::FromStr;
-use geo_file_loader::FileFormat;
 
 #[derive(bevy::ecs::system::SystemParam)]
 pub struct Events<'w, 's> {
-    pub load_geo_json_file_event_writer: bevy::ecs::event::EventWriter<
-        'w,
-        rgis_events::LoadFileEvent<geo_file_loader::GeoJsonSource>,
-    >,
-    pub load_wkt_file_event_writer:
-        bevy::ecs::event::EventWriter<'w, rgis_events::LoadFileEvent<geo_file_loader::WktSource>>,
-    pub load_gpx_file_event_writer:
-        bevy::ecs::event::EventWriter<'w, rgis_events::LoadFileEvent<geo_file_loader::GpxSource>>,
-    pub load_shapefile_file_event_writer: bevy::ecs::event::EventWriter<
-        'w,
-        rgis_events::LoadFileEvent<geo_file_loader::ShapefileSource>,
-    >,
+    pub load_file_event_writer: bevy::ecs::event::EventWriter<'w, rgis_events::LoadFileEvent>,
     pub show_add_layer_window_event_reader:
         bevy::ecs::event::EventReader<'w, 's, rgis_events::ShowAddLayerWindow>,
     pub hide_add_layer_window_events:
@@ -182,7 +171,11 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                 if self.state.selected_source == Source::File
                     || self.state.selected_source == Source::Text
                 {
-                    ui.radio_value(&mut self.state.selected_format, Some(FileFormat::Wkt), "WKT");
+                    ui.radio_value(
+                        &mut self.state.selected_format,
+                        Some(FileFormat::Wkt),
+                        "WKT",
+                    );
                 }
 
                 let Some(selected_format) = self.state.selected_format else {
@@ -210,59 +203,22 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                         .add_enabled(submittable, egui::Button::new("Add layer"))
                         .clicked()
                     {
+                        let crs_epsg_code = match selected_format {
+                            FileFormat::GeoJson => 4326,
+                            // TODO: don't allow the user to add a layer if the CRS isn't valid
+                            _ => u16::from_str(&self.state.crs_input).unwrap(),
+                        };
                         match self.selected_file.0.take() {
-                            Some(loaded_file) => match selected_format {
-                                FileFormat::GeoJson => {
-                                    self.events.load_geo_json_file_event_writer.send(
-                                        rgis_events::LoadFileEvent::FromBytes {
-                                            file_name: loaded_file.file_name,
-                                            file_loader: geo_file_loader::GeoJsonSource {
-                                                bytes: loaded_file.bytes.into(),
-                                            },
-                                            crs_epsg_code: 4326,
-                                        },
-                                    );
-                                }
-                                FileFormat::Shapefile => {
-                                    self.events.load_shapefile_file_event_writer.send(
-                                        rgis_events::LoadFileEvent::FromBytes {
-                                            file_name: loaded_file.file_name,
-                                            file_loader: geo_file_loader::ShapefileSource {
-                                                bytes: loaded_file.bytes.into(),
-                                            },
-                                            // TODO: don't allow the user to add a layer if the CRS isn't valid
-                                            crs_epsg_code: u16::from_str(&self.state.crs_input)
-                                                .unwrap(),
-                                        },
-                                    );
-                                }
-                                FileFormat::Wkt => {
-                                    self.events.load_wkt_file_event_writer.send(
-                                        rgis_events::LoadFileEvent::FromBytes {
-                                            file_name: loaded_file.file_name,
-                                            file_loader: geo_file_loader::WktSource {
-                                                bytes: loaded_file.bytes.into(),
-                                            },
-                                            // TODO: don't allow the user to add a layer if the CRS isn't valid
-                                            crs_epsg_code: u16::from_str(&self.state.crs_input)
-                                                .unwrap(),
-                                        },
-                                    );
-                                }
-                                FileFormat::Gpx => {
-                                    self.events.load_gpx_file_event_writer.send(
-                                        rgis_events::LoadFileEvent::FromBytes {
-                                            file_name: loaded_file.file_name,
-                                            file_loader: geo_file_loader::GpxSource {
-                                                bytes: loaded_file.bytes.into(),
-                                            },
-                                            // TODO: don't allow the user to add a layer if the CRS isn't valid
-                                            crs_epsg_code: u16::from_str(&self.state.crs_input)
-                                                .unwrap(),
-                                        },
-                                    );
-                                }
-                            },
+                            Some(loaded_file) => {
+                                self.events.load_file_event_writer.send(
+                                    rgis_events::LoadFileEvent::FromBytes {
+                                        file_name: loaded_file.file_name,
+                                        file_format: selected_format,
+                                        bytes: loaded_file.bytes.into(),
+                                        crs_epsg_code,
+                                    },
+                                );
+                            }
                             None => {
                                 bevy::log::error!(
                                     "Expected file to exist when loading, but no file exists"
@@ -294,42 +250,17 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                     {
                         let new = mem::take(&mut self.state.text_edit_contents);
                         match selected_format {
-                            FileFormat::GeoJson => {
-                                self.events.load_geo_json_file_event_writer.send(
-                                    rgis_events::LoadFileEvent::FromBytes {
-                                        file_name: "Inputted file".into(),
-                                        file_loader: geo_file_loader::GeoJsonSource {
-                                            bytes: new.into(),
-                                        },
-                                        // TODO: don't allow the user to add a layer if the CRS isn't valid
-                                        crs_epsg_code: u16::from_str(&self.state.crs_input)
-                                            .unwrap(),
-                                    },
-                                );
-                            }
                             FileFormat::Shapefile => {
                                 unreachable!()
                             }
-                            FileFormat::Wkt => {
-                                self.events.load_wkt_file_event_writer.send(
+                            file_format @ (FileFormat::Wkt
+                            | FileFormat::GeoJson
+                            | FileFormat::Gpx) => {
+                                self.events.load_file_event_writer.send(
                                     rgis_events::LoadFileEvent::FromBytes {
                                         file_name: "Inputted file".into(),
-                                        file_loader: geo_file_loader::WktSource {
-                                            bytes: new.into(),
-                                        },
-                                        // TODO: don't allow the user to add a layer if the CRS isn't valid
-                                        crs_epsg_code: u16::from_str(&self.state.crs_input)
-                                            .unwrap(),
-                                    },
-                                );
-                            }
-                            FileFormat::Gpx => {
-                                self.events.load_gpx_file_event_writer.send(
-                                    rgis_events::LoadFileEvent::FromBytes {
-                                        file_name: "Inputted file".into(),
-                                        file_loader: geo_file_loader::GpxSource {
-                                            bytes: new.into(),
-                                        },
+                                        file_format,
+                                        bytes: new.into(),
                                         // TODO: don't allow the user to add a layer if the CRS isn't valid
                                         crs_epsg_code: u16::from_str(&self.state.crs_input)
                                             .unwrap(),
@@ -393,13 +324,13 @@ impl<'a, 'w, 's> egui::Widget for LibraryEntryWidget<'a, 'w, 's> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         ui.horizontal(|ui| {
             if ui.button("➕ Add").clicked() {
-                self.events.load_geo_json_file_event_writer.send(
-                    rgis_events::LoadFileEvent::FromNetwork {
+                self.events
+                    .load_file_event_writer
+                    .send(rgis_events::LoadFileEvent::FromNetwork {
                         name: format!("{}: {}", self.folder.name, self.entry.name),
                         url: self.entry.url.into(),
                         crs_epsg_code: self.entry.crs,
-                    },
-                );
+                    });
                 self.events.hide_add_layer_window_events.send_default();
             }
             ui.label(self.entry.name);

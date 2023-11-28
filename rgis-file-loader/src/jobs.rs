@@ -1,5 +1,6 @@
-pub struct LoadFileJob<F: geo_file_loader::FileLoader> {
-    pub file_loader: F,
+pub struct LoadFileJob {
+    pub file_format: geo_file_loader::FileFormat,
+    pub bytes: bytes::Bytes,
     pub name: String,
     pub source_crs_epsg_code: u16,
 }
@@ -10,20 +11,19 @@ pub struct LoadFileJobOutcome {
     pub source_crs_epsg_code: u16,
 }
 
-impl<F: geo_file_loader::FileLoader + Sync + Send + 'static> bevy_jobs::Job for LoadFileJob<F>
-where
-    <F as geo_file_loader::FileLoader>::Error: Send + Sync + 'static,
-{
-    type Outcome = Result<LoadFileJobOutcome, F::Error>;
+impl bevy_jobs::Job for LoadFileJob {
+    type Outcome = Result<LoadFileJobOutcome, geo_file_loader::Error>;
 
     fn name(&self) -> String {
-        format!("Loading {} file", F::FILE_TYPE_NAME)
+        format!("Loading {} file", self.file_format.display_name())
     }
 
     fn perform(self, _: bevy_jobs::Context) -> bevy_jobs::AsyncReturn<Self::Outcome> {
         Box::pin(async move {
             Ok(LoadFileJobOutcome {
-                feature_collection: geo_projected::Unprojected::new(self.file_loader.load()?),
+                feature_collection: geo_projected::Unprojected::new(
+                    geo_file_loader::load_file(self.file_format, self.bytes)?,
+                ),
                 name: self.name,
                 source_crs_epsg_code: self.source_crs_epsg_code,
             })
