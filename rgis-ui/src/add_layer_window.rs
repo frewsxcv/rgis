@@ -148,17 +148,28 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                 ui.separator();
 
                 if self.state.selected_source == Source::Library {
-                    for entry in rgis_library::ENTRIES {
-                        if ui.button(format!("Add '{}' Layer", entry.name)).clicked() {
-                            self.events.load_geo_json_file_event_writer.send(
-                                rgis_events::LoadFileEvent::FromNetwork {
-                                    name: entry.name.into(),
-                                    url: entry.url.into(),
-                                    crs_epsg_code: entry.crs.into(),
-                                },
-                            );
-                            self.events.hide_add_layer_window_events.send_default();
-                        }
+                    ui.heading("Library");
+                    for folder in rgis_library::get() {
+                        ui.collapsing(format!("📁 {}", folder.name), |ui| {
+                            for entry in &folder.entries {
+                                ui.horizontal(|ui| {
+                                    if ui
+                                        .button("➕ Add")
+                                        .clicked()
+                                    {
+                                        self.events.load_geo_json_file_event_writer.send(
+                                            rgis_events::LoadFileEvent::FromNetwork {
+                                                name: format!("{}: {}", folder.name, entry.name),
+                                                url: entry.url.into(),
+                                                crs_epsg_code: entry.crs.into(),
+                                            },
+                                        );
+                                        self.events.hide_add_layer_window_events.send_default();
+                                    }
+                                    ui.label(entry.name);
+                                });
+                            }
+                        });
                     }
                     return;
                 }
