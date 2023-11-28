@@ -16,6 +16,7 @@ mod wkt;
 pub use crate::geojson::GeoJsonSource;
 pub use crate::shapefile::ShapefileSource;
 pub use crate::wkt::WktSource;
+pub use crate::gpx::GpxSource;
 
 pub trait FileLoader {
     type Error: fmt::Debug;

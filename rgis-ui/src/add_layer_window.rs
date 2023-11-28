@@ -11,6 +11,8 @@ pub struct Events<'w, 's> {
     >,
     pub load_wkt_file_event_writer:
         bevy::ecs::event::EventWriter<'w, rgis_events::LoadFileEvent<geo_file_loader::WktSource>>,
+    pub load_gpx_file_event_writer:
+        bevy::ecs::event::EventWriter<'w, rgis_events::LoadFileEvent<geo_file_loader::GpxSource>>,
     pub load_shapefile_file_event_writer: bevy::ecs::event::EventWriter<
         'w,
         rgis_events::LoadFileEvent<geo_file_loader::ShapefileSource>,
@@ -100,6 +102,7 @@ pub struct OpenedFile {
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Format {
     GeoJson,
+    Gpx,
     Shapefile,
     Wkt,
 }
@@ -108,6 +111,7 @@ impl Format {
     fn is_plaintext(self) -> bool {
         match self {
             Self::GeoJson => true,
+            Self::Gpx => true,
             Self::Shapefile => false,
             Self::Wkt => true,
         }
@@ -176,6 +180,12 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                         &mut self.state.selected_format,
                         Some(Format::GeoJson),
                         "GeoJSON",
+                    );
+
+                    ui.radio_value(
+                        &mut self.state.selected_format,
+                        Some(Format::Gpx),
+                        "GPX",
                     );
                 }
 
@@ -257,6 +267,19 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                                         },
                                     );
                                 }
+                                Format::Gpx => {
+                                    self.events.load_gpx_file_event_writer.send(
+                                        rgis_events::LoadFileEvent::FromBytes {
+                                            file_name: loaded_file.file_name,
+                                            file_loader: geo_file_loader::GpxSource {
+                                                bytes: loaded_file.bytes.into(),
+                                            },
+                                            // TODO: don't allow the user to add a layer if the CRS isn't valid
+                                            crs_epsg_code: u16::from_str(&self.state.crs_input)
+                                                .unwrap(),
+                                        },
+                                    );
+                                }
                             },
                             None => {
                                 bevy::log::error!(
@@ -318,6 +341,19 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                                     },
                                 );
                             }
+                            Format::Gpx => {
+                                self.events.load_gpx_file_event_writer.send(
+                                    rgis_events::LoadFileEvent::FromBytes {
+                                        file_name: "Inputted file".into(),
+                                        file_loader: geo_file_loader::GpxSource {
+                                            bytes: new.into(),
+                                        },
+                                        // TODO: don't allow the user to add a layer if the CRS isn't valid
+                                        crs_epsg_code: u16::from_str(&self.state.crs_input)
+                                            .unwrap(),
+                                    },
+                                );
+                            }
                         }
                         self.events.hide_add_layer_window_events.send_default();
                         self.state.reset();
@@ -337,6 +373,7 @@ const fn hint_text(format: Format) -> &'static str {
         Format::GeoJson => "{\n  \"type\": \"FeatureCollection\",\n  \"features\": []\n}",
         Format::Shapefile => panic!("Shapefiles are not textual"),
         Format::Wkt => "LINESTRING (30 10, 10 30, 40 40)",
+        Format::Gpx => "", // TODO: add example GPX
     }
 }
 

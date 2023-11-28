@@ -79,9 +79,11 @@ pub fn configure(app: &mut App) {
             handle_load_file_events::<geo_file_loader::GeoJsonSource>,
             handle_load_file_events::<geo_file_loader::WktSource>,
             handle_load_file_events::<geo_file_loader::ShapefileSource>,
+            handle_load_file_events::<geo_file_loader::GpxSource>,
             handle_load_file_job_finished_events::<geo_file_loader::GeoJsonSource>,
             handle_load_file_job_finished_events::<geo_file_loader::WktSource>,
             handle_load_file_job_finished_events::<geo_file_loader::ShapefileSource>,
+            handle_load_file_job_finished_events::<geo_file_loader::GpxSource>,
         ),
     );
 }
