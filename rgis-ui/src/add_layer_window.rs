@@ -148,29 +148,9 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                 ui.separator();
 
                 if self.state.selected_source == Source::Library {
-                    ui.heading("Library");
-                    for folder in rgis_library::get() {
-                        ui.collapsing(format!("📁 {}", folder.name), |ui| {
-                            for entry in &folder.entries {
-                                ui.horizontal(|ui| {
-                                    if ui
-                                        .button("➕ Add")
-                                        .clicked()
-                                    {
-                                        self.events.load_geo_json_file_event_writer.send(
-                                            rgis_events::LoadFileEvent::FromNetwork {
-                                                name: format!("{}: {}", folder.name, entry.name),
-                                                url: entry.url.into(),
-                                                crs_epsg_code: entry.crs.into(),
-                                            },
-                                        );
-                                        self.events.hide_add_layer_window_events.send_default();
-                                    }
-                                    ui.label(entry.name);
-                                });
-                            }
-                        });
-                    }
+                    ui.add(LibraryWidget {
+                        events: &mut self.events,
+                    });
                     return;
                 }
 
@@ -357,5 +337,37 @@ fn hint_text(format: Format) -> &'static str {
         Format::GeoJson => "{\n  \"type\": \"FeatureCollection\",\n  \"features\": []\n}",
         Format::Shapefile => unreachable!("Shapefiles are not textual"),
         Format::Wkt => "LINESTRING (30 10, 10 30, 40 40)",
+    }
+}
+
+struct LibraryWidget<'a, 'w, 's> {
+    events: &'a mut Events<'w, 's>,
+}
+
+impl<'a, 'w, 's> egui::Widget for LibraryWidget<'a, 'w, 's> {
+    fn ui(self, ui: &mut egui::Ui) -> egui::Response {
+        ui.vertical(|ui| {
+            ui.heading("Library");
+            for folder in rgis_library::get() {
+                ui.collapsing(format!("📁 {}", folder.name), |ui| {
+                    for entry in &folder.entries {
+                        ui.horizontal(|ui| {
+                            if ui.button("➕ Add").clicked() {
+                                self.events.load_geo_json_file_event_writer.send(
+                                    rgis_events::LoadFileEvent::FromNetwork {
+                                        name: format!("{}: {}", folder.name, entry.name),
+                                        url: entry.url.into(),
+                                        crs_epsg_code: entry.crs.into(),
+                                    },
+                                );
+                                self.events.hide_add_layer_window_events.send_default();
+                            }
+                            ui.label(entry.name);
+                        });
+                    }
+                });
+            }
+        })
+        .response
     }
 }
