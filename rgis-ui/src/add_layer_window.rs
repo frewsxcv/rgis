@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use bevy_egui::egui;
 use std::mem;
 use std::str::FromStr;
+use geo_file_loader::FileFormat;
 
 #[derive(bevy::ecs::system::SystemParam)]
 pub struct Events<'w, 's> {
@@ -64,7 +65,7 @@ pub struct State {
     pub text_edit_contents: String,
     crs_input: String,
     selected_source: Source,
-    selected_format: Option<Format>,
+    selected_format: Option<FileFormat>,
     crs_input_outcome: Option<crate::widgets::crs_input::Outcome>,
 }
 
@@ -97,25 +98,6 @@ impl State {
 pub struct OpenedFile {
     bytes: Vec<u8>,
     file_name: String,
-}
-
-#[derive(Clone, Copy, PartialEq, Eq)]
-enum Format {
-    GeoJson,
-    Gpx,
-    Shapefile,
-    Wkt,
-}
-
-impl Format {
-    fn is_plaintext(self) -> bool {
-        match self {
-            Self::GeoJson => true,
-            Self::Gpx => true,
-            Self::Shapefile => false,
-            Self::Wkt => true,
-        }
-    }
 }
 
 impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
@@ -178,13 +160,13 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                 {
                     ui.radio_value(
                         &mut self.state.selected_format,
-                        Some(Format::GeoJson),
+                        Some(FileFormat::GeoJson),
                         "GeoJSON",
                     );
 
                     ui.radio_value(
                         &mut self.state.selected_format,
-                        Some(Format::Gpx),
+                        Some(FileFormat::Gpx),
                         "GPX",
                     );
                 }
@@ -192,7 +174,7 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                 if self.state.selected_source == Source::File {
                     ui.radio_value(
                         &mut self.state.selected_format,
-                        Some(Format::Shapefile),
+                        Some(FileFormat::Shapefile),
                         "Shapefile",
                     );
                 }
@@ -200,7 +182,7 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                 if self.state.selected_source == Source::File
                     || self.state.selected_source == Source::Text
                 {
-                    ui.radio_value(&mut self.state.selected_format, Some(Format::Wkt), "WKT");
+                    ui.radio_value(&mut self.state.selected_format, Some(FileFormat::Wkt), "WKT");
                 }
 
                 let Some(selected_format) = self.state.selected_format else {
@@ -230,7 +212,7 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                     {
                         match self.selected_file.0.take() {
                             Some(loaded_file) => match selected_format {
-                                Format::GeoJson => {
+                                FileFormat::GeoJson => {
                                     self.events.load_geo_json_file_event_writer.send(
                                         rgis_events::LoadFileEvent::FromBytes {
                                             file_name: loaded_file.file_name,
@@ -241,7 +223,7 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                                         },
                                     );
                                 }
-                                Format::Shapefile => {
+                                FileFormat::Shapefile => {
                                     self.events.load_shapefile_file_event_writer.send(
                                         rgis_events::LoadFileEvent::FromBytes {
                                             file_name: loaded_file.file_name,
@@ -254,7 +236,7 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                                         },
                                     );
                                 }
-                                Format::Wkt => {
+                                FileFormat::Wkt => {
                                     self.events.load_wkt_file_event_writer.send(
                                         rgis_events::LoadFileEvent::FromBytes {
                                             file_name: loaded_file.file_name,
@@ -267,7 +249,7 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                                         },
                                     );
                                 }
-                                Format::Gpx => {
+                                FileFormat::Gpx => {
                                     self.events.load_gpx_file_event_writer.send(
                                         rgis_events::LoadFileEvent::FromBytes {
                                             file_name: loaded_file.file_name,
@@ -312,7 +294,7 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                     {
                         let new = mem::take(&mut self.state.text_edit_contents);
                         match selected_format {
-                            Format::GeoJson => {
+                            FileFormat::GeoJson => {
                                 self.events.load_geo_json_file_event_writer.send(
                                     rgis_events::LoadFileEvent::FromBytes {
                                         file_name: "Inputted file".into(),
@@ -325,10 +307,10 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                                     },
                                 );
                             }
-                            Format::Shapefile => {
+                            FileFormat::Shapefile => {
                                 unreachable!()
                             }
-                            Format::Wkt => {
+                            FileFormat::Wkt => {
                                 self.events.load_wkt_file_event_writer.send(
                                     rgis_events::LoadFileEvent::FromBytes {
                                         file_name: "Inputted file".into(),
@@ -341,7 +323,7 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                                     },
                                 );
                             }
-                            Format::Gpx => {
+                            FileFormat::Gpx => {
                                 self.events.load_gpx_file_event_writer.send(
                                     rgis_events::LoadFileEvent::FromBytes {
                                         file_name: "Inputted file".into(),
@@ -368,12 +350,12 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
     }
 }
 
-const fn hint_text(format: Format) -> &'static str {
+const fn hint_text(format: FileFormat) -> &'static str {
     match format {
-        Format::GeoJson => "{\n  \"type\": \"FeatureCollection\",\n  \"features\": []\n}",
-        Format::Shapefile => panic!("Shapefiles are not textual"),
-        Format::Wkt => "LINESTRING (30 10, 10 30, 40 40)",
-        Format::Gpx => "", // TODO: add example GPX
+        FileFormat::GeoJson => "{\n  \"type\": \"FeatureCollection\",\n  \"features\": []\n}",
+        FileFormat::Shapefile => panic!("Shapefiles are not textual"),
+        FileFormat::Wkt => "LINESTRING (30 10, 10 30, 40 40)",
+        FileFormat::Gpx => "", // TODO: add example GPX
     }
 }
 

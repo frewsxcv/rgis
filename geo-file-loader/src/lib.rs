@@ -18,6 +18,25 @@ pub use crate::shapefile::ShapefileSource;
 pub use crate::wkt::WktSource;
 pub use crate::gpx::GpxSource;
 
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum FileFormat {
+    GeoJson,
+    Shapefile,
+    Wkt,
+    Gpx,
+}
+
+impl FileFormat {
+    pub const fn is_plaintext(self) -> bool {
+        match self {
+            Self::GeoJson => true,
+            Self::Gpx => true,
+            Self::Shapefile => false,
+            Self::Wkt => true,
+        }
+    }
+}
+
 pub trait FileLoader {
     type Error: fmt::Debug;
 
