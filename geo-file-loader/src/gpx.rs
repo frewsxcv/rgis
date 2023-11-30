@@ -22,4 +22,3 @@ impl crate::FileLoader for GpxSource {
         Ok(geo_features::FeatureCollection::from_geometry(geometry))
     }
 }
-

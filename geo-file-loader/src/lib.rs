@@ -12,9 +12,9 @@ mod shapefile;
 mod wkt;
 
 pub use crate::geojson::GeoJsonSource;
+pub use crate::gpx::GpxSource;
 pub use crate::shapefile::ShapefileSource;
 pub use crate::wkt::WktSource;
-pub use crate::gpx::GpxSource;
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum FileFormat {
@@ -23,7 +23,6 @@ pub enum FileFormat {
     Wkt,
     Gpx,
 }
-
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
