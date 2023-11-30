@@ -251,13 +251,11 @@ fn render_in_progress(
                 let progress = in_progress_job.progress;
                 ui.horizontal(|ui| {
                     if progress > 0 {
-                        // egui::ProgressBar::new(f32::from(progress) / 100.)
-                        //     .desired_width(200.)
-                        //     .animate(true)
-                        //     .text(format!("Running '{name}'"))
-                        //     .ui(ui);
-                        ui.add(egui::Spinner::new());
-                        ui.label(format!("Running '{name}' ({progress}%)"));
+                        egui::ProgressBar::new(f32::from(progress) / 100.)
+                            .desired_width(200.)
+                            .animate(true)
+                            .text(format!("Running '{name}'"))
+                            .ui(ui);
                     } else {
                         ui.add(egui::Spinner::new());
                         ui.label(format!("Running '{name}'"));
