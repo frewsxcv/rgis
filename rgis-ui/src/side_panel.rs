@@ -265,10 +265,22 @@ impl<'a, 'w> Widget for Layer<'a, 'w> {
                                     self.events,
                                     layer,
                                 ));
-                                ui.add(OperationButton::<rgis_geo_ops::Outliers>::new(self.events, layer));
-                                ui.add(OperationButton::<rgis_geo_ops::Rotate>::new(self.events, layer));
-                                ui.add(OperationButton::<rgis_geo_ops::Simplify>::new(self.events, layer));
-                                ui.add(OperationButton::<rgis_geo_ops::Smoothing>::new(self.events, layer));
+                                ui.add(OperationButton::<rgis_geo_ops::Outliers>::new(
+                                    self.events,
+                                    layer,
+                                ));
+                                ui.add(OperationButton::<rgis_geo_ops::Rotate>::new(
+                                    self.events,
+                                    layer,
+                                ));
+                                ui.add(OperationButton::<rgis_geo_ops::Simplify>::new(
+                                    self.events,
+                                    layer,
+                                ));
+                                ui.add(OperationButton::<rgis_geo_ops::Smoothing>::new(
+                                    self.events,
+                                    layer,
+                                ));
                                 ui.add(OperationButton::<rgis_geo_ops::Triangulate>::new(
                                     self.events,
                                     layer,
