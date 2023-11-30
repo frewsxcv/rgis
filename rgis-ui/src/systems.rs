@@ -247,22 +247,35 @@ fn render_in_progress(
         .resizable(false)
         .show(egui_ctx.get_mut(), |ui| {
             for in_progress_job in in_progress_job_iter {
-                let name = &in_progress_job.name;
-                let progress = in_progress_job.progress;
-                ui.horizontal(|ui| {
-                    if progress > 0 {
-                        egui::ProgressBar::new(f32::from(progress) / 100.)
-                            .desired_width(200.)
-                            .animate(true)
-                            .text(format!("Running '{name}'"))
-                            .ui(ui);
-                    } else {
-                        ui.add(egui::Spinner::new());
-                        ui.label(format!("Running '{name}'"));
-                    }
-                });
+                ui.add(InProgressJobWidget { in_progress_job });
             }
         });
+}
+
+struct InProgressJobWidget<'a> {
+    in_progress_job: &'a bevy_jobs::InProgressJob,
+}
+
+impl<'a> Widget for InProgressJobWidget<'a> {
+    fn ui(self, ui: &mut egui::Ui) -> egui::Response {
+        let Self { in_progress_job } = self;
+
+        let name = &in_progress_job.name;
+        let progress = in_progress_job.progress;
+
+        ui.horizontal(|ui| {
+            ui.add(egui::Spinner::new());
+            if progress > 0 {
+                egui::ProgressBar::new(f32::from(progress) / 100.)
+                    .desired_width(200.)
+                    .text(format!("Running '{name}'"))
+                    .ui(ui);
+            } else {
+                ui.label(format!("Running '{name}'"));
+            }
+        })
+        .response
+    }
 }
 
 fn render_top_panel(
