@@ -9,9 +9,6 @@
 use futures_util::StreamExt;
 use std::{io, sync};
 
-#[cfg(not(target_arch = "wasm32"))]
-static TOKIO_RUNTIME: sync::OnceLock<tokio::runtime::Runtime> = sync::OnceLock::new();
-
 pub struct FetchedFile {
     pub name: String,
     pub bytes: bytes::Bytes,
@@ -29,6 +26,8 @@ pub enum Error {
     #[error("{0}")]
     Io(#[from] io::Error),
     #[error("{0}")]
+    IoRef(#[from] &'static io::Error),
+    #[error("{0}")]
     Reqwest(#[from] reqwest::Error),
 }
 
@@ -44,7 +43,7 @@ impl bevy_jobs::Job for NetworkFetchJob {
             await_future(async move {
                 build_request_future(self.url, self.crs_epsg_code, self.name, ctx).await
             })
-            .await
+            .await?
         })
     }
 }
@@ -88,20 +87,22 @@ async fn build_request_future(
 
 async fn await_future<Output>(
     future: impl std::future::Future<Output = Output> + 'static,
-) -> Output {
+) -> Result<Output, &'static io::Error> {
     #[cfg(not(target_arch = "wasm32"))]
     {
+        static TOKIO_RUNTIME: sync::OnceLock<io::Result<tokio::runtime::Runtime>> =
+            sync::OnceLock::new();
         TOKIO_RUNTIME
             .get_or_init(|| {
                 tokio::runtime::Builder::new_multi_thread()
                     .enable_all()
                     .build()
-                    .unwrap()
             })
-            .block_on(future)
+            .as_ref()
+            .map(|runtime| runtime.block_on(future))
     }
     #[cfg(target_arch = "wasm32")]
     {
-        future.await
+        Ok(future.await)
     }
 }
