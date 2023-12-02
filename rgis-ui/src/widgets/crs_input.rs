@@ -31,7 +31,10 @@ impl<'a> egui::Widget for CrsInput<'a> {
             match &outcome {
                 Ok((ctx, op_handle)) => {
                     ui.vertical(|ui| {
-                        for step in ctx.steps(*op_handle).unwrap() {
+                        let Ok(steps) = ctx.steps(*op_handle) else {
+                            return;
+                        };
+                        for step in steps {
                             ui.label(egui::RichText::new(step).code());
                         }
                     });
