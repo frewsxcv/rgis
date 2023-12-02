@@ -242,57 +242,72 @@ impl<'a, 'w> Widget for Layer<'a, 'w> {
                         .id_source(format!("{:?}-operations", layer.id)) // Instead of using the layer name as the ID (which is not unique), use the layer ID
                         .show(ui, |ui| {
                             ui.with_layout(Layout::top_down_justified(Align::LEFT), |ui| {
-                                if ui.button("Bounding rect").clicked() {
-                                    if let Ok(bounding_rect) =
-                                        layer.unprojected_feature_collection.bounding_rect()
-                                    {
-                                        let feature_collection = geo_projected::Unprojected::<
-                                            geo_features::FeatureCollection,
-                                        >::from_geometry(
-                                            bounding_rect.0.into()
-                                        );
-                                        self.events.create_layer_event_writer.send(
-                                            rgis_events::CreateLayerEvent {
-                                                feature_collection,           // todo
-                                                name: "Bounding rect".into(), // todo
-                                                source_crs_epsg_code: layer.crs_epsg_code,
-                                            },
-                                        );
-                                    }
-                                }
-
-                                ui.add(OperationButton::<rgis_geo_ops::ConvexHull>::new(
-                                    self.events,
+                                ui.add(OperationsWidget {
                                     layer,
-                                ));
-                                ui.add(OperationButton::<rgis_geo_ops::Outliers>::new(
-                                    self.events,
-                                    layer,
-                                ));
-                                ui.add(OperationButton::<rgis_geo_ops::Rotate>::new(
-                                    self.events,
-                                    layer,
-                                ));
-                                ui.add(OperationButton::<rgis_geo_ops::Simplify>::new(
-                                    self.events,
-                                    layer,
-                                ));
-                                ui.add(OperationButton::<rgis_geo_ops::Smoothing>::new(
-                                    self.events,
-                                    layer,
-                                ));
-                                ui.add(OperationButton::<rgis_geo_ops::Triangulate>::new(
-                                    self.events,
-                                    layer,
-                                ));
-                                ui.add(OperationButton::<rgis_geo_ops::UnsignedArea>::new(
-                                    self.events,
-                                    layer,
-                                ));
+                                    events: self.events,
+                                });
                             });
                         });
                 });
             })
             .header_response
+    }
+}
+
+struct OperationsWidget<'a, 'w> {
+    layer: &'a rgis_layers::Layer,
+    events: &'a mut Events<'w>,
+}
+
+impl<'a, 'w> egui::Widget for OperationsWidget<'a, 'w> {
+    fn ui(self, ui: &mut egui::Ui) -> egui::Response {
+        ui.with_layout(Layout::top_down_justified(Align::LEFT), |ui| {
+            if ui.button("Bounding rect").clicked() {
+                if let Ok(bounding_rect) = self.layer.unprojected_feature_collection.bounding_rect() {
+                    let feature_collection = geo_projected::Unprojected::<
+                        geo_features::FeatureCollection,
+                    >::from_geometry(
+                        bounding_rect.0.into()
+                    );
+                    self.events
+                        .create_layer_event_writer
+                        .send(rgis_events::CreateLayerEvent {
+                            feature_collection,           // todo
+                            name: "Bounding rect".into(), // todo
+                            source_crs_epsg_code: self.layer.crs_epsg_code,
+                        });
+                }
+            }
+
+            ui.add(OperationButton::<rgis_geo_ops::ConvexHull>::new(
+                self.events,
+                self.layer,
+            ));
+            ui.add(OperationButton::<rgis_geo_ops::Outliers>::new(
+                self.events,
+                self.layer,
+            ));
+            ui.add(OperationButton::<rgis_geo_ops::Rotate>::new(
+                self.events,
+                self.layer,
+            ));
+            ui.add(OperationButton::<rgis_geo_ops::Simplify>::new(
+                self.events,
+                self.layer,
+            ));
+            ui.add(OperationButton::<rgis_geo_ops::Smoothing>::new(
+                self.events,
+                self.layer,
+            ));
+            ui.add(OperationButton::<rgis_geo_ops::Triangulate>::new(
+                self.events,
+                self.layer,
+            ));
+            ui.add(OperationButton::<rgis_geo_ops::UnsignedArea>::new(
+                self.events,
+                self.layer,
+            ));
+        })
+        .response
     }
 }
