@@ -263,7 +263,8 @@ impl<'a, 'w> egui::Widget for OperationsWidget<'a, 'w> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         ui.with_layout(Layout::top_down_justified(Align::LEFT), |ui| {
             if ui.button("Bounding rect").clicked() {
-                if let Ok(bounding_rect) = self.layer.unprojected_feature_collection.bounding_rect() {
+                if let Ok(bounding_rect) = self.layer.unprojected_feature_collection.bounding_rect()
+                {
                     let feature_collection = geo_projected::Unprojected::<
                         geo_features::FeatureCollection,
                     >::from_geometry(
