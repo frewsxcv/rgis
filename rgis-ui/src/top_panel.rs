@@ -33,7 +33,10 @@ impl<'a, 'w, 's> TopPanel<'a, 'w, 's> {
                             self.is_debug_window_open.0 = true;
                         }
                         if ui.button("Source code").clicked() {
-                            let _ = webbrowser::open("https://github.com/frewsxcv/rgis");
+                            ui.ctx().open_url(egui::OpenUrl {
+                                url: String::from("https://github.com/frewsxcv/rgis"),
+                                new_tab: true
+                            });
                         }
                     });
 

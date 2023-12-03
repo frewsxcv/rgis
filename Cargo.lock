@@ -4140,7 +4140,6 @@ dependencies = [
  "rgis-units",
  "thiserror",
  "transform",
- "webbrowser",
 ]
 
 [[package]]
