@@ -189,8 +189,6 @@ impl Layers {
     }
 }
 
-pub type Metadata = serde_json::Map<String, serde_json::Value>;
-
 #[derive(Clone, Debug)]
 pub struct LayerColor {
     pub fill: Option<Color>,
