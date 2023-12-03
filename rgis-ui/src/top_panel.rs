@@ -35,7 +35,7 @@ impl<'a, 'w, 's> TopPanel<'a, 'w, 's> {
                         if ui.button("Source code").clicked() {
                             ui.ctx().open_url(egui::OpenUrl {
                                 url: String::from("https://github.com/frewsxcv/rgis"),
-                                new_tab: true
+                                new_tab: true,
                             });
                         }
                     });
