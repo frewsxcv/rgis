@@ -28,4 +28,4 @@ resolver = "2"
 debug = true
 
 [patch.crates-io]
-bevy_egui = { git = 'https://github.com/naomijub/bevy_egui.git' }
+bevy_egui = { git = 'https://github.com/frewsxcv/bevy_egui.git', branch = 'patch-1' }
