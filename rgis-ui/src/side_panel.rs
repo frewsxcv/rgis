@@ -220,13 +220,10 @@ impl<'a, 'w> Widget for Layer<'a, 'w> {
                         }
                     });
 
-                    if layer.visible {
-                        if ui.button("👁 Hide").clicked() {
-                            self.toggle_layer_visibility(layer);
-                        }
-                    } else if ui.button("👁 Show").clicked() {
-                        self.toggle_layer_visibility(layer);
-                    }
+                    ui.add(ToggleLayerWidget {
+                        layer,
+                        events: self.events,
+                    });
 
                     if ui.button("🔎 Zoom to extent").clicked() {
                         self.events
@@ -251,6 +248,29 @@ impl<'a, 'w> Widget for Layer<'a, 'w> {
                 });
             })
             .header_response
+    }
+}
+
+struct ToggleLayerWidget<'a, 'w> {
+    layer: &'a rgis_layers::Layer,
+    events: &'a mut Events<'w>,
+}
+
+impl<'a, 'w> egui::Widget for ToggleLayerWidget<'a, 'w> {
+    fn ui(self, ui: &mut egui::Ui) -> egui::Response {
+        let button = if self.layer.visible {
+            ui.button("👁 Hide")
+        } else {
+            ui.button("👁 Show")
+        };
+
+        if button.clicked() {
+            self.events
+                .toggle_layer_visibility_event_writer
+                .send(rgis_events::ToggleLayerVisibilityEvent(self.layer.id));
+        }
+
+        button
     }
 }
 
