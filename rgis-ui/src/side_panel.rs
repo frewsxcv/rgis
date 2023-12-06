@@ -194,30 +194,11 @@ impl<'a, 'w> Widget for Layer<'a, 'w> {
                             .send(rgis_events::ShowManageLayerWindowEvent(layer.id));
                     }
 
-                    ui.horizontal(|ui| {
-                        if ui
-                            .add_enabled(is_move_up_enabled, egui::Button::new("⬆ Move up"))
-                            .clicked()
-                        {
-                            self.events
-                                .move_layer_event_writer
-                                .send(rgis_events::MoveLayerEvent(
-                                    layer.id,
-                                    rgis_events::MoveDirection::Up,
-                                ));
-                        }
-
-                        if ui
-                            .add_enabled(is_move_down_enabled, egui::Button::new("⬇ Move down"))
-                            .clicked()
-                        {
-                            self.events
-                                .move_layer_event_writer
-                                .send(rgis_events::MoveLayerEvent(
-                                    layer.id,
-                                    rgis_events::MoveDirection::Down,
-                                ));
-                        }
+                    ui.add(MoveUpMoveDownWidget {
+                        layer,
+                        is_move_up_enabled,
+                        is_move_down_enabled,
+                        events: self.events,
                     });
 
                     ui.add(ToggleLayerWidget {
@@ -248,6 +229,44 @@ impl<'a, 'w> Widget for Layer<'a, 'w> {
                 });
             })
             .header_response
+    }
+}
+
+struct MoveUpMoveDownWidget<'a, 'w> {
+    layer: &'a rgis_layers::Layer,
+    is_move_up_enabled: bool,
+    is_move_down_enabled: bool,
+    events: &'a mut Events<'w>,
+}
+
+impl<'a, 'w> egui::Widget for MoveUpMoveDownWidget<'a, 'w> {
+    fn ui(self, ui: &mut egui::Ui) -> egui::Response {
+        ui.horizontal(|ui| {
+            if ui
+                .add_enabled(self.is_move_up_enabled, egui::Button::new("⬆ Move up"))
+                .clicked()
+            {
+                self.events
+                    .move_layer_event_writer
+                    .send(rgis_events::MoveLayerEvent(
+                        self.layer.id,
+                        rgis_events::MoveDirection::Up,
+                    ));
+            }
+
+            if ui
+                .add_enabled(self.is_move_down_enabled, egui::Button::new("⬇ Move down"))
+                .clicked()
+            {
+                self.events
+                    .move_layer_event_writer
+                    .send(rgis_events::MoveLayerEvent(
+                        self.layer.id,
+                        rgis_events::MoveDirection::Down,
+                    ));
+            }
+        })
+        .response
     }
 }
 
