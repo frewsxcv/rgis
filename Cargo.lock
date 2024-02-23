@@ -2309,7 +2309,7 @@ dependencies = [
  "bytes",
  "geo",
  "geo-features",
- "geozero 0.11.0",
+ "geozero",
  "geozero-shp",
  "thiserror",
  "time-logger",
@@ -2385,9 +2385,9 @@ dependencies = [
 
 [[package]]
 name = "geozero"
-version = "0.11.0"
+version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4b1b9a1eeae9ad09e12ec50243956105184b26440f81f978cd3aae009b214d4d"
+checksum = "61d25cc15c7e5b86cd8dadea56bb78c46f346d4fb09022e7cbba0839c890d0a1"
 dependencies = [
  "geo-types",
  "geojson",
@@ -2399,24 +2399,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "geozero"
-version = "0.12.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "61d25cc15c7e5b86cd8dadea56bb78c46f346d4fb09022e7cbba0839c890d0a1"
-dependencies = [
- "log",
- "serde_json",
- "thiserror",
-]
-
-[[package]]
 name = "geozero-shp"
 version = "0.4.0"
 source = "git+https://github.com/georust/geozero.git#52a4d2d3c11f02e734274fcb6ee4b88b94b5b53d"
 dependencies = [
  "byteorder",
  "dbase",
- "geozero 0.12.0",
+ "geozero",
  "thiserror",
 ]
 

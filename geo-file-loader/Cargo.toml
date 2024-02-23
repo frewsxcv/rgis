@@ -9,6 +9,6 @@ bytes = "1"
 time-logger = { path = "../time-logger" }
 geo = "0.27"
 geo-features = { path = "../geo-features" }
-geozero = { version = "0.11", features = ["with-wkt", "with-gpx"] }
+geozero = { version = "0.12", features = ["with-wkt", "with-gpx"] }
 geozero-shp = { git = "https://github.com/georust/geozero.git" }
 thiserror = "1"
