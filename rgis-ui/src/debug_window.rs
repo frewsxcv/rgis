@@ -41,17 +41,17 @@ impl<'w, 's> egui::Widget for DebugWindow<'w, 's> {
         {
             let fps = self
                 .diagnostics
-                .get(FrameTimeDiagnosticsPlugin::FPS)
+                .get(&FrameTimeDiagnosticsPlugin::FPS)
                 .and_then(|d| d.measurement())
                 .map(|m| m.value);
             let frame_time = self
                 .diagnostics
-                .get(FrameTimeDiagnosticsPlugin::FRAME_TIME)
+                .get(&FrameTimeDiagnosticsPlugin::FRAME_TIME)
                 .and_then(|d| d.measurement())
                 .map(|m| m.value);
             let frame_count = self
                 .diagnostics
-                .get(FrameTimeDiagnosticsPlugin::FRAME_COUNT)
+                .get(&FrameTimeDiagnosticsPlugin::FRAME_COUNT)
                 .and_then(|d| d.measurement())
                 .map(|m| m.value);
 

@@ -26,6 +26,3 @@ resolver = "2"
 
 [profile.release]
 debug = true
-
-[patch.crates-io]
-bevy_egui = { git = 'https://github.com/frewsxcv/bevy_egui.git', branch = 'patch-1' }

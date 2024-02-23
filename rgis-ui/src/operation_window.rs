@@ -30,9 +30,10 @@ impl<'w> OperationWindow<'w> {
                                 source_crs_epsg_code: 4326, // FIXME
                             });
                     }
-                    Ok(rgis_geo_ops::Outcome::Text(text)) => self
-                        .render_message_event_writer
-                        .send(rgis_events::RenderMessageEvent(text)),
+                    Ok(rgis_geo_ops::Outcome::Text(text)) => {
+                        self.render_message_event_writer
+                            .send(rgis_events::RenderMessageEvent(text));
+                    }
                     Err(e) => {
                         bevy::log::error!("Encountered an error during the operation: {}", e);
                     }

@@ -98,7 +98,7 @@ impl<'a, 'w, Op: rgis_geo_ops::OperationEntry> egui::Widget for OperationButton<
                             operation,
                             feature_collection: self.layer.unprojected_feature_collection.clone(), // TODO: clone?
                         },
-                    )
+                    );
                 }
                 rgis_geo_ops::Action::Perform => {
                     // TODO: perform in background job
@@ -115,10 +115,11 @@ impl<'a, 'w, Op: rgis_geo_ops::OperationEntry> egui::Widget for OperationButton<
                                 },
                             );
                         }
-                        Ok(rgis_geo_ops::Outcome::Text(text)) => self
-                            .events
-                            .render_message_event_writer
-                            .send(rgis_events::RenderMessageEvent(text)),
+                        Ok(rgis_geo_ops::Outcome::Text(text)) => {
+                            self.events
+                                .render_message_event_writer
+                                .send(rgis_events::RenderMessageEvent(text));
+                        }
                         Err(e) => {
                             bevy::log::error!("Encountered an error during the operation: {}", e);
                         }
@@ -209,7 +210,7 @@ impl<'a, 'w> Widget for Layer<'a, 'w> {
                     if ui.button("🔎 Zoom to extent").clicked() {
                         self.events
                             .center_layer_event_writer
-                            .send(rgis_events::CenterCameraEvent(layer.id))
+                            .send(rgis_events::CenterCameraEvent(layer.id));
                     }
 
                     if ui.button("❌ Remove").clicked() {

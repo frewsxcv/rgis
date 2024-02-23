@@ -169,8 +169,8 @@ fn spawn_helper<'w, 's, 'a>(
     assets_meshes: &'a mut Assets<Mesh>,
     layer: &rgis_layers::Layer,
     entity_type: RenderEntityType,
-) -> bevy::ecs::system::EntityCommands<'w, 's, 'a> {
-    let material = materials.add(color.into());
+) -> bevy::ecs::system::EntityCommands<'a> {
+    let material = materials.add(color);
     let z_index = ZIndex::calculate(layer_index, entity_type);
     let mut entity_commands = spawn_material_mesh_2d_bundle(
         mesh,
@@ -190,7 +190,7 @@ fn spawn_sprite_bundle<'w, 's, 'a>(
     transform: Transform,
     commands: &'a mut Commands<'w, 's>,
     color: Color,
-) -> bevy::ecs::system::EntityCommands<'w, 's, 'a> {
+) -> bevy::ecs::system::EntityCommands<'a> {
     let bundle = SpriteBundle {
         sprite: Sprite {
             color,
@@ -210,7 +210,7 @@ fn spawn_material_mesh_2d_bundle<'w, 's, 'a>(
     assets_meshes: &'a mut Assets<Mesh>,
     commands: &'a mut Commands<'w, 's>,
     is_visible: bool,
-) -> bevy::ecs::system::EntityCommands<'w, 's, 'a> {
+) -> bevy::ecs::system::EntityCommands<'a> {
     let mmb = bevy::sprite::MaterialMesh2dBundle {
         material,
         mesh: bevy::sprite::Mesh2dHandle(assets_meshes.add(mesh)),

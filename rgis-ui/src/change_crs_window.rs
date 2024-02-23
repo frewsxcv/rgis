@@ -35,7 +35,7 @@ impl<'a, 'w> ChangeCrsWindow<'a, 'w> {
                         .send(rgis_events::ChangeCrsEvent {
                             old_crs_epsg_code: self.rgis_settings.target_crs_epsg_code,
                             new_crs_epsg_code: value,
-                        })
+                        });
                 }
             });
     }

@@ -116,7 +116,7 @@ fn handle_map_clicked_events(
                 feature.properties().clone(),
             ));
             feature_clicked_event_writer
-                .send(rgis_events::FeatureSelectedEvent(layer_id, feature.id()))
+                .send(rgis_events::FeatureSelectedEvent(layer_id, feature.id()));
         }
     }
 }
@@ -132,7 +132,7 @@ fn handle_create_layer_events(
             event.name,
             event.source_crs_epsg_code,
         );
-        layer_created_event_writer.send(rgis_events::LayerCreatedEvent(layer_id))
+        layer_created_event_writer.send(rgis_events::LayerCreatedEvent(layer_id));
     }
 }
 

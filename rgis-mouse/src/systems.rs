@@ -33,7 +33,7 @@ fn cursor_moved_system(
 // FIXME: Cursor icon setting isn't working
 fn mouse_motion_system(
     mut mouse_motion_event_reader: bevy::ecs::event::EventReader<bevy::input::mouse::MouseMotion>,
-    mouse_button: Res<bevy::input::Input<bevy::input::mouse::MouseButton>>,
+    mouse_button: Res<bevy::input::ButtonInput<bevy::input::mouse::MouseButton>>,
     mut pan_camera_events: bevy::ecs::event::EventWriter<rgis_events::PanCameraEvent>,
     mut windows: Query<&mut Window, With<PrimaryWindow>>,
     mut bevy_egui_ctx: bevy_egui::EguiContexts,
@@ -116,14 +116,14 @@ fn clear_cursor_icon(last_cursor_icon: &mut Option<bevy::window::CursorIcon>) {
 
 fn mouse_click_system(
     mut map_clicked_event_writer: bevy::ecs::event::EventWriter<rgis_events::MapClickedEvent>,
-    mouse_button: Res<bevy::input::Input<bevy::input::mouse::MouseButton>>,
+    mouse_button: Res<bevy::input::ButtonInput<bevy::input::mouse::MouseButton>>,
     rgis_settings: Res<rgis_settings::RgisSettings>,
     mouse_position: Res<crate::MousePos>,
 ) {
     if rgis_settings.current_tool == rgis_settings::Tool::Query
         && mouse_button.just_pressed(bevy::input::mouse::MouseButton::Left)
     {
-        map_clicked_event_writer.send(rgis_events::MapClickedEvent(mouse_position.0))
+        map_clicked_event_writer.send(rgis_events::MapClickedEvent(mouse_position.0));
     }
 }
 

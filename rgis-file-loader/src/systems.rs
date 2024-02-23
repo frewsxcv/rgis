@@ -1,4 +1,3 @@
-use bevy::ecs::event::Events;
 use bevy::prelude::*;
 
 fn handle_network_fetch_finished_jobs(
@@ -7,12 +6,14 @@ fn handle_network_fetch_finished_jobs(
 ) {
     while let Some(outcome) = finished_jobs.take_next::<rgis_network::NetworkFetchJob>() {
         match outcome {
-            Ok(fetched) => load_event_reader.send(rgis_events::LoadFileEvent::FromBytes {
-                file_format: geo_file_loader::FileFormat::GeoJson,
-                bytes: fetched.bytes,
-                file_name: fetched.name,
-                crs_epsg_code: fetched.crs_epsg_code,
-            }),
+            Ok(fetched) => {
+                load_event_reader.send(rgis_events::LoadFileEvent::FromBytes {
+                    file_format: geo_file_loader::FileFormat::GeoJson,
+                    bytes: fetched.bytes,
+                    file_name: fetched.name,
+                    crs_epsg_code: fetched.crs_epsg_code,
+                });
+            }
             Err(e) => {
                 bevy::log::error!("Could not fetch file: {:?}", e);
             }
@@ -56,11 +57,13 @@ fn handle_load_file_job_finished_events(
 ) {
     while let Some(outcome) = finished_jobs.take_next::<crate::jobs::LoadFileJob>() {
         match outcome {
-            Ok(outcome) => create_layer_event_writer.send(rgis_events::CreateLayerEvent {
-                name: outcome.name,
-                feature_collection: outcome.feature_collection,
-                source_crs_epsg_code: outcome.source_crs_epsg_code,
-            }),
+            Ok(outcome) => {
+                create_layer_event_writer.send(rgis_events::CreateLayerEvent {
+                    name: outcome.name,
+                    feature_collection: outcome.feature_collection,
+                    source_crs_epsg_code: outcome.source_crs_epsg_code,
+                });
+            }
             Err(e) => {
                 bevy::log::error!("Encountered error when loading file: {:?}", e);
             }
