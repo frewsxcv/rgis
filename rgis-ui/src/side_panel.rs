@@ -157,12 +157,6 @@ struct Layer<'a, 'w> {
 }
 
 impl<'a, 'w> Layer<'a, 'w> {
-    fn toggle_layer_visibility(&mut self, layer: &rgis_layers::Layer) {
-        self.events
-            .toggle_layer_visibility_event_writer
-            .send(rgis_events::ToggleLayerVisibilityEvent(layer.id));
-    }
-
     fn delete_layer(&mut self, layer: &rgis_layers::Layer) {
         self.events
             .delete_layer_event_writer
