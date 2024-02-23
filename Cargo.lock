@@ -805,14 +805,14 @@ dependencies = [
 [[package]]
 name = "bevy_jobs"
 version = "0.1.0"
-source = "git+https://github.com/frewsxcv/bevy_jobs#08811c8f88e7ac0d55cb85a1d5acb83b9833fcfb"
+source = "git+https://github.com/frewsxcv/bevy_jobs#c8f3a016be43c3fd5ae8f7c1817079970e71cbef"
 dependencies = [
  "async-channel 1.9.0",
  "bevy_app",
  "bevy_ecs",
  "bevy_log",
  "bevy_tasks",
- "instant",
+ "web-time 1.0.0",
 ]
 
 [[package]]
