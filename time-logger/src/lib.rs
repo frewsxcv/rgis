@@ -8,7 +8,7 @@
 
 pub struct TimeLogger {
     title: String,
-    duration: instant::Instant,
+    duration: web_time::Instant,
 }
 
 impl TimeLogger {
@@ -19,7 +19,7 @@ impl TimeLogger {
 
         TimeLogger {
             title,
-            duration: instant::Instant::now(),
+            duration: web_time::Instant::now(),
         }
     }
 

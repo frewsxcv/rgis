@@ -7,4 +7,4 @@ publish = false
 
 [dependencies]
 bevy_log = "0.13"
-instant = "0.1"
+web-time = "1"
