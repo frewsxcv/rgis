@@ -13,7 +13,7 @@ static DEFAULT_MSAA: &str = "4";
 
 type MsaaSampleCount = u32;
 
-#[derive(Clone, Resource)]
+#[derive(Copy, Clone, Resource)]
 pub struct Values {
     pub msaa_sample_count: MsaaSampleCount,
 }
@@ -39,10 +39,11 @@ pub fn run() -> Result<Values, String> {
     })
 }
 
+#[derive(Copy, Clone, Resource)]
 pub struct Plugin(pub Values);
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut bevy::app::App) {
-        app.insert_resource(self.0.clone());
+        app.insert_resource(self.0);
     }
 }
