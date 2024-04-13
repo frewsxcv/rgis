@@ -337,9 +337,6 @@ enum RenderSystemSet {
     Windows,
 }
 
-#[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
-struct RenderingUi;
-
 pub fn configure(app: &mut App) {
     app.add_systems(Startup, set_egui_theme);
 
