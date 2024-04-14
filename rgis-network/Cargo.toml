@@ -17,7 +17,7 @@ bevy = { version = "0.13", default-features = false, features = [
 bytes = "1"
 futures-util = "0.3"
 
-reqwest = { version = "0.11", features = ["stream"] }
+reqwest = { version = "0.12", features = ["stream"] }
 
 bevy_jobs = { git = "https://github.com/frewsxcv/bevy_jobs" }
 thiserror = "1"
