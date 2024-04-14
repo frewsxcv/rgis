@@ -21,4 +21,4 @@ geo-geom-type = { path = "../geo-geom-type" }
 geo-projected = { path = "../geo-projected" }
 rgis-events = { path = "../rgis-events" }
 rgis-layer-id = { path = "../rgis-layer-id" }
-geo = "0.27"
+geo = "0.28"

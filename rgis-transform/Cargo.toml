@@ -17,7 +17,7 @@ bevy = { version = "0.13", default-features = false, features = [
 ] }
 geo-features = { path = "../geo-features" }
 geo-projected = { path = "../geo-projected" }
-geo = "0.27"
+geo = "0.28"
 rgis-events = { path = "../rgis-events" }
 rgis-layer-id = { path = "../rgis-layer-id" }
 rgis-layers = { path = "../rgis-layers" }
