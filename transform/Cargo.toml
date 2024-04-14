@@ -5,7 +5,7 @@ edition = "2021"
 publish = false
 
 [dependencies]
-geodesy = { version = "0.12", default-features = false }
+geodesy = { version = "0.13", default-features = false }
 crs-definitions = "0.3"
 geo = "0.28"
 thiserror = "1"
