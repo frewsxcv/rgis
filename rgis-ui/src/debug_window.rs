@@ -1,5 +1,6 @@
 use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, ecs::system::SystemParam, prelude::*};
 use bevy_egui::egui;
+use egui_plot::{Line, Plot, PlotPoints};
 use std::collections;
 
 #[derive(Default)]
@@ -39,38 +40,55 @@ impl<'w, 's> egui::Widget for DebugWindow<'w, 's> {
     fn ui(mut self, ui: &mut egui::Ui) -> egui::Response {
         if self.state.history.is_empty() || self.state.timer.tick(self.time.delta()).just_finished()
         {
-            let fps = self
-                .diagnostics
-                .get(&FrameTimeDiagnosticsPlugin::FPS)
-                .and_then(|d| d.measurement())
-                .map(|m| m.value);
-            let frame_time = self
-                .diagnostics
-                .get(&FrameTimeDiagnosticsPlugin::FRAME_TIME)
-                .and_then(|d| d.measurement())
-                .map(|m| m.value);
-            let frame_count = self
-                .diagnostics
-                .get(&FrameTimeDiagnosticsPlugin::FRAME_COUNT)
-                .and_then(|d| d.measurement())
-                .map(|m| m.value);
-
-            if let Some(fps) = fps {
-                self.state.history.push_back(fps);
-                self.last.fps = fps;
-            }
-            if let Some(frame_time) = frame_time {
-                self.last.frame_time = frame_time;
-            }
-            if let Some(frame_count) = frame_count {
-                self.last.frame_count = frame_count;
-            }
-
-            if self.state.history.len() >= DEBUG_STATS_HISTORY_LEN {
-                let _ = self.state.history.pop_front();
-            }
+            self.update_stats();
         }
 
+        self.render_debug_table(ui);
+        self.render_fps_plot(ui)
+    }
+}
+
+impl<'w, 's> DebugWindow<'w, 's> {
+    fn update_stats(&mut self) {
+        let fps = self
+            .diagnostics
+            .get(&FrameTimeDiagnosticsPlugin::FPS)
+            .and_then(|d| d.measurement())
+            .map(|m| m.value);
+        let frame_time = self
+            .diagnostics
+            .get(&FrameTimeDiagnosticsPlugin::FRAME_TIME)
+            .and_then(|d| d.measurement())
+            .map(|m| m.value);
+        let frame_count = self
+            .diagnostics
+            .get(&FrameTimeDiagnosticsPlugin::FRAME_COUNT)
+            .and_then(|d| d.measurement())
+            .map(|m| m.value);
+
+        if let Some(fps) = fps {
+            self.state.history.push_back(fps);
+            self.last.fps = fps;
+        }
+        if let Some(frame_time) = frame_time {
+            self.last.frame_time = frame_time;
+        }
+        if let Some(frame_count) = frame_count {
+            self.last.frame_count = frame_count;
+        }
+
+        if self.state.history.len() >= DEBUG_STATS_HISTORY_LEN {
+            let _ = self.state.history.pop_front();
+        }
+    }
+
+    fn render_debug_table(&self, ui: &mut egui::Ui) {
+        ui.vertical(|ui| {
+            ui.add(DebugTable { last: &self.last });
+        });
+    }
+
+    fn render_fps_plot(&self, ui: &mut egui::Ui) -> egui::Response {
         let sin = self
             .state
             .history
@@ -80,9 +98,6 @@ impl<'w, 's> egui::Widget for DebugWindow<'w, 's> {
             .collect::<Vec<_>>();
 
         ui.vertical(|ui| {
-            ui.add(DebugTable { last: &self.last });
-
-            use egui_plot::{Line, Plot, PlotPoints};
             let line = Line::new(PlotPoints::Owned(sin));
             Plot::new("fps_plot")
                 .allow_drag(false)
@@ -99,8 +114,7 @@ impl<'w, 's> egui::Widget for DebugWindow<'w, 's> {
                 .include_y(FPS_MAX)
                 .view_aspect(2.) // Width is twice as big as height
                 .show(ui, |plot_ui| plot_ui.line(line));
-        })
-        .response
+        }).response
     }
 }
 
