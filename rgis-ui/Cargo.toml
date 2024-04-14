@@ -15,7 +15,7 @@ bevy = { version = "0.13", default-features = false, features = [
     "wayland",
     "png",
 ] }
-bevy_egui = "0.25"
+bevy_egui = "0.26"
 egui_plot = "0.26"
 geo-features = { path = "../geo-features" }
 geo-file-loader = { path = "../geo-file-loader" }
