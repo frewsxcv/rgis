@@ -13,6 +13,7 @@ pub struct LoadFileJobOutcome {
 
 impl bevy_jobs::Job for LoadFileJob {
     type Outcome = Result<LoadFileJobOutcome, geo_file_loader::Error>;
+    const JOB_TYPE: bevy_jobs::JobType = bevy_jobs::JobType::Io;
 
     fn name(&self) -> String {
         format!("Loading {} file", self.file_format.display_name())

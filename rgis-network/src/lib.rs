@@ -33,6 +33,7 @@ pub enum Error {
 
 impl bevy_jobs::Job for NetworkFetchJob {
     type Outcome = Result<FetchedFile, Error>;
+    const JOB_TYPE: bevy_jobs::JobType = bevy_jobs::JobType::Io;
 
     fn name(&self) -> String {
         format!("Fetching '{}'", self.name)

@@ -17,6 +17,7 @@ pub struct OpenFileJob;
 
 impl bevy_jobs::Job for OpenFileJob {
     type Outcome = Option<OpenedFile>;
+    const JOB_TYPE: bevy_jobs::JobType = bevy_jobs::JobType::Io;
 
     fn name(&self) -> String {
         "Opening file".into()
