@@ -114,7 +114,8 @@ impl<'w, 's> DebugWindow<'w, 's> {
                 .include_y(FPS_MAX)
                 .view_aspect(2.) // Width is twice as big as height
                 .show(ui, |plot_ui| plot_ui.line(line));
-        }).response
+        })
+        .response
     }
 }
 
