@@ -33,7 +33,7 @@ impl bevy::app::Plugin for Plugin {
     }
 }
 
-const SELECTED_COLOR: Color = Color::PINK;
+const SELECTED_COLOR: Color = Color::srgb(255., 192., 203.); // pink
 
 fn spawn_geometry_meshes(
     geometry_mesh: geo_bevy::GeometryMesh,
@@ -162,7 +162,7 @@ fn spawn_geometry_meshes(
 
 fn spawn_helper<'w, 's, 'a>(
     materials: &'a mut Assets<ColorMaterial>,
-    color: bevy::render::color::Color,
+    color: bevy::color::Color,
     layer_index: rgis_layers::LayerIndex,
     mesh: Mesh,
     commands: &'a mut Commands<'w, 's>,

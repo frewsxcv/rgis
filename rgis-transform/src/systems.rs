@@ -16,7 +16,7 @@ fn handle_layer_created_events(
             layer_id: event.0,
             source_epsg_code: layer.crs_epsg_code,
             target_epsg_code: rgis_settings.target_crs_epsg_code,
-        })
+        });
     }
 }
 
@@ -67,7 +67,7 @@ fn handle_crs_changed_events(
                 layer_id: layer.id,
                 source_epsg_code: layer.crs_epsg_code,
                 target_epsg_code: rgis_settings.target_crs_epsg_code,
-            })
+            });
         }
     }
 }

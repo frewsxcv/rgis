@@ -242,7 +242,7 @@ impl Layer {
 }
 
 fn colorous_color_to_bevy_color(colorous_color: colorous::Color) -> Color {
-    Color::rgb_u8(colorous_color.r, colorous_color.g, colorous_color.b)
+    Color::srgb_u8(colorous_color.r, colorous_color.g, colorous_color.b)
 }
 
 const COLORS: [colorous::Color; 10] = colorous::CATEGORY10;

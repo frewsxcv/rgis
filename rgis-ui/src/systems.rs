@@ -325,8 +325,8 @@ fn set_egui_theme(
     egui_ctx.get_mut().set_visuals(egui_visuals);
 }
 
-fn egui_color_to_bevy_color(egui_color: bevy_egui::egui::Color32) -> bevy::render::color::Color {
-    bevy::render::color::Color::rgb_u8(egui_color.r(), egui_color.g(), egui_color.b())
+fn egui_color_to_bevy_color(egui_color: bevy_egui::egui::Color32) -> bevy::color::Color {
+    bevy::color::Color::srgb_u8(egui_color.r(), egui_color.g(), egui_color.b())
 }
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]

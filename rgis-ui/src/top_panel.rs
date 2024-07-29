@@ -86,7 +86,7 @@ impl<'a> egui::Widget for ExitButton<'a> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         ui.add_enabled_ui(cfg!(not(target_arch = "wasm32")), |ui| {
             if ui.button("Exit").clicked() {
-                self.app_exit_events.send(bevy::app::AppExit);
+                self.app_exit_events.send(bevy::app::AppExit::Success);
             }
         })
         .response

@@ -16,7 +16,7 @@ fn layer_loaded(
             layer_id: layer.id,
             geometry: feature_collection.to_geometry_collection_geometry(),
             is_selected: false,
-        })
+        });
     }
 }
 

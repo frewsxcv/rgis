@@ -1,3 +1,4 @@
+use bevy::color::ColorToComponents;
 use bevy_egui::egui;
 
 pub(crate) struct ManageLayerWindow<'a> {
@@ -66,13 +67,13 @@ struct StrokeColorWidget<'a> {
 
 impl<'a> egui::Widget for StrokeColorWidget<'a> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
-        let mut old_color = self.color.as_linear_rgba_f32();
+        let mut old_color = self.color.to_linear().to_f32_array();
         let response = ui.color_edit_button_rgba_unmultiplied(&mut old_color);
         if response.changed() {
             self.color_events
                 .send(rgis_events::UpdateLayerColorEvent::Stroke(
                     self.layer_id,
-                    bevy::prelude::Color::rgba_linear(
+                    bevy::prelude::Color::linear_rgba(
                         old_color[0],
                         old_color[1],
                         old_color[2],
@@ -92,13 +93,13 @@ struct FillColorWidget<'a> {
 
 impl<'a> egui::Widget for FillColorWidget<'a> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
-        let mut old_color = self.color.as_linear_rgba_f32();
+        let mut old_color = self.color.to_linear().to_f32_array();
         let response = ui.color_edit_button_rgba_unmultiplied(&mut old_color);
         if response.changed() {
             self.color_events
                 .send(rgis_events::UpdateLayerColorEvent::Fill(
                     self.layer_id,
-                    bevy::prelude::Color::rgba_linear(
+                    bevy::prelude::Color::linear_rgba(
                         old_color[0],
                         old_color[1],
                         old_color[2],

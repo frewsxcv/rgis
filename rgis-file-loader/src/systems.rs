@@ -47,7 +47,7 @@ fn handle_load_file_events(
                 bytes,
                 file_format,
             }),
-        }
+        };
     }
 }
 
