@@ -98,7 +98,6 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
 
         egui::Window::new("Add Layer")
             .open(self.is_visible)
-            .anchor(egui::Align2::LEFT_TOP, [5., 5.])
             .show(self.bevy_egui_ctx.get_mut(), |ui| {
                 ui.label("Layer source:");
 

@@ -15,7 +15,6 @@ impl<'a, 'w> ChangeCrsWindow<'a, 'w> {
     pub(crate) fn render(&mut self) {
         egui::Window::new("Change CRS")
             .open(self.is_visible)
-            .anchor(egui::Align2::LEFT_TOP, [5., 5.])
             .show(self.bevy_egui_ctx.get_mut(), |ui| {
                 ui.add(crate::widgets::CrsInput::new(
                     self.text_field_value,

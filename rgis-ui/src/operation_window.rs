@@ -43,7 +43,6 @@ impl<'w> OperationWindow<'w> {
             rgis_geo_ops::Action::RenderUi => {
                 egui::Window::new("Operation")
                     .open(&mut self.state.is_visible)
-                    .anchor(egui::Align2::LEFT_TOP, [5., 5.])
                     .show(self.bevy_egui_ctx.get_mut(), |ui| {
                         operation.ui(ui, &self.state.feature_collection);
                     });
