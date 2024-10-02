@@ -7,6 +7,7 @@
 )]
 
 use bevy::prelude::*;
+use geo_projected::{ProjectedCoord, UnprojectedCoord};
 
 // Magic number used to normalize the host's scroll value.
 const ZOOM_FACTOR: f32 = 500.;
@@ -80,7 +81,7 @@ pub struct MoveLayerEvent(pub rgis_layer_id::LayerId, pub MoveDirection);
 pub struct LayerZIndexUpdatedEvent(pub rgis_layer_id::LayerId);
 
 #[derive(Event)]
-pub struct MapClickedEvent(pub geo_projected::Projected<geo::Coord>);
+pub struct MapClickedEvent(pub ProjectedCoord);
 
 #[derive(Event)]
 pub struct FeaturesDeselectedEvent;
@@ -141,12 +142,12 @@ pub struct ZoomCameraEvent {
     /// * `amount ∈ [1]` → no change
     /// * `amount ∈ (0, 1)` → zoom out
     pub amount: f32,
-    pub coord: geo_projected::Projected<geo::Coord>,
+    pub coord: ProjectedCoord,
 }
 
 impl ZoomCameraEvent {
     #[inline]
-    pub fn new(amount: f32, coord: geo_projected::Projected<geo::Coord>) -> Self {
+    pub fn new(amount: f32, coord: ProjectedCoord) -> Self {
         ZoomCameraEvent {
             // Don't let amount be negative, so add `max`
             amount: (1. + amount / ZOOM_FACTOR).max(0.),
@@ -175,7 +176,7 @@ pub struct RenderFeaturePropertiesEvent(pub geo_features::Properties);
 
 #[derive(Event)]
 pub struct CreateLayerEvent {
-    pub feature_collection: geo_projected::Unprojected<geo_features::FeatureCollection>,
+    pub feature_collection: geo_features::FeatureCollection<UnprojectedCoord>,
     pub name: String,
     pub source_crs_epsg_code: u16,
 }

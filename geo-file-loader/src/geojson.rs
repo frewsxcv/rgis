@@ -11,7 +11,10 @@ impl crate::FileLoader for GeoJsonSource {
         GeoJsonSource { bytes }
     }
 
-    fn load(self) -> Result<geo_features::FeatureCollection, crate::Error> {
+    fn load(
+        self,
+    ) -> Result<geo_features::FeatureCollection<geo_projected::UnprojectedScalar>, crate::Error>
+    {
         let bytes_cursor = io::Cursor::new(&self.bytes);
         let mut geojson_reader = geozero::geojson::GeoJsonReader(bytes_cursor);
         let mut geo_writer = geozero::geo_types::GeoWriter::new();

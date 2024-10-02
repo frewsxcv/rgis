@@ -1,0 +1,8 @@
+[package]
+name = "typed-num"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+geo = "0.28"
+num-traits = "0.2"

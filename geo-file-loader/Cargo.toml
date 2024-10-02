@@ -11,3 +11,4 @@ geo = "0.28"
 geo-features = { path = "../geo-features" }
 geozero = { version = "0.14", features = ["with-wkt", "with-gpx", "with-shp"] }
 thiserror = "1"
+geo-projected = { path = "../geo-projected" }
