@@ -94,20 +94,28 @@ fn zoom_camera_system(
     let mut camera_scale = before_scale;
     let mut set = false;
     for event in zoom_camera_event_reader.read() {
+        // Set mouse_offset based on the first event's coordinate
         if !set {
             set = true;
             mouse_offset = crate::CameraOffset::from_coord(event.coord.0);
         }
+        // Adjust the camera scale based on the zoom amount from the event
         camera_scale.zoom(event.amount);
     }
+
+    // Check if the new camera scale is a normal floating-point number
     if camera_scale.0.is_normal() {
+        // Calculate the difference between mouse and camera offsets
         let xd = mouse_offset.x - camera_offset.x;
         let yd = mouse_offset.y - camera_offset.y;
 
+        // Adjust the camera offset based on the scale change
         camera_offset.x -= xd * (1.0 - before_scale.0 / camera_scale.0);
         camera_offset.y -= yd * (1.0 - before_scale.0 / camera_scale.0);
 
+        // Ensure the new camera offset values are finite before applying the transform
         if camera_offset.x.is_finite() && camera_offset.y.is_finite() {
+            // Update the camera transform with the new offset and scale
             crate::utils::set_camera_transform(&mut transform, camera_offset, camera_scale);
         }
     }
