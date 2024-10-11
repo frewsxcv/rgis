@@ -6,9 +6,9 @@ use std::{error, mem};
 
 #[derive(Default)]
 pub struct Simplify {
-    simplified: geo::GeometryCollection,
+    simplified: geo::GeometryCollection<UnprojectedScalar>,
     epsilon_text: String,
-    epsilon: Option<f64>,
+    epsilon: Option<UnprojectedScalar>,
     execute_pressed: bool,
 }
 
@@ -43,12 +43,12 @@ impl Operation for Simplify {
         ui.label("Epsilon:");
         ui.text_edit_singleline(&mut self.epsilon_text);
         let button = bevy_egui::egui::Button::new("Execute");
-        match self.epsilon_text.parse::<f64>() {
+        match self.epsilon_text.parse::<UnprojectedScalar>() {
             Ok(f) => {
                 self.epsilon = Some(f);
                 ui.label(format!(
                     "Previous # of nodes: {}",
-                    feature_collection.0.coords_count()
+                    feature_collection.coords_count()
                 ));
                 let feature_collection = match self.perform(feature_collection.clone()) {
                     // TODO: CLONE ABOVE
@@ -60,7 +60,7 @@ impl Operation for Simplify {
                 };
                 ui.label(format!(
                     "Simplified # of nodes: {}",
-                    feature_collection.0.coords_count()
+                    feature_collection.coords_count()
                 ));
                 if ui.add_enabled(true, button).clicked() {
                     self.execute_pressed = true;
@@ -89,7 +89,7 @@ impl Operation for Simplify {
             .push(multi_line_string.simplify(&epsilon).into());
     }
 
-    fn visit_polygon(&mut self, polygon: &geo::Polygon) {
+    fn visit_polygon(&mut self, polygon: &geo::Polygon<UnprojectedScalar>) {
         let Some(epsilon) = self.epsilon else { return };
         let simplified = polygon.simplify(&epsilon);
         debug_assert!(simplified.exterior().0.len() >= 4);
@@ -108,10 +108,10 @@ impl Operation for Simplify {
 
     fn finalize(&mut self) -> Result<Outcome, Box<dyn error::Error>> {
         let simplified = mem::take(&mut self.simplified);
-        Ok(Outcome::FeatureCollection(geo_projected::Unprojected::new(
+        Ok(Outcome::FeatureCollection(
             geo_features::FeatureCollection::from_geometry(geo::Geometry::GeometryCollection(
                 simplified,
             )),
-        )))
+        ))
     }
 }

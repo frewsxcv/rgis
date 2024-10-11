@@ -15,10 +15,11 @@ pub struct FeatureBuilder<Scalar: geo::CoordNum> {
     properties: Properties,
 }
 
-impl<Scalar: geo::CoordNum + Default> FeatureBuilder<Scalar> {
+impl<Scalar: geo::CoordNum> FeatureBuilder<Scalar> {
     pub fn new() -> Self {
         FeatureBuilder {
-            ..Default::default()
+            geometry: None,
+            properties: Default::default(),
         }
     }
 
@@ -193,7 +194,7 @@ impl fmt::Display for BoundingRectError {
 
 impl std::error::Error for BoundingRectError {}
 
-impl<Scalar: geo::CoordNum + Default> FeatureCollection<Scalar> {
+impl<Scalar: geo::CoordNum> FeatureCollection<Scalar> {
     pub fn from_geometry(geometry: geo::Geometry<Scalar>) -> Self {
         let feature = FeatureBuilder::new().with_geometry(geometry).build();
         Self::from_feature(feature)

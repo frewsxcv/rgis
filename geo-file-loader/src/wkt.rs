@@ -17,7 +17,10 @@ impl crate::FileLoader for WktSource {
         WktSource { bytes }
     }
 
-    fn load(self) -> Result<geo_features::FeatureCollection, crate::Error> {
+    fn load(
+        self,
+    ) -> Result<geo_features::FeatureCollection<geo_projected::UnprojectedScalar>, crate::Error>
+    {
         let mut bytes_cursor = io::Cursor::new(&self.bytes);
         let mut wkt_reader = geozero::wkt::WktReader(&mut bytes_cursor);
         let mut geo_writer = geozero::geo_types::GeoWriter::new();

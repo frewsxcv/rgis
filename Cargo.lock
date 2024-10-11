@@ -2236,6 +2236,7 @@ dependencies = [
  "geozero",
  "thiserror",
  "time-logger",
+ "typed-num",
 ]
 
 [[package]]
@@ -4014,6 +4015,7 @@ dependencies = [
  "geo-features",
  "geo-geom-type",
  "geo-projected",
+ "typed-num",
 ]
 
 [[package]]
@@ -4968,6 +4970,7 @@ checksum = "5be21190ff5d38e8b4a2d3b6a3ae57f612cc39c96e83cedeaf7abc338a8bac4a"
 name = "typed-num"
 version = "0.1.0"
 dependencies = [
+ "float_next_after",
  "geo",
  "num-traits",
 ]

@@ -9,7 +9,10 @@ impl crate::FileLoader for ShapefileSource {
         ShapefileSource { bytes }
     }
 
-    fn load(self) -> Result<geo_features::FeatureCollection, crate::Error> {
+    fn load(
+        self,
+    ) -> Result<geo_features::FeatureCollection<geo_projected::UnprojectedScalar>, crate::Error>
+    {
         let mut bytes_cursor = io::Cursor::new(&self.bytes);
         let shapefile_reader = geozero::shp::ShpReader::new(&mut bytes_cursor)?;
         let mut geo_writer = geozero::geo_types::GeoWriter::new();
