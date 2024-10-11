@@ -11,6 +11,8 @@ mod gpx;
 mod shapefile;
 mod wkt;
 
+use geo::MapCoords;
+
 pub use crate::geojson::GeoJsonSource;
 pub use crate::gpx::GpxSource;
 pub use crate::shapefile::ShapefileSource;
@@ -71,4 +73,15 @@ trait FileLoader {
     fn load(
         self,
     ) -> Result<geo_features::FeatureCollection<geo_projected::UnprojectedScalar>, Error>;
+}
+
+// TODO: the mapping below should be in-place
+// https://github.com/georust/geo/issues/1221
+pub(crate) fn convert_geometry_to_unprojected(
+    geometry: geo::Geometry,
+) -> geo::Geometry<geo_projected::UnprojectedScalar> {
+    geometry.map_coords(|coord| geo_projected::UnprojectedCoord {
+        x: geo_projected::UnprojectedScalar::new(coord.x),
+        y: geo_projected::UnprojectedScalar::new(coord.y),
+    })
 }

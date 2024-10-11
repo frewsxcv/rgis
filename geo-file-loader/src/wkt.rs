@@ -1,3 +1,4 @@
+use crate::convert_geometry_to_unprojected;
 use std::io;
 
 use geozero::GeozeroDatasource;
@@ -25,9 +26,9 @@ impl crate::FileLoader for WktSource {
         let mut wkt_reader = geozero::wkt::WktReader(&mut bytes_cursor);
         let mut geo_writer = geozero::geo_types::GeoWriter::new();
         wkt_reader.process(&mut geo_writer)?;
-        match geo_writer.take_geometry() {
-            Some(geometry) => Ok(geo_features::FeatureCollection::from_geometry(geometry)),
-            None => Ok(geo_features::FeatureCollection::default()),
-        }
+        let geometry = convert_geometry_to_unprojected(
+            geo_writer.take_geometry().ok_or(crate::Error::NoGeometry)?,
+        );
+        Ok(geo_features::FeatureCollection::from_geometry(geometry))
     }
 }

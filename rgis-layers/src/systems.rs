@@ -111,7 +111,7 @@ fn handle_map_clicked_events(
     layers: Res<crate::Layers>,
 ) {
     for event in map_clicked_event_reader.read() {
-        if let Some((layer_id, feature)) = layers.feature_from_click(event.0) {
+        if let Some((layer_id, feature)) = layers.feature_from_click(event) {
             render_message_event_writer.send(rgis_events::RenderFeaturePropertiesEvent(
                 feature.properties().clone(),
             ));

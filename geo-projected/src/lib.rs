@@ -8,10 +8,10 @@
 
 use typed_num::TypedNum;
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug)]
 pub struct Projected;
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug)]
 pub struct Unprojected;
 
 pub type UnprojectedScalar = TypedNum<f64, Unprojected>;

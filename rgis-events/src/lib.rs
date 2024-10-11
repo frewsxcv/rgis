@@ -7,7 +7,7 @@
 )]
 
 use bevy::prelude::*;
-use geo_projected::{ProjectedCoord, UnprojectedCoord};
+use geo_projected::{ProjectedCoord, UnprojectedScalar};
 
 // Magic number used to normalize the host's scroll value.
 const ZOOM_FACTOR: f32 = 500.;
@@ -176,7 +176,7 @@ pub struct RenderFeaturePropertiesEvent(pub geo_features::Properties);
 
 #[derive(Event)]
 pub struct CreateLayerEvent {
-    pub feature_collection: geo_features::FeatureCollection<UnprojectedCoord>,
+    pub feature_collection: geo_features::FeatureCollection<UnprojectedScalar>,
     pub name: String,
     pub source_crs_epsg_code: u16,
 }

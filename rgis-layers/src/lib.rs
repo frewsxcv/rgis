@@ -54,7 +54,7 @@ impl Layers {
 
     pub fn containing_coord(
         &self,
-        coord: geo_projected::Projected<geo::Coord>,
+        coord: geo_projected::ProjectedCoord,
     ) -> impl Iterator<Item = &Layer> {
         self.iter_top_to_bottom()
             .filter(move |layer| match layer.projected_feature_collection {
@@ -97,10 +97,10 @@ impl Layers {
 
     pub fn feature_from_click(
         &self,
-        coord: geo_projected::Projected<geo::Coord>,
+        coord: geo_projected::ProjectedCoord,
     ) -> Option<(
         rgis_layer_id::LayerId,
-        geo_projected::Unprojected<&geo_features::Feature>,
+        &geo_features::Feature<geo_projected::ProjectedScalar>,
     )> {
         self.features_iter()
             .find(|item| item.projected.contains(&coord))
@@ -148,12 +148,12 @@ impl Layers {
 
     fn add(
         &mut self,
-        unprojected: geo_projected::Unprojected<geo_features::FeatureCollection>,
+        unprojected: geo_features::FeatureCollection<geo_projected::UnprojectedScalar>,
         name: String,
         source_crs_epsg_code: u16,
     ) -> rgis_layer_id::LayerId {
         let layer_id = self.next_layer_id();
-        let geom_type = geo_geom_type::determine(unprojected.as_raw().geometry_iter());
+        let geom_type = geo_geom_type::determine(unprojected.geometry_iter());
         let layer = Layer {
             unprojected_feature_collection: unprojected,
             projected_feature_collection: None,
@@ -197,9 +197,10 @@ pub struct LayerColor {
 
 #[derive(Clone, Debug)]
 pub struct Layer {
-    pub unprojected_feature_collection: geo_projected::Unprojected<geo_features::FeatureCollection>,
+    pub unprojected_feature_collection:
+        geo_features::FeatureCollection<geo_projected::UnprojectedScalar>,
     pub projected_feature_collection:
-        Option<geo_projected::Projected<geo_features::FeatureCollection>>,
+        Option<geo_features::FeatureCollection<geo_projected::ProjectedScalar>>,
     pub color: LayerColor,
     pub id: rgis_layer_id::LayerId,
     pub name: String,
@@ -216,7 +217,7 @@ impl Layer {
     #[inline]
     pub fn get_projected_feature_collection_or_log(
         &self,
-    ) -> Option<&geo_projected::Projected<geo_features::FeatureCollection>> {
+    ) -> Option<&geo_features::FeatureCollection<geo_projected::ProjectedScalar>> {
         match self.projected_feature_collection.as_ref() {
             Some(p) => Some(p),
             None => {
@@ -233,7 +234,7 @@ impl Layer {
     pub fn get_projected_feature(
         &self,
         feature_id: geo_features::FeatureId,
-    ) -> Option<geo_projected::Projected<&geo_features::Feature>> {
+    ) -> Option<&geo_features::Feature<geo_projected::ProjectedScalar>> {
         let feature_collection = self.get_projected_feature_collection_or_log()?;
         feature_collection
             .features_iter()
@@ -268,12 +269,12 @@ impl bevy::app::Plugin for Plugin {
 
 struct FeatureCollectionsIterItem<'a> {
     layer_id: rgis_layer_id::LayerId,
-    projected: &'a geo_projected::Projected<geo_features::FeatureCollection>,
-    unprojected: &'a geo_projected::Unprojected<geo_features::FeatureCollection>,
+    projected: &'a geo_features::FeatureCollection<geo_projected::ProjectedScalar>,
+    unprojected: &'a geo_features::FeatureCollection<geo_projected::UnprojectedScalar>,
 }
 
 struct FeaturesIterItem<'a> {
     layer_id: rgis_layer_id::LayerId,
-    projected: geo_projected::Projected<&'a geo_features::Feature>,
-    unprojected: geo_projected::Unprojected<&'a geo_features::Feature>,
+    projected: &'a geo_features::Feature<geo_projected::ProjectedScalar>,
+    unprojected: &'a geo_features::Feature<geo_projected::UnprojectedScalar>,
 }

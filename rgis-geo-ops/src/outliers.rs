@@ -1,6 +1,8 @@
 use crate::{Operation, OperationEntry, Outcome};
 use geo::OutlierDetection;
+use geo_projected::Unprojected;
 use std::{error, mem};
+use typed_num::TypedNum;
 
 impl OperationEntry for Outliers {
     const ALLOWED_GEOM_TYPES: geo_geom_type::GeomType = geo_geom_type::GeomType::from_bits_truncate(
@@ -15,15 +17,15 @@ impl OperationEntry for Outliers {
 
 #[derive(Default)]
 pub struct Outliers {
-    points: Vec<geo::Point>,
+    points: Vec<geo::Point<TypedNum<f64, Unprojected>>>,
 }
 
 impl Operation for Outliers {
-    fn visit_point(&mut self, point: &geo::Point) {
+    fn visit_point(&mut self, point: &geo::Point<TypedNum<f64, Unprojected>>) {
         self.points.push(*point);
     }
 
-    fn visit_multi_point(&mut self, multi_point: &geo::MultiPoint) {
+    fn visit_multi_point(&mut self, multi_point: &geo::MultiPoint<TypedNum<f64, Unprojected>>) {
         self.points.extend(multi_point.0.iter());
     }
 
@@ -41,8 +43,8 @@ impl Operation for Outliers {
 
         let new_multi_point = geo::MultiPoint::new(non_outliers);
 
-        Ok(Outcome::FeatureCollection(geo_projected::Unprojected::new(
+        Ok(Outcome::FeatureCollection(
             geo_features::FeatureCollection::from_geometry(new_multi_point.into()),
-        )))
+        ))
     }
 }

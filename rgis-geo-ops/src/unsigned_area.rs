@@ -1,12 +1,14 @@
 use crate::{Operation, OperationEntry, Outcome};
 use geo::Area;
+use geo_projected::Unprojected;
 use geo_projected::UnprojectedScalar;
 use std::error;
+use typed_num::TypedNum;
 
 // FIXME: should this operate on the projected featurecollection instead of the unprojected?
 #[derive(Default)]
 pub struct UnsignedArea {
-    total_area: f64,
+    total_area: TypedNum<f64, Unprojected>,
 }
 
 impl OperationEntry for UnsignedArea {

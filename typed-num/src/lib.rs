@@ -6,13 +6,20 @@
     clippy::expect_used
 )]
 
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, RemAssign, Sub, SubAssign};
 use std::str::FromStr;
 
-use num_traits::float;
-
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug)]
 #[repr(transparent)]
 pub struct TypedNum<Number, Type>(pub Number, std::marker::PhantomData<Type>);
+
+impl<Scalar: Clone, Type> Clone for TypedNum<Scalar, Type> {
+    fn clone(&self) -> Self {
+        TypedNum(self.0.clone(), self.1)
+    }
+}
+
+impl<Scalar: Copy, Type> Copy for TypedNum<Scalar, Type> {}
 
 impl<Scalar: Default, Type> Default for TypedNum<Scalar, Type> {
     fn default() -> Self {
@@ -20,31 +27,33 @@ impl<Scalar: Default, Type> Default for TypedNum<Scalar, Type> {
     }
 }
 
-impl<Scalar: num_traits::Num, Type> From<Scalar> for TypedNum<Scalar, Type> {
+impl<Scalar, Type> From<Scalar> for TypedNum<Scalar, Type> {
     fn from(number: Scalar) -> Self {
         TypedNum(number, std::marker::PhantomData::<Type>)
     }
 }
 
-impl<Scalar: num_traits::Num, Type> TypedNum<Scalar, Type> {
+impl<Scalar, Type> TypedNum<Scalar, Type> {
     pub fn new(number: Scalar) -> TypedNum<Scalar, Type> {
         TypedNum(number, std::marker::PhantomData::<Type>)
     }
 }
 
-impl<Scalar: num_traits::Float, Type> PartialOrd for TypedNum<Scalar, Type> {
+impl<Scalar: PartialOrd, Type> PartialOrd for TypedNum<Scalar, Type> {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         self.0.partial_cmp(&other.0)
     }
 }
 
-impl<Scalar: num_traits::Num, Type> PartialEq for TypedNum<Scalar, Type> {
+impl<Scalar: PartialEq, Type> PartialEq for TypedNum<Scalar, Type> {
     fn eq(&self, other: &Self) -> bool {
         self.0 == other.0
     }
 }
 
-impl<Scalar: num_traits::Num, Type> std::ops::Add for TypedNum<Scalar, Type> {
+impl<Scalar: std::cmp::Eq, Type> std::cmp::Eq for TypedNum<Scalar, Type> {}
+
+impl<Scalar: Add<Output = Scalar>, Type> Add for TypedNum<Scalar, Type> {
     type Output = Self;
 
     fn add(self, other: Self) -> Self::Output {
@@ -52,7 +61,7 @@ impl<Scalar: num_traits::Num, Type> std::ops::Add for TypedNum<Scalar, Type> {
     }
 }
 
-impl<Scalar: num_traits::Num, Type> std::ops::Sub for TypedNum<Scalar, Type> {
+impl<Scalar: Sub<Output = Scalar>, Type> Sub for TypedNum<Scalar, Type> {
     type Output = Self;
 
     fn sub(self, other: Self) -> Self::Output {
@@ -60,7 +69,7 @@ impl<Scalar: num_traits::Num, Type> std::ops::Sub for TypedNum<Scalar, Type> {
     }
 }
 
-impl<Scalar: num_traits::Num, Type> std::ops::Mul for TypedNum<Scalar, Type> {
+impl<Scalar: Mul<Output = Scalar>, Type> Mul for TypedNum<Scalar, Type> {
     type Output = Self;
 
     fn mul(self, other: Self) -> Self::Output {
@@ -68,7 +77,7 @@ impl<Scalar: num_traits::Num, Type> std::ops::Mul for TypedNum<Scalar, Type> {
     }
 }
 
-impl<Scalar: num_traits::Num, Type> std::ops::Div for TypedNum<Scalar, Type> {
+impl<Scalar: Div<Output = Scalar>, Type> Div for TypedNum<Scalar, Type> {
     type Output = Self;
 
     fn div(self, other: Self) -> Self::Output {
@@ -76,11 +85,41 @@ impl<Scalar: num_traits::Num, Type> std::ops::Div for TypedNum<Scalar, Type> {
     }
 }
 
-impl<Scalar: num_traits::Num, Type> std::ops::Rem for TypedNum<Scalar, Type> {
+impl<Scalar: Rem<Output = Scalar>, Type> Rem for TypedNum<Scalar, Type> {
     type Output = Self;
 
     fn rem(self, other: Self) -> Self::Output {
         TypedNum::new(self.0 % other.0)
+    }
+}
+
+impl<Scalar: AddAssign, Type> AddAssign for TypedNum<Scalar, Type> {
+    fn add_assign(&mut self, other: Self) {
+        self.0 += other.0;
+    }
+}
+
+impl<Scalar: SubAssign, Type> SubAssign for TypedNum<Scalar, Type> {
+    fn sub_assign(&mut self, other: Self) {
+        self.0 -= other.0;
+    }
+}
+
+impl<Scalar: MulAssign, Type> MulAssign for TypedNum<Scalar, Type> {
+    fn mul_assign(&mut self, other: Self) {
+        self.0 *= other.0;
+    }
+}
+
+impl<Scalar: DivAssign, Type> DivAssign for TypedNum<Scalar, Type> {
+    fn div_assign(&mut self, other: Self) {
+        self.0 /= other.0;
+    }
+}
+
+impl<Scalar: RemAssign, Type> RemAssign for TypedNum<Scalar, Type> {
+    fn rem_assign(&mut self, other: Self) {
+        self.0 %= other.0;
     }
 }
 
@@ -94,17 +133,13 @@ impl<Scalar: num_traits::ToPrimitive, Type> num_traits::ToPrimitive for TypedNum
     }
 }
 
-impl<Scalar: num_traits::Num + num_traits::NumCast, Type> num_traits::NumCast
-    for TypedNum<Scalar, Type>
-{
+impl<Scalar: num_traits::NumCast, Type> num_traits::NumCast for TypedNum<Scalar, Type> {
     fn from<T: num_traits::ToPrimitive>(n: T) -> Option<Self> {
         Scalar::from(n).map(TypedNum::new)
     }
 }
 
-impl<Scalar: num_traits::Num + num_traits::NumCast, Type> num_traits::Num
-    for TypedNum<Scalar, Type>
-{
+impl<Scalar: num_traits::Num, Type> num_traits::Num for TypedNum<Scalar, Type> {
     type FromStrRadixErr = Scalar::FromStrRadixErr;
 
     fn from_str_radix(
@@ -115,13 +150,13 @@ impl<Scalar: num_traits::Num + num_traits::NumCast, Type> num_traits::Num
     }
 }
 
-impl<Scalar: num_traits::Num + num_traits::One, Type> num_traits::One for TypedNum<Scalar, Type> {
+impl<Scalar: num_traits::One, Type> num_traits::One for TypedNum<Scalar, Type> {
     fn one() -> Self {
         TypedNum::new(Scalar::one())
     }
 }
 
-impl<Scalar: num_traits::Zero + num_traits::Num, Type> num_traits::Zero for TypedNum<Scalar, Type> {
+impl<Scalar: num_traits::Zero, Type> num_traits::Zero for TypedNum<Scalar, Type> {
     fn zero() -> Self {
         TypedNum::new(Scalar::zero())
     }
@@ -354,7 +389,7 @@ where
 }
 
 // TODO: put behind feature flag?
-impl<Scalar: float_next_after::NextAfter + num_traits::Num, Type> float_next_after::NextAfter
+impl<Scalar: float_next_after::NextAfter, Type> float_next_after::NextAfter
     for TypedNum<Scalar, Type>
 {
     fn next_after(self, other: Self) -> Self {
@@ -362,9 +397,7 @@ impl<Scalar: float_next_after::NextAfter + num_traits::Num, Type> float_next_aft
     }
 }
 
-impl<Scalar: num_traits::Bounded + num_traits::Num, Type> num_traits::Bounded
-    for TypedNum<Scalar, Type>
-{
+impl<Scalar: num_traits::Bounded, Type> num_traits::Bounded for TypedNum<Scalar, Type> {
     fn min_value() -> Self {
         TypedNum::new(Scalar::min_value())
     }
@@ -374,7 +407,7 @@ impl<Scalar: num_traits::Bounded + num_traits::Num, Type> num_traits::Bounded
     }
 }
 
-impl<Scalar: num_traits::Signed + std::ops::Neg<Output = Scalar> + num_traits::NumCast, Type>
+impl<Scalar: num_traits::Signed + std::ops::Neg<Output = Scalar> + num_traits::Num, Type>
     num_traits::Signed for TypedNum<Scalar, Type>
 where
     Self: std::ops::Neg<Output = Self>,
@@ -400,17 +433,44 @@ where
     }
 }
 
-// impl<Scalar: geo::GeoFloat + std::ops::Neg<Output = Scalar>, Type: std::fmt::Debug + Copy>
-//     geo::GeoFloat for TypedNum<Scalar, Type>
-// where
-//     Self: geo::GeoNum + std::ops::Neg<Output = Self>,
-// {
-// }
+impl<Scalar: geo::GeoNum, Type: std::fmt::Debug + Copy> geo::GeoNum for TypedNum<Scalar, Type>
+where
+    Self: std::ops::Neg<Output = Self>,
+    <Scalar as geo::GeoNum>::Ker: geo::Kernel<TypedNum<Scalar, Type>>,
+{
+    type Ker = <Scalar as geo::GeoNum>::Ker;
 
-impl<Scalar: FromStr + num_traits::Num, Type> FromStr for TypedNum<Scalar, Type> {
+    fn total_cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.0.total_cmp(&other.0)
+    }
+}
+
+impl<Scalar: FromStr, Type> FromStr for TypedNum<Scalar, Type> {
     type Err = Scalar::Err;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(TypedNum::new(Scalar::from_str(s)?))
+    }
+}
+
+impl<Scalar: num_traits::FromPrimitive, Type> num_traits::FromPrimitive for TypedNum<Scalar, Type> {
+    fn from_i64(n: i64) -> Option<Self> {
+        Scalar::from_i64(n).map(TypedNum::new)
+    }
+
+    fn from_u64(n: u64) -> Option<Self> {
+        Scalar::from_u64(n).map(TypedNum::new)
+    }
+}
+
+impl<Scalar: std::cmp::Ord, Type> std::cmp::Ord for TypedNum<Scalar, Type> {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.0.cmp(&other.0)
+    }
+}
+
+impl<Scalar: std::fmt::Display, Type> std::fmt::Display for TypedNum<Scalar, Type> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
     }
 }
