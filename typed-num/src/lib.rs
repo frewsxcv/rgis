@@ -6,6 +6,7 @@
     clippy::expect_used
 )]
 
+use std::iter::Sum;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, RemAssign, Sub, SubAssign};
 use std::str::FromStr;
 
@@ -166,7 +167,7 @@ impl<Scalar: num_traits::Zero, Type> num_traits::Zero for TypedNum<Scalar, Type>
     }
 }
 
-impl<Scalar: num_traits::Float, Type: Clone + Copy> num_traits::Float for TypedNum<Scalar, Type>
+impl<Scalar: num_traits::Float, Type> num_traits::Float for TypedNum<Scalar, Type>
 where
     Self: std::ops::Neg<Output = Self> + std::fmt::Debug,
 {
@@ -388,7 +389,6 @@ where
     }
 }
 
-// TODO: put behind feature flag?
 impl<Scalar: float_next_after::NextAfter, Type> float_next_after::NextAfter
     for TypedNum<Scalar, Type>
 {
@@ -404,6 +404,14 @@ impl<Scalar: num_traits::Bounded, Type> num_traits::Bounded for TypedNum<Scalar,
 
     fn max_value() -> Self {
         TypedNum::new(Scalar::max_value())
+    }
+}
+
+impl<Scalar: std::ops::Neg<Output = Scalar>, Type> std::ops::Neg for TypedNum<Scalar, Type> {
+    type Output = Self;
+
+    fn neg(self) -> Self::Output {
+        TypedNum::new(-self.0)
     }
 }
 
@@ -472,5 +480,11 @@ impl<Scalar: std::cmp::Ord, Type> std::cmp::Ord for TypedNum<Scalar, Type> {
 impl<Scalar: std::fmt::Display, Type> std::fmt::Display for TypedNum<Scalar, Type> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.0.fmt(f)
+    }
+}
+
+impl<Scalar: Sum, Type> Sum for TypedNum<Scalar, Type> {
+    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
+        TypedNum::new(iter.map(|n| n.0).sum())
     }
 }

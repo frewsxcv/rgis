@@ -58,7 +58,7 @@ impl Layers {
     ) -> impl Iterator<Item = &Layer> {
         self.iter_top_to_bottom()
             .filter(move |layer| match layer.projected_feature_collection {
-                Some(ref projected) => projected.as_ref().contains(&coord),
+                Some(ref projected) => projected.contains(&coord),
                 None => false,
             })
     }
