@@ -1,5 +1,6 @@
 use crate::{Operation, OperationEntry, Outcome};
 use geo::TriangulateEarcut;
+use geo_projected::UnprojectedScalar;
 use std::error;
 
 impl OperationEntry for Triangulate {
@@ -15,15 +16,15 @@ impl OperationEntry for Triangulate {
 
 #[derive(Default)]
 pub struct Triangulate {
-    triangles: Vec<geo::Triangle>,
+    triangles: Vec<geo::Triangle<UnprojectedScalar>>,
 }
 
 impl Operation for Triangulate {
-    fn visit_polygon(&mut self, polygon: &geo::Polygon) {
+    fn visit_polygon(&mut self, polygon: &geo::Polygon<UnprojectedScalar>) {
         self.triangles.extend(polygon.earcut_triangles_iter());
     }
 
-    fn visit_multi_polygon(&mut self, multi_polygon: &geo::MultiPolygon) {
+    fn visit_multi_polygon(&mut self, multi_polygon: &geo::MultiPolygon<UnprojectedScalar>) {
         for polygon in multi_polygon {
             self.visit_polygon(polygon);
         }
@@ -37,8 +38,10 @@ impl Operation for Triangulate {
                 .collect::<Vec<_>>(),
         );
 
-        Ok(Outcome::FeatureCollection(geo_projected::Unprojected::new(
-            geo_features::FeatureCollection::from_geometry(multi_polygon.into()),
-        )))
+        Ok(Outcome::FeatureCollection(
+            geo_features::FeatureCollection::from_geometry(geo::Geometry::MultiPolygon(
+                multi_polygon,
+            )),
+        ))
     }
 }

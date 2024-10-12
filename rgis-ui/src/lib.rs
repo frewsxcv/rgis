@@ -73,7 +73,7 @@ pub struct FeaturePropertiesWindowState {
 struct OperationWindowState {
     is_visible: bool,
     operation: Option<Box<dyn Send + Sync + rgis_geo_ops::Operation>>,
-    feature_collection: geo_projected::Unprojected<geo_features::FeatureCollection>,
+    feature_collection: geo_features::FeatureCollection<geo_projected::UnprojectedScalar>,
 }
 
 impl bevy::app::Plugin for Plugin {

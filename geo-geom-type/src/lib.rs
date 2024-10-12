@@ -50,7 +50,9 @@ impl GeomType {
     }
 }
 
-pub fn determine<'a>(geometries: impl IntoIterator<Item = &'a geo::Geometry>) -> GeomType {
+pub fn determine<'a, Scalar: 'a + geo::CoordNum>(
+    geometries: impl IntoIterator<Item = &'a geo::Geometry<Scalar>>,
+) -> GeomType {
     geometries.into_iter().fold(GeomType::empty(), |acc, next| {
         acc | match next {
             geo::Geometry::Point(_) => GeomType::POINT,

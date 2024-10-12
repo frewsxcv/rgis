@@ -1,9 +1,10 @@
 use crate::{Operation, OperationEntry, Outcome};
+use geo_projected::UnprojectedScalar;
 use std::{error, mem};
 
 #[derive(Default)]
 pub struct ConvexHull {
-    geometries: Vec<geo::Geometry>,
+    geometries: Vec<geo::Geometry<UnprojectedScalar>>,
 }
 
 impl OperationEntry for ConvexHull {
@@ -16,7 +17,7 @@ impl OperationEntry for ConvexHull {
 }
 
 impl Operation for ConvexHull {
-    fn visit_geometry(&mut self, geometry: &geo::Geometry) {
+    fn visit_geometry(&mut self, geometry: &geo::Geometry<UnprojectedScalar>) {
         self.geometries.push(geometry.clone());
     }
 
@@ -26,8 +27,8 @@ impl Operation for ConvexHull {
         let geometries = mem::take(&mut self.geometries);
         let outcome = geo::GeometryCollection(geometries).convex_hull();
 
-        Ok(Outcome::FeatureCollection(geo_projected::Unprojected::new(
+        Ok(Outcome::FeatureCollection(
             geo_features::FeatureCollection::from_geometry(outcome.into()),
-        )))
+        ))
     }
 }

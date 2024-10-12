@@ -6,6 +6,8 @@
     clippy::expect_used
 )]
 
+use geo_projected::{ProjectedCoord, ProjectedScalar};
+
 // From top-left
 #[derive(Copy, Clone, Debug)]
 pub struct ScreenCoord {
@@ -20,7 +22,7 @@ impl ScreenCoord {
         self,
         transform: &bevy::transform::components::Transform,
         window: &bevy::prelude::Window,
-    ) -> geo_projected::Projected<geo::Coord> {
+    ) -> ProjectedCoord {
         let size = bevy::math::DVec2::new(f64::from(window.width()), f64::from(window.height()));
 
         // the default orthographic projection is in pixels from the center;
@@ -31,10 +33,10 @@ impl ScreenCoord {
         // apply the camera transform
         let pos_wld = transform.compute_matrix().as_dmat4() * d_vec.extend(0.0).extend(1.0);
 
-        geo_projected::Projected(geo::Coord {
-            x: pos_wld.x,
-            y: pos_wld.y,
-        })
+        geo::Coord {
+            x: pos_wld.x.into(),
+            y: pos_wld.y.into(),
+        }
     }
 }
 
@@ -59,7 +61,7 @@ impl<'a> MapArea<'a> {
         &self,
         transform: &bevy::transform::components::Transform,
         window: &bevy::prelude::Window,
-    ) -> geo_projected::Projected<geo::Coord> {
+    ) -> ProjectedCoord {
         self.top_left_screen_coord()
             .to_projected_geo_coord(transform, window)
     }
@@ -75,7 +77,7 @@ impl<'a> MapArea<'a> {
         &self,
         transform: &bevy::transform::components::Transform,
         window: &bevy::prelude::Window,
-    ) -> geo_projected::Projected<geo::Coord> {
+    ) -> ProjectedCoord {
         self.bottom_right_screen_coord()
             .to_projected_geo_coord(transform, window)
     }
@@ -84,11 +86,11 @@ impl<'a> MapArea<'a> {
         &self,
         transform: &bevy::transform::components::Transform,
         window: &bevy::prelude::Window,
-    ) -> geo_projected::Projected<geo::Rect> {
-        geo_projected::Projected(geo::Rect::new(
-            self.top_left_projected_geo_coord(transform, window).0,
-            self.bottom_right_projected_geo_coord(transform, window).0,
-        ))
+    ) -> geo::Rect<ProjectedScalar> {
+        geo::Rect::new(
+            self.top_left_projected_geo_coord(transform, window),
+            self.bottom_right_projected_geo_coord(transform, window),
+        )
     }
 
     fn width(&self) -> ScreenLength {

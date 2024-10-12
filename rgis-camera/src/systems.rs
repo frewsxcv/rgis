@@ -49,7 +49,7 @@ fn handle_change_crs_event(
 
     let transformer =
         transform::Transformer::setup(event.old_crs_epsg_code, event.new_crs_epsg_code)?;
-    transformer.transform(&mut (rect.0.into()))?;
+    transformer.transform(&mut (rect.into()))?;
 
     crate::utils::center_camera_on_projected_world_rect(rect, &mut transform, map_area);
 
@@ -97,7 +97,7 @@ fn zoom_camera_system(
         // Set mouse_offset based on the first event's coordinate
         if !set {
             set = true;
-            mouse_offset = crate::CameraOffset::from_coord(event.coord.0);
+            mouse_offset = crate::CameraOffset::from_coord(event.coord);
         }
         // Adjust the camera scale based on the zoom amount from the event
         camera_scale.zoom(event.amount);

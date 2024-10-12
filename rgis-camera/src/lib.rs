@@ -45,10 +45,10 @@ struct CameraOffset {
 }
 
 impl CameraOffset {
-    fn from_coord(coord: geo::Coord) -> Self {
+    fn from_coord<Scalar: geo::CoordFloat>(coord: geo::Coord<Scalar>) -> Self {
         CameraOffset {
-            x: coord.x as f32,
-            y: coord.y as f32,
+            x: coord.x.to_f32().unwrap(),
+            y: coord.y.to_f32().unwrap(),
         }
     }
 

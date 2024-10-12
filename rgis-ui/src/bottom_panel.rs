@@ -39,7 +39,7 @@ impl<'a, 'w> BottomPanel<'a, 'w> {
     fn render_mouse_position(&mut self, ui: &mut egui::Ui) {
         ui.label(format!(
             "🖱 XY: {}, {}",
-            self.mouse_pos.0 .0.x, self.mouse_pos.0 .0.y
+            self.mouse_pos.0.x, self.mouse_pos.0.y
         ));
     }
 }

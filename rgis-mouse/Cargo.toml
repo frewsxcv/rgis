@@ -21,3 +21,4 @@ geo-projected = { path = "../geo-projected" }
 rgis-events = { path = "../rgis-events" }
 rgis-settings = { path = "../rgis-settings" }
 rgis-units = { path = "../rgis-units" }
+typed-num = { path = "../typed-num" }

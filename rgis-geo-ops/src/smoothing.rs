@@ -1,10 +1,11 @@
 use crate::{Operation, OperationEntry, Outcome};
 use geo::{ChaikinSmoothing, GeometryCollection};
+use geo_projected::UnprojectedScalar;
 use std::mem;
 
 #[derive(Default)]
 pub struct Smoothing {
-    smoothed: GeometryCollection,
+    smoothed: GeometryCollection<UnprojectedScalar>,
 }
 
 impl OperationEntry for Smoothing {
@@ -24,25 +25,28 @@ impl OperationEntry for Smoothing {
 const NUM_ITERATIONS: usize = 2;
 
 impl Operation for Smoothing {
-    fn visit_line_string(&mut self, line_string: &geo::LineString) {
+    fn visit_line_string(&mut self, line_string: &geo::LineString<UnprojectedScalar>) {
         self.smoothed
             .0
             .push(line_string.chaikin_smoothing(NUM_ITERATIONS).into());
     }
 
-    fn visit_multi_line_string(&mut self, multi_line_string: &geo::MultiLineString) {
+    fn visit_multi_line_string(
+        &mut self,
+        multi_line_string: &geo::MultiLineString<UnprojectedScalar>,
+    ) {
         self.smoothed
             .0
             .push(multi_line_string.chaikin_smoothing(NUM_ITERATIONS).into());
     }
 
-    fn visit_polygon(&mut self, polygon: &geo::Polygon) {
+    fn visit_polygon(&mut self, polygon: &geo::Polygon<UnprojectedScalar>) {
         self.smoothed
             .0
             .push(polygon.chaikin_smoothing(NUM_ITERATIONS).into());
     }
 
-    fn visit_multi_polygon(&mut self, multi_polygon: &geo::MultiPolygon) {
+    fn visit_multi_polygon(&mut self, multi_polygon: &geo::MultiPolygon<UnprojectedScalar>) {
         self.smoothed
             .0
             .push(multi_polygon.chaikin_smoothing(NUM_ITERATIONS).into());
@@ -50,10 +54,10 @@ impl Operation for Smoothing {
 
     fn finalize(&mut self) -> Result<crate::Outcome, Box<dyn std::error::Error>> {
         let smoothed = mem::take(&mut self.smoothed);
-        Ok(Outcome::FeatureCollection(geo_projected::Unprojected::new(
+        Ok(Outcome::FeatureCollection(
             geo_features::FeatureCollection::from_geometry(geo::Geometry::GeometryCollection(
                 smoothed,
             )),
-        )))
+        ))
     }
 }
