@@ -299,11 +299,8 @@ impl<'a, 'w> egui::Widget for OperationsWidget<'a, 'w> {
             if ui.button("Bounding rect").clicked() {
                 if let Ok(bounding_rect) = self.layer.unprojected_feature_collection.bounding_rect()
                 {
-                    let feature_collection = geo_projected::Unprojected::<
-                        geo_features::FeatureCollection,
-                    >::from_geometry(
-                        bounding_rect.0.into()
-                    );
+                    let feature_collection =
+                        geo_features::FeatureCollection::from_geometry(bounding_rect.into());
                     self.events
                         .create_layer_event_writer
                         .send(rgis_events::CreateLayerEvent {

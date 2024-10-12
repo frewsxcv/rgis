@@ -35,6 +35,7 @@ impl<Scalar, Type> From<Scalar> for TypedNum<Scalar, Type> {
 }
 
 impl<Scalar, Type> TypedNum<Scalar, Type> {
+    #[inline]
     pub fn new(number: Scalar) -> TypedNum<Scalar, Type> {
         TypedNum(number, std::marker::PhantomData::<Type>)
     }
