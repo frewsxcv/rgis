@@ -441,7 +441,7 @@ where
     }
 }
 
-impl<Scalar: geo::GeoNum, Type: std::fmt::Debug + Copy> geo::GeoNum for TypedNum<Scalar, Type>
+impl<Scalar: geo::GeoNum, Type: std::fmt::Debug> geo::GeoNum for TypedNum<Scalar, Type>
 where
     Self: std::ops::Neg<Output = Self>,
     <Scalar as geo::GeoNum>::Ker: geo::Kernel<TypedNum<Scalar, Type>>,

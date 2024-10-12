@@ -84,8 +84,9 @@ impl Layers {
                  unprojected,
              }| {
                 unprojected
-                    .features_iter()
-                    .zip(projected.features_iter())
+                    .features
+                    .iter()
+                    .zip(projected.features.iter())
                     .map(move |(unprojected, projected)| FeaturesIterItem {
                         layer_id,
                         projected,
@@ -100,7 +101,7 @@ impl Layers {
         coord: geo_projected::ProjectedCoord,
     ) -> Option<(
         rgis_layer_id::LayerId,
-        &geo_features::Feature<geo_projected::ProjectedScalar>,
+        &geo_features::Feature<geo_projected::UnprojectedScalar>,
     )> {
         self.features_iter()
             .find(|item| item.projected.contains(&coord))
@@ -237,8 +238,9 @@ impl Layer {
     ) -> Option<&geo_features::Feature<geo_projected::ProjectedScalar>> {
         let feature_collection = self.get_projected_feature_collection_or_log()?;
         feature_collection
-            .features_iter()
-            .find(|f| f.id() == feature_id)
+            .features
+            .iter()
+            .find(|f| f.id == feature_id)
     }
 }
 

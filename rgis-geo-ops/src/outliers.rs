@@ -36,7 +36,7 @@ impl Operation for Outliers {
         let multi_point = geo::MultiPoint(points);
 
         for (outlier_score, coord) in multi_point.outliers(15).iter().zip(multi_point.0.iter()) {
-            if *outlier_score < 2. {
+            if *outlier_score < TypedNum::new(2.) {
                 non_outliers.push(*coord);
             }
         }
@@ -46,5 +46,17 @@ impl Operation for Outliers {
         Ok(Outcome::FeatureCollection(
             geo_features::FeatureCollection::from_geometry(new_multi_point.into()),
         ))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn test_geo_float<T: geo::GeoFloat>() {}
+
+    #[test]
+    fn test() {
+        test_geo_float::<TypedNum<f64, Unprojected>>();
     }
 }
