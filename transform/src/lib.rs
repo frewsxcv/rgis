@@ -43,17 +43,23 @@ impl Transformer {
         })
     }
 
-    pub fn transform(&self, geometry: &mut geo::Geometry) -> Result<(), geodesy::Error> {
+    pub fn transform<Scalar: geo::CoordFloat>(
+        &self,
+        geometry: &mut geo::Geometry<Scalar>,
+    ) -> Result<(), geodesy::Error> {
         // FIXME: use try_map_coords_in_place
         let mut transformed = geometry.try_map_coords::<geodesy::Error>(|coord| {
-            let mut coord = [geodesy::Coor2D::gis(coord.x, coord.y)];
+            let mut coord = [geodesy::Coor2D::gis(
+                coord.x.to_f64().unwrap(),
+                coord.y.to_f64().unwrap(),
+            )];
             self.ctx
                 .apply(self.source, geodesy::Direction::Inv, &mut coord)?;
             self.ctx
                 .apply(self.target, geodesy::Direction::Fwd, &mut coord)?;
             Ok(Coord {
-                x: coord[0].0[0],
-                y: coord[0].0[1],
+                x: Scalar::from(coord[0].0[0]).unwrap(),
+                y: Scalar::from(coord[0].0[1]).unwrap(),
             })
         })?;
 

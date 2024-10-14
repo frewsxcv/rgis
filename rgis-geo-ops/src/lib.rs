@@ -6,7 +6,7 @@
     clippy::expect_used
 )]
 
-use geo_projected::Unprojected;
+use geo_projected::UnprojectedScalar;
 use std::error;
 
 mod unsigned_area;
@@ -32,7 +32,7 @@ pub use triangulate::Triangulate;
 
 pub enum Outcome {
     Text(String),
-    FeatureCollection(Unprojected<geo_features::FeatureCollection>),
+    FeatureCollection(geo_features::FeatureCollection<UnprojectedScalar>),
 }
 
 pub trait OperationEntry {
@@ -50,12 +50,12 @@ pub enum Action {
 pub trait Operation {
     fn perform(
         &mut self,
-        feature_collection: Unprojected<geo_features::FeatureCollection>,
+        feature_collection: geo_features::FeatureCollection<UnprojectedScalar>,
     ) -> Result<Outcome, Box<dyn error::Error>> {
         self.visit_feature_collection(&feature_collection);
-        for feature in feature_collection.into_features_iter() {
+        for feature in feature_collection.features.into_iter() {
             self.visit_feature(&feature);
-            if let Some(geometry) = feature.0.geometry {
+            if let Some(geometry) = feature.geometry {
                 self.visit_geometry(&geometry);
                 match geometry {
                     geo::Geometry::Point(g) => self.visit_point(&g),
@@ -87,35 +87,55 @@ pub trait Operation {
     fn ui(
         &mut self,
         _ui: &mut bevy_egui::egui::Ui,
-        _feature_collection: &Unprojected<geo_features::FeatureCollection>,
+        _feature_collection: &geo_features::FeatureCollection<geo_projected::UnprojectedScalar>,
     ) {
     }
 
     fn visit_feature_collection(
         &mut self,
-        _feature_collection: &Unprojected<geo_features::FeatureCollection>,
+        _feature_collection: &geo_features::FeatureCollection<geo_projected::UnprojectedScalar>,
     ) {
     }
 
-    fn visit_feature(&mut self, _feature: &Unprojected<geo_features::Feature>) {}
+    fn visit_feature(
+        &mut self,
+        _feature: &geo_features::Feature<geo_projected::UnprojectedScalar>,
+    ) {
+    }
 
-    fn visit_geometry(&mut self, _geometry: &geo::Geometry) {}
+    fn visit_geometry(&mut self, _geometry: &geo::Geometry<geo_projected::UnprojectedScalar>) {}
 
-    fn visit_point(&mut self, _point: &geo::Point) {}
+    fn visit_point(&mut self, _point: &geo::Point<geo_projected::UnprojectedScalar>) {}
 
-    fn visit_line(&mut self, _line: &geo::Line) {}
+    fn visit_line(&mut self, _line: &geo::Line<geo_projected::UnprojectedScalar>) {}
 
-    fn visit_line_string(&mut self, _line_string: &geo::LineString) {}
+    fn visit_line_string(
+        &mut self,
+        _line_string: &geo::LineString<geo_projected::UnprojectedScalar>,
+    ) {
+    }
 
-    fn visit_polygon(&mut self, _polygon: &geo::Polygon) {}
+    fn visit_polygon(&mut self, _polygon: &geo::Polygon<geo_projected::UnprojectedScalar>) {}
 
-    fn visit_multi_point(&mut self, _multi_point: &geo::MultiPoint) {}
+    fn visit_multi_point(
+        &mut self,
+        _multi_point: &geo::MultiPoint<geo_projected::UnprojectedScalar>,
+    ) {
+    }
 
-    fn visit_multi_line_string(&mut self, _multi_line_string: &geo::MultiLineString) {}
+    fn visit_multi_line_string(
+        &mut self,
+        _multi_line_string: &geo::MultiLineString<geo_projected::UnprojectedScalar>,
+    ) {
+    }
 
-    fn visit_multi_polygon(&mut self, _multi_polygon: &geo::MultiPolygon) {}
+    fn visit_multi_polygon(
+        &mut self,
+        _multi_polygon: &geo::MultiPolygon<geo_projected::UnprojectedScalar>,
+    ) {
+    }
 
-    fn visit_rect(&mut self, _rect: &geo::Rect) {}
+    fn visit_rect(&mut self, _rect: &geo::Rect<geo_projected::UnprojectedScalar>) {}
 
-    fn visit_triangle(&mut self, _triangle: &geo::Triangle) {}
+    fn visit_triangle(&mut self, _triangle: &geo::Triangle<geo_projected::UnprojectedScalar>) {}
 }

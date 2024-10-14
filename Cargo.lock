@@ -479,12 +479,13 @@ dependencies = [
 
 [[package]]
 name = "bevy-earcutr"
-version = "0.13.0"
+version = "0.14.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8481ae6ada39cc6b79016bd546c9428697fa45e8ac82443ba7b9c62ebe240fdd"
+checksum = "6044428b60072ec338922ea3aa78b2eb8582bb5f410ee57b5b83d52a42c29720"
 dependencies = [
  "bevy",
  "earcutr",
+ "num-traits",
 ]
 
 [[package]]
@@ -1353,9 +1354,9 @@ dependencies = [
 
 [[package]]
 name = "cc"
-version = "1.1.23"
+version = "1.1.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3bbb537bb4a30b90362caddba8f360c0a56bc13d3a5570028e7197204cb54a17"
+checksum = "812acba72f0a070b003d3697490d2b55b837230ae7c6c6497f05cc2ddbb8d938"
 dependencies = [
  "jobserver",
  "libc",
@@ -2209,9 +2210,9 @@ dependencies = [
 
 [[package]]
 name = "geo-bevy"
-version = "4.0.0"
+version = "5.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "63943a478a2234069cde2dc4894c947d15848bd5a0975c64c631021539be68ef"
+checksum = "d03c9e3b99049f61c9b8a4b4eafa26d69b6977f027d7af08a1f6e77af5b778e4"
 dependencies = [
  "bevy",
  "bevy-earcutr",
@@ -2232,9 +2233,11 @@ dependencies = [
  "bytes",
  "geo",
  "geo-features",
+ "geo-projected",
  "geozero",
  "thiserror",
  "time-logger",
+ "typed-num",
 ]
 
 [[package]]
@@ -2251,6 +2254,7 @@ version = "0.1.0"
 dependencies = [
  "geo",
  "geo-features",
+ "typed-num",
 ]
 
 [[package]]
@@ -4012,6 +4016,7 @@ dependencies = [
  "geo-features",
  "geo-geom-type",
  "geo-projected",
+ "typed-num",
 ]
 
 [[package]]
@@ -4058,6 +4063,7 @@ dependencies = [
  "rgis-events",
  "rgis-settings",
  "rgis-units",
+ "typed-num",
 ]
 
 [[package]]
@@ -4110,6 +4116,7 @@ dependencies = [
  "rgis-layers",
  "rgis-settings",
  "transform",
+ "typed-num",
 ]
 
 [[package]]
@@ -4961,6 +4968,15 @@ name = "ttf-parser"
 version = "0.24.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5be21190ff5d38e8b4a2d3b6a3ae57f612cc39c96e83cedeaf7abc338a8bac4a"
+
+[[package]]
+name = "typed-num"
+version = "0.1.0"
+dependencies = [
+ "float_next_after",
+ "geo",
+ "num-traits",
+]
 
 [[package]]
 name = "typeid"

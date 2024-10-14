@@ -7,3 +7,4 @@ publish = false
 [dependencies]
 geo = "0.28"
 geo-features = { path = "../geo-features" }
+typed-num = { path = "../typed-num" }

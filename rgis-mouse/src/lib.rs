@@ -7,20 +7,21 @@
 )]
 
 use bevy::prelude::*;
+use geo_projected::ProjectedScalar;
 
 mod systems;
 
 #[derive(Clone, Resource)]
-pub struct MousePos(pub geo_projected::Projected<geo::Coord>);
+pub struct MousePos(pub geo::Coord<ProjectedScalar>);
 
 pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut bevy::app::App) {
         systems::configure(app);
-        app.insert_resource(MousePos(geo_projected::Projected::new(geo::Coord {
-            x: 0.,
-            y: 0.,
-        })));
+        app.insert_resource(MousePos(geo::Coord {
+            x: typed_num::TypedNum::new(0.),
+            y: typed_num::TypedNum::new(0.),
+        }));
     }
 }

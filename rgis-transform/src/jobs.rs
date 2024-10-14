@@ -1,12 +1,12 @@
 pub struct ReprojectGeometryJob {
-    pub feature_collection: geo_projected::Unprojected<geo_features::FeatureCollection>,
+    pub feature_collection: geo_features::FeatureCollection<geo_projected::UnprojectedScalar>,
     pub layer_id: rgis_layer_id::LayerId,
     pub source_epsg_code: u16,
     pub target_epsg_code: u16,
 }
 
 pub struct ReprojectGeometryJobOutcome {
-    pub feature_collection: geo_projected::Projected<geo_features::FeatureCollection>,
+    pub feature_collection: geo_features::FeatureCollection<geo_projected::ProjectedScalar>,
     pub layer_id: rgis_layer_id::LayerId,
     pub target_crs_epsg_code: u16,
 }
@@ -18,30 +18,30 @@ impl bevy_jobs::Job for ReprojectGeometryJob {
         "Projecting layer".to_string()
     }
 
-    fn perform(
-        mut self,
-        progress_sender: bevy_jobs::Context,
-    ) -> bevy_jobs::AsyncReturn<Self::Outcome> {
+    fn perform(self, progress_sender: bevy_jobs::Context) -> bevy_jobs::AsyncReturn<Self::Outcome> {
         Box::pin(async move {
-            let total = self.feature_collection.features_iter_mut().count();
+            let total = self.feature_collection.features.len();
 
             let transformer =
                 transform::Transformer::setup(self.source_epsg_code, self.target_epsg_code)?;
 
-            for (i, feature) in self.feature_collection.features_iter_mut().enumerate() {
+            let mut feature_collection =
+                geo_projected::feature_collection_cast(self.feature_collection);
+
+            for (i, feature) in feature_collection.features.iter_mut().enumerate() {
                 let _ = progress_sender.send_progress((100 * i / total) as u8).await;
 
-                if let Some(ref mut geometry) = &mut feature.0.geometry {
+                if let Some(ref mut geometry) = &mut feature.geometry {
                     transformer.transform(geometry)?;
                 }
 
-                feature.0.recalculate_bounding_rect();
+                feature.recalculate_bounding_rect();
             }
 
-            self.feature_collection.0.recalculate_bounding_rect();
+            feature_collection.recalculate_bounding_rect();
 
             Ok(ReprojectGeometryJobOutcome {
-                feature_collection: self.feature_collection.into_projected(),
+                feature_collection,
                 layer_id: self.layer_id,
                 target_crs_epsg_code: self.target_epsg_code,
             })

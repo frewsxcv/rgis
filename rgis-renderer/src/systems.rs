@@ -14,7 +14,9 @@ fn layer_loaded(
 
         job_spawner.spawn(MeshBuildingJob {
             layer_id: layer.id,
-            geometry: feature_collection.to_geometry_collection_geometry(),
+            geometry: geo::Geometry::GeometryCollection(
+                feature_collection.to_geometry_collection(),
+            ),
             is_selected: false,
         });
     }
@@ -30,13 +32,16 @@ fn handle_mesh_building_job_outcome(
     asset_server: Res<AssetServer>,
 ) {
     while let Some(outcome) = finished_jobs.take_next::<MeshBuildingJob>() {
-        let Some(crate::jobs::MeshBuildingJobOutcome {
+        let crate::jobs::MeshBuildingJobOutcome {
             geometry_mesh,
             layer_id,
             is_selected,
-        }) = outcome
-        else {
-            continue;
+        } = match outcome {
+            Ok(outcome) => outcome,
+            Err(e) => {
+                bevy::log::error!("Error processing MeshBuildingJobOutcome: {:?}", e);
+                continue;
+            }
         };
         let Some((layer, layer_index)) = layers.get_with_index(layer_id) else {
             continue;
@@ -247,12 +252,12 @@ fn handle_feature_selected_event_spawn(
         let Some(feature) = layer.get_projected_feature(event.1) else {
             return;
         };
-        let Some(geometry) = feature.geometry() else {
+        let Some(geometry) = feature.geometry.as_ref() else {
             return;
         };
         job_spawner.spawn(MeshBuildingJob {
             layer_id: event.0,
-            geometry: geometry.cloned(),
+            geometry: geometry.clone(),
             is_selected: true,
         });
     }
