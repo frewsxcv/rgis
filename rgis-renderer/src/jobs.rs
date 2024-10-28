@@ -5,7 +5,7 @@ pub struct MeshBuildingJob {
 }
 
 pub struct MeshBuildingJobOutcome {
-    pub geometry_mesh: geo_bevy::GeometryMesh<geo_projected::ProjectedScalar>,
+    pub geometry_mesh: geo_bevy::GeometryMesh,
     pub layer_id: rgis_layer_id::LayerId,
     pub is_selected: bool,
 }

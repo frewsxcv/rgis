@@ -2210,13 +2210,15 @@ dependencies = [
 
 [[package]]
 name = "geo-bevy"
-version = "5.0.0"
+version = "6.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d03c9e3b99049f61c9b8a4b4eafa26d69b6977f027d7af08a1f6e77af5b778e4"
+checksum = "07e87c3dbcd1e3deb3ce108feb81c8f5d7bd9ec3efe51901ba96fa0238f56ae4"
 dependencies = [
  "bevy",
  "bevy-earcutr",
- "geo",
+ "geo-traits",
+ "geo-types",
+ "num-traits",
 ]
 
 [[package]]
@@ -2255,6 +2257,15 @@ dependencies = [
  "geo",
  "geo-features",
  "typed-num",
+]
+
+[[package]]
+name = "geo-traits"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cdc9562dd7e476214a5eea3caf12763dcc2c886a64cc4c3b8ec41554e8c6c5fc"
+dependencies = [
+ "geo-types",
 ]
 
 [[package]]

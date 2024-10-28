@@ -36,7 +36,7 @@ impl bevy::app::Plugin for Plugin {
 const SELECTED_COLOR: Color = Color::srgb(255., 192., 203.); // pink
 
 fn spawn_geometry_meshes(
-    geometry_mesh: geo_bevy::GeometryMesh<geo_projected::ProjectedScalar>,
+    geometry_mesh: geo_bevy::GeometryMesh,
     materials: &mut Assets<ColorMaterial>,
     layer: &rgis_layers::Layer,
     commands: &mut Commands,
@@ -47,7 +47,7 @@ fn spawn_geometry_meshes(
 ) {
     match geometry_mesh {
         geo_bevy::GeometryMesh::Point(points) => {
-            for geo::Point(coord) in points {
+            for coord in points {
                 let (stroke_entity_type, fill_entity_type) = if is_selected {
                     (
                         RenderEntityType::SelectedPoint,
@@ -59,8 +59,7 @@ fn spawn_geometry_meshes(
 
                 // Stroke
                 let z_index = ZIndex::calculate(layer_index, stroke_entity_type);
-                let transform =
-                    Transform::from_xyz(coord.x.0 as f32, coord.y.0 as f32, z_index.0 as f32);
+                let transform = Transform::from_xyz(coord.x, coord.y, z_index.0 as f32);
                 let mut entity_commands =
                     spawn_sprite_bundle(asset_server, transform, commands, layer.color.stroke);
                 entity_commands.insert(layer.id);
@@ -68,8 +67,7 @@ fn spawn_geometry_meshes(
 
                 // Fill
                 let z_index = ZIndex::calculate(layer_index, fill_entity_type);
-                let mut transform =
-                    Transform::from_xyz(coord.x.0 as f32, coord.y.0 as f32, z_index.0 as f32);
+                let mut transform = Transform::from_xyz(coord.x, coord.y, z_index.0 as f32);
                 transform.scale *= 0.7; // Fill should be smaller than stroke.
                 let mut entity_commands = spawn_sprite_bundle(
                     asset_server,
