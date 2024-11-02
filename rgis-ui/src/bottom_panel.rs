@@ -9,7 +9,7 @@ pub(crate) struct BottomPanel<'a, 'w> {
     pub bottom_panel_height: &'a mut crate::BottomPanelHeight,
 }
 
-impl<'a, 'w> BottomPanel<'a, 'w> {
+impl BottomPanel<'_, '_> {
     pub(crate) fn render(&mut self) {
         let inner_response = egui::TopBottomPanel::bottom("bottom").show(self.egui_ctx, |ui| {
             egui::menu::bar(ui, |ui| {

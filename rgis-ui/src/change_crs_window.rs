@@ -11,11 +11,11 @@ pub(crate) struct ChangeCrsWindow<'a, 'w> {
     pub crs_input_outcome: &'a mut Option<crate::widgets::crs_input::Outcome>,
 }
 
-impl<'a, 'w> ChangeCrsWindow<'a, 'w> {
+impl ChangeCrsWindow<'_, '_> {
     pub(crate) fn render(&mut self) {
-        egui::Window::new("Change CRS")
-            .open(self.is_visible)
-            .show(self.bevy_egui_ctx.get_mut(), |ui| {
+        egui::Window::new("Change CRS").open(self.is_visible).show(
+            self.bevy_egui_ctx.get_mut(),
+            |ui| {
                 ui.add(crate::widgets::CrsInput::new(
                     self.text_field_value,
                     self.crs_input_outcome,
@@ -36,6 +36,7 @@ impl<'a, 'w> ChangeCrsWindow<'a, 'w> {
                             new_crs_epsg_code: value,
                         });
                 }
-            });
+            },
+        );
     }
 }

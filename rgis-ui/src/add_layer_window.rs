@@ -90,15 +90,15 @@ pub struct OpenedFile {
     file_name: String,
 }
 
-impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
+impl AddLayerWindow<'_, '_, '_, '_, '_> {
     pub(crate) fn render(&mut self) {
         if !*self.is_visible {
             return;
         }
 
-        egui::Window::new("Add Layer")
-            .open(self.is_visible)
-            .show(self.bevy_egui_ctx.get_mut(), |ui| {
+        egui::Window::new("Add Layer").open(self.is_visible).show(
+            self.bevy_egui_ctx.get_mut(),
+            |ui| {
                 ui.label("Layer source:");
 
                 ui.radio_value(&mut self.state.selected_source, Source::Library, "Library");
@@ -272,7 +272,8 @@ impl<'a, 'w1, 's1, 'w2, 's2> AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
                         self.state.reset();
                     }
                 }
-            });
+            },
+        );
 
         // If the user closes the window, reset the state.
         if !*self.is_visible {
@@ -294,7 +295,7 @@ struct LibraryWidget<'a, 'w, 's> {
     events: &'a mut Events<'w, 's>,
 }
 
-impl<'a, 'w, 's> egui::Widget for LibraryWidget<'a, 'w, 's> {
+impl egui::Widget for LibraryWidget<'_, '_, '_> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         ui.vertical(|ui| {
             ui.heading("Library");
@@ -320,7 +321,7 @@ struct LibraryEntryWidget<'a, 'w, 's> {
     events: &'a mut Events<'w, 's>,
 }
 
-impl<'a, 'w, 's> egui::Widget for LibraryEntryWidget<'a, 'w, 's> {
+impl egui::Widget for LibraryEntryWidget<'_, '_, '_> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         ui.horizontal(|ui| {
             if ui.button("➕ Add").clicked() {

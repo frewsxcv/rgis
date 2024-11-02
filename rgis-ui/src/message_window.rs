@@ -5,7 +5,7 @@ pub(crate) struct MessageWindow<'a> {
     pub state: &'a mut crate::MessageWindowState,
 }
 
-impl<'a> MessageWindow<'a> {
+impl MessageWindow<'_> {
     pub(crate) fn render(&mut self) {
         if !self.state.is_visible && self.state.message.is_some() {
             self.state.message = None;

@@ -256,7 +256,7 @@ struct InProgressJobWidget<'a> {
     in_progress_job: &'a bevy_jobs::InProgressJob,
 }
 
-impl<'a> Widget for InProgressJobWidget<'a> {
+impl Widget for InProgressJobWidget<'_> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         let Self { in_progress_job } = self;
 

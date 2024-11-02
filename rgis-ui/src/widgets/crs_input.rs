@@ -18,7 +18,7 @@ impl<'a> CrsInput<'a> {
     }
 }
 
-impl<'a> egui::Widget for CrsInput<'a> {
+impl egui::Widget for CrsInput<'_> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         ui.vertical(|ui| {
             ui.add(EpsgCodeInputFieldWidget {
@@ -53,7 +53,7 @@ struct EpsgCodeInputFieldWidget<'a> {
     outcome: &'a mut Option<Outcome>,
 }
 
-impl<'a> egui::Widget for EpsgCodeInputFieldWidget<'a> {
+impl egui::Widget for EpsgCodeInputFieldWidget<'_> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         ui.horizontal(|ui| {
             ui.label("EPSG:");

@@ -8,7 +8,7 @@ pub(crate) struct ManageLayerWindow<'a> {
     pub color_events: &'a mut bevy::ecs::event::Events<rgis_events::UpdateLayerColorEvent>,
 }
 
-impl<'a> ManageLayerWindow<'a> {
+impl ManageLayerWindow<'_> {
     pub(crate) fn render(&mut self) {
         let (true, Some(layer_id)) = (self.state.is_visible, self.state.layer_id) else {
             return;
@@ -65,7 +65,7 @@ struct StrokeColorWidget<'a> {
     pub color_events: &'a mut bevy::ecs::event::Events<rgis_events::UpdateLayerColorEvent>,
 }
 
-impl<'a> egui::Widget for StrokeColorWidget<'a> {
+impl egui::Widget for StrokeColorWidget<'_> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         let mut old_color = self.color.to_linear().to_f32_array();
         let response = ui.color_edit_button_rgba_unmultiplied(&mut old_color);
@@ -91,7 +91,7 @@ struct FillColorWidget<'a> {
     pub color_events: &'a mut bevy::ecs::event::Events<rgis_events::UpdateLayerColorEvent>,
 }
 
-impl<'a> egui::Widget for FillColorWidget<'a> {
+impl egui::Widget for FillColorWidget<'_> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         let mut old_color = self.color.to_linear().to_f32_array();
         let response = ui.color_edit_button_rgba_unmultiplied(&mut old_color);

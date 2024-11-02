@@ -27,7 +27,7 @@ pub(crate) struct SidePanel<'a, 'w> {
     pub side_panel_width: &'a mut crate::SidePanelWidth,
 }
 
-impl<'a, 'w> SidePanel<'a, 'w> {
+impl SidePanel<'_, '_> {
     pub(crate) fn render(&mut self) {
         let side_panel = egui::SidePanel::left("left-side-panel").resizable(true);
 
@@ -83,7 +83,7 @@ impl<'a, 'w, Op: rgis_geo_ops::OperationEntry> OperationButton<'a, 'w, Op> {
     }
 }
 
-impl<'a, 'w, Op: rgis_geo_ops::OperationEntry> egui::Widget for OperationButton<'a, 'w, Op> {
+impl<Op: rgis_geo_ops::OperationEntry> egui::Widget for OperationButton<'_, '_, Op> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         let button = ui.add_enabled(
             Op::ALLOWED_GEOM_TYPES.contains(self.layer.geom_type),
@@ -135,7 +135,7 @@ struct AddLayerButton<'a, 'w> {
     events: &'a mut Events<'w>,
 }
 
-impl<'a, 'w> egui::Widget for AddLayerButton<'a, 'w> {
+impl egui::Widget for AddLayerButton<'_, '_> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         let button = ui.button("➕ Add Layer");
 
@@ -156,7 +156,7 @@ struct Layer<'a, 'w> {
     events: &'a mut Events<'w>,
 }
 
-impl<'a, 'w> Layer<'a, 'w> {
+impl Layer<'_, '_> {
     fn delete_layer(&mut self, layer: &rgis_layers::Layer) {
         self.events
             .delete_layer_event_writer
@@ -164,7 +164,7 @@ impl<'a, 'w> Layer<'a, 'w> {
     }
 }
 
-impl<'a, 'w> Widget for Layer<'a, 'w> {
+impl Widget for Layer<'_, '_> {
     fn ui(mut self, ui: &mut egui::Ui) -> egui::Response {
         let Layer {
             layer,
@@ -234,7 +234,7 @@ struct MoveUpMoveDownWidget<'a, 'w> {
     events: &'a mut Events<'w>,
 }
 
-impl<'a, 'w> egui::Widget for MoveUpMoveDownWidget<'a, 'w> {
+impl egui::Widget for MoveUpMoveDownWidget<'_, '_> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         ui.horizontal(|ui| {
             if ui
@@ -270,7 +270,7 @@ struct ToggleLayerWidget<'a, 'w> {
     events: &'a mut Events<'w>,
 }
 
-impl<'a, 'w> egui::Widget for ToggleLayerWidget<'a, 'w> {
+impl egui::Widget for ToggleLayerWidget<'_, '_> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         let button = if self.layer.visible {
             ui.button("👁 Hide")
@@ -293,7 +293,7 @@ struct OperationsWidget<'a, 'w> {
     events: &'a mut Events<'w>,
 }
 
-impl<'a, 'w> egui::Widget for OperationsWidget<'a, 'w> {
+impl egui::Widget for OperationsWidget<'_, '_> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         ui.with_layout(Layout::top_down_justified(Align::LEFT), |ui| {
             if ui.button("Bounding rect").clicked() {

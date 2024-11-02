@@ -49,7 +49,7 @@ pub struct MapArea<'a> {
     pub bottom_offset_px: f32,
 }
 
-impl<'a> MapArea<'a> {
+impl MapArea<'_> {
     fn top_left_screen_coord(&self) -> ScreenCoord {
         ScreenCoord {
             x: f64::from(self.left_offset_px),

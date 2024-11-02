@@ -10,7 +10,7 @@ pub(crate) struct TopPanel<'a, 'w, 's> {
     pub is_debug_window_open: &'a mut crate::IsWindowOpen<crate::debug_window::DebugWindow<'w, 's>>,
 }
 
-impl<'a, 'w, 's> TopPanel<'a, 'w, 's> {
+impl TopPanel<'_, '_, '_> {
     pub(crate) fn render(&mut self) {
         let inner_response =
             egui::TopBottomPanel::top("top_panel").show(self.bevy_egui_ctx.get_mut(), |ui| {
@@ -82,7 +82,7 @@ struct ExitButton<'a> {
     app_exit_events: &'a mut bevy::ecs::event::Events<bevy::app::AppExit>,
 }
 
-impl<'a> egui::Widget for ExitButton<'a> {
+impl egui::Widget for ExitButton<'_> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         ui.add_enabled_ui(cfg!(not(target_arch = "wasm32")), |ui| {
             if ui.button("Exit").clicked() {
@@ -97,7 +97,7 @@ struct FullScreenButton<'a> {
     window: &'a mut bevy::window::Window,
 }
 
-impl<'a> egui::Widget for FullScreenButton<'a> {
+impl egui::Widget for FullScreenButton<'_> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         ui.add_enabled_ui(cfg!(not(target_arch = "wasm32")), |ui| {
             if ui.button("Full screen").clicked() {

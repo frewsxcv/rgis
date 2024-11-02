@@ -8,7 +8,7 @@ pub(crate) struct OperationWindow<'w> {
         bevy::ecs::event::EventWriter<'w, rgis_events::RenderMessageEvent>,
 }
 
-impl<'w> OperationWindow<'w> {
+impl OperationWindow<'_> {
     pub(crate) fn render(&mut self) {
         if !self.state.is_visible {
             self.state.operation = None;

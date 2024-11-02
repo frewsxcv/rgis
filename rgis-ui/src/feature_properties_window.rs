@@ -5,7 +5,7 @@ pub(crate) struct FeaturePropertiesWindow<'a> {
     pub state: &'a mut crate::FeaturePropertiesWindowState,
 }
 
-impl<'a> FeaturePropertiesWindow<'a> {
+impl FeaturePropertiesWindow<'_> {
     pub(crate) fn render(&mut self) {
         let Some(ref properties) = self.state.properties else {
             return;
@@ -23,7 +23,7 @@ struct FeaturePropertiesTable<'a> {
     properties: &'a geo_features::Properties,
 }
 
-impl<'a> egui::Widget for FeaturePropertiesTable<'a> {
+impl egui::Widget for FeaturePropertiesTable<'_> {
     fn ui(self, ui: &mut bevy_egui::egui::Ui) -> bevy_egui::egui::Response {
         egui::Grid::new("feature_properties_window_grid")
             .num_columns(2)

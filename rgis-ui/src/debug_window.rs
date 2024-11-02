@@ -36,7 +36,7 @@ pub struct DebugWindow<'w, 's> {
 
 const FPS_MAX: f64 = 100.;
 
-impl<'w, 's> egui::Widget for DebugWindow<'w, 's> {
+impl egui::Widget for DebugWindow<'_, '_> {
     fn ui(mut self, ui: &mut egui::Ui) -> egui::Response {
         if self.state.history.is_empty() || self.state.timer.tick(self.time.delta()).just_finished()
         {
@@ -48,7 +48,7 @@ impl<'w, 's> egui::Widget for DebugWindow<'w, 's> {
     }
 }
 
-impl<'w, 's> DebugWindow<'w, 's> {
+impl DebugWindow<'_, '_> {
     fn update_stats(&mut self) {
         let fps = self
             .diagnostics
@@ -135,7 +135,7 @@ struct DebugTable<'a> {
     last: &'a LastDebugStats,
 }
 
-impl<'a> egui::Widget for DebugTable<'a> {
+impl egui::Widget for DebugTable<'_> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         egui::Grid::new("some_unique_id")
             .striped(true)
