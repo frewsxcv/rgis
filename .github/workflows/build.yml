@@ -52,7 +52,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - run: command -v wasm-pack >/dev/null 2>&1 || cargo install --force --git https://github.com/rustwasm/wasm-pack.git --tag v0.13.1
       # https://github.com/rustwasm/wasm-bindgen/issues/4211
-      - run: cargo install wasm-bindgen-cli --git "https://github.com/rustwasm/wasm-bindgen"
+      - run: cargo install --force wasm-bindgen-cli --git "https://github.com/rustwasm/wasm-bindgen"
       - name: Install wasm Rust target
         run: rustup target add wasm32-unknown-unknown
       - name: Install system dependencies
