@@ -8,7 +8,7 @@ edition = "2021"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-geo = "0.28"
+geo = "0.29"
 rgis-camera = { path = "../rgis-camera" }
 rgis-file-loader = { path = "../rgis-file-loader" }
 rgis-keyboard = { path = "../rgis-keyboard" }

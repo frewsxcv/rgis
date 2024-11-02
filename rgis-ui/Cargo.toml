@@ -31,6 +31,6 @@ rgis-mouse = { path = "../rgis-mouse" }
 rgis-settings = { path = "../rgis-settings" }
 rgis-units = { path = "../rgis-units" }
 bevy_jobs = { git = "https://github.com/frewsxcv/bevy_jobs" }
-geo = "0.28"
+geo = "0.29"
 transform = { path = "../transform" }
 thiserror = "1"

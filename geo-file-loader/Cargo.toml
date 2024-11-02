@@ -7,7 +7,7 @@ publish = false
 [dependencies]
 bytes = "1"
 time-logger = { path = "../time-logger" }
-geo = "0.28"
+geo = "0.29"
 geo-features = { path = "../geo-features" }
 geozero = { version = "0.14", features = ["with-wkt", "with-gpx", "with-shp"] }
 thiserror = "1"

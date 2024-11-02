@@ -7,5 +7,5 @@ publish = false
 [dependencies]
 geodesy = { version = "0.13", default-features = false }
 crs-definitions = "0.3"
-geo = "0.28"
+geo = "0.29"
 thiserror = "1"
