@@ -21,8 +21,9 @@ impl bevy_jobs::Job for LoadFileJob {
 
     fn perform(self, _: bevy_jobs::Context) -> bevy_jobs::AsyncReturn<Self::Outcome> {
         Box::pin(async move {
+            let loaded_file = geo_file_loader::load_file(self.file_format, self.bytes)?;
             Ok(LoadFileJobOutcome {
-                feature_collection: geo_file_loader::load_file(self.file_format, self.bytes)?,
+                feature_collection: loaded_file.into(),
                 name: self.name,
                 source_crs_epsg_code: self.source_crs_epsg_code,
             })

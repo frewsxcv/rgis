@@ -7,9 +7,9 @@ publish = false
 [dependencies]
 bytes = "1"
 time-logger = { path = "../time-logger" }
-geo = "0.28"
-geo-features = { path = "../geo-features" }
-geozero = { version = "0.14", features = ["with-wkt", "with-gpx", "with-shp"] }
 thiserror = "1"
-geo-projected = { path = "../geo-projected" }
-typed-num = { path = "../typed-num" }
+# geojson = { version = "0.24", features = ["geo-traits"] }
+geojson = { git = "https://github.com/georust/geojson.git", branch = "geo-traits-impl", features = ["geo-traits"] }
+wkt = { git = "https://github.com/georust/wkt.git", branch = "kyle/geo-traits", features = ["serde"] }
+geo-traits = "0.1"
+num-traits = "0.2"
