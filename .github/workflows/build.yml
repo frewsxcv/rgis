@@ -2,9 +2,9 @@ name: Rust
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 env:
   CARGO_TERM_COLOR: always
@@ -14,58 +14,58 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/cache@v2
-      with:
-        path: |
-          ~/.cargo/bin/
-          ~/.cargo/registry/index/
-          ~/.cargo/registry/cache/
-          ~/.cargo/git/db/
-          target/
-        key: desktop-${{ runner.os }}-linux-cargo-${{ hashFiles('**/Cargo.lock') }}
-    - name: Install Dependencies
-      run: |
-        export DEBIAN_FRONTEND=noninteractive
-        sudo apt-get clean && sudo apt-get update
-        sudo apt-get install -y pkg-config libudev-dev libxcb-shape0-dev libxcb-xfixes0-dev libxcb1-dev libasound2-dev libgtk-3-dev
-    - uses: dtolnay/rust-toolchain@stable
-    - name: Build
-      run: cargo build --target x86_64-unknown-linux-gnu --verbose
-    - name: Run tests
-      run: cargo test --target x86_64-unknown-linux-gnu --verbose
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: desktop-${{ runner.os }}-linux-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Install Dependencies
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          sudo apt-get clean && sudo apt-get update
+          sudo apt-get install -y pkg-config libudev-dev libxcb-shape0-dev libxcb-xfixes0-dev libxcb1-dev libasound2-dev libgtk-3-dev
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Build
+        run: cargo build --target x86_64-unknown-linux-gnu --verbose
+      - name: Run tests
+        run: cargo test --target x86_64-unknown-linux-gnu --verbose
 
   wasm32-build-and-serve:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/cache@v2
-      with:
-        path: |
-          ~/.cargo/bin/
-          ~/.cargo/registry/index/
-          ~/.cargo/registry/cache/
-          ~/.cargo/git/db/
-          target/
-        key: web-${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-v1
-    - uses: dtolnay/rust-toolchain@stable
-    - run: command -v wasm-pack >/dev/null 2>&1 || cargo install --force --git https://github.com/rustwasm/wasm-pack.git --tag v0.12.1
-    - name: Install wasm Rust target
-      run: rustup target add wasm32-unknown-unknown
-    - name: Install system dependencies
-      run: |
-        export DEBIAN_FRONTEND=noninteractive
-        sudo apt-get clean && sudo apt-get update
-        sudo apt-get install -y pkg-config libudev-dev libxcb-shape0-dev libxcb-xfixes0-dev libxcb1-dev
-    - name: Install node dependencies
-      run: (cd www && npm install)
-    - name: Build and publish
-      run: ./.github/publish.sh
-    - name: Deploy to GitHub Pages
-      if: github.ref == 'refs/heads/main'
-      uses: JamesIves/github-pages-deploy-action@v4.2.5
-      with:
-        branch: gh-pages
-        folder: www/dist/
-        single_commit: true
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: web-${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-v1
+      - uses: dtolnay/rust-toolchain@stable
+      - run: command -v wasm-pack >/dev/null 2>&1 || cargo install --force --git https://github.com/rustwasm/wasm-pack.git --tag v0.13.1
+      - name: Install wasm Rust target
+        run: rustup target add wasm32-unknown-unknown
+      - name: Install system dependencies
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          sudo apt-get clean && sudo apt-get update
+          sudo apt-get install -y pkg-config libudev-dev libxcb-shape0-dev libxcb-xfixes0-dev libxcb1-dev
+      - name: Install node dependencies
+        run: (cd www && npm install)
+      - name: Build and publish
+        run: ./.github/publish.sh
+      - name: Deploy to GitHub Pages
+        if: github.ref == 'refs/heads/main'
+        uses: JamesIves/github-pages-deploy-action@v4.2.5
+        with:
+          branch: gh-pages
+          folder: www/dist/
+          single_commit: true
