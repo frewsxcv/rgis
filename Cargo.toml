@@ -25,14 +25,6 @@ members = [
 ]
 resolver = "2"
 
-[build]
-# https://github.com/rustwasm/wasm-bindgen/issues/4211
-strip = true
-
-[profile.dev]
-# https://github.com/rustwasm/wasm-bindgen/issues/4211
-strip = true
-
 [profile.release]
 debug = true
 # https://github.com/rustwasm/wasm-bindgen/issues/4211
