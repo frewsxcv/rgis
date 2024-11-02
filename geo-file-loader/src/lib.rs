@@ -1,14 +1,22 @@
-mod geojson;
-mod gpx;
-mod shapefile;
-mod wkt;
+#![warn(
+    clippy::unwrap_used,
+    clippy::cast_lossless,
+    clippy::unimplemented,
+    clippy::indexing_slicing,
+    clippy::expect_used
+)]
 
-use geozero::geo_types::GeoProperties;
+mod geojson_loader;
+mod gpx_loader;
+mod shapefile_loader;
+mod wkt_loader;
 
-pub use crate::geojson::GeoJsonSource;
-pub use crate::gpx::GpxSource;
-pub use crate::shapefile::ShapefileSource;
-pub use crate::wkt::WktSource;
+pub use crate::geojson_loader::GeoJsonSource;
+pub use crate::gpx_loader::GpxSource;
+pub use crate::shapefile_loader::ShapefileSource;
+pub use crate::wkt_loader::WktSource;
+use enum_delegate::delegate;
+use geo_traits::GeometryTrait;
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum FileFormat {
@@ -19,41 +27,14 @@ pub enum FileFormat {
     GeoTiff,
 }
 
-#[derive(Debug)]
+#[derive(thiserror::Error, Debug)]
 pub enum Error {
-    Geozero(geozero::error::GeozeroError),
-    Shapefile(geozero::shp::Error),
+    #[error("{0}")]
+    GeoJson(#[from] geojson::Error),
+    #[error("No geometry found in file")]
     NoGeometry,
-    GeoTiff(geo_raster::Error),
-}
-
-impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Error::Geozero(err) => write!(f, "{err}"),
-            Error::Shapefile(err) => write!(f, "{err}"),
-            Error::NoGeometry => write!(f, "No geometry found in file"),
-            Error::GeoTiff(err) => write!(f, "{err}"),
-        }
-    }
-}
-
-impl From<geozero::error::GeozeroError> for Error {
-    fn from(err: geozero::error::GeozeroError) -> Self {
-        Error::Geozero(err)
-    }
-}
-
-impl From<geozero::shp::Error> for Error {
-    fn from(err: geozero::shp::Error) -> Self {
-        Error::Shapefile(err)
-    }
-}
-
-impl From<geo_raster::Error> for Error {
-    fn from(err: geo_raster::Error) -> Self {
-        Error::GeoTiff(err)
-    }
+    #[error("{0}")]
+    GeoTiff(#[from] geo_raster::Error),
 }
 
 impl FileFormat {
@@ -82,25 +63,7 @@ impl FileFormat {
     }
 }
 
-#[derive(Clone, Debug)]
-pub enum Value {
-    String(String),
-    Number(f64),
-    Boolean(bool),
-    Null,
-}
-
-#[derive(Debug, PartialEq)]
-pub struct Feature {
-    pub geometry: geo::Geometry,
-    pub properties: GeoProperties,
-}
-
-pub type Features = Vec<Feature>;
-
-pub type OwnedColumnValue = geozero::geo_types::OwnedColumnValue;
-
-pub fn load_file(file_format: FileFormat, bytes: bytes::Bytes) -> Result<Features, Error> {
+pub fn load_file(file_format: FileFormat, bytes: bytes::Bytes) -> Result<LoadedFile, Error> {
     match file_format {
         FileFormat::GeoJson => Ok(GeoJsonSource::from_bytes(bytes).load()?),
         FileFormat::Gpx => Ok(GpxSource::from_bytes(bytes).load()?),
@@ -114,7 +77,170 @@ pub async fn load_raster_file(bytes: bytes::Bytes) -> Result<geo_raster::Raster,
     Ok(geo_raster::GeoTiffSource::from_bytes(bytes).load().await?)
 }
 
+// Define "either" type that can be either a GeoJson or Wkt associated types
+#[derive(Debug, PartialEq, Copy, Clone, geo_traits::PointTrait)]
+pub enum Either<X, Y> {
+    GeoJson(X),
+    Wkt(Y),
+}
+
+impl<X, Y> PartialOrd for Either<X, Y>
+where
+    X: PartialOrd,
+    Y: PartialOrd,
+{
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        todo!()
+    }
+}
+
+impl<X, Y> num_traits::ToPrimitive for Either<X, Y>
+where
+    X: num_traits::ToPrimitive,
+    Y: num_traits::ToPrimitive,
+{
+    fn to_i64(&self) -> Option<i64> {
+        todo!()
+    }
+
+    fn to_u64(&self) -> Option<u64> {
+        todo!()
+    }
+}
+
+impl<X, Y> num_traits::NumCast for Either<X, Y>
+where
+    X: num_traits::NumCast,
+    Y: num_traits::NumCast,
+{
+    fn from(n: Self) -> Option<f64> {
+        todo!()
+    }
+}
+
+impl<X, Y> num_traits::Num for Either<X, Y>
+where
+    X: num_traits::Num,
+    Y: num_traits::Num,
+{
+    type FromStrRadixErr;
+
+    fn from_str_radix(str: &str, radix: u32) -> Result<Self, Self::FromStrRadixErr> {
+        todo!()
+    }
+}
+
+impl<X, Y> geo_traits::CoordTrait for Either<X, Y>
+where
+    X: geo_traits::CoordTrait,
+    Y: geo_traits::CoordTrait,
+{
+    type T = Either<X::T, Y::T>;
+
+    fn dim(&self) -> geo_traits::Dimensions {
+        match self {
+            Self::GeoJson(geojson) => geojson.dim(),
+            Self::Wkt(wkt) => wkt.dim(),
+        }
+    }
+
+    fn x(&self) -> Self::T {
+        match self {
+            Self::GeoJson(geojson) => Either::GeoJson(geojson.x()),
+            Self::Wkt(wkt) => Either::Wkt(wkt.x()),
+        }
+    }
+
+    fn y(&self) -> Self::T {
+        match self {
+            Self::GeoJson(geojson) => Either::GeoJson(geojson.y()),
+            Self::Wkt(wkt) => Either::Wkt(wkt.y()),
+        }
+    }
+
+    fn nth_unchecked(&self, n: usize) -> Self::T {
+        todo!()
+    }
+}
+
+impl<X, Y> geo_traits::PointTrait for Either<X, Y>
+where
+    X: geo_traits::PointTrait,
+    Y: geo_traits::PointTrait,
+{
+    type T = X::T;
+    type CoordType<'a>
+        = Either<X::CoordType<'a>, Y::CoordType<'a>>
+    where
+        X: 'a,
+        Y: 'a;
+
+    fn dim(&self) -> geo_traits::Dimensions {
+        match self {
+            Self::GeoJson(geojson) => geojson.dim(),
+            Self::Wkt(wkt) => wkt.dim(),
+        }
+    }
+    fn coord(&self) -> Option<Self::CoordType<'_>> {
+        match self {
+            Self::GeoJson(geojson) => geojson.coord().map(Either::GeoJson),
+            Self::Wkt(wkt) => wkt.coord().map(Either::Wkt),
+        }
+    }
+}
+
+#[delegate(for(LastName))]
+pub enum LoadedFile {
+    GeoJson(geojson::GeoJson),
+    Wkt(wkt::Wkt<f64>),
+}
+
+impl geo_traits::GeometryTrait for LoadedFile {
+    type T = f64;
+    type PointType<'a> = Either<
+        <geojson::GeoJson as geo_traits::GeometryTrait>::PointType<'a>,
+        <wkt::Wkt<f64> as geo_traits::GeometryTrait>::PointType<'a>,
+    >;
+    type LineStringType<'a> = <geojson::GeoJson as geo_traits::GeometryTrait>::LineStringType<'a>;
+    type PolygonType<'a> = <geojson::GeoJson as geo_traits::GeometryTrait>::PolygonType<'a>;
+    type MultiPointType<'a> = <geojson::GeoJson as geo_traits::GeometryTrait>::MultiPointType<'a>;
+    type MultiLineStringType<'a> =
+        <geojson::GeoJson as geo_traits::GeometryTrait>::MultiLineStringType<'a>;
+    type MultiPolygonType<'a> =
+        <geojson::GeoJson as geo_traits::GeometryTrait>::MultiPolygonType<'a>;
+    type GeometryCollectionType<'a> =
+        <geojson::GeoJson as geo_traits::GeometryTrait>::GeometryCollectionType<'a>;
+    type RectType<'a> = geo_traits::UnimplementedRect<Self::T>;
+    type TriangleType<'a> = geo_traits::UnimplementedTriangle<Self::T>;
+    type LineType<'a> = geo_traits::UnimplementedLine<Self::T>;
+
+    fn dim(&self) -> geo_traits::Dimensions {
+        // FIXME
+        geo_traits::Dimensions::Xy
+    }
+    fn as_type(
+        &self,
+    ) -> geo_traits::GeometryType<
+        '_,
+        Self::PointType<'_>,
+        Self::LineStringType<'_>,
+        Self::PolygonType<'_>,
+        Self::MultiPointType<'_>,
+        Self::MultiLineStringType<'_>,
+        Self::MultiPolygonType<'_>,
+        Self::GeometryCollectionType<'_>,
+        Self::RectType<'_>,
+        Self::TriangleType<'_>,
+        Self::LineType<'_>,
+    > {
+        match self {
+            Self::GeoJson(geojson) => geojson.as_type(),
+            Self::Wkt(wkt) => wkt.as_type(),
+        }
+    }
+}
+
 trait FileLoader {
     fn from_bytes(bytes: bytes::Bytes) -> Self;
-    fn load(self) -> Result<Features, Error>;
+    fn load(self) -> Result<LoadedFile, Error>;
 }

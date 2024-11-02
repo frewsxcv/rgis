@@ -9,6 +9,10 @@ workspace = true
 
 [dependencies]
 bytes = { workspace = true }
-geo = { workspace = true }
-geo-raster = { path = "../geo-raster" }
-geozero = { workspace = true, features = ["with-wkt", "with-gpx", "with-shp"] }
+time-logger = { path = "../time-logger" }
+thiserror = "1"
+# geojson = { version = "0.24", features = ["geo-traits"] }
+geojson = { git = "https://github.com/georust/geojson.git", branch = "geo-traits-impl", features = ["geo-traits"] }
+wkt = { git = "https://github.com/georust/wkt.git", branch = "kyle/geo-traits", features = ["serde"] }
+geo-traits = "0.1"
+num-traits = "0.2"
