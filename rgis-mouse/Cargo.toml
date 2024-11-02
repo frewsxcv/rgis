@@ -15,7 +15,7 @@ bevy = { version = "0.14", default-features = false, features = [
     "wayland",
     "png",
 ] }
-bevy_egui = "0.29"
+bevy_egui = "0.30"
 geo = "0.29"
 geo-projected = { path = "../geo-projected" }
 rgis-events = { path = "../rgis-events" }
