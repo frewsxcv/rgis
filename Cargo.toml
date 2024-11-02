@@ -27,3 +27,7 @@ resolver = "2"
 
 [profile.release]
 debug = true
+
+# https://github.com/rustwasm/wasm-bindgen/issues/4211
+[patch.crates-io]
+wasm-bindgen = { git = "https://github.com/rustwasm/wasm-bindgen" }
