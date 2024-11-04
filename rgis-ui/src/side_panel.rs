@@ -173,7 +173,7 @@ impl Widget for Layer<'_, '_> {
             events: _,
         } = self;
         egui::CollapsingHeader::new(&layer.name)
-            .id_source(layer.id) // Instead of using the layer name as the ID (which is not unique), use the layer ID
+            .id_salt(layer.id) // Instead of using the layer name as the ID (which is not unique), use the layer ID
             .show(ui, |ui| {
                 if !layer.is_active() {
                     ui.spinner();
@@ -212,7 +212,7 @@ impl Widget for Layer<'_, '_> {
                     }
 
                     egui::CollapsingHeader::new("⚙ Operations")
-                        .id_source(format!("{:?}-operations", layer.id)) // Instead of using the layer name as the ID (which is not unique), use the layer ID
+                        .id_salt(format!("{:?}-operations", layer.id)) // Instead of using the layer name as the ID (which is not unique), use the layer ID
                         .show(ui, |ui| {
                             ui.with_layout(Layout::top_down_justified(Align::LEFT), |ui| {
                                 ui.add(OperationsWidget {
