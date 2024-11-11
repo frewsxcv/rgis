@@ -6,6 +6,9 @@
     clippy::expect_used
 )]
 
+use std::marker;
+
+use bevy::prelude::*;
 use geo_projected::{ProjectedCoord, ProjectedScalar};
 
 // From top-left
@@ -122,4 +125,22 @@ impl ScreenSize {
             height: height.0,
         }
     }
+}
+
+#[derive(Copy, Clone, Resource)]
+pub struct SidePanelWidth(pub f32);
+
+#[derive(Copy, Clone, Resource)]
+pub struct TopPanelHeight(pub f32);
+
+#[derive(Copy, Clone, Resource)]
+pub struct BottomPanelHeight(pub f32);
+
+#[derive(bevy::ecs::system::SystemParam, Resource)]
+pub struct UiMargins<'w, 's> {
+    pub left: Res<'w, SidePanelWidth>,
+    pub top: Res<'w, TopPanelHeight>,
+    pub bottom: Res<'w, BottomPanelHeight>,
+    #[system_param(ignore)]
+    marker: marker::PhantomData<&'s usize>,
 }

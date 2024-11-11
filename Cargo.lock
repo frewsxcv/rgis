@@ -4173,7 +4173,6 @@ dependencies = [
  "geo-projected",
  "rgis-events",
  "rgis-layers",
- "rgis-ui",
  "rgis-units",
  "transform",
 ]

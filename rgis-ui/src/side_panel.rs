@@ -24,7 +24,7 @@ pub(crate) struct SidePanel<'a, 'w> {
     pub egui_ctx: &'a egui::Context,
     pub layers: &'a rgis_layers::Layers,
     pub events: &'a mut Events<'w>,
-    pub side_panel_width: &'a mut crate::SidePanelWidth,
+    pub side_panel_width: &'a mut rgis_units::SidePanelWidth,
 }
 
 impl SidePanel<'_, '_> {

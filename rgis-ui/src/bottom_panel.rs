@@ -6,7 +6,7 @@ pub(crate) struct BottomPanel<'a, 'w> {
     pub rgis_settings: &'a rgis_settings::RgisSettings,
     pub open_change_crs_window_event_writer:
         &'a mut bevy::ecs::event::EventWriter<'w, rgis_events::OpenChangeCrsWindow>,
-    pub bottom_panel_height: &'a mut crate::BottomPanelHeight,
+    pub bottom_panel_height: &'a mut rgis_units::BottomPanelHeight,
 }
 
 impl BottomPanel<'_, '_> {

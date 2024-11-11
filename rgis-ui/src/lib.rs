@@ -33,24 +33,6 @@ trait Window: egui::Widget + SystemParam + Send + Sync {
 
 pub struct Plugin;
 
-#[derive(Copy, Clone, Resource)]
-pub struct SidePanelWidth(pub f32);
-
-#[derive(Copy, Clone, Resource)]
-pub struct TopPanelHeight(pub f32);
-
-#[derive(Copy, Clone, Resource)]
-pub struct BottomPanelHeight(pub f32);
-
-#[derive(bevy::ecs::system::SystemParam, Resource)]
-pub struct UiMargins<'w, 's> {
-    pub left: Res<'w, SidePanelWidth>,
-    pub top: Res<'w, TopPanelHeight>,
-    pub bottom: Res<'w, BottomPanelHeight>,
-    #[system_param(ignore)]
-    marker: marker::PhantomData<&'s usize>,
-}
-
 #[derive(Default, Resource)]
 pub struct MessageWindowState {
     is_visible: bool,
@@ -80,9 +62,9 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(bevy_egui::EguiPlugin)
             .insert_resource(add_layer_window::SelectedFile(None))
-            .insert_resource(TopPanelHeight(0.))
-            .insert_resource(BottomPanelHeight(0.))
-            .insert_resource(SidePanelWidth(0.))
+            .insert_resource(rgis_units::TopPanelHeight(0.))
+            .insert_resource(rgis_units::BottomPanelHeight(0.))
+            .insert_resource(rgis_units::SidePanelWidth(0.))
             .add_event::<events::OpenOperationWindowEvent>();
 
         systems::configure(app);

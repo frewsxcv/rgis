@@ -22,5 +22,4 @@ geo-projected = { path = "../geo-projected" }
 rgis-events = { path = "../rgis-events" }
 rgis-layers = { path = "../rgis-layers" }
 transform = { path = "../transform" }
-rgis-ui = { path = "../rgis-ui" }
 rgis-units = { path = "../rgis-units" }

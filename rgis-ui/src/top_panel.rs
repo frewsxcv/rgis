@@ -6,7 +6,7 @@ pub(crate) struct TopPanel<'a, 'w, 's> {
     pub bevy_egui_ctx: &'a mut bevy_egui::EguiContext,
     pub window: &'a mut Window,
     pub app_settings: &'a mut rgis_settings::RgisSettings,
-    pub top_panel_height: &'a mut crate::TopPanelHeight,
+    pub top_panel_height: &'a mut rgis_units::TopPanelHeight,
     pub is_debug_window_open: &'a mut crate::IsWindowOpen<crate::debug_window::DebugWindow<'w, 's>>,
 }
 

@@ -12,7 +12,7 @@ fn render_bottom_panel(
     mut open_change_crs_window_event_writer: bevy::ecs::event::EventWriter<
         rgis_events::OpenChangeCrsWindow,
     >,
-    mut bottom_panel_height: ResMut<crate::BottomPanelHeight>,
+    mut bottom_panel_height: ResMut<rgis_units::BottomPanelHeight>,
 ) {
     let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else {
         return;
@@ -32,7 +32,7 @@ fn render_side_panel(
     mut egui_ctx_query: Query<&mut EguiContext, With<PrimaryWindow>>,
     layers: Res<rgis_layers::Layers>,
     mut events: crate::side_panel::Events,
-    mut side_panel_width: ResMut<crate::SidePanelWidth>,
+    mut side_panel_width: ResMut<rgis_units::SidePanelWidth>,
 ) {
     let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else {
         return;
@@ -283,7 +283,7 @@ fn render_top_panel(
     mut app_exit_events: ResMut<bevy::ecs::event::Events<bevy::app::AppExit>>,
     mut windows: Query<&mut bevy::window::Window, With<PrimaryWindow>>,
     mut app_settings: ResMut<rgis_settings::RgisSettings>,
-    mut top_panel_height: ResMut<crate::TopPanelHeight>,
+    mut top_panel_height: ResMut<rgis_units::TopPanelHeight>,
     mut is_debug_window_open: ResMut<
         crate::IsWindowOpen<crate::debug_window::DebugWindow<'static, 'static>>,
     >,

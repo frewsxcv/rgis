@@ -31,7 +31,7 @@ fn handle_change_crs_event(
         bevy::ecs::query::With<bevy::render::camera::Camera>,
     >,
     windows: Query<&Window, With<PrimaryWindow>>,
-    ui_margins: rgis_ui::UiMargins,
+    ui_margins: rgis_units::UiMargins,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let Some(event) = change_crs_event_reader.read().last() else {
         return Ok(());
@@ -142,7 +142,7 @@ fn center_camera(
         bevy::ecs::query::With<bevy::render::camera::Camera>,
     >,
     windows: Query<&Window, With<PrimaryWindow>>,
-    ui_margins: rgis_ui::UiMargins,
+    ui_margins: rgis_units::UiMargins,
 ) {
     let Ok(window) = windows.get_single() else {
         return;
