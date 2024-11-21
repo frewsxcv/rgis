@@ -44,12 +44,17 @@ struct CameraOffset {
     pub y: f32,
 }
 
+#[derive(Debug)]
+enum Error {
+    FloatConversion,
+}
+
 impl CameraOffset {
-    fn from_coord<Scalar: geo::CoordFloat>(coord: geo::Coord<Scalar>) -> Self {
-        CameraOffset {
-            x: coord.x.to_f32().unwrap(),
-            y: coord.y.to_f32().unwrap(),
-        }
+    fn from_coord<Scalar: geo::CoordFloat>(coord: geo::Coord<Scalar>) -> Result<Self, Error> {
+        Ok(CameraOffset {
+            x: coord.x.to_f32().ok_or(Error::FloatConversion)?,
+            y: coord.y.to_f32().ok_or(Error::FloatConversion)?,
+        })
     }
 
     fn from_transform(transform: &Transform) -> Self {

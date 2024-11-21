@@ -8,7 +8,13 @@ pub(crate) fn center_camera_on_projected_world_rect(
     let layer_center = bounding_rect.center();
     let scale = determine_scale(bounding_rect, map_area.size());
     let camera_scale = crate::CameraScale(scale);
-    let mut camera_offset = crate::CameraOffset::from_coord(layer_center);
+    let mut camera_offset = match crate::CameraOffset::from_coord(layer_center) {
+        Ok(offset) => offset,
+        Err(e) => {
+            error!("Error converting layer center to camera offset: {:?}", e);
+            return;
+        }
+    };
     camera_offset.pan_x(
         (map_area.right_offset_px - map_area.left_offset_px) / 2.,
         camera_scale,
