@@ -100,7 +100,7 @@ fn zoom_camera_system(
             mouse_offset = match crate::CameraOffset::from_coord(event.coord) {
                 Ok(offset) => offset,
                 Err(e) => {
-                    error!("Error creating camera offset: {}", e);
+                    error!("Error creating camera offset: {:?}", e);
                     continue;
                 }
             };
