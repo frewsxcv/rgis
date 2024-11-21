@@ -97,7 +97,13 @@ fn zoom_camera_system(
         // Set mouse_offset based on the first event's coordinate
         if !set {
             set = true;
-            mouse_offset = crate::CameraOffset::from_coord(event.coord);
+            mouse_offset = match crate::CameraOffset::from_coord(event.coord) {
+                Ok(offset) => offset,
+                Err(e) => {
+                    error!("Error creating camera offset: {}", e);
+                    continue;
+                }
+            };
         }
         // Adjust the camera scale based on the zoom amount from the event
         camera_scale.zoom(event.amount);
