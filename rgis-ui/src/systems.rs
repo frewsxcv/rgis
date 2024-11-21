@@ -159,21 +159,28 @@ fn render_change_crs_window(
 fn render_feature_properties_window(
     mut state: Local<crate::FeaturePropertiesWindowState>,
     mut egui_ctx_query: Query<&mut EguiContext, With<PrimaryWindow>>,
+    layers: Res<rgis_layers::Layers>,
     mut render_message_events: ResMut<
         bevy::ecs::event::Events<rgis_events::RenderFeaturePropertiesEvent>,
     >,
 ) {
     if let Some(event) = render_message_events.drain().last() {
         state.is_visible = true;
-        state.properties = Some(event.0);
+        state.layer_id = Some(event.layer_id);
+        state.properties = Some(event.properties);
     }
 
     let Ok(mut egui_ctx) = egui_ctx_query.get_single_mut() else {
         return;
     };
 
+    let Some(layer) = state.layer_id.and_then(|id| layers.get(id)) else {
+        return;
+    };
+
     crate::feature_properties_window::FeaturePropertiesWindow {
         state: &mut state,
+        layer,
         bevy_egui_ctx: &mut egui_ctx,
     }
     .render();

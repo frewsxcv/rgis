@@ -112,9 +112,10 @@ fn handle_map_clicked_events(
 ) {
     for event in map_clicked_event_reader.read() {
         if let Some((layer, feature)) = layers.feature_from_click(event.0) {
-            render_message_event_writer.send(rgis_events::RenderFeaturePropertiesEvent(
-                feature.properties.clone(),
-            ));
+            render_message_event_writer.send(rgis_events::RenderFeaturePropertiesEvent {
+                layer_id: layer.id,
+                properties: feature.properties.clone(),
+            });
             feature_clicked_event_writer
                 .send(rgis_events::FeatureSelectedEvent(layer.id, feature.id));
         }

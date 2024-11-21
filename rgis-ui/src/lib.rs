@@ -47,6 +47,7 @@ pub struct ManageLayerWindowState {
 
 #[derive(Default)]
 pub struct FeaturePropertiesWindowState {
+    layer_id: Option<rgis_layer_id::LayerId>,
     properties: Option<geo_features::Properties>,
     is_visible: bool,
 }

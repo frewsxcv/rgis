@@ -172,7 +172,10 @@ pub struct CrsChangedEvent {
 pub struct RenderMessageEvent(pub String);
 
 #[derive(Event)]
-pub struct RenderFeaturePropertiesEvent(pub geo_features::Properties);
+pub struct RenderFeaturePropertiesEvent {
+    pub layer_id: rgis_layer_id::LayerId,
+    pub properties: geo_features::Properties,
+}
 
 #[derive(Event)]
 pub struct CreateLayerEvent {
