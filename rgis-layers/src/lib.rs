@@ -69,7 +69,7 @@ impl Layers {
                 .projected_feature_collection
                 .as_ref()
                 .map(|projected| FeatureCollectionsIterItem {
-                    layer_id: layer.id,
+                    layer,
                     unprojected: &layer.unprojected_feature_collection,
                     projected,
                 })
@@ -79,7 +79,7 @@ impl Layers {
     fn features_iter(&self) -> impl Iterator<Item = FeaturesIterItem> {
         self.feature_collections_iter().flat_map(
             |FeatureCollectionsIterItem {
-                 layer_id,
+                 layer,
                  projected,
                  unprojected,
              }| {
@@ -88,7 +88,7 @@ impl Layers {
                     .iter()
                     .zip(projected.features.iter())
                     .map(move |(unprojected, projected)| FeaturesIterItem {
-                        layer_id,
+                        layer,
                         projected,
                         unprojected,
                     })
@@ -100,12 +100,12 @@ impl Layers {
         &self,
         coord: geo_projected::ProjectedCoord,
     ) -> Option<(
-        rgis_layer_id::LayerId,
+        &Layer,
         &geo_features::Feature<geo_projected::UnprojectedScalar>,
     )> {
         self.features_iter()
             .find(|item| item.projected.contains(&coord))
-            .map(|item| (item.layer_id, item.unprojected))
+            .map(|item| (item.layer, item.unprojected))
     }
 
     fn get_index(&self, layer_id: rgis_layer_id::LayerId) -> Option<usize> {
@@ -270,13 +270,13 @@ impl bevy::app::Plugin for Plugin {
 }
 
 struct FeatureCollectionsIterItem<'a> {
-    layer_id: rgis_layer_id::LayerId,
+    layer: &'a Layer,
     projected: &'a geo_features::FeatureCollection<geo_projected::ProjectedScalar>,
     unprojected: &'a geo_features::FeatureCollection<geo_projected::UnprojectedScalar>,
 }
 
 struct FeaturesIterItem<'a> {
-    layer_id: rgis_layer_id::LayerId,
+    layer: &'a Layer,
     projected: &'a geo_features::Feature<geo_projected::ProjectedScalar>,
     unprojected: &'a geo_features::Feature<geo_projected::UnprojectedScalar>,
 }
