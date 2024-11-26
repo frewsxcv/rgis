@@ -22,6 +22,7 @@ mod operation_window;
 mod side_panel;
 mod systems;
 mod top_panel;
+mod welcome_window;
 mod widgets;
 
 trait Window: egui::Widget + SystemParam + Send + Sync {
@@ -29,6 +30,9 @@ trait Window: egui::Widget + SystemParam + Send + Sync {
 
     fn title(&self) -> &str;
     fn default_width(&self) -> f32;
+    fn default_anchor(&self) -> (egui::Align2, [f32; 2]) {
+        (egui::Align2::LEFT_TOP, [0., 0.])
+    }
 }
 
 pub struct Plugin;
@@ -78,5 +82,9 @@ pub(crate) struct IsWindowOpen<W: Window + Send + Sync>(pub bool, marker::Phanto
 impl<W: Window + Send + Sync> IsWindowOpen<W> {
     fn closed() -> Self {
         Self(false, marker::PhantomData)
+    }
+
+    fn open() -> Self {
+        Self(true, marker::PhantomData)
     }
 }
