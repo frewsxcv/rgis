@@ -1,5 +1,11 @@
 use bevy::{prelude::*, window::PrimaryWindow};
 
+fn run_if_has_cursor_moved_events(
+    cursor_moved_event_reader: bevy::ecs::event::EventReader<bevy::window::CursorMoved>,
+) -> bool {
+    !cursor_moved_event_reader.is_empty()
+}
+
 fn cursor_moved_system(
     mut cursor_moved_event_reader: bevy::ecs::event::EventReader<bevy::window::CursorMoved>,
     mut windows: Query<&mut Window, With<PrimaryWindow>>,
@@ -10,9 +16,6 @@ fn cursor_moved_system(
     mut mouse_position: ResMut<crate::MousePos>,
     mut bevy_egui_ctx: bevy_egui::EguiContexts,
 ) {
-    if cursor_moved_event_reader.is_empty() {
-        return;
-    }
     if bevy_egui_ctx.ctx_mut().is_pointer_over_area() {
         cursor_moved_event_reader.clear();
         return;
@@ -28,6 +31,12 @@ fn cursor_moved_system(
         }
         .to_projected_geo_coord(transform, &window);
     }
+}
+
+fn run_if_has_mouse_motion_events(
+    mouse_motion_event_reader: bevy::ecs::event::EventReader<bevy::input::mouse::MouseMotion>,
+) -> bool {
+    !mouse_motion_event_reader.is_empty()
 }
 
 // FIXME: Cursor icon setting isn't working
@@ -46,11 +55,6 @@ fn mouse_motion_system(
 
     if let Some(cursor_icon) = *last_cursor_icon {
         window.cursor.icon = cursor_icon;
-    }
-
-    // If the mouse didn't move, then don't go any further
-    if mouse_motion_event_reader.is_empty() {
-        return;
     }
 
     // If egui wants to do something with the mouse then release the cursor icon to it
@@ -114,17 +118,27 @@ fn clear_cursor_icon(last_cursor_icon: &mut Option<bevy::window::CursorIcon>) {
     *last_cursor_icon = None;
 }
 
+fn run_if_mouse_left_button_just_pressed(
+    mouse_button: Res<bevy::input::ButtonInput<bevy::input::mouse::MouseButton>>,
+) -> bool {
+    mouse_button.just_pressed(bevy::input::mouse::MouseButton::Left)
+}
+
+fn current_tool_is_query(rgis_settings: Res<rgis_settings::RgisSettings>) -> bool {
+    rgis_settings.current_tool == rgis_settings::Tool::Query
+}
+
 fn mouse_click_system(
     mut map_clicked_event_writer: bevy::ecs::event::EventWriter<rgis_events::MapClickedEvent>,
-    mouse_button: Res<bevy::input::ButtonInput<bevy::input::mouse::MouseButton>>,
-    rgis_settings: Res<rgis_settings::RgisSettings>,
     mouse_position: Res<crate::MousePos>,
 ) {
-    if rgis_settings.current_tool == rgis_settings::Tool::Query
-        && mouse_button.just_pressed(bevy::input::mouse::MouseButton::Left)
-    {
-        map_clicked_event_writer.send(rgis_events::MapClickedEvent(mouse_position.0));
-    }
+    map_clicked_event_writer.send(rgis_events::MapClickedEvent(mouse_position.0));
+}
+
+fn run_if_has_mouse_scroll_events(
+    mouse_scroll_event_reader: bevy::ecs::event::EventReader<bevy::input::mouse::MouseWheel>,
+) -> bool {
+    !mouse_scroll_event_reader.is_empty()
 }
 
 fn mouse_scroll_system(
@@ -157,10 +171,12 @@ pub fn configure(app: &mut App) {
     app.add_systems(
         PreUpdate,
         (
-            cursor_moved_system,
-            mouse_scroll_system,
-            mouse_click_system,
-            mouse_motion_system,
+            cursor_moved_system.run_if(run_if_has_cursor_moved_events),
+            mouse_scroll_system.run_if(run_if_has_mouse_scroll_events),
+            mouse_click_system
+                .run_if(current_tool_is_query)
+                .run_if(run_if_mouse_left_button_just_pressed),
+            mouse_motion_system.run_if(run_if_has_mouse_motion_events),
         )
             .after(bevy_egui::EguiSet::ProcessInput)
             .before(bevy_egui::EguiSet::BeginPass),
