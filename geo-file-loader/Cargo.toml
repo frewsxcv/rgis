@@ -10,6 +10,6 @@ time-logger = { path = "../time-logger" }
 geo = "0.29"
 geo-features = { path = "../geo-features" }
 geozero = { version = "0.14", features = ["with-wkt", "with-gpx", "with-shp"] }
-thiserror = "1"
+thiserror = "2"
 geo-projected = { path = "../geo-projected" }
 typed-num = { path = "../typed-num" }

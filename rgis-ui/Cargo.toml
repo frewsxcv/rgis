@@ -33,4 +33,4 @@ rgis-units = { path = "../rgis-units" }
 bevy_jobs = { git = "https://github.com/frewsxcv/bevy_jobs" }
 geo = "0.29"
 transform = { path = "../transform" }
-thiserror = "1"
+thiserror = "2"

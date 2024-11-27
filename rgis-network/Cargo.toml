@@ -20,7 +20,7 @@ futures-util = "0.3"
 reqwest = { version = "0.12", features = ["stream"] }
 
 bevy_jobs = { git = "https://github.com/frewsxcv/bevy_jobs" }
-thiserror = "1"
+thiserror = "2"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 tokio = { version = "1", features = ["full"] }
