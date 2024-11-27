@@ -145,7 +145,16 @@ fn mouse_scroll_system(
     mut mouse_scroll_event_reader: bevy::ecs::event::EventReader<bevy::input::mouse::MouseWheel>,
     mut zoom_camera_events: bevy::ecs::event::EventWriter<rgis_events::ZoomCameraEvent>,
     mouse_position: Res<crate::MousePos>,
+    mut bevy_egui_ctx: bevy_egui::EguiContexts,
 ) {
+    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut();
+    if bevy_egui_ctx_mut.wants_pointer_input()
+        || bevy_egui_ctx_mut.is_pointer_over_area()
+        || bevy_egui_ctx_mut.is_using_pointer()
+    {
+        return;
+    }
+
     let y_amount = mouse_scroll_event_reader
         .read()
         .map(|event| {
