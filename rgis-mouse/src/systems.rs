@@ -153,13 +153,16 @@ fn mouse_scroll_system(
 }
 
 pub fn configure(app: &mut App) {
+    // https://github.com/vladbat00/bevy_egui/issues/47#issuecomment-2368811068
     app.add_systems(
-        Update,
+        PreUpdate,
         (
             cursor_moved_system,
             mouse_scroll_system,
             mouse_click_system,
             mouse_motion_system,
-        ),
+        )
+            .after(bevy_egui::EguiSet::ProcessInput)
+            .before(bevy_egui::EguiSet::BeginPass),
     );
 }
