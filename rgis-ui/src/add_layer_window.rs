@@ -96,9 +96,10 @@ impl AddLayerWindow<'_, '_, '_, '_, '_> {
             return;
         }
 
-        egui::Window::new("Add Layer").open(self.is_visible).show(
-            self.bevy_egui_ctx.get_mut(),
-            |ui| {
+        egui::Window::new("Add Layer")
+            .resizable(false)
+            .open(self.is_visible)
+            .show(self.bevy_egui_ctx.get_mut(), |ui| {
                 ui.label("Layer source:");
 
                 ui.radio_value(&mut self.state.selected_source, Source::Library, "Library");
@@ -272,8 +273,7 @@ impl AddLayerWindow<'_, '_, '_, '_, '_> {
                         self.state.reset();
                     }
                 }
-            },
-        );
+            });
 
         // If the user closes the window, reset the state.
         if !*self.is_visible {
