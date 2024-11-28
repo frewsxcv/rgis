@@ -1,4 +1,4 @@
-use crate::render_window_system;
+use crate::window;
 use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_egui::{
     egui::{self, Widget},
@@ -292,7 +292,7 @@ fn render_top_panel(
     mut app_settings: ResMut<rgis_settings::RgisSettings>,
     mut top_panel_height: ResMut<rgis_units::TopPanelHeight>,
     mut is_debug_window_open: ResMut<
-        crate::IsWindowOpen<crate::debug_window::DebugWindow<'static, 'static>>,
+        window::IsWindowOpen<crate::debug_window::DebugWindow<'static, 'static>>,
     >,
 ) {
     let Ok(mut window) = windows.get_single_mut() else {
@@ -375,14 +375,16 @@ pub fn configure(app: &mut App) {
         ),
     );
 
-    app.insert_resource(crate::IsWindowOpen::<crate::debug_window::DebugWindow>::closed());
-    app.insert_resource(crate::IsWindowOpen::<crate::welcome_window::WelcomeWindow>::open());
+    app.insert_resource(window::IsWindowOpen::<crate::debug_window::DebugWindow>::closed());
+    app.insert_resource(window::IsWindowOpen::<crate::welcome_window::WelcomeWindow>::open());
     app.add_systems(
         Update,
-        render_window_system::<crate::debug_window::DebugWindow>,
+        window::render_window_system::<crate::debug_window::DebugWindow>
+            .run_if(window::run_if_is_window_open::<crate::debug_window::DebugWindow>),
     );
     app.add_systems(
         Update,
-        render_window_system::<crate::welcome_window::WelcomeWindow>,
+        window::render_window_system::<crate::welcome_window::WelcomeWindow>
+            .run_if(window::run_if_is_window_open::<crate::welcome_window::WelcomeWindow>),
     );
 }

@@ -23,8 +23,7 @@ mod top_panel;
 mod welcome_window;
 mod widgets;
 
-mod window;
-pub use window::{render_window_system, IsWindowOpen, Window};
+pub(crate) mod window;
 
 pub struct Plugin;
 

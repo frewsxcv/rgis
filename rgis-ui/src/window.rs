@@ -15,23 +15,25 @@ pub trait Window: egui::Widget + SystemParam + Send + Sync {
 }
 
 pub fn render_window_system<W: Window + 'static>(
-    window: <W as crate::Window>::Item<'_, '_>,
+    window: <W as Window>::Item<'_, '_>,
     mut egui_ctx_query: Query<&'static mut EguiContext, With<PrimaryWindow>>,
-    mut is_window_open: ResMut<crate::IsWindowOpen<W>>,
+    mut is_window_open: ResMut<IsWindowOpen<W>>,
 ) {
-    if is_window_open.0 {
-        let mut egui_ctx = egui_ctx_query.single_mut();
-        let (anchor_align, anchor_offset) = window.default_anchor();
+    let mut egui_ctx = egui_ctx_query.single_mut();
+    let (anchor_align, anchor_offset) = window.default_anchor();
 
-        egui::Window::new(window.title())
-            .default_width(window.default_width())
-            .open(&mut is_window_open.0)
-            .resizable(false)
-            .anchor(anchor_align, anchor_offset)
-            .show(egui_ctx.get_mut(), |ui| {
-                ui.add(window);
-            });
-    }
+    egui::Window::new(window.title())
+        .default_width(window.default_width())
+        .open(&mut is_window_open.0)
+        .resizable(false)
+        .anchor(anchor_align, anchor_offset)
+        .show(egui_ctx.get_mut(), |ui| {
+            ui.add(window);
+        });
+}
+
+pub fn run_if_is_window_open<W: Window + 'static>(is_window_open: Res<IsWindowOpen<W>>) -> bool {
+    is_window_open.0
 }
 
 #[derive(Resource)]
