@@ -1,4 +1,4 @@
-use crate::Window;
+use crate::render_window_system;
 use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_egui::{
     egui::{self, Widget},
@@ -377,29 +377,12 @@ pub fn configure(app: &mut App) {
 
     app.insert_resource(crate::IsWindowOpen::<crate::debug_window::DebugWindow>::closed());
     app.insert_resource(crate::IsWindowOpen::<crate::welcome_window::WelcomeWindow>::open());
-    app.add_systems(Update, render_window::<crate::debug_window::DebugWindow>);
     app.add_systems(
         Update,
-        render_window::<crate::welcome_window::WelcomeWindow>,
+        render_window_system::<crate::debug_window::DebugWindow>,
     );
-}
-
-fn render_window<W: Window + 'static>(
-    window: <W as crate::Window>::Item<'_, '_>,
-    mut egui_ctx_query: Query<&'static mut EguiContext, With<PrimaryWindow>>,
-    mut is_window_open: ResMut<crate::IsWindowOpen<W>>,
-) {
-    if is_window_open.0 {
-        let mut egui_ctx = egui_ctx_query.single_mut();
-        let (anchor_align, anchor_offset) = window.default_anchor();
-
-        egui::Window::new(window.title())
-            .default_width(window.default_width())
-            .open(&mut is_window_open.0)
-            .resizable(false)
-            .anchor(anchor_align, anchor_offset)
-            .show(egui_ctx.get_mut(), |ui| {
-                ui.add(window);
-            });
-    }
+    app.add_systems(
+        Update,
+        render_window_system::<crate::welcome_window::WelcomeWindow>,
+    );
 }

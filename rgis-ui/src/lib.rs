@@ -6,9 +6,7 @@
     clippy::expect_used
 )]
 
-use bevy::{ecs::system::SystemParam, prelude::*};
-use bevy_egui::egui;
-use std::marker;
+use bevy::prelude::*;
 
 mod add_layer_window;
 mod bottom_panel;
@@ -25,15 +23,8 @@ mod top_panel;
 mod welcome_window;
 mod widgets;
 
-trait Window: egui::Widget + SystemParam + Send + Sync {
-    type Item<'world, 'state>: Window<State = Self::State>;
-
-    fn title(&self) -> &str;
-    fn default_width(&self) -> f32;
-    fn default_anchor(&self) -> (egui::Align2, [f32; 2]) {
-        (egui::Align2::LEFT_TOP, [0., 0.])
-    }
-}
+mod window;
+pub use window::{render_window_system, IsWindowOpen, Window};
 
 pub struct Plugin;
 
@@ -73,18 +64,5 @@ impl bevy::app::Plugin for Plugin {
             .add_event::<events::OpenOperationWindowEvent>();
 
         systems::configure(app);
-    }
-}
-
-#[derive(Resource)]
-pub(crate) struct IsWindowOpen<W: Window + Send + Sync>(pub bool, marker::PhantomData<W>);
-
-impl<W: Window + Send + Sync> IsWindowOpen<W> {
-    fn closed() -> Self {
-        Self(false, marker::PhantomData)
-    }
-
-    fn open() -> Self {
-        Self(true, marker::PhantomData)
     }
 }
