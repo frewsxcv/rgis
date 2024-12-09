@@ -107,7 +107,7 @@ fn handle_layer_became_hidden_event(
 ) {
     for event in event_reader.read() {
         for (_, mut visibility) in query.iter_mut().filter(|(i, _)| **i == event.0) {
-            *visibility = Visibility::Visible;
+            *visibility = Visibility::Hidden;
         }
     }
 }
