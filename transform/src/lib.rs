@@ -10,17 +10,31 @@ use geo::{Coord, MapCoords};
 
 pub use geodesy::{Context, Minimal, OpHandle};
 
-#[derive(thiserror::Error, Debug)]
+#[derive(Debug)]
 pub enum Error {
-    // https://github.com/georust/geojson/issues/197
-    #[error("{0}")]
-    Geodesy(#[from] geodesy::Error),
-    #[error("Unknown EPSG code: {0}")]
+    Geodesy(geodesy::Error),
     UnknownEpsgCode(u16),
-    #[error("Could not convert number to f64")]
     CouldNotConvertToF64,
-    #[error("Could not convert number from f64")]
     CouldNotConvertFromF64,
+}
+
+impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Error::Geodesy(err) => write!(f, "Geodesy error: {}", err),
+            Error::UnknownEpsgCode(code) => write!(f, "Unknown EPSG code: {}", code),
+            Error::CouldNotConvertToF64 => write!(f, "Could not convert number to f64"),
+            Error::CouldNotConvertFromF64 => write!(f, "Could not convert number from f64"),
+        }
+    }
+}
+
+impl std::error::Error for Error {}
+
+impl From<geodesy::Error> for Error {
+    fn from(err: geodesy::Error) -> Self {
+        Error::Geodesy(err)
+    }
 }
 
 pub struct Transformer {
