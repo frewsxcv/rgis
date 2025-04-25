@@ -21,7 +21,6 @@ members = [
     "rgis",
     "time-logger",
     "transform",
-    "typed-num",
 ]
 resolver = "2"
 

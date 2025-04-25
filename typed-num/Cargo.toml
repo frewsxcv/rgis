@@ -1,9 +1,0 @@
-[package]
-name = "typed-num"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-num-traits = "0.2"
-geo = "0.29"
-float_next_after = "1.0.0"

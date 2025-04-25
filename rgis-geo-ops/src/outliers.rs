@@ -1,8 +1,8 @@
 use crate::{Operation, OperationEntry, Outcome};
 use geo::OutlierDetection;
 use geo_projected::Unprojected;
+use num_t::TypedNum;
 use std::{error, mem};
-use typed_num::TypedNum;
 
 impl OperationEntry for Outliers {
     const ALLOWED_GEOM_TYPES: geo_geom_type::GeomType = geo_geom_type::GeomType::from_bits_truncate(

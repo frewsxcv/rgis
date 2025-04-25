@@ -24,4 +24,4 @@ rgis-layers = { path = "../rgis-layers" }
 rgis-settings = { path = "../rgis-settings" }
 bevy_jobs = { git = "https://github.com/frewsxcv/bevy_jobs" }
 transform = { path = "../transform" }
-typed-num = { path = "../typed-num" }
+num-t = "1"

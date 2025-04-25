@@ -7,8 +7,8 @@
 )]
 
 use geo::MapCoords;
+use num_t::TypedNum;
 use std::fmt::Debug;
-use typed_num::TypedNum;
 
 #[derive(Debug)]
 pub struct Projected;

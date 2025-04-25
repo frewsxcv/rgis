@@ -10,4 +10,4 @@ geo = "0.29"
 geo-features = { path = "../geo-features" }
 geo-geom-type = { path = "../geo-geom-type" }
 geo-projected = { path = "../geo-projected" }
-typed-num = { path = "../typed-num" }
+num-t = { version = "1", features = ["geo", "float_next_after"] }

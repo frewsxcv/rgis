@@ -2,8 +2,8 @@ use crate::{Operation, OperationEntry, Outcome};
 use geo::Area;
 use geo_projected::Unprojected;
 use geo_projected::UnprojectedScalar;
+use num_t::TypedNum;
 use std::error;
-use typed_num::TypedNum;
 
 // FIXME: should this operate on the projected featurecollection instead of the unprojected?
 #[derive(Default)]

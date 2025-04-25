@@ -2324,7 +2324,7 @@ version = "0.1.0"
 dependencies = [
  "geo",
  "geo-features",
- "typed-num",
+ "num-t",
 ]
 
 [[package]]
@@ -3425,6 +3425,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "51d515d32fb182ee37cda2ccdcb92950d6a3c2893aa280e540671c2cd0f3b1d9"
 
 [[package]]
+name = "num-t"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f21455b7b4b4fdac0d7a894f02d6ce2bb0741390ccedf9fb7ec7bc99c8e014d0"
+dependencies = [
+ "float_next_after",
+ "geo",
+ "num-traits",
+]
+
+[[package]]
 name = "num-traits"
 version = "0.2.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4385,7 +4396,7 @@ dependencies = [
  "geo-features",
  "geo-geom-type",
  "geo-projected",
- "typed-num",
+ "num-t",
 ]
 
 [[package]]
@@ -4429,10 +4440,10 @@ dependencies = [
  "bevy_egui",
  "geo",
  "geo-projected",
+ "num-t",
  "rgis-events",
  "rgis-settings",
  "rgis-units",
- "typed-num",
 ]
 
 [[package]]
@@ -4480,12 +4491,12 @@ dependencies = [
  "geo",
  "geo-features",
  "geo-projected",
+ "num-t",
  "rgis-events",
  "rgis-layer-id",
  "rgis-layers",
  "rgis-settings",
  "transform",
- "typed-num",
 ]
 
 [[package]]
@@ -5395,15 +5406,6 @@ name = "ttf-parser"
 version = "0.25.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d2df906b07856748fa3f6e0ad0cbaa047052d4a7dd609e231c4f72cee8c36f31"
-
-[[package]]
-name = "typed-num"
-version = "0.1.0"
-dependencies = [
- "float_next_after",
- "geo",
- "num-traits",
-]
 
 [[package]]
 name = "typeid"
