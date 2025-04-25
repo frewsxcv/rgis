@@ -7,7 +7,7 @@
 )]
 
 use geo::MapCoords;
-use num_t::TypedNum;
+use num_t::Num as TypedNum;
 use std::fmt::Debug;
 
 #[derive(Debug)]

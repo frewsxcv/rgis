@@ -24,7 +24,7 @@ impl Operation for Rotate {
     ) {
         self.rotated = feature_collection.to_geometry_collection();
         self.rotated
-            .rotate_around_centroid_mut(num_t::TypedNum::new(45.))
+            .rotate_around_centroid_mut(num_t::Num::new(45.))
     }
 
     fn finalize(&mut self) -> Result<crate::Outcome, Box<dyn std::error::Error>> {

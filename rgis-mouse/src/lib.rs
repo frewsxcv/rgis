@@ -20,8 +20,8 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut bevy::app::App) {
         systems::configure(app);
         app.insert_resource(MousePos(geo::Coord {
-            x: num_t::TypedNum::new(0.),
-            y: num_t::TypedNum::new(0.),
+            x: num_t::Num::new(0.),
+            y: num_t::Num::new(0.),
         }));
     }
 }

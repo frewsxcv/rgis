@@ -1,7 +1,7 @@
 use crate::{Operation, OperationEntry, Outcome};
 use geo::OutlierDetection;
 use geo_projected::Unprojected;
-use num_t::TypedNum;
+use num_t::Num as TypedNum;
 use std::{error, mem};
 
 impl OperationEntry for Outliers {
