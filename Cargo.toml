@@ -20,7 +20,6 @@ members = [
     "rgis-units",
     "rgis",
     "time-logger",
-    "transform",
 ]
 resolver = "2"
 

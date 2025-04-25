@@ -48,7 +48,7 @@ fn handle_change_crs_event(
     let rect = map_area.projected_geo_rect(&transform, window);
 
     let transformer =
-        transform::Transformer::setup(event.old_crs_epsg_code, event.new_crs_epsg_code)?;
+        geo_geodesy::Transformer::setup(event.old_crs_epsg_code, event.new_crs_epsg_code)?;
     transformer.transform(&mut (rect.into()))?;
 
     crate::utils::center_camera_on_projected_world_rect(rect, &mut transform, map_area);

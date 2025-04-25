@@ -12,7 +12,7 @@ pub struct ReprojectGeometryJobOutcome {
 }
 
 impl bevy_jobs::Job for ReprojectGeometryJob {
-    type Outcome = Result<ReprojectGeometryJobOutcome, transform::Error>;
+    type Outcome = Result<ReprojectGeometryJobOutcome, geo_geodesy::Error>;
 
     fn name(&self) -> String {
         "Projecting layer".to_string()
@@ -23,7 +23,7 @@ impl bevy_jobs::Job for ReprojectGeometryJob {
             let total = self.feature_collection.features.len();
 
             let transformer =
-                transform::Transformer::setup(self.source_epsg_code, self.target_epsg_code)?;
+                geo_geodesy::Transformer::setup(self.source_epsg_code, self.target_epsg_code)?;
 
             let mut feature_collection =
                 geo_projected::feature_collection_cast(self.feature_collection);

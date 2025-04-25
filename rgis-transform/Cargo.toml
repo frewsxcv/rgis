@@ -23,5 +23,5 @@ rgis-layer-id = { path = "../rgis-layer-id" }
 rgis-layers = { path = "../rgis-layers" }
 rgis-settings = { path = "../rgis-settings" }
 bevy_jobs = { git = "https://github.com/frewsxcv/bevy_jobs" }
-transform = { path = "../transform" }
+geo-geodesy = "1"
 num-t = "2"
