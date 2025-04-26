@@ -4,7 +4,7 @@ use bevy_egui::egui;
 pub(crate) struct ManageLayerWindow<'a> {
     pub state: &'a mut crate::ManageLayerWindowState,
     pub layers: &'a rgis_layers::Layers,
-    pub bevy_egui_ctx: &'a mut bevy_egui::EguiContext,
+    pub egui_ctx: &'a mut bevy_egui::egui::Context,
     pub color_events: &'a mut bevy::ecs::event::Events<rgis_events::UpdateLayerColorEvent>,
 }
 
@@ -23,7 +23,7 @@ impl ManageLayerWindow<'_> {
         };
         egui::Window::new("Manage Layer")
             .open(&mut self.state.is_visible)
-            .show(self.bevy_egui_ctx.get_mut(), |ui| {
+            .show(self.egui_ctx, |ui| {
                 egui::Grid::new("manage_layer_window_grid")
                     .num_columns(2)
                     .striped(true)

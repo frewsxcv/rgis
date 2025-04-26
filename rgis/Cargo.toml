@@ -25,7 +25,7 @@ rgis-events = { path = "../rgis-events" }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 rgis-cli = { path = "../rgis-cli" }
-bevy = { version = "0.14", default-features = false, features = [
+bevy = { version = "0.15", default-features = false, features = [
     "bevy_winit",
     "bevy_core_pipeline",
     "bevy_render",
@@ -37,7 +37,7 @@ bevy = { version = "0.14", default-features = false, features = [
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen = "0.2"
-bevy = { version = "0.14", default-features = false, features = [
+bevy = { version = "0.15", default-features = false, features = [
     "bevy_winit",
     "bevy_core_pipeline",
     "bevy_render",

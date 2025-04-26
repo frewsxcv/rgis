@@ -38,7 +38,7 @@ pub(crate) struct AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
     pub state: &'a mut State,
     pub is_visible: &'a mut bool,
     pub selected_file: &'a mut SelectedFile,
-    pub bevy_egui_ctx: &'a mut bevy_egui::EguiContext,
+    pub egui_ctx: &'a mut bevy_egui::egui::Context,
     pub job_spawner: &'a mut bevy_jobs::JobSpawner<'w1, 's1>,
     pub events: &'a mut Events<'w2, 's2>,
 }
@@ -99,7 +99,7 @@ impl AddLayerWindow<'_, '_, '_, '_, '_> {
         egui::Window::new("Add Layer")
             .resizable(false)
             .open(self.is_visible)
-            .show(self.bevy_egui_ctx.get_mut(), |ui| {
+            .show(self.egui_ctx, |ui| {
                 ui.label("Layer source:");
 
                 ui.radio_value(&mut self.state.selected_source, Source::Library, "Library");

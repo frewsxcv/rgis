@@ -86,7 +86,7 @@ type LayerEntitiesWithColorMaterialsOrImagesQuery<'world, 'state, 'a> = Query<
     'world,
     'state,
     (&'a rgis_layer_id::LayerId, Entity),
-    Or<(With<Handle<ColorMaterial>>, With<Handle<Image>>)>,
+    Or<(With<MeshMaterial2d<ColorMaterial>>, With<Sprite>)>,
 >;
 
 fn handle_despawn_meshes_event(
@@ -128,7 +128,7 @@ fn handle_layer_color_updated_event(
     layers: Res<rgis_layers::Layers>,
     color_material_query: Query<(
         &rgis_layer_id::LayerId,
-        &Handle<ColorMaterial>,
+        &MeshMaterial2d<ColorMaterial>,
         &RenderEntityType,
     )>,
     mut sprite_query: Query<(&rgis_layer_id::LayerId, &mut Sprite, &RenderEntityType)>,
@@ -180,7 +180,7 @@ fn handle_layer_color_updated_event(
 
 fn handle_crs_changed_events(
     mut crs_changed_event_reader: bevy::ecs::event::EventReader<rgis_events::CrsChangedEvent>,
-    query: Query<(&rgis_layer_id::LayerId, Entity), With<Handle<ColorMaterial>>>,
+    query: Query<(&rgis_layer_id::LayerId, Entity), With<MeshMaterial2d<ColorMaterial>>>,
     mut commands: Commands,
 ) {
     for _ in crs_changed_event_reader.read() {
@@ -220,7 +220,7 @@ type SelectedFeatureQuery<'world, 'state, 'a> = Query<
     'world,
     'state,
     (Entity, &'a RenderEntityType),
-    Or<(With<Handle<ColorMaterial>>, With<Handle<Image>>)>,
+    Or<(With<MeshMaterial2d<ColorMaterial>>, With<Sprite>)>,
 >;
 
 fn handle_feature_selected_event_despawn(

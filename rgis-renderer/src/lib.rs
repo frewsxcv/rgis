@@ -189,16 +189,14 @@ fn spawn_sprite_bundle<'a>(
     commands: &'a mut Commands<'_, '_>,
     color: Color,
 ) -> bevy::ecs::system::EntityCommands<'a> {
-    let bundle = SpriteBundle {
-        sprite: Sprite {
+    commands.spawn((
+        Sprite {
             color,
+            image: asset_server.load("circle.png"),
             ..Default::default()
         },
-        texture: asset_server.load("circle.png"),
         transform,
-        ..Default::default()
-    };
-    commands.spawn(bundle)
+    ))
 }
 
 fn spawn_material_mesh_2d_bundle<'a>(
@@ -209,16 +207,14 @@ fn spawn_material_mesh_2d_bundle<'a>(
     commands: &'a mut Commands<'_, '_>,
     is_visible: bool,
 ) -> bevy::ecs::system::EntityCommands<'a> {
-    let mmb = bevy::sprite::MaterialMesh2dBundle {
-        material,
-        mesh: bevy::sprite::Mesh2dHandle(assets_meshes.add(mesh)),
-        transform: Transform::from_xyz(0., 0., z_index.0 as f32),
-        visibility: if is_visible {
+    commands.spawn((
+        Mesh2d(assets_meshes.add(mesh)),
+        Transform::from_xyz(0., 0., z_index.0 as f32),
+        MeshMaterial2d(material),
+        if is_visible {
             Visibility::Visible
         } else {
             Visibility::Hidden
         },
-        ..Default::default()
-    };
-    commands.spawn(mmb)
+    ))
 }

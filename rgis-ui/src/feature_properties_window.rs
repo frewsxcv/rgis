@@ -1,7 +1,7 @@
 use bevy_egui::egui;
 
 pub(crate) struct FeaturePropertiesWindow<'a> {
-    pub bevy_egui_ctx: &'a mut bevy_egui::EguiContext,
+    pub egui_ctx: &'a mut bevy_egui::egui::Context,
     pub state: &'a mut crate::FeaturePropertiesWindowState,
     pub layer: &'a rgis_layers::Layer,
 }
@@ -14,7 +14,7 @@ impl FeaturePropertiesWindow<'_> {
         egui::Window::new("Layer Feature Properties")
             .id(egui::Id::new("Layer Feature Properties Window"))
             .open(&mut self.state.is_visible)
-            .show(self.bevy_egui_ctx.get_mut(), |ui| {
+            .show(self.egui_ctx, |ui| {
                 ui.label(format!("Layer: {}", self.layer.name));
                 ui.add(FeaturePropertiesTable { properties })
             });

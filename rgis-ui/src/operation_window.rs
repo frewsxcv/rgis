@@ -1,7 +1,7 @@
 use bevy_egui::egui;
 
 pub(crate) struct OperationWindow<'w> {
-    pub bevy_egui_ctx: &'w mut bevy_egui::EguiContext,
+    pub egui_ctx: &'w mut bevy_egui::egui::Context,
     pub state: &'w mut crate::OperationWindowState,
     pub create_layer_event_writer: bevy::ecs::event::EventWriter<'w, rgis_events::CreateLayerEvent>,
     pub render_message_event_writer:
@@ -43,7 +43,7 @@ impl OperationWindow<'_> {
             rgis_geo_ops::Action::RenderUi => {
                 egui::Window::new("Operation")
                     .open(&mut self.state.is_visible)
-                    .show(self.bevy_egui_ctx.get_mut(), |ui| {
+                    .show(self.egui_ctx, |ui| {
                         operation.ui(ui, &self.state.feature_collection);
                     });
             }

@@ -47,14 +47,15 @@ fn mouse_motion_system(
     mut windows: Query<&mut Window, With<PrimaryWindow>>,
     mut bevy_egui_ctx: bevy_egui::EguiContexts,
     rgis_settings: Res<rgis_settings::RgisSettings>,
-    mut last_cursor_icon: Local<Option<bevy::window::CursorIcon>>,
+    mut last_cursor_icon: Local<Option<bevy::window::SystemCursorIcon>>,
 ) {
     let Ok(mut window) = windows.get_single_mut() else {
         return;
     };
 
     if let Some(cursor_icon) = *last_cursor_icon {
-        window.cursor.icon = cursor_icon;
+        // FIXME
+        // window.cursor.icon = cursor_icon;
     }
 
     // If egui wants to do something with the mouse then release the cursor icon to it
@@ -76,7 +77,7 @@ fn mouse_motion_system(
         set_cursor_icon(
             &mut window,
             &mut last_cursor_icon,
-            bevy::window::CursorIcon::Grabbing,
+            bevy::window::SystemCursorIcon::Grabbing,
         );
         let mut x_sum = 0.;
         let mut y_sum = 0.;
@@ -99,22 +100,23 @@ fn mouse_motion_system(
 
     mouse_motion_event_reader.clear();
     let cursor_icon = match rgis_settings.current_tool {
-        rgis_settings::Tool::Pan => bevy::window::CursorIcon::Grab,
-        rgis_settings::Tool::Query => bevy::window::CursorIcon::Crosshair,
+        rgis_settings::Tool::Pan => bevy::window::SystemCursorIcon::Grab,
+        rgis_settings::Tool::Query => bevy::window::SystemCursorIcon::Crosshair,
     };
     set_cursor_icon(&mut window, &mut last_cursor_icon, cursor_icon);
 }
 
 fn set_cursor_icon(
     window: &mut Window,
-    last_cursor_icon: &mut Option<bevy::window::CursorIcon>,
-    cursor_icon: bevy::window::CursorIcon,
+    last_cursor_icon: &mut Option<bevy::window::SystemCursorIcon>,
+    cursor_icon: bevy::window::SystemCursorIcon,
 ) {
     *last_cursor_icon = Some(cursor_icon);
-    window.cursor.icon = cursor_icon;
+    // FIXME
+    // window.icon = cursor_icon;
 }
 
-fn clear_cursor_icon(last_cursor_icon: &mut Option<bevy::window::CursorIcon>) {
+fn clear_cursor_icon(last_cursor_icon: &mut Option<bevy::window::SystemCursorIcon>) {
     *last_cursor_icon = None;
 }
 
@@ -187,7 +189,7 @@ pub fn configure(app: &mut App) {
                 .run_if(run_if_mouse_left_button_just_pressed),
             mouse_motion_system.run_if(run_if_has_mouse_motion_events),
         )
-            .after(bevy_egui::EguiSet::ProcessInput)
-            .before(bevy_egui::EguiSet::BeginPass),
+            .after(bevy_egui::EguiPreUpdateSet::ProcessInput)
+            .before(bevy_egui::EguiPreUpdateSet::BeginPass),
     );
 }

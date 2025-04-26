@@ -1,7 +1,6 @@
-use bevy::window::PrimaryWindow;
 use bevy::{ecs::system::SystemParam, prelude::*};
 use bevy_egui::egui;
-use bevy_egui::EguiContext;
+use bevy_egui::EguiContexts;
 use std::marker;
 
 pub trait Window: egui::Widget + SystemParam + Send + Sync {
@@ -16,10 +15,9 @@ pub trait Window: egui::Widget + SystemParam + Send + Sync {
 
 pub fn render_window_system<W: Window + 'static>(
     window: <W as Window>::Item<'_, '_>,
-    mut egui_ctx_query: Query<&'static mut EguiContext, With<PrimaryWindow>>,
+    mut egui_ctx: EguiContexts,
     mut is_window_open: ResMut<IsWindowOpen<W>>,
 ) {
-    let mut egui_ctx = egui_ctx_query.single_mut();
     let (anchor_align, anchor_offset) = window.default_anchor();
 
     egui::Window::new(window.title())
@@ -27,7 +25,7 @@ pub fn render_window_system<W: Window + 'static>(
         .open(&mut is_window_open.0)
         .resizable(false)
         .anchor(anchor_align, anchor_offset)
-        .show(egui_ctx.get_mut(), |ui| {
+        .show(egui_ctx.ctx_mut(), |ui| {
             ui.add(window);
         });
 }

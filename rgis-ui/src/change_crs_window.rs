@@ -3,7 +3,7 @@ use std::str::FromStr;
 
 pub(crate) struct ChangeCrsWindow<'a, 'w> {
     pub is_visible: &'a mut bool,
-    pub bevy_egui_ctx: &'a mut bevy_egui::EguiContext,
+    pub egui_ctx: &'a mut bevy_egui::egui::Context,
     pub text_field_value: &'a mut String,
     pub change_crs_event_writer:
         &'a mut bevy::ecs::event::EventWriter<'w, rgis_events::ChangeCrsEvent>,
@@ -13,9 +13,9 @@ pub(crate) struct ChangeCrsWindow<'a, 'w> {
 
 impl ChangeCrsWindow<'_, '_> {
     pub(crate) fn render(&mut self) {
-        egui::Window::new("Change CRS").open(self.is_visible).show(
-            self.bevy_egui_ctx.get_mut(),
-            |ui| {
+        egui::Window::new("Change CRS")
+            .open(self.is_visible)
+            .show(self.egui_ctx, |ui| {
                 ui.add(crate::widgets::CrsInput::new(
                     self.text_field_value,
                     self.crs_input_outcome,
@@ -36,7 +36,6 @@ impl ChangeCrsWindow<'_, '_> {
                             new_crs_epsg_code: value,
                         });
                 }
-            },
-        );
+            });
     }
 }

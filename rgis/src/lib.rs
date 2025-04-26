@@ -32,7 +32,8 @@ pub fn run() {
     app.add_plugins(bevy::input::InputPlugin);
     app.add_plugins(bevy::core_pipeline::CorePipelinePlugin);
     app.add_plugins(bevy::transform::TransformPlugin);
-    app.add_plugins(bevy::sprite::SpritePlugin);
+    app.add_plugins(bevy::sprite::SpritePlugin::default());
+    app.add_plugins(bevy::picking::PickingPlugin::default());
     app.add_plugins(rgis_ui::Plugin);
     app.add_plugins(rgis_layers::Plugin);
     app.add_plugins(rgis_file_loader::Plugin);
@@ -47,25 +48,6 @@ pub fn run() {
     app.add_plugins(rgis_settings::Plugin);
     app.add_plugins(bevy::diagnostic::DiagnosticsPlugin);
     app.add_plugins(bevy::diagnostic::FrameTimeDiagnosticsPlugin);
-
-    #[cfg(not(target_arch = "wasm32"))]
-    {
-        let cli_values = if let Ok(c) = rgis_cli::run() {
-            c
-        } else {
-            return;
-        };
-        let msaa = match cli_values.msaa_sample_count {
-            1 => Msaa::Off,
-            2 => Msaa::Sample2,
-            4 => Msaa::Sample4,
-            8 => Msaa::Sample8,
-            _ => panic!("Encountered unknown MSAA value"),
-        };
-
-        app.insert_resource(msaa);
-        app.add_plugins(rgis_cli::Plugin(cli_values));
-    }
 
     app.run();
 }
