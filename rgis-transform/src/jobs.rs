@@ -1,3 +1,5 @@
+use geo_projected::CastTo;
+
 pub struct ReprojectGeometryJob {
     pub feature_collection: geo_features::FeatureCollection<geo_projected::UnprojectedScalar>,
     pub layer_id: rgis_layer_id::LayerId,
@@ -25,8 +27,7 @@ impl bevy_jobs::Job for ReprojectGeometryJob {
             let transformer =
                 geo_geodesy::Transformer::setup(self.source_epsg_code, self.target_epsg_code)?;
 
-            let mut feature_collection =
-                geo_projected::feature_collection_cast(self.feature_collection);
+            let mut feature_collection = self.feature_collection.cast::<geo_projected::Projected>();
 
             for (i, feature) in feature_collection.features.iter_mut().enumerate() {
                 let _ = progress_sender.send_progress((100 * i / total) as u8).await;

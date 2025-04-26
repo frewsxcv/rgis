@@ -1,6 +1,6 @@
-use geo_projected::geometry_wrap;
 use std::io;
 
+use geo_projected::WrapTo;
 use geozero::GeozeroDatasource;
 
 #[derive(thiserror::Error, Debug)]
@@ -26,9 +26,8 @@ impl crate::FileLoader for WktSource {
         let mut wkt_reader = geozero::wkt::WktReader(&mut bytes_cursor);
         let mut geo_writer = geozero::geo_types::GeoWriter::new();
         wkt_reader.process(&mut geo_writer)?;
-        let geometry = geometry_wrap::<f64, geo_projected::Unprojected>(
-            geo_writer.take_geometry().ok_or(crate::Error::NoGeometry)?,
-        );
+        let geometry = (geo_writer.take_geometry().ok_or(crate::Error::NoGeometry)?)
+            .wrap::<geo_projected::Unprojected>();
         Ok(geo_features::FeatureCollection::from_geometry(geometry))
     }
 }

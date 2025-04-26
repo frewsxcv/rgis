@@ -1,4 +1,4 @@
-use geo_projected::geometry_wrap;
+use geo_projected::WrapTo;
 use geozero::GeozeroDatasource;
 use std::io;
 
@@ -20,7 +20,7 @@ impl crate::FileLoader for GeoJsonSource {
         let mut geo_writer = geozero::geo_types::GeoWriter::new();
         geojson_reader.process(&mut geo_writer)?;
         let geometry = geo_writer.take_geometry().ok_or(crate::Error::NoGeometry)?;
-        let geometry = geometry_wrap::<f64, geo_projected::Unprojected>(geometry);
+        let geometry = geometry.wrap::<geo_projected::Unprojected>();
         Ok(geo_features::FeatureCollection::from_geometry(geometry))
     }
 }

@@ -22,102 +22,132 @@ pub type ProjectedScalar = TypedNum<f64, Projected>;
 pub type ProjectedCoord<T = f64> = geo::Coord<TypedNum<T, Projected>>;
 pub type UnprojectedCoord<T = f64> = geo::Coord<TypedNum<T, Unprojected>>;
 
-#[inline]
-pub fn coord_wrap<Scalar: geo::CoordNum, To: Debug>(
-    coord: geo::Coord<Scalar>,
-) -> geo::Coord<TypedNum<Scalar, To>> {
-    geo::Coord {
-        x: TypedNum::<Scalar, To>::new(coord.x),
-        y: TypedNum::<Scalar, To>::new(coord.y),
+pub trait WrapTo<Scalar: geo::CoordNum> {
+    type Output<To: Debug>;
+    fn wrap<To: Debug>(self) -> Self::Output<To>;
+}
+
+impl<Scalar: geo::CoordNum> WrapTo<Scalar> for geo::Coord<Scalar> {
+    type Output<To: Debug> = geo::Coord<TypedNum<Scalar, To>>;
+    #[inline]
+    fn wrap<To: Debug>(self) -> Self::Output<To> {
+        geo::Coord {
+            x: TypedNum::<Scalar, To>::new(self.x),
+            y: TypedNum::<Scalar, To>::new(self.y),
+        }
     }
 }
 
-#[inline]
-pub fn rect_wrap<Scalar: geo::CoordNum, To: Debug>(
-    rect: geo::Rect<Scalar>,
-) -> geo::Rect<TypedNum<Scalar, To>> {
-    geo::Rect::new(coord_wrap(rect.min()), coord_wrap(rect.max()))
-}
-
-#[inline]
-pub fn geometry_wrap<Scalar: geo::CoordNum, To: Debug>(
-    geometry: geo::Geometry<Scalar>,
-) -> geo::Geometry<TypedNum<Scalar, To>> {
-    geometry.map_coords(coord_wrap)
-}
-
-#[inline]
-pub fn feature_wrap<Scalar: geo::CoordNum, To: Debug>(
-    feature: geo_features::Feature<Scalar>,
-) -> geo_features::Feature<TypedNum<Scalar, To>> {
-    geo_features::Feature {
-        id: feature.id,
-        properties: feature.properties,
-        bounding_rect: feature.bounding_rect.map(rect_wrap),
-        geometry: feature.geometry.map(geometry_wrap),
+impl<Scalar: geo::CoordNum> WrapTo<Scalar> for geo::Rect<Scalar> {
+    type Output<To: Debug> = geo::Rect<TypedNum<Scalar, To>>;
+    #[inline]
+    fn wrap<To: Debug>(self) -> Self::Output<To> {
+        geo::Rect::new(self.min().wrap(), self.max().wrap())
     }
 }
 
-#[inline]
-pub fn feature_collection_wrap<Scalar: geo::CoordNum, To: Debug>(
-    feature_collection: geo_features::FeatureCollection<Scalar>,
-) -> geo_features::FeatureCollection<TypedNum<Scalar, To>> {
-    geo_features::FeatureCollection {
-        features: feature_collection
-            .features
-            .into_iter()
-            .map(feature_wrap)
-            .collect(),
-        bounding_rect: feature_collection.bounding_rect.map(rect_wrap),
+impl<Scalar: geo::CoordNum> WrapTo<Scalar> for geo::Geometry<Scalar> {
+    type Output<To: Debug> = geo::Geometry<TypedNum<Scalar, To>>;
+    #[inline]
+    fn wrap<To: Debug>(self) -> Self::Output<To> {
+        self.map_coords(move |coord| coord.wrap())
     }
 }
 
-#[inline]
-pub fn coord_cast<Scalar: geo::CoordNum, From: Debug, To: Debug>(
-    coord: geo::Coord<TypedNum<Scalar, From>>,
-) -> geo::Coord<TypedNum<Scalar, To>> {
-    geo::Coord {
-        x: TypedNum::<Scalar, To>::new(coord.x.0),
-        y: TypedNum::<Scalar, To>::new(coord.y.0),
+impl<Scalar: geo::CoordNum> WrapTo<Scalar> for geo_features::Feature<Scalar> {
+    type Output<To: Debug> = geo_features::Feature<TypedNum<Scalar, To>>;
+    #[inline]
+    fn wrap<To: Debug>(self) -> Self::Output<To> {
+        geo_features::Feature {
+            id: self.id,
+            properties: self.properties,
+            bounding_rect: self.bounding_rect.map(|rect| rect.wrap()),
+            geometry: self.geometry.map(|geometry| geometry.wrap()),
+        }
     }
 }
 
-#[inline]
-pub fn rect_cast<Scalar: geo::CoordNum, From: Debug, To: Debug>(
-    rect: geo::Rect<TypedNum<Scalar, From>>,
-) -> geo::Rect<TypedNum<Scalar, To>> {
-    geo::Rect::new(coord_cast(rect.min()), coord_cast(rect.max()))
-}
-
-#[inline]
-pub fn geometry_cast<Scalar: geo::CoordNum, From: Debug, To: Debug>(
-    geometry: geo::Geometry<TypedNum<Scalar, From>>,
-) -> geo::Geometry<TypedNum<Scalar, To>> {
-    geometry.map_coords(move |coord| coord_cast(coord))
-}
-
-#[inline]
-pub fn feature_cast<Scalar: geo::CoordNum, From: Debug, To: Debug>(
-    feature: geo_features::Feature<TypedNum<Scalar, From>>,
-) -> geo_features::Feature<TypedNum<Scalar, To>> {
-    geo_features::Feature {
-        id: feature.id,
-        properties: feature.properties,
-        bounding_rect: feature.bounding_rect.map(rect_cast),
-        geometry: feature.geometry.map(geometry_cast),
+impl<Scalar: geo::CoordNum> WrapTo<Scalar> for geo_features::FeatureCollection<Scalar> {
+    type Output<To: Debug> = geo_features::FeatureCollection<TypedNum<Scalar, To>>;
+    #[inline]
+    fn wrap<To: Debug>(self) -> Self::Output<To> {
+        geo_features::FeatureCollection {
+            features: self
+                .features
+                .into_iter()
+                .map(|feature| feature.wrap())
+                .collect(),
+            bounding_rect: self.bounding_rect.map(|rect| rect.wrap()),
+        }
     }
 }
 
-#[inline]
-pub fn feature_collection_cast<Scalar: geo::CoordNum, From: Debug, To: Debug>(
-    feature_collection: geo_features::FeatureCollection<TypedNum<Scalar, From>>,
-) -> geo_features::FeatureCollection<TypedNum<Scalar, To>> {
-    geo_features::FeatureCollection {
-        features: feature_collection
-            .features
-            .into_iter()
-            .map(feature_cast)
-            .collect(),
-        bounding_rect: feature_collection.bounding_rect.map(rect_cast),
+pub trait CastTo<Scalar: geo::CoordNum, From: Debug> {
+    type Output<To: Debug>;
+    fn cast<To: Debug>(self) -> Self::Output<To>;
+}
+
+impl<Scalar: geo::CoordNum, From: Debug> CastTo<Scalar, From>
+    for geo::Coord<TypedNum<Scalar, From>>
+{
+    type Output<To: Debug> = geo::Coord<TypedNum<Scalar, To>>;
+    #[inline]
+    fn cast<To: Debug>(self) -> Self::Output<To> {
+        geo::Coord {
+            x: TypedNum::<Scalar, To>::new(self.x.0),
+            y: TypedNum::<Scalar, To>::new(self.y.0),
+        }
+    }
+}
+
+impl<Scalar: geo::CoordNum, From: Debug> CastTo<Scalar, From>
+    for geo::Rect<TypedNum<Scalar, From>>
+{
+    type Output<To: Debug> = geo::Rect<TypedNum<Scalar, To>>;
+    #[inline]
+    fn cast<To: Debug>(self) -> Self::Output<To> {
+        geo::Rect::new(self.min().cast(), self.max().cast())
+    }
+}
+
+impl<Scalar: geo::CoordNum, From: Debug> CastTo<Scalar, From>
+    for geo::Geometry<TypedNum<Scalar, From>>
+{
+    type Output<To: Debug> = geo::Geometry<TypedNum<Scalar, To>>;
+    #[inline]
+    fn cast<To: Debug>(self) -> Self::Output<To> {
+        self.map_coords(move |coord| coord.cast())
+    }
+}
+
+impl<Scalar: geo::CoordNum, From: Debug> CastTo<Scalar, From>
+    for geo_features::Feature<TypedNum<Scalar, From>>
+{
+    type Output<To: Debug> = geo_features::Feature<TypedNum<Scalar, To>>;
+    #[inline]
+    fn cast<To: Debug>(self) -> Self::Output<To> {
+        geo_features::Feature {
+            id: self.id,
+            properties: self.properties,
+            bounding_rect: self.bounding_rect.map(|rect| rect.cast()),
+            geometry: self.geometry.map(|geometry| geometry.cast()),
+        }
+    }
+}
+
+impl<Scalar: geo::CoordNum, From: Debug> CastTo<Scalar, From>
+    for geo_features::FeatureCollection<TypedNum<Scalar, From>>
+{
+    type Output<To: Debug> = geo_features::FeatureCollection<TypedNum<Scalar, To>>;
+    #[inline]
+    fn cast<To: Debug>(self) -> Self::Output<To> {
+        geo_features::FeatureCollection {
+            features: self
+                .features
+                .into_iter()
+                .map(|feature| feature.cast())
+                .collect(),
+            bounding_rect: self.bounding_rect.map(|rect| rect.cast()),
+        }
     }
 }
