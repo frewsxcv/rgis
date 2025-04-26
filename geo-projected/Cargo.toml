@@ -5,6 +5,6 @@ edition = "2021"
 publish = false
 
 [dependencies]
-geo = "0.29"
+geo = "0.30"
 geo-features = { path = "../geo-features" }
-num-t = "2"
+num-t = "3"

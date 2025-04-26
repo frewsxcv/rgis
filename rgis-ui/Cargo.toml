@@ -31,8 +31,8 @@ rgis-mouse = { path = "../rgis-mouse" }
 rgis-settings = { path = "../rgis-settings" }
 rgis-units = { path = "../rgis-units" }
 bevy_jobs = { git = "https://github.com/frewsxcv/bevy_jobs" }
-geo = "0.29"
-geo-geodesy = "1"
+geo = "0.30"
+geo-geodesy = "2"
 thiserror = "2"
 crs-definitions = "0.3"
 geodesy = "0.13"

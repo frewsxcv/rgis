@@ -16,7 +16,7 @@ bevy = { version = "0.16", default-features = false, features = [
     "png",
 ] }
 bytes = "1"
-geo = "0.29"
+geo = "0.30"
 geo-features = { path = "../geo-features" }
 geo-file-loader = { path = "../geo-file-loader" }
 geo-projected = { path = "../geo-projected" }

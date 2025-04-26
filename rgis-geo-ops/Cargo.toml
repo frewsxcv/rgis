@@ -6,8 +6,8 @@ publish = false
 
 [dependencies]
 bevy_egui = "0.34"
-geo = "0.29"
+geo = "0.30"
 geo-features = { path = "../geo-features" }
 geo-geom-type = { path = "../geo-geom-type" }
 geo-projected = { path = "../geo-projected" }
-num-t = { version = "2", features = ["geo", "float_next_after"] }
+num-t = { version = "3", features = ["geo", "float_next_after"] }
