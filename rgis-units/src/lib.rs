@@ -141,6 +141,5 @@ pub struct UiMargins<'w, 's> {
     pub left: Res<'w, SidePanelWidth>,
     pub top: Res<'w, TopPanelHeight>,
     pub bottom: Res<'w, BottomPanelHeight>,
-    #[system_param(ignore)]
     marker: marker::PhantomData<&'s usize>,
 }

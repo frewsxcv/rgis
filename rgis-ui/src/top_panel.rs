@@ -101,10 +101,13 @@ impl egui::Widget for FullScreenButton<'_> {
         ui.add_enabled_ui(cfg!(not(target_arch = "wasm32")), |ui| {
             if ui.button("Full screen").clicked() {
                 self.window.mode =
-                    if matches!(self.window.mode, bevy::window::WindowMode::Fullscreen(_)) {
+                    if matches!(self.window.mode, bevy::window::WindowMode::Fullscreen(_, _)) {
                         bevy::window::WindowMode::Windowed
                     } else {
-                        bevy::window::WindowMode::Fullscreen(MonitorSelection::Current)
+                        bevy::window::WindowMode::Fullscreen(
+                            MonitorSelection::Current,
+                            VideoModeSelection::Current,
+                        )
                     };
             }
         })

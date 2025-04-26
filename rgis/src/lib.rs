@@ -33,7 +33,6 @@ pub fn run() {
     app.add_plugins(bevy::core_pipeline::CorePipelinePlugin);
     app.add_plugins(bevy::transform::TransformPlugin);
     app.add_plugins(bevy::sprite::SpritePlugin::default());
-    app.add_plugins(bevy::picking::PickingPlugin::default());
     app.add_plugins(rgis_ui::Plugin);
     app.add_plugins(rgis_layers::Plugin);
     app.add_plugins(rgis_file_loader::Plugin);
@@ -47,7 +46,7 @@ pub fn run() {
     app.add_plugins(rgis_transform::Plugin);
     app.add_plugins(rgis_settings::Plugin);
     app.add_plugins(bevy::diagnostic::DiagnosticsPlugin);
-    app.add_plugins(bevy::diagnostic::FrameTimeDiagnosticsPlugin);
+    app.add_plugins(bevy::diagnostic::FrameTimeDiagnosticsPlugin::default());
 
     app.run();
 }

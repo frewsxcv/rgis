@@ -24,7 +24,7 @@ impl OperationWindow<'_> {
                 match outcome {
                     Ok(rgis_geo_ops::Outcome::FeatureCollection(feature_collection)) => {
                         self.create_layer_event_writer
-                            .send(rgis_events::CreateLayerEvent {
+                            .write(rgis_events::CreateLayerEvent {
                                 feature_collection,
                                 name: "FOOOOO".into(),      // FIXME
                                 source_crs_epsg_code: 4326, // FIXME
@@ -32,7 +32,7 @@ impl OperationWindow<'_> {
                     }
                     Ok(rgis_geo_ops::Outcome::Text(text)) => {
                         self.render_message_event_writer
-                            .send(rgis_events::RenderMessageEvent(text));
+                            .write(rgis_events::RenderMessageEvent(text));
                     }
                     Err(e) => {
                         bevy::log::error!("Encountered an error during the operation: {}", e);

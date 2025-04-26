@@ -27,7 +27,7 @@ impl BottomPanel<'_, '_> {
         // TODO: The ordering is backwards here (the edit button should be specified after)
         //       Is this from the right_to_left call above?
         if ui.button("✏").clicked() {
-            self.open_change_crs_window_event_writer.send_default();
+            self.open_change_crs_window_event_writer.write_default();
         }
 
         ui.label(format!(

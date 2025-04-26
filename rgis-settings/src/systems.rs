@@ -5,7 +5,7 @@ pub fn handle_crs_changed_events(
 ) {
     if let Some(event) = change_crs_event_reader.read().last() {
         settings.target_crs_epsg_code = event.new_crs_epsg_code;
-        crs_changed_event_writer.send(rgis_events::CrsChangedEvent {
+        crs_changed_event_writer.write(rgis_events::CrsChangedEvent {
             old_crs_epsg_code: event.old_crs_epsg_code,
             new_crs_epsg_code: event.new_crs_epsg_code,
         });

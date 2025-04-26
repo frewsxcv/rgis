@@ -15,7 +15,7 @@ pub fn configure(app: &mut App) {
 }
 
 fn init_camera(mut commands: Commands) {
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn((Camera2d, Camera { ..default() }));
 }
 
 fn log_error(result: In<Result<(), Box<dyn std::error::Error + Send + Sync>>>) {
@@ -36,8 +36,10 @@ fn handle_change_crs_event(
     let Some(event) = change_crs_event_reader.read().last() else {
         return Ok(());
     };
-    let window = windows.get_single()?;
-    let mut transform = query.single_mut();
+    let window = windows.single()?;
+    let Ok(mut transform) = query.single_mut() else {
+        return Ok(());
+    };
     let map_area = rgis_units::MapArea {
         window,
         left_offset_px: ui_margins.left.0,
@@ -66,7 +68,9 @@ fn pan_camera_system(
     if pan_camera_event_reader.is_empty() {
         return;
     }
-    let mut transform = query.single_mut();
+    let Ok(mut transform) = query.single_mut() else {
+        return;
+    };
     let mut camera_offset = crate::CameraOffset::from_transform(&transform);
     let camera_scale = crate::CameraScale::from_transform(&transform);
 
@@ -87,7 +91,9 @@ fn zoom_camera_system(
     if zoom_camera_event_reader.is_empty() {
         return;
     }
-    let mut transform = query.single_mut();
+    let Ok(mut transform) = query.single_mut() else {
+        return;
+    };
     let mut camera_offset = crate::CameraOffset::from_transform(&transform);
     let mut mouse_offset = camera_offset;
     let before_scale = crate::CameraScale::from_transform(&transform);
@@ -134,7 +140,7 @@ fn handle_meshes_spawned_events(
 ) {
     for event in meshes_spawned_event_reader.read() {
         if !(*has_moved) {
-            center_camera_event_writer.send(event.0.into());
+            center_camera_event_writer.write(event.0.into());
             *has_moved = true;
         }
     }
@@ -150,7 +156,7 @@ fn center_camera(
     windows: Query<&Window, With<PrimaryWindow>>,
     ui_margins: rgis_units::UiMargins,
 ) {
-    let Ok(window) = windows.get_single() else {
+    let Ok(window) = windows.single() else {
         return;
     };
     for projected_feature in event_reader
@@ -161,7 +167,9 @@ fn center_camera(
         let Ok(bounding_rect) = projected_feature.bounding_rect() else {
             continue;
         };
-        let mut transform = query.single_mut();
+        let Ok(mut transform) = query.single_mut() else {
+            continue;
+        };
 
         debug!("Moving camera to look at new layer");
         let map_area = rgis_units::MapArea {

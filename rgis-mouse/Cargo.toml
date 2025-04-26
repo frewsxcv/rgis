@@ -6,7 +6,7 @@ edition = "2021"
 publish = false
 
 [dependencies]
-bevy = { version = "0.15", default-features = false, features = [
+bevy = { version = "0.16", default-features = false, features = [
     "bevy_winit",
     "bevy_core_pipeline",
     "bevy_render",
@@ -15,7 +15,7 @@ bevy = { version = "0.15", default-features = false, features = [
     "wayland",
     "png",
 ] }
-bevy_egui = "0.33"
+bevy_egui = "0.34"
 geo = "0.29"
 geo-projected = { path = "../geo-projected" }
 rgis-events = { path = "../rgis-events" }

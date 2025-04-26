@@ -93,7 +93,7 @@ impl<Op: rgis_geo_ops::OperationEntry> egui::Widget for OperationButton<'_, '_, 
             let mut operation = Op::build();
             match operation.next_action() {
                 rgis_geo_ops::Action::RenderUi => {
-                    self.events.open_operation_window_event_writer.send(
+                    self.events.open_operation_window_event_writer.write(
                         crate::events::OpenOperationWindowEvent {
                             operation,
                             feature_collection: self.layer.unprojected_feature_collection.clone(), // TODO: clone?
@@ -107,7 +107,7 @@ impl<Op: rgis_geo_ops::OperationEntry> egui::Widget for OperationButton<'_, '_, 
 
                     match outcome {
                         Ok(rgis_geo_ops::Outcome::FeatureCollection(feature_collection)) => {
-                            self.events.create_layer_event_writer.send(
+                            self.events.create_layer_event_writer.write(
                                 rgis_events::CreateLayerEvent {
                                     feature_collection,
                                     name: Op::NAME.into(),
@@ -118,7 +118,7 @@ impl<Op: rgis_geo_ops::OperationEntry> egui::Widget for OperationButton<'_, '_, 
                         Ok(rgis_geo_ops::Outcome::Text(text)) => {
                             self.events
                                 .render_message_event_writer
-                                .send(rgis_events::RenderMessageEvent(text));
+                                .write(rgis_events::RenderMessageEvent(text));
                         }
                         Err(e) => {
                             bevy::log::error!("Encountered an error during the operation: {}", e);
@@ -142,7 +142,7 @@ impl egui::Widget for AddLayerButton<'_, '_> {
         if button.clicked() {
             self.events
                 .show_add_layer_window_event_writer
-                .send_default();
+                .write_default();
         }
 
         button
@@ -160,7 +160,7 @@ impl Layer<'_, '_> {
     fn delete_layer(&mut self, layer: &rgis_layers::Layer) {
         self.events
             .delete_layer_event_writer
-            .send(rgis_events::DeleteLayerEvent(layer.id));
+            .write(rgis_events::DeleteLayerEvent(layer.id));
     }
 }
 
@@ -186,7 +186,7 @@ impl Widget for Layer<'_, '_> {
                     if ui.button("✏ Manage").clicked() {
                         self.events
                             .show_manage_layer_window_event_writer
-                            .send(rgis_events::ShowManageLayerWindowEvent(layer.id));
+                            .write(rgis_events::ShowManageLayerWindowEvent(layer.id));
                     }
 
                     ui.add(MoveUpMoveDownWidget {
@@ -204,7 +204,7 @@ impl Widget for Layer<'_, '_> {
                     if ui.button("🔎 Zoom to extent").clicked() {
                         self.events
                             .center_layer_event_writer
-                            .send(rgis_events::CenterCameraEvent(layer.id));
+                            .write(rgis_events::CenterCameraEvent(layer.id));
                     }
 
                     if ui.button("❌ Remove").clicked() {
@@ -243,7 +243,7 @@ impl egui::Widget for MoveUpMoveDownWidget<'_, '_> {
             {
                 self.events
                     .move_layer_event_writer
-                    .send(rgis_events::MoveLayerEvent(
+                    .write(rgis_events::MoveLayerEvent(
                         self.layer.id,
                         rgis_events::MoveDirection::Up,
                     ));
@@ -255,7 +255,7 @@ impl egui::Widget for MoveUpMoveDownWidget<'_, '_> {
             {
                 self.events
                     .move_layer_event_writer
-                    .send(rgis_events::MoveLayerEvent(
+                    .write(rgis_events::MoveLayerEvent(
                         self.layer.id,
                         rgis_events::MoveDirection::Down,
                     ));
@@ -281,7 +281,7 @@ impl egui::Widget for ToggleLayerWidget<'_, '_> {
         if button.clicked() {
             self.events
                 .toggle_layer_visibility_event_writer
-                .send(rgis_events::ToggleLayerVisibilityEvent(self.layer.id));
+                .write(rgis_events::ToggleLayerVisibilityEvent(self.layer.id));
         }
 
         button
@@ -303,7 +303,7 @@ impl egui::Widget for OperationsWidget<'_, '_> {
                         geo_features::FeatureCollection::from_geometry(bounding_rect.into());
                     self.events
                         .create_layer_event_writer
-                        .send(rgis_events::CreateLayerEvent {
+                        .write(rgis_events::CreateLayerEvent {
                             feature_collection,           // todo
                             name: "Bounding rect".into(), // todo
                             source_crs_epsg_code: self.layer.crs_epsg_code,

@@ -58,7 +58,7 @@ fn handle_mesh_building_job_outcome(
             is_selected,
         );
 
-        meshes_spawned_event_writer.send(layer_id.into());
+        meshes_spawned_event_writer.write(layer_id.into());
     }
 }
 
@@ -207,7 +207,7 @@ fn handle_camera_scale_changed_event(
     query: CameraGlobalTransformQuery,
     mut sprite_bundle_query: Query<&mut Sprite>,
 ) {
-    if let Ok(camera_global_transform) = query.get_single() {
+    if let Ok(camera_global_transform) = query.single() {
         let (scale, _, _) = camera_global_transform.to_scale_rotation_translation();
 
         for mut sprite in &mut sprite_bundle_query {

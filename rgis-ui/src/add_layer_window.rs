@@ -211,7 +211,7 @@ impl AddLayerWindow<'_, '_, '_, '_, '_> {
                         };
                         match self.selected_file.0.take() {
                             Some(loaded_file) => {
-                                self.events.load_file_event_writer.send(
+                                self.events.load_file_event_writer.write(
                                     rgis_events::LoadFileEvent::FromBytes {
                                         file_name: loaded_file.file_name,
                                         file_format: selected_format,
@@ -257,7 +257,7 @@ impl AddLayerWindow<'_, '_, '_, '_, '_> {
                             file_format @ (FileFormat::Wkt
                             | FileFormat::GeoJson
                             | FileFormat::Gpx) => {
-                                self.events.load_file_event_writer.send(
+                                self.events.load_file_event_writer.write(
                                     rgis_events::LoadFileEvent::FromBytes {
                                         file_name: "Inputted file".into(),
                                         file_format,
@@ -327,7 +327,7 @@ impl egui::Widget for LibraryEntryWidget<'_, '_, '_> {
             if ui.button("➕ Add").clicked() {
                 self.events
                     .load_file_event_writer
-                    .send(rgis_events::LoadFileEvent::FromNetwork {
+                    .write(rgis_events::LoadFileEvent::FromNetwork {
                         name: format!("{}: {}", self.folder.name, self.entry.name),
                         url: self.entry.url.into(),
                         crs_epsg_code: self.entry.crs,

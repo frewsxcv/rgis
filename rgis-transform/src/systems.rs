@@ -48,7 +48,7 @@ fn handle_reproject_geometry_job_completion_events(
 
         layer.projected_feature_collection = Some(outcome.feature_collection);
 
-        layer_reprojected_event_writer.send(rgis_events::LayerReprojectedEvent(outcome.layer_id));
+        layer_reprojected_event_writer.write(rgis_events::LayerReprojectedEvent(outcome.layer_id));
     }
 }
 

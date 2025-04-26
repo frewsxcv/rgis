@@ -2,7 +2,7 @@ use crate::window;
 use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_egui::{
     egui::{self, Widget},
-    EguiContexts,
+    EguiContextPass, EguiContexts,
 };
 
 fn render_bottom_panel(
@@ -258,7 +258,7 @@ fn render_top_panel(
         window::IsWindowOpen<crate::debug_window::DebugWindow<'static, 'static>>,
     >,
 ) {
-    let Ok(mut window) = windows.get_single_mut() else {
+    let Ok(mut window) = windows.single_mut() else {
         return;
     };
 
@@ -300,7 +300,7 @@ pub fn configure(app: &mut App) {
     app.add_systems(Startup, set_egui_theme);
 
     app.configure_sets(
-        Update,
+        EguiContextPass,
         (
             RenderSystemSet::RenderingMessageWindow,
             RenderSystemSet::RenderingTopBottomPanels,
@@ -311,7 +311,7 @@ pub fn configure(app: &mut App) {
     );
 
     app.add_systems(
-        Update,
+        EguiContextPass,
         (
             render_message_window.in_set(RenderSystemSet::RenderingMessageWindow),
             render_top_panel.in_set(RenderSystemSet::RenderingTopBottomPanels),
@@ -330,12 +330,12 @@ pub fn configure(app: &mut App) {
     app.insert_resource(window::IsWindowOpen::<crate::debug_window::DebugWindow>::closed());
     app.insert_resource(window::IsWindowOpen::<crate::welcome_window::WelcomeWindow>::open());
     app.add_systems(
-        Update,
+        EguiContextPass,
         window::render_window_system::<crate::debug_window::DebugWindow>
             .run_if(window::run_if_is_window_open::<crate::debug_window::DebugWindow>),
     );
     app.add_systems(
-        Update,
+        EguiContextPass,
         window::render_window_system::<crate::welcome_window::WelcomeWindow>
             .run_if(window::run_if_is_window_open::<crate::welcome_window::WelcomeWindow>),
     );

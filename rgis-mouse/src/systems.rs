@@ -20,10 +20,12 @@ fn cursor_moved_system(
         cursor_moved_event_reader.clear();
         return;
     }
-    let Ok(window) = windows.get_single_mut() else {
+    let Ok(window) = windows.single_mut() else {
         return;
     };
-    let transform = query.single();
+    let Ok(transform) = query.single() else {
+        return;
+    };
     if let Some(event) = cursor_moved_event_reader.read().last() {
         mouse_position.0 = rgis_units::ScreenCoord {
             x: f64::from(event.position.x),
@@ -49,7 +51,7 @@ fn mouse_motion_system(
     rgis_settings: Res<rgis_settings::RgisSettings>,
     mut last_cursor_icon: Local<Option<bevy::window::SystemCursorIcon>>,
 ) {
-    let Ok(mut window) = windows.get_single_mut() else {
+    let Ok(mut window) = windows.single_mut() else {
         return;
     };
 
@@ -93,7 +95,7 @@ fn mouse_motion_system(
             y_sum += event.delta.y;
         }
         if x_sum != 0. || y_sum != 0. {
-            pan_camera_events.send(rgis_events::PanCameraEvent { x: x_sum, y: y_sum });
+            pan_camera_events.write(rgis_events::PanCameraEvent { x: x_sum, y: y_sum });
         }
         return;
     }
@@ -134,7 +136,7 @@ fn mouse_click_system(
     mut map_clicked_event_writer: bevy::ecs::event::EventWriter<rgis_events::MapClickedEvent>,
     mouse_position: Res<crate::MousePos>,
 ) {
-    map_clicked_event_writer.send(rgis_events::MapClickedEvent(mouse_position.0));
+    map_clicked_event_writer.write(rgis_events::MapClickedEvent(mouse_position.0));
 }
 
 fn run_if_has_mouse_scroll_events(
@@ -170,7 +172,7 @@ fn mouse_scroll_system(
         })
         .sum();
     if y_amount != 0. {
-        zoom_camera_events.send(rgis_events::ZoomCameraEvent::new(
+        zoom_camera_events.write(rgis_events::ZoomCameraEvent::new(
             y_amount,
             mouse_position.0,
         ));

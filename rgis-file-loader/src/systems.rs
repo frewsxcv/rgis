@@ -58,7 +58,7 @@ fn handle_load_file_job_finished_events(
     while let Some(outcome) = finished_jobs.take_next::<crate::jobs::LoadFileJob>() {
         match outcome {
             Ok(outcome) => {
-                create_layer_event_writer.send(rgis_events::CreateLayerEvent {
+                create_layer_event_writer.write(rgis_events::CreateLayerEvent {
                     name: outcome.name,
                     feature_collection: outcome.feature_collection,
                     source_crs_epsg_code: outcome.source_crs_epsg_code,

@@ -13,9 +13,9 @@ fn handle_toggle_layer_visibility_events(
         };
         layer.visible = !layer.visible;
         if layer.visible {
-            layer_became_visible_event_writer.send(rgis_events::LayerBecameVisibleEvent(event.0));
+            layer_became_visible_event_writer.write(rgis_events::LayerBecameVisibleEvent(event.0));
         } else {
-            layer_became_hidden_event_writer.send(rgis_events::LayerBecameHiddenEvent(event.0));
+            layer_became_hidden_event_writer.write(rgis_events::LayerBecameHiddenEvent(event.0));
         }
     }
 }
@@ -44,7 +44,7 @@ fn handle_update_color_events(
                 rgis_events::LayerColorUpdatedEvent::Fill(*layer_id)
             }
         };
-        updated_events.send(event);
+        updated_events.write(event);
     }
 }
 
@@ -55,7 +55,7 @@ fn handle_delete_layer_events(
 ) {
     for event in delete_layer_event_reader.read() {
         layers.remove(event.0);
-        despawn_meshes_event_writer.send(rgis_events::DespawnMeshesEvent(event.0));
+        despawn_meshes_event_writer.write(rgis_events::DespawnMeshesEvent(event.0));
     }
 }
 
@@ -97,9 +97,9 @@ fn handle_move_layer_events(
 
             layers.data.swap(old_z_index, new_z_index);
 
-            layer_z_index_updated_event_writer.send(rgis_events::LayerZIndexUpdatedEvent(event.0));
+            layer_z_index_updated_event_writer.write(rgis_events::LayerZIndexUpdatedEvent(event.0));
             layer_z_index_updated_event_writer
-                .send(rgis_events::LayerZIndexUpdatedEvent(other_layer_id));
+                .write(rgis_events::LayerZIndexUpdatedEvent(other_layer_id));
         }
     }
 }
@@ -112,12 +112,12 @@ fn handle_map_clicked_events(
 ) {
     for event in map_clicked_event_reader.read() {
         if let Some((layer, feature)) = layers.feature_from_click(event.0) {
-            render_message_event_writer.send(rgis_events::RenderFeaturePropertiesEvent {
+            render_message_event_writer.write(rgis_events::RenderFeaturePropertiesEvent {
                 layer_id: layer.id,
                 properties: feature.properties.clone(),
             });
             feature_clicked_event_writer
-                .send(rgis_events::FeatureSelectedEvent(layer.id, feature.id));
+                .write(rgis_events::FeatureSelectedEvent(layer.id, feature.id));
         }
     }
 }
@@ -133,7 +133,7 @@ fn handle_create_layer_events(
             event.name,
             event.source_crs_epsg_code,
         );
-        layer_created_event_writer.send(rgis_events::LayerCreatedEvent(layer_id));
+        layer_created_event_writer.write(rgis_events::LayerCreatedEvent(layer_id));
     }
 }
 
