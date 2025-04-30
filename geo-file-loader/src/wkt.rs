@@ -1,6 +1,5 @@
 use std::io;
 
-use geo_projected::WrapTo;
 use geozero::GeozeroDatasource;
 
 #[derive(thiserror::Error, Debug)]
@@ -18,16 +17,14 @@ impl crate::FileLoader for WktSource {
         WktSource { bytes }
     }
 
-    fn load(
-        self,
-    ) -> Result<geo_features::FeatureCollection<geo_projected::UnprojectedScalar>, crate::Error>
-    {
+    fn load(self) -> Result<geo_features::FeatureCollection<f64>, crate::Error> {
         let mut bytes_cursor = io::Cursor::new(&self.bytes);
         let mut wkt_reader = geozero::wkt::WktReader(&mut bytes_cursor);
         let mut geo_writer = geozero::geo_types::GeoWriter::new();
         wkt_reader.process(&mut geo_writer)?;
-        let geometry = (geo_writer.take_geometry().ok_or(crate::Error::NoGeometry)?)
-            .wrap::<geo_projected::Unprojected>();
-        Ok(geo_features::FeatureCollection::from_geometry(geometry))
+        let geometry = geo_writer.take_geometry().ok_or(crate::Error::NoGeometry)?;
+        Ok(geo_features::FeatureCollection::<f64>::from_geometry(
+            geometry,
+        ))
     }
 }

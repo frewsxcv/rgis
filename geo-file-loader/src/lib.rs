@@ -57,7 +57,7 @@ impl FileFormat {
 pub fn load_file(
     file_format: FileFormat,
     bytes: bytes::Bytes,
-) -> Result<geo_features::FeatureCollection<geo_projected::UnprojectedScalar>, Error> {
+) -> Result<geo_features::FeatureCollection<f64>, Error> {
     match file_format {
         FileFormat::GeoJson => Ok(GeoJsonSource::from_bytes(bytes).load()?),
         FileFormat::Gpx => Ok(GpxSource::from_bytes(bytes).load()?),
@@ -68,7 +68,5 @@ pub fn load_file(
 
 trait FileLoader {
     fn from_bytes(bytes: bytes::Bytes) -> Self;
-    fn load(
-        self,
-    ) -> Result<geo_features::FeatureCollection<geo_projected::UnprojectedScalar>, Error>;
+    fn load(self) -> Result<geo_features::FeatureCollection<f64>, Error>;
 }

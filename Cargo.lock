@@ -2826,10 +2826,8 @@ dependencies = [
  "bytes",
  "geo",
  "geo-features",
- "geo-projected",
  "geozero",
  "thiserror 2.0.12",
- "time-logger",
 ]
 
 [[package]]
