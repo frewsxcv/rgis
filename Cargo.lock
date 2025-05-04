@@ -2110,9 +2110,9 @@ checksum = "2a2330da5de22e8a3cb63252ce2abb30116bf5265e89c0e01bc17015ce30a476"
 
 [[package]]
 name = "dbase"
-version = "0.4.0"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "86bc97a72d9aca92b9a8095b3bfe8f691c54bb15eefaacec53882604062428bf"
+checksum = "847c0b5d4f3a3d80f9c64db3cb60eb00304b3ea1262c7299dd6274a83e714d24"
 dependencies = [
  "byteorder",
  "time",
@@ -2807,7 +2807,7 @@ checksum = "36e244adbf7ef7abdcd1dfbce94b6c90c748c47344e39ad4627999157db2dc94"
 dependencies = [
  "bevy",
  "bevy-earcutr",
- "geo-traits",
+ "geo-traits 0.1.1",
  "geo-types",
  "num-traits",
 ]
@@ -2825,7 +2825,6 @@ version = "0.1.0"
 dependencies = [
  "bytes",
  "geo",
- "geo-features",
  "geozero",
  "thiserror 2.0.12",
 ]
@@ -2863,6 +2862,15 @@ name = "geo-traits"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cdc9562dd7e476214a5eea3caf12763dcc2c886a64cc4c3b8ec41554e8c6c5fc"
+dependencies = [
+ "geo-types",
+]
+
+[[package]]
+name = "geo-traits"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b018fc19fa58202b03f1c809aebe654f7d70fd3887dace34c3d05c11aeb474b5"
 dependencies = [
  "geo-types",
 ]
@@ -2922,8 +2930,7 @@ dependencies = [
 [[package]]
 name = "geozero"
 version = "0.14.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e5f28f34864745eb2f123c990c6ffd92c1584bd39439b3f27ff2a0f4ea5b309b"
+source = "git+https://github.com/georust/geozero.git?branch=cfarwell-B63F84F8-CC7B-4BA2-A5AC-18248CE4616E#4a255392e8984dba433a6f82506ee2759cae4225"
 dependencies = [
  "byteorder",
  "dbase",
@@ -2932,7 +2939,7 @@ dependencies = [
  "gpx",
  "log",
  "serde_json",
- "thiserror 1.0.69",
+ "thiserror 2.0.12",
  "wkt",
 ]
 
@@ -7506,10 +7513,11 @@ dependencies = [
 
 [[package]]
 name = "wkt"
-version = "0.11.1"
+version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "54f7f1ff4ea4c18936d6cd26a6fd24f0003af37e951a8e0e8b9e9a2d0bd0a46d"
+checksum = "e1c591649bd1c9d4e28459758bbb5fb5c0edc7a67060b52422f4761c94ffe961"
 dependencies = [
+ "geo-traits 0.2.0",
  "geo-types",
  "log",
  "num-traits",

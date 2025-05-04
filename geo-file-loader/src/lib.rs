@@ -30,7 +30,7 @@ pub enum Error {
     Geozero(#[from] geozero::error::GeozeroError),
     #[error("{0}")]
     Shapefile(#[from] geozero::shp::Error),
-    #[error("No geometry found in GeoJSON file")]
+    #[error("No geometry found in file")]
     NoGeometry,
 }
 
@@ -54,10 +54,21 @@ impl FileFormat {
     }
 }
 
-pub fn load_file(
-    file_format: FileFormat,
-    bytes: bytes::Bytes,
-) -> Result<geo_features::FeatureCollection<f64>, Error> {
+#[derive(Clone, Debug)]
+pub enum Value {
+    String(String),
+    Number(f64),
+    Boolean(bool),
+    Null,
+}
+
+pub type Feature = geozero::geo_types::GeoFeature;
+
+pub type Features = Vec<Feature>;
+
+pub type OwnedColumnValue = geozero::geo_types::OwnedColumnValue;
+
+pub fn load_file(file_format: FileFormat, bytes: bytes::Bytes) -> Result<Features, Error> {
     match file_format {
         FileFormat::GeoJson => Ok(GeoJsonSource::from_bytes(bytes).load()?),
         FileFormat::Gpx => Ok(GpxSource::from_bytes(bytes).load()?),
@@ -68,5 +79,5 @@ pub fn load_file(
 
 trait FileLoader {
     fn from_bytes(bytes: bytes::Bytes) -> Self;
-    fn load(self) -> Result<geo_features::FeatureCollection<f64>, Error>;
+    fn load(self) -> Result<Features, Error>;
 }

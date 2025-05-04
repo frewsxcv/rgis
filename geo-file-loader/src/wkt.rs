@@ -1,6 +1,6 @@
 use std::io;
 
-use geozero::GeozeroDatasource;
+use geozero::ToGeoFeatures;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
@@ -17,14 +17,11 @@ impl crate::FileLoader for WktSource {
         WktSource { bytes }
     }
 
-    fn load(self) -> Result<geo_features::FeatureCollection<f64>, crate::Error> {
+    fn load(self) -> Result<crate::Features, crate::Error> {
         let mut bytes_cursor = io::Cursor::new(&self.bytes);
-        let mut wkt_reader = geozero::wkt::WktReader(&mut bytes_cursor);
-        let mut geo_writer = geozero::geo_types::GeoWriter::new();
-        wkt_reader.process(&mut geo_writer)?;
-        let geometry = geo_writer.take_geometry().ok_or(crate::Error::NoGeometry)?;
-        Ok(geo_features::FeatureCollection::<f64>::from_geometry(
-            geometry,
-        ))
+        let features = geozero::wkt::WktReader(&mut bytes_cursor)
+            .to_geo_features()?
+            .collect();
+        Ok(features)
     }
 }

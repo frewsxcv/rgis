@@ -7,6 +7,10 @@ publish = false
 [dependencies]
 bytes = "1"
 geo = "0.30"
-geo-features = { path = "../geo-features" }
-geozero = { version = "0.14", features = ["with-wkt", "with-gpx", "with-shp"] }
+# geozero = { version = "0.14", features = ["with-wkt", "with-gpx", "with-shp"] }
+geozero = { git = "https://github.com/georust/geozero.git", branch = "cfarwell-B63F84F8-CC7B-4BA2-A5AC-18248CE4616E", features = [
+    "with-wkt",
+    "with-gpx",
+    "with-shp",
+] }
 thiserror = "2"
