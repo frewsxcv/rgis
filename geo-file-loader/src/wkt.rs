@@ -2,12 +2,6 @@ use std::io;
 
 use geozero::ToGeoFeatures;
 
-#[derive(thiserror::Error, Debug)]
-pub enum Error {
-    #[error("{0}")]
-    Geozero(#[from] geozero::error::GeozeroError),
-}
-
 pub struct WktSource {
     pub bytes: bytes::Bytes,
 }

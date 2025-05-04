@@ -2826,7 +2826,6 @@ dependencies = [
  "bytes",
  "geo",
  "geozero",
- "thiserror 2.0.12",
 ]
 
 [[package]]
@@ -5264,7 +5263,6 @@ dependencies = [
  "rgis-events",
  "rgis-network",
  "serde_json",
- "thiserror 2.0.12",
  "time-logger",
 ]
 

@@ -24,14 +24,33 @@ pub enum FileFormat {
     Gpx,
 }
 
-#[derive(thiserror::Error, Debug)]
+#[derive(Debug)]
 pub enum Error {
-    #[error("{0}")]
-    Geozero(#[from] geozero::error::GeozeroError),
-    #[error("{0}")]
-    Shapefile(#[from] geozero::shp::Error),
-    #[error("No geometry found in file")]
+    Geozero(geozero::error::GeozeroError),
+    Shapefile(geozero::shp::Error),
     NoGeometry,
+}
+
+impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Error::Geozero(err) => write!(f, "{}", err),
+            Error::Shapefile(err) => write!(f, "{}", err),
+            Error::NoGeometry => write!(f, "No geometry found in file"),
+        }
+    }
+}
+
+impl From<geozero::error::GeozeroError> for Error {
+    fn from(err: geozero::error::GeozeroError) -> Self {
+        Error::Geozero(err)
+    }
+}
+
+impl From<geozero::shp::Error> for Error {
+    fn from(err: geozero::shp::Error) -> Self {
+        Error::Shapefile(err)
+    }
 }
 
 impl FileFormat {

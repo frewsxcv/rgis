@@ -13,4 +13,3 @@ geozero = { git = "https://github.com/georust/geozero.git", branch = "cfarwell-B
     "with-gpx",
     "with-shp",
 ] }
-thiserror = "2"
