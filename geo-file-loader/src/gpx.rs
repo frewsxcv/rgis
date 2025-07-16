@@ -14,9 +14,19 @@ impl crate::FileLoader for GpxSource {
 
     fn load(self) -> Result<crate::Features, crate::Error> {
         let bytes_cursor = io::Cursor::new(&self.bytes);
-        let features = geozero::gpx::GpxReader(bytes_cursor)
-            .to_geo_features()?
-            .collect();
-        Ok(features)
+
+        let reader = geozero::gpx::GpxReader(bytes_cursor);
+
+        use geoarrow::io::geozero::ToGeometry;
+
+        let meow = reader.to_geometry()?;
+
+        // let features = geozero::gpx::GpxReader(bytes_cursor)
+        //     .to_geo_features()?
+        //     .collect();
+
+        // Ok(features)
+
+        todo!()
     }
 }
