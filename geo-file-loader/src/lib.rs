@@ -11,6 +11,8 @@ mod gpx;
 mod shapefile;
 mod wkt;
 
+use geozero::geo_types::GeoProperties;
+
 pub use crate::geojson::GeoJsonSource;
 pub use crate::gpx::GpxSource;
 pub use crate::shapefile::ShapefileSource;
@@ -81,7 +83,11 @@ pub enum Value {
     Null,
 }
 
-pub type Feature = geozero::geo_types::GeoFeature;
+#[derive(Debug, PartialEq)]
+pub struct Feature {
+    pub geometry: geo::Geometry,
+    pub properties: GeoProperties,
+}
 
 pub type Features = Vec<Feature>;
 

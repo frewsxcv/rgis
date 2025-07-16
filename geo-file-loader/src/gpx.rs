@@ -16,6 +16,13 @@ impl crate::FileLoader for GpxSource {
         let bytes_cursor = io::Cursor::new(&self.bytes);
         let features = geozero::gpx::GpxReader(bytes_cursor)
             .to_geo_features()?
+            .map(|f| {
+                let (geometry, properties) = f.into_inner();
+                crate::Feature {
+                    geometry,
+                    properties,
+                }
+            })
             .collect();
         Ok(features)
     }

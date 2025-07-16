@@ -334,12 +334,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "assert_approx_eq"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3c07dab4369547dbe5114677b33fbbf724971019f3818172d59a97a61c774ffd"
-
-[[package]]
 name = "assert_type_match"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2117,9 +2111,9 @@ checksum = "2a2330da5de22e8a3cb63252ce2abb30116bf5265e89c0e01bc17015ce30a476"
 
 [[package]]
 name = "dbase"
-version = "0.5.0"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "847c0b5d4f3a3d80f9c64db3cb60eb00304b3ea1262c7299dd6274a83e714d24"
+checksum = "fbad7f18af09b304e8eb37cede7327d13d7bf6f787e11eef2dc093e26ac30c23"
 dependencies = [
  "byteorder",
  "time",
@@ -2516,16 +2510,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "error-chain"
-version = "0.12.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2d2f06b9cac1506ece98fe3231e3cc9c4410ec3d5b1f24ae1c8946f0742cdefc"
-dependencies = [
- "backtrace",
- "version_check",
-]
-
-[[package]]
 name = "error-code"
 version = "3.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2884,9 +2868,9 @@ dependencies = [
 
 [[package]]
 name = "geo-traits"
-version = "0.2.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b018fc19fa58202b03f1c809aebe654f7d70fd3887dace34c3d05c11aeb474b5"
+checksum = "2e7c353d12a704ccfab1ba8bfb1a7fe6cb18b665bf89d37f4f7890edcd260206"
 dependencies = [
  "geo-types",
 ]
@@ -2946,7 +2930,7 @@ dependencies = [
 [[package]]
 name = "geozero"
 version = "0.14.0"
-source = "git+https://github.com/georust/geozero.git?branch=cfarwell-B63F84F8-CC7B-4BA2-A5AC-18248CE4616E#4a255392e8984dba433a6f82506ee2759cae4225"
+source = "git+https://github.com/georust/geozero.git?branch=main#3db91b6308b67010c53f5d932fba071553fb26d0"
 dependencies = [
  "byteorder",
  "dbase",
@@ -3113,12 +3097,10 @@ dependencies = [
 
 [[package]]
 name = "gpx"
-version = "0.9.1"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2b436c838dada2b577d1b80ac62b5569584990fb10fc6554a95cfd67c6e5db9e"
+checksum = "cfabaf0e8a17a6fb7977fac3bd5846488462edb9f8b246605835483a5501e698"
 dependencies = [
- "assert_approx_eq",
- "error-chain",
  "geo-types",
  "thiserror 1.0.69",
  "time",
@@ -7551,11 +7533,11 @@ dependencies = [
 
 [[package]]
 name = "wkt"
-version = "0.12.0"
+version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e1c591649bd1c9d4e28459758bbb5fb5c0edc7a67060b52422f4761c94ffe961"
+checksum = "efb2b923ccc882312e559ffaa832a055ba9d1ac0cc8e86b3e25453247e4b81d7"
 dependencies = [
- "geo-traits 0.2.0",
+ "geo-traits 0.3.0",
  "geo-types",
  "log",
  "num-traits",
