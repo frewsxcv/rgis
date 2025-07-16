@@ -11,4 +11,9 @@ workspace = true
 bytes = { workspace = true }
 geo = { workspace = true }
 geo-raster = { path = "../geo-raster" }
+geoarrow = { git = "https://github.com/geoarrow/geoarrow-rs.git" }
+wkb = "0.8"
+arrow-array = "55"
+arrow-schema = "55"
+serde_json = "1"
 geozero = { workspace = true, features = ["with-wkt", "with-gpx", "with-shp"] }
