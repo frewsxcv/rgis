@@ -45,5 +45,11 @@ bevy = { version = "0.16", default-features = false, features = [
     "bevy_ui",
     "wayland",
     "png",
-    "webgl2"
+    "webgl2",
 ] }
+
+[package.metadata.wasm-pack.profile.profiling]
+wasm-opt = ['-O', '--enable-bulk-memory']
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = ['-O', '--enable-bulk-memory']
