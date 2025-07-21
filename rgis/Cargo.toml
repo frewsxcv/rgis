@@ -48,8 +48,12 @@ bevy = { version = "0.16", default-features = false, features = [
     "webgl2",
 ] }
 
-[package.metadata.wasm-pack.profile.profiling]
-wasm-opt = ['-O', '--enable-bulk-memory']
-
+# https://github.com/rust-lang/rust/issues/93294
 [package.metadata.wasm-pack.profile.release]
-wasm-opt = ['-O', '--enable-bulk-memory']
+wasm-opt = false
+
+# [package.metadata.wasm-pack.profile.profiling]
+# wasm-opt = ['-O', '--enable-bulk-memory']
+
+# [package.metadata.wasm-pack.profile.release]
+# wasm-opt = ['-O', '--enable-bulk-memory']
