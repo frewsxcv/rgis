@@ -16,7 +16,7 @@ impl crate::FileLoader for ShapefileSource {
         for _ in shapefile_reader.iter_geometries(&mut geo_writer) {}
         let geometry = geo_writer.take_geometry().ok_or(crate::Error::NoGeometry)?;
         Ok(vec![crate::Feature {
-            geometry: geometry,
+            geometry,
             properties: Default::default(),
         }])
     }

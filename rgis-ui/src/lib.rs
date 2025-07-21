@@ -55,14 +55,12 @@ struct OperationWindowState {
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(bevy_egui::EguiPlugin {
-            enable_multipass_for_primary_context: false, // is this the right value?
-        })
-        .insert_resource(add_layer_window::SelectedFile(None))
-        .insert_resource(rgis_units::TopPanelHeight(0.))
-        .insert_resource(rgis_units::BottomPanelHeight(0.))
-        .insert_resource(rgis_units::SidePanelWidth(0.))
-        .add_event::<events::OpenOperationWindowEvent>();
+        app.add_plugins(bevy_egui::EguiPlugin::default())
+            .insert_resource(add_layer_window::SelectedFile(None))
+            .insert_resource(rgis_units::TopPanelHeight(0.))
+            .insert_resource(rgis_units::BottomPanelHeight(0.))
+            .insert_resource(rgis_units::SidePanelWidth(0.))
+            .add_event::<events::OpenOperationWindowEvent>();
 
         systems::configure(app);
     }

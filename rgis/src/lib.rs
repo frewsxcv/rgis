@@ -32,7 +32,7 @@ pub fn run() {
     app.add_plugins(bevy::input::InputPlugin);
     app.add_plugins(bevy::core_pipeline::CorePipelinePlugin);
     app.add_plugins(bevy::transform::TransformPlugin);
-    app.add_plugins(bevy::sprite::SpritePlugin::default());
+    app.add_plugins(bevy::sprite::SpritePlugin);
     app.add_plugins(rgis_ui::Plugin);
     app.add_plugins(rgis_layers::Plugin);
     app.add_plugins(rgis_file_loader::Plugin);

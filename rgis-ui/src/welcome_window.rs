@@ -7,7 +7,7 @@ pub(crate) struct WelcomeWindow<'w, 's> {
     _phantom: marker::PhantomData<(&'w (), &'s ())>,
 }
 
-impl<'w, 's> egui::Widget for WelcomeWindow<'w, 's> {
+impl egui::Widget for WelcomeWindow<'_, '_> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         ui.vertical_centered_justified(|ui| {
             ui.label("Welcome to rgis!");

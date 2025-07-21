@@ -62,7 +62,7 @@ fn mouse_motion_system(
         return;
     };
 
-    if let Some(cursor_icon) = *last_cursor_icon {
+    if let Some(_cursor_icon) = *last_cursor_icon {
         // FIXME
         // window.cursor.icon = cursor_icon;
     }
@@ -122,7 +122,7 @@ fn mouse_motion_system(
 }
 
 fn set_cursor_icon(
-    window: &mut Window,
+    _window: &mut Window,
     last_cursor_icon: &mut Option<bevy::window::SystemCursorIcon>,
     cursor_icon: bevy::window::SystemCursorIcon,
 ) {

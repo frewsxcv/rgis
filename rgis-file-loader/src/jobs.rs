@@ -65,7 +65,7 @@ fn geo_file_loader_owned_column_value_to_geo_features_value(
         geo_file_loader::OwnedColumnValue::Long(n) => geo_features::Value::Number(n as f64),
         geo_file_loader::OwnedColumnValue::ULong(n) => geo_features::Value::Number(n as f64),
         geo_file_loader::OwnedColumnValue::Float(n) => geo_features::Value::Number(n.into()),
-        geo_file_loader::OwnedColumnValue::Double(n) => geo_features::Value::Number(n.into()),
+        geo_file_loader::OwnedColumnValue::Double(n) => geo_features::Value::Number(n),
         geo_file_loader::OwnedColumnValue::Bool(b) => geo_features::Value::Boolean(b),
         // TODO: fill in the other implementations here
         _ => unimplemented!(),
