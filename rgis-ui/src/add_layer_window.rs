@@ -23,14 +23,12 @@ impl bevy_jobs::Job for OpenFileJob {
         "Opening file".into()
     }
 
-    fn perform(self, _: bevy_jobs::Context) -> bevy_jobs::AsyncReturn<Self::Outcome> {
-        Box::pin(async move {
-            let task = rfd::AsyncFileDialog::new().pick_file();
-            let file_handle = task.await?;
-            let file_name = file_handle.file_name();
-            let bytes = file_handle.read().await;
-            Some(OpenedFile { file_name, bytes })
-        })
+    async fn perform(self, _: bevy_jobs::Context) -> Self::Outcome {
+        let task = rfd::AsyncFileDialog::new().pick_file();
+        let file_handle = task.await?;
+        let file_name = file_handle.file_name();
+        let bytes = file_handle.read().await;
+        Some(OpenedFile { file_name, bytes })
     }
 }
 

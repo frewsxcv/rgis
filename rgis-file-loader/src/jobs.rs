@@ -22,22 +22,20 @@ impl bevy_jobs::Job for LoadFileJob {
         format!("Loading {} file", self.file_format.display_name())
     }
 
-    fn perform(self, _: bevy_jobs::Context) -> bevy_jobs::AsyncReturn<Self::Outcome> {
-        Box::pin(async move {
-            let features = geo_file_loader::load_file(self.file_format, self.bytes)?
-                .into_iter()
-                .map(|f| geo_file_laoder_feature_to_geo_features_feature(f))
-                .collect();
-            Ok(LoadFileJobOutcome {
-                feature_collection: FeatureCollection::from_features(features).wrap(),
-                name: self.name,
-                source_crs_epsg_code: self.source_crs_epsg_code,
-            })
+    async fn perform(self, _: bevy_jobs::Context) -> Self::Outcome {
+        let features = geo_file_loader::load_file(self.file_format, self.bytes)?
+            .into_iter()
+            .map(geo_file_loader_feature_to_geo_features_feature)
+            .collect();
+        Ok(LoadFileJobOutcome {
+            feature_collection: FeatureCollection::from_features(features).wrap(),
+            name: self.name,
+            source_crs_epsg_code: self.source_crs_epsg_code,
         })
     }
 }
 
-fn geo_file_laoder_feature_to_geo_features_feature(
+fn geo_file_loader_feature_to_geo_features_feature(
     feature: geo_file_loader::Feature,
 ) -> geo_features::Feature<f64> {
     let geometry = feature.geometry;

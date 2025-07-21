@@ -39,10 +39,8 @@ impl bevy_jobs::Job for NetworkFetchJob {
         format!("Fetching '{}'", self.name)
     }
 
-    fn perform(self, ctx: bevy_jobs::Context) -> bevy_jobs::AsyncReturn<Self::Outcome> {
-        Box::pin(
-            async move { build_request_future(self.url, self.crs_epsg_code, self.name, ctx).await },
-        )
+    async fn perform(self, ctx: bevy_jobs::Context) -> Self::Outcome {
+        build_request_future(self.url, self.crs_epsg_code, self.name, ctx).await
     }
 }
 

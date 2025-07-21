@@ -20,32 +20,30 @@ impl bevy_jobs::Job for ReprojectGeometryJob {
         "Projecting layer".to_string()
     }
 
-    fn perform(self, progress_sender: bevy_jobs::Context) -> bevy_jobs::AsyncReturn<Self::Outcome> {
-        Box::pin(async move {
-            let total = self.feature_collection.features.len();
+    async fn perform(self, progress_sender: bevy_jobs::Context) -> Self::Outcome {
+        let total = self.feature_collection.features.len();
 
-            let transformer =
-                geo_geodesy::Transformer::setup(self.source_epsg_code, self.target_epsg_code)?;
+        let transformer =
+            geo_geodesy::Transformer::setup(self.source_epsg_code, self.target_epsg_code)?;
 
-            let mut feature_collection = self.feature_collection.cast::<geo_projected::Projected>();
+        let mut feature_collection = self.feature_collection.cast::<geo_projected::Projected>();
 
-            for (i, feature) in feature_collection.features.iter_mut().enumerate() {
-                let _ = progress_sender.send_progress((100 * i / total) as u8).await;
+        for (i, feature) in feature_collection.features.iter_mut().enumerate() {
+            let _ = progress_sender.send_progress((100 * i / total) as u8).await;
 
-                if let Some(ref mut geometry) = &mut feature.geometry {
-                    transformer.transform(geometry)?;
-                }
-
-                feature.recalculate_bounding_rect();
+            if let Some(ref mut geometry) = &mut feature.geometry {
+                transformer.transform(geometry)?;
             }
 
-            feature_collection.recalculate_bounding_rect();
+            feature.recalculate_bounding_rect();
+        }
 
-            Ok(ReprojectGeometryJobOutcome {
-                feature_collection,
-                layer_id: self.layer_id,
-                target_crs_epsg_code: self.target_epsg_code,
-            })
+        feature_collection.recalculate_bounding_rect();
+
+        Ok(ReprojectGeometryJobOutcome {
+            feature_collection,
+            layer_id: self.layer_id,
+            target_crs_epsg_code: self.target_epsg_code,
         })
     }
 }

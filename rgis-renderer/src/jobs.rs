@@ -17,14 +17,12 @@ impl bevy_jobs::Job for MeshBuildingJob {
         "Building Bevy meshes".to_string()
     }
 
-    fn perform(self, _: bevy_jobs::Context) -> bevy_jobs::AsyncReturn<Self::Outcome> {
-        Box::pin(async move {
-            let geometry_mesh = geo_bevy::geometry_to_mesh(&self.geometry)?;
-            Ok(MeshBuildingJobOutcome {
-                geometry_mesh,
-                layer_id: self.layer_id,
-                is_selected: self.is_selected,
-            })
+    async fn perform(self, _: bevy_jobs::Context) -> Self::Outcome {
+        let geometry_mesh = geo_bevy::geometry_to_mesh(&self.geometry)?;
+        Ok(MeshBuildingJobOutcome {
+            geometry_mesh,
+            layer_id: self.layer_id,
+            is_selected: self.is_selected,
         })
     }
 }
