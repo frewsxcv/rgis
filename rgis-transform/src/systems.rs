@@ -23,9 +23,7 @@ fn handle_layer_created_events(
 fn handle_reproject_geometry_job_completion_events(
     mut finished_jobs: bevy_jobs::FinishedJobs,
     mut layers: bevy::ecs::system::ResMut<rgis_layers::Layers>,
-    mut layer_reprojected_event_writer: bevy::ecs::event::EventWriter<
-        rgis_events::LayerReprojectedEvent,
-    >,
+    mut job_spawner: bevy_jobs::JobSpawner,
     rgis_settings: bevy::ecs::system::Res<rgis_settings::RgisSettings>,
 ) {
     while let Some(outcome) = finished_jobs.take_next::<crate::jobs::ReprojectGeometryJob>() {
@@ -42,13 +40,10 @@ fn handle_reproject_geometry_job_completion_events(
             continue;
         }
 
-        let Some(layer) = layers.get_mut(outcome.layer_id) else {
-            continue;
-        };
-
-        layer.projected_feature_collection = Some(outcome.feature_collection);
-
-        layer_reprojected_event_writer.write(rgis_events::LayerReprojectedEvent(outcome.layer_id));
+        job_spawner.spawn(rgis_file_loader::LODBuilderJob {
+            projected: outcome.feature_collection,
+            layer_id: outcome.layer_id,
+        });
     }
 }
 
