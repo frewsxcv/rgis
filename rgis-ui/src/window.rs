@@ -15,9 +15,17 @@ pub trait Window: egui::Widget + SystemParam + Send + Sync {
 
 pub fn render_window_system<W: Window + 'static>(
     window: <W as Window>::Item<'_, '_>,
-    mut egui_ctx: EguiContexts,
+    mut bevy_egui_ctx: EguiContexts,
     mut is_window_open: ResMut<IsWindowOpen<W>>,
 ) {
+    let bevy_egui_ctx_mut = match bevy_egui_ctx.ctx_mut() {
+        Ok(ctx) => ctx,
+        Err(e) => {
+            bevy::log::error!("{:?}", e);
+            return;
+        }
+    };
+
     let (anchor_align, anchor_offset) = window.default_anchor();
 
     egui::Window::new(window.title())
@@ -25,7 +33,7 @@ pub fn render_window_system<W: Window + 'static>(
         .open(&mut is_window_open.0)
         .resizable(false)
         .anchor(anchor_align, anchor_offset)
-        .show(egui_ctx.ctx_mut(), |ui| {
+        .show(bevy_egui_ctx_mut, |ui| {
             ui.add(window);
         });
 }

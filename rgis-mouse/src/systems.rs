@@ -16,7 +16,14 @@ fn cursor_moved_system(
     mut mouse_position: ResMut<crate::MousePos>,
     mut bevy_egui_ctx: bevy_egui::EguiContexts,
 ) {
-    if bevy_egui_ctx.ctx_mut().is_pointer_over_area() {
+    let bevy_egui_ctx_mut = match bevy_egui_ctx.ctx_mut() {
+        Ok(ctx) => ctx,
+        Err(e) => {
+            bevy::log::error!("{:?}", e);
+            return;
+        }
+    };
+    if bevy_egui_ctx_mut.is_pointer_over_area() {
         cursor_moved_event_reader.clear();
         return;
     }
@@ -61,7 +68,13 @@ fn mouse_motion_system(
     }
 
     // If egui wants to do something with the mouse then release the cursor icon to it
-    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut();
+    let bevy_egui_ctx_mut = match bevy_egui_ctx.ctx_mut() {
+        Ok(ctx) => ctx,
+        Err(e) => {
+            bevy::log::error!("{:?}", e);
+            return;
+        }
+    };
     if bevy_egui_ctx_mut.wants_pointer_input()
         || bevy_egui_ctx_mut.is_pointer_over_area()
         || bevy_egui_ctx_mut.is_using_pointer()
@@ -151,7 +164,13 @@ fn mouse_scroll_system(
     mouse_position: Res<crate::MousePos>,
     mut bevy_egui_ctx: bevy_egui::EguiContexts,
 ) {
-    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut();
+    let bevy_egui_ctx_mut = match bevy_egui_ctx.ctx_mut() {
+        Ok(ctx) => ctx,
+        Err(e) => {
+            bevy::log::error!("{:?}", e);
+            return;
+        }
+    };
     if bevy_egui_ctx_mut.wants_pointer_input()
         || bevy_egui_ctx_mut.is_pointer_over_area()
         || bevy_egui_ctx_mut.is_using_pointer()

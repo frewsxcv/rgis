@@ -15,12 +15,12 @@ bevy = { version = "0.16", default-features = false, features = [
     "wayland",
     "png",
 ] }
-bevy_egui = "0.34"
-egui_plot = "0.31"
+bevy_egui = "0.35"
+egui_plot = "0.32"
 geo-features = { path = "../geo-features" }
 geo-file-loader = { path = "../geo-file-loader" }
 geo-projected = { path = "../geo-projected" }
-dark-light = "1.0"
+dark-light = "2.0"
 rfd = "0.15"
 rgis-geo-ops = { path = "../rgis-geo-ops" }
 rgis-layer-id = { path = "../rgis-layer-id" }

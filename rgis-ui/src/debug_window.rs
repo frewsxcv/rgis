@@ -98,7 +98,7 @@ impl DebugWindow<'_, '_> {
             .collect::<Vec<_>>();
 
         ui.vertical(|ui| {
-            let line = Line::new(PlotPoints::Owned(sin));
+            let line = Line::new("fps", PlotPoints::Owned(sin));
             Plot::new("fps_plot")
                 .allow_drag(false)
                 .allow_boxed_zoom(false)
