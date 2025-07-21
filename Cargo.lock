@@ -991,7 +991,7 @@ dependencies = [
 [[package]]
 name = "bevy_jobs"
 version = "0.1.0"
-source = "git+https://github.com/frewsxcv/bevy_jobs#89b8593fe5b6668065b515687e79634f2cb229dc"
+source = "git+https://github.com/frewsxcv/bevy_jobs#56e31e46c1de4bbbe26c314a6a9dc2127ba811df"
 dependencies = [
  "async-channel 2.5.0",
  "bevy_app",
