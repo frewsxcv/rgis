@@ -50,7 +50,6 @@ jobs:
             target/
           key: web-${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}-v1
       - uses: dtolnay/rust-toolchain@stable
-      - run: command -v wasm-pack >/dev/null 2>&1 || cargo install --force --git https://github.com/rustwasm/wasm-pack.git --tag v0.13.1
       # https://github.com/rustwasm/wasm-bindgen/issues/4211
       - run: cargo install --force wasm-bindgen-cli --git "https://github.com/rustwasm/wasm-bindgen"
       - name: Install wasm Rust target
