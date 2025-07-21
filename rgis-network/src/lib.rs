@@ -33,19 +33,16 @@ pub enum Error {
 
 impl bevy_jobs::Job for NetworkFetchJob {
     type Outcome = Result<FetchedFile, Error>;
-    const JOB_TYPE: bevy_jobs::JobType = bevy_jobs::JobType::Io;
+    const JOB_TYPE: bevy_jobs::JobType = bevy_jobs::JobType::Tokio;
 
     fn name(&self) -> String {
         format!("Fetching '{}'", self.name)
     }
 
     fn perform(self, ctx: bevy_jobs::Context) -> bevy_jobs::AsyncReturn<Self::Outcome> {
-        Box::pin(async move {
-            await_future(async move {
-                build_request_future(self.url, self.crs_epsg_code, self.name, ctx).await
-            })
-            .await?
-        })
+        Box::pin(
+            async move { build_request_future(self.url, self.crs_epsg_code, self.name, ctx).await },
+        )
     }
 }
 
@@ -84,26 +81,4 @@ async fn build_request_future(
         crs_epsg_code,
         name,
     })
-}
-
-async fn await_future<Output>(
-    future: impl std::future::Future<Output = Output> + 'static,
-) -> Result<Output, &'static io::Error> {
-    #[cfg(not(target_arch = "wasm32"))]
-    {
-        static TOKIO_RUNTIME: sync::OnceLock<io::Result<tokio::runtime::Runtime>> =
-            sync::OnceLock::new();
-        TOKIO_RUNTIME
-            .get_or_init(|| {
-                tokio::runtime::Builder::new_multi_thread()
-                    .enable_all()
-                    .build()
-            })
-            .as_ref()
-            .map(|runtime| runtime.block_on(future))
-    }
-    #[cfg(target_arch = "wasm32")]
-    {
-        Ok(future.await)
-    }
 }
