@@ -31,3 +31,4 @@ strip = true
 # https://github.com/rustwasm/wasm-bindgen/issues/4211
 [patch.crates-io]
 wasm-bindgen = { git = "https://github.com/rustwasm/wasm-bindgen" }
+dbase = { git = "https://github.com/tmontaigu/dbase-rs.git" }       # https://github.com/tmontaigu/dbase-rs/commit/be4372bd28c9de97531b00099872dcb86e16c1ce

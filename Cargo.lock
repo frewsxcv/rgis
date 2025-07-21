@@ -2060,8 +2060,7 @@ checksum = "2a2330da5de22e8a3cb63252ce2abb30116bf5265e89c0e01bc17015ce30a476"
 [[package]]
 name = "dbase"
 version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fbad7f18af09b304e8eb37cede7327d13d7bf6f787e11eef2dc093e26ac30c23"
+source = "git+https://github.com/tmontaigu/dbase-rs.git#be4372bd28c9de97531b00099872dcb86e16c1ce"
 dependencies = [
  "byteorder",
  "time",
