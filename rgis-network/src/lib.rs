@@ -7,7 +7,7 @@
 )]
 
 use futures_util::StreamExt;
-use std::{io, sync};
+use std::io;
 
 pub struct FetchedFile {
     pub name: String,
