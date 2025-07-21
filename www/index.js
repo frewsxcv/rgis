@@ -1,3 +1,10 @@
-import * as wasm from "../rgis/pkg/";
+import init, { run } from "rgis-pkg/rgis.js";
 
-wasm.run();
+async function main() {
+    // Initialize the wasm module
+    await init();
+    // Call the run function
+    run();
+}
+
+main().catch(console.error);

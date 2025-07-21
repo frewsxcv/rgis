@@ -8,6 +8,11 @@ module.exports = {
     path: path.resolve(__dirname, "dist"),
     filename: "bootstrap.js",
   },
+  resolve: {
+    alias: {
+      "rgis-pkg": path.resolve(__dirname, "../rgis/pkg"),
+    },
+  },
   mode: "development",
   plugins: [
     new CopyWebpackPlugin({
