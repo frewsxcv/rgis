@@ -23,3 +23,4 @@ rgis-events = { path = "../rgis-events" }
 rgis-layer-id = { path = "../rgis-layer-id" }
 rgis-layers = { path = "../rgis-layers" }
 bevy_jobs = { git = "https://github.com/frewsxcv/bevy_jobs" }
+geo-raster = { path = "../geo-raster" }

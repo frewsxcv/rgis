@@ -46,6 +46,7 @@ impl ZIndex {
                     RenderEntityType::SelectedPolygon => 4,
                     RenderEntityType::SelectedLineString => 5,
                     RenderEntityType::SelectedPoint => 6,
+                    RenderEntityType::Raster => 0,
                 },
         )
     }

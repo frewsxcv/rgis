@@ -34,17 +34,19 @@ impl ManageLayerWindow<'_> {
                         ui.label("CRS");
                         ui.label(format!("EPSG {}", layer.crs_epsg_code));
                         ui.end_row();
-                        if layer.geom_type.has_fill() {
-                            if let Some(fill) = layer.color.fill {
-                                ui.label("Fill color");
-                                ui.add(FillColorWidget {
-                                    layer_id,
-                                    color: fill,
-                                    color_events: self.color_events,
-                                });
-                                ui.end_row();
-                            } else {
-                                bevy::log::error!("Expected layer to have a fill color");
+                        if let rgis_layers::LayerData::Vector { geom_type, .. } = &layer.data {
+                            if geom_type.has_fill() {
+                                if let Some(fill) = layer.color.fill {
+                                    ui.label("Fill color");
+                                    ui.add(FillColorWidget {
+                                        layer_id,
+                                        color: fill,
+                                        color_events: self.color_events,
+                                    });
+                                    ui.end_row();
+                                } else {
+                                    bevy::log::error!("Expected layer to have a fill color");
+                                }
                             }
                         }
                         ui.label("Stroke color");

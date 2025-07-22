@@ -2688,7 +2688,10 @@ version = "0.1.0"
 dependencies = [
  "bytes",
  "geo",
+ "geo-raster",
+ "geotiff",
  "geozero",
+ "tiff",
 ]
 
 [[package]]
@@ -2718,6 +2721,10 @@ dependencies = [
  "geo-features",
  "num-t",
 ]
+
+[[package]]
+name = "geo-raster"
+version = "0.1.0"
 
 [[package]]
 name = "geo-traits"
@@ -2787,6 +2794,18 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror 2.0.12",
+]
+
+[[package]]
+name = "geotiff"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4eb5c3769ccf6d286c5e3419930a8ccda0040c2c6e20548e125ceb489d184faf"
+dependencies = [
+ "geo-types",
+ "num-traits",
+ "num_enum",
+ "tiff",
 ]
 
 [[package]]
@@ -4882,6 +4901,7 @@ dependencies = [
  "geo-features",
  "geo-file-loader",
  "geo-projected",
+ "geo-raster",
  "rgis-layer-id",
 ]
 
@@ -4895,6 +4915,7 @@ dependencies = [
  "geo-features",
  "geo-file-loader",
  "geo-projected",
+ "geo-raster",
  "rgis-events",
  "rgis-network",
  "serde_json",
@@ -4938,6 +4959,7 @@ dependencies = [
  "geo-features",
  "geo-geom-type",
  "geo-projected",
+ "geo-raster",
  "rgis-events",
  "rgis-layer-id",
 ]
@@ -4982,6 +5004,7 @@ dependencies = [
  "geo-bevy",
  "geo-geom-type",
  "geo-projected",
+ "geo-raster",
  "rgis-events",
  "rgis-layer-id",
  "rgis-layers",

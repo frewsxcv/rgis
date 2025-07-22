@@ -8,6 +8,8 @@ pub struct GpxSource {
 }
 
 impl crate::FileLoader for GpxSource {
+    type Output = crate::Features;
+
     fn from_bytes(bytes: bytes::Bytes) -> Self {
         GpxSource { bytes }
     }

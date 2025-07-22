@@ -167,6 +167,14 @@ impl AddLayerWindow<'_, '_, '_, '_, '_> {
                     );
                 }
 
+                if self.state.selected_source == Source::File {
+                    ui.radio_value(
+                        &mut self.state.selected_format,
+                        Some(FileFormat::GeoTiff),
+                        "GeoTIFF",
+                    );
+                }
+
                 if self.state.selected_source == Source::File
                     || self.state.selected_source == Source::Text
                 {
@@ -249,7 +257,7 @@ impl AddLayerWindow<'_, '_, '_, '_, '_> {
                     {
                         let new = mem::take(&mut self.state.text_edit_contents);
                         match selected_format {
-                            FileFormat::Shapefile => {
+                            FileFormat::Shapefile | FileFormat::GeoTiff => {
                                 unreachable!()
                             }
                             file_format @ (FileFormat::Wkt
@@ -286,6 +294,7 @@ const fn hint_text(format: FileFormat) -> &'static str {
         FileFormat::Shapefile => panic!("Shapefiles are not textual"),
         FileFormat::Wkt => "LINESTRING (30 10, 10 30, 40 40)",
         FileFormat::Gpx => "", // TODO: add example GPX
+        FileFormat::GeoTiff => panic!("GeoTIFFs are not textual"),
     }
 }
 

@@ -137,6 +137,19 @@ fn handle_create_layer_events(
     }
 }
 
+fn handle_create_raster_layer_events(
+    mut create_raster_layer_events: ResMut<
+        bevy::ecs::event::Events<rgis_events::CreateRasterLayerEvent>,
+    >,
+    mut layer_created_event_writer: EventWriter<rgis_events::LayerCreatedEvent>,
+    mut layers: ResMut<crate::Layers>,
+) {
+    for event in create_raster_layer_events.drain() {
+        let layer_id = layers.add_raster(event.raster, event.name, event.source_crs_epsg_code);
+        layer_created_event_writer.write(rgis_events::LayerCreatedEvent(layer_id));
+    }
+}
+
 pub fn configure(app: &mut App) {
     app.add_systems(
         Update,
@@ -147,6 +160,7 @@ pub fn configure(app: &mut App) {
             handle_delete_layer_events,
             handle_map_clicked_events,
             handle_create_layer_events,
+            handle_create_raster_layer_events,
         ),
     );
 }

@@ -6,19 +6,45 @@ fn layer_loaded(
     layers: Res<rgis_layers::Layers>,
     mut event_reader: EventReader<rgis_events::LayerReprojectedEvent>,
     mut job_spawner: bevy_jobs::JobSpawner,
+    mut commands: Commands,
+    mut assets_meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    mut images: ResMut<Assets<Image>>,
 ) {
-    for layer in event_reader.read().flat_map(|event| layers.get(event.0)) {
-        let Some(feature_collection) = layer.projected_feature_collection.as_ref() else {
+    for event in event_reader.read() {
+        let Some((layer, layer_index)) = layers.get_with_index(event.0) else {
             continue;
         };
+        match &layer.data {
+            rgis_layers::LayerData::Vector {
+                projected_feature_collection,
+                ..
+            } => {
+                let Some(feature_collection) = projected_feature_collection.as_ref() else {
+                    continue;
+                };
 
-        job_spawner.spawn(MeshBuildingJob {
-            layer_id: layer.id,
-            geometry: geo::Geometry::GeometryCollection(
-                feature_collection.to_geometry_collection(),
-            ),
-            is_selected: false,
-        });
+                job_spawner.spawn(MeshBuildingJob {
+                    layer_id: layer.id,
+                    geometry: geo::Geometry::GeometryCollection(
+                        feature_collection.to_geometry_collection(),
+                    ),
+                    is_selected: false,
+                });
+            }
+            rgis_layers::LayerData::Raster { raster } => {
+                bevy::log::error!("Spawning raster for layer {:?}", layer.id);
+                crate::spawn_raster(
+                    raster,
+                    &mut materials,
+                    layer,
+                    &mut commands,
+                    &mut assets_meshes,
+                    layer_index,
+                    &mut images,
+                );
+            }
+        }
     }
 }
 
@@ -143,20 +169,38 @@ fn handle_layer_color_updated_event(
             continue;
         };
 
-        if layer.geom_type == geo_geom_type::GeomType::POINT {
-            let render_entity_type = if is_fill {
-                RenderEntityType::PointFill
-            } else {
-                RenderEntityType::PointStroke
-            };
-            for (_, mut sprite, _) in sprite_query.iter_mut().filter(|(i, _, entity_type)| {
-                **i == layer.id && **entity_type == render_entity_type
-            }) {
-                sprite.color = if is_fill {
-                    layer.color.fill.unwrap()
+        if let rgis_layers::LayerData::Vector { geom_type, .. } = &layer.data {
+            if *geom_type == geo_geom_type::GeomType::POINT {
+                let render_entity_type = if is_fill {
+                    RenderEntityType::PointFill
                 } else {
-                    layer.color.stroke
+                    RenderEntityType::PointStroke
                 };
+                for (_, mut sprite, _) in sprite_query.iter_mut().filter(|(i, _, entity_type)| {
+                    **i == layer.id && **entity_type == render_entity_type
+                }) {
+                    sprite.color = if is_fill {
+                        layer.color.fill.unwrap()
+                    } else {
+                        layer.color.stroke
+                    };
+                }
+            } else if is_fill {
+                for (_, handle, _) in color_material_query.iter().filter(|(i, _, entity_type)| {
+                    **i == layer.id && **entity_type == RenderEntityType::Polygon
+                }) {
+                    if let Some(color_material) = materials.get_mut(handle) {
+                        color_material.color = layer.color.fill.unwrap();
+                    }
+                }
+            } else {
+                for (_, handle, _) in color_material_query.iter().filter(|(i, _, entity_type)| {
+                    **i == layer.id && **entity_type == RenderEntityType::LineString
+                }) {
+                    if let Some(color_material) = materials.get_mut(handle) {
+                        color_material.color = layer.color.stroke;
+                    }
+                }
             }
         } else if is_fill {
             for (_, handle, _) in color_material_query.iter().filter(|(i, _, entity_type)| {

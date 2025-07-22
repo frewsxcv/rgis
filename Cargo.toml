@@ -19,7 +19,7 @@ members = [
     "rgis-ui",
     "rgis-units",
     "rgis",
-    "time-logger",
+    "time-logger", "geo-raster",
 ]
 resolver = "2"
 

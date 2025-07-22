@@ -5,6 +5,8 @@ pub struct ShapefileSource {
 }
 
 impl crate::FileLoader for ShapefileSource {
+    type Output = crate::Features;
+
     fn from_bytes(bytes: bytes::Bytes) -> Self {
         ShapefileSource { bytes }
     }

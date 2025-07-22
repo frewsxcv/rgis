@@ -7,6 +7,8 @@ pub struct WktSource {
 }
 
 impl crate::FileLoader for WktSource {
+    type Output = crate::Features;
+
     fn from_bytes(bytes: bytes::Bytes) -> Self {
         WktSource { bytes }
     }

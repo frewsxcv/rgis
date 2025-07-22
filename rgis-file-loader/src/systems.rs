@@ -54,16 +54,26 @@ fn handle_load_file_events(
 fn handle_load_file_job_finished_events(
     mut finished_jobs: bevy_jobs::FinishedJobs,
     mut create_layer_event_writer: EventWriter<rgis_events::CreateLayerEvent>,
+    mut create_raster_layer_event_writer: EventWriter<rgis_events::CreateRasterLayerEvent>,
 ) {
     while let Some(outcome) = finished_jobs.take_next::<crate::jobs::LoadFileJob>() {
         match outcome {
-            Ok(outcome) => {
-                create_layer_event_writer.write(rgis_events::CreateLayerEvent {
-                    name: outcome.name,
-                    feature_collection: outcome.feature_collection,
-                    source_crs_epsg_code: outcome.source_crs_epsg_code,
-                });
-            }
+            Ok(outcome) => match outcome.data {
+                crate::jobs::LoadedData::Vector(feature_collection) => {
+                    create_layer_event_writer.write(rgis_events::CreateLayerEvent {
+                        name: outcome.name,
+                        feature_collection,
+                        source_crs_epsg_code: outcome.source_crs_epsg_code,
+                    });
+                }
+                crate::jobs::LoadedData::Raster(raster) => {
+                    create_raster_layer_event_writer.write(rgis_events::CreateRasterLayerEvent {
+                        name: outcome.name,
+                        raster,
+                        source_crs_epsg_code: outcome.source_crs_epsg_code,
+                    });
+                }
+            },
             Err(e) => {
                 bevy::log::error!("Encountered error when loading file: {:?}", e);
             }

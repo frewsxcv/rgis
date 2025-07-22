@@ -8,6 +8,7 @@
 
 use bevy::prelude::*;
 use geo::contains::Contains;
+use geo_raster::Raster;
 use std::sync;
 
 mod systems;
@@ -57,22 +58,39 @@ impl Layers {
         coord: geo_projected::ProjectedCoord,
     ) -> impl Iterator<Item = &Layer> {
         self.iter_top_to_bottom()
-            .filter(move |layer| match layer.projected_feature_collection {
-                Some(ref projected) => projected.contains(&coord),
-                None => false,
+            .filter(move |layer| match &layer.data {
+                LayerData::Vector {
+                    projected_feature_collection,
+                    ..
+                } => match projected_feature_collection {
+                    Some(ref projected) => projected.contains(&coord),
+                    None => false,
+                },
+                LayerData::Raster { .. } => {
+                    // TODO: implement this
+                    false
+                }
             })
     }
 
     fn feature_collections_iter(&self) -> impl Iterator<Item = FeatureCollectionsIterItem> {
         self.iter_top_to_bottom().flat_map(|layer| {
-            layer
-                .projected_feature_collection
-                .as_ref()
-                .map(|projected| FeatureCollectionsIterItem {
-                    layer,
-                    unprojected: &layer.unprojected_feature_collection,
-                    projected,
-                })
+            if let LayerData::Vector {
+                projected_feature_collection,
+                unprojected_feature_collection,
+                ..
+            } = &layer.data
+            {
+                projected_feature_collection
+                    .as_ref()
+                    .map(|projected| FeatureCollectionsIterItem {
+                        layer,
+                        unprojected: unprojected_feature_collection,
+                        projected,
+                    })
+            } else {
+                None
+            }
         })
     }
 
@@ -156,8 +174,11 @@ impl Layers {
         let layer_id = self.next_layer_id();
         let geom_type = geo_geom_type::determine(unprojected.geometry_iter());
         let layer = Layer {
-            unprojected_feature_collection: unprojected,
-            projected_feature_collection: None,
+            data: LayerData::Vector {
+                unprojected_feature_collection: unprojected,
+                projected_feature_collection: None,
+                geom_type,
+            },
             color: if geom_type.has_fill() {
                 LayerColor {
                     fill: Some(colorous_color_to_bevy_color(next_colorous_color())),
@@ -173,7 +194,28 @@ impl Layers {
             visible: true,
             id: layer_id,
             crs_epsg_code: source_crs_epsg_code,
-            geom_type,
+        };
+        self.data.push(layer);
+        layer_id
+    }
+
+    fn add_raster(
+        &mut self,
+        raster: Raster,
+        name: String,
+        source_crs_epsg_code: u16,
+    ) -> rgis_layer_id::LayerId {
+        let layer_id = self.next_layer_id();
+        let layer = Layer {
+            data: LayerData::Raster { raster },
+            color: LayerColor {
+                fill: None,
+                stroke: Color::BLACK,
+            },
+            name,
+            visible: true,
+            id: layer_id,
+            crs_epsg_code: source_crs_epsg_code,
         };
         self.data.push(layer);
         layer_id
@@ -181,7 +223,13 @@ impl Layers {
 
     pub fn clear_projected(&mut self) {
         for layer in self.data.iter_mut() {
-            layer.projected_feature_collection = None;
+            if let LayerData::Vector {
+                ref mut projected_feature_collection,
+                ..
+            } = layer.data
+            {
+                *projected_feature_collection = None;
+            }
         }
     }
 
@@ -197,37 +245,59 @@ pub struct LayerColor {
 }
 
 #[derive(Clone, Debug)]
+pub enum LayerData {
+    Vector {
+        unprojected_feature_collection:
+            geo_features::FeatureCollection<geo_projected::UnprojectedScalar>,
+        projected_feature_collection:
+            Option<geo_features::FeatureCollection<geo_projected::ProjectedScalar>>,
+        geom_type: geo_geom_type::GeomType,
+    },
+    Raster {
+        raster: Raster,
+    },
+}
+
+#[derive(Clone, Debug)]
 pub struct Layer {
-    pub unprojected_feature_collection:
-        geo_features::FeatureCollection<geo_projected::UnprojectedScalar>,
-    pub projected_feature_collection:
-        Option<geo_features::FeatureCollection<geo_projected::ProjectedScalar>>,
+    pub data: LayerData,
     pub color: LayerColor,
     pub id: rgis_layer_id::LayerId,
     pub name: String,
     pub visible: bool,
     pub crs_epsg_code: u16,
-    pub geom_type: geo_geom_type::GeomType,
 }
 
 impl Layer {
     pub fn is_active(&self) -> bool {
-        self.projected_feature_collection.is_some()
+        match &self.data {
+            LayerData::Vector {
+                projected_feature_collection,
+                ..
+            } => projected_feature_collection.is_some(),
+            LayerData::Raster { .. } => true, // TODO: figure out what this means for rasters
+        }
     }
 
     #[inline]
     pub fn get_projected_feature_collection_or_log(
         &self,
     ) -> Option<&geo_features::FeatureCollection<geo_projected::ProjectedScalar>> {
-        match self.projected_feature_collection.as_ref() {
-            Some(p) => Some(p),
-            None => {
-                bevy::log::error!(
-                    "Expected layer (id: {:?}) to have a projected feature collection",
-                    self.id
-                );
-                None
-            }
+        match &self.data {
+            LayerData::Vector {
+                projected_feature_collection,
+                ..
+            } => match projected_feature_collection.as_ref() {
+                Some(p) => Some(p),
+                None => {
+                    bevy::log::error!(
+                        "Expected layer (id: {:?}) to have a projected feature collection",
+                        self.id
+                    );
+                    None
+                }
+            },
+            LayerData::Raster { .. } => None,
         }
     }
 
