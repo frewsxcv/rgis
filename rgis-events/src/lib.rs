@@ -187,6 +187,9 @@ pub struct CreateLayerEvent {
 #[derive(Event)]
 pub struct LayerReprojectedEvent(pub rgis_layer_id::LayerId);
 
+#[derive(Debug, Event)]
+pub struct LODChangedEvent(pub rgis_layer_id::LayerId);
+
 #[derive(Default, Event)]
 pub struct ShowAddLayerWindow;
 
@@ -219,6 +222,7 @@ impl bevy::app::Plugin for Plugin {
             .add_event::<ShowAddLayerWindow>()
             .add_event::<HideAddLayerWindow>()
             .add_event::<LayerReprojectedEvent>()
+            .add_event::<LODChangedEvent>()
             .add_event::<DespawnMeshesEvent>()
             .add_event::<FeatureSelectedEvent>()
             .add_event::<FeaturesDeselectedEvent>()

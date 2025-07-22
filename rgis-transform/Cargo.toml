@@ -19,6 +19,7 @@ geo-features = { path = "../geo-features" }
 geo-projected = { path = "../geo-projected" }
 geo = "0.30"
 rgis-events = { path = "../rgis-events" }
+rgis-file-loader = { path = "../rgis-file-loader" }
 rgis-layer-id = { path = "../rgis-layer-id" }
 rgis-layers = { path = "../rgis-layers" }
 rgis-settings = { path = "../rgis-settings" }

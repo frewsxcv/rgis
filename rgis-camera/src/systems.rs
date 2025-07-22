@@ -10,8 +10,26 @@ pub fn configure(app: &mut App) {
             handle_meshes_spawned_events,
             zoom_camera_system,
             handle_change_crs_event.pipe(log_error),
+            update_lod_based_on_zoom,
         ),
     );
+}
+
+fn update_lod_based_on_zoom(
+    mut layers: ResMut<rgis_layers::Layers>,
+    mut lod_changed_event_writer: EventWriter<rgis_events::LODChangedEvent>,
+    query: Query<&Transform, (With<Camera>, Changed<Transform>)>,
+) {
+    if let Ok(transform) = query.get_single() {
+        let scale = transform.scale.x;
+        let lod = (scale.log2().abs().round() as u8).clamp(0, 10);
+        for layer in layers.iter_mut() {
+            if layer.current_lod != Some(lod) {
+                layer.current_lod = Some(lod);
+                lod_changed_event_writer.write(rgis_events::LODChangedEvent(layer.id));
+            }
+        }
+    }
 }
 
 fn init_camera(mut commands: Commands) {

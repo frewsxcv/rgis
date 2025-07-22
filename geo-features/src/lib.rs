@@ -297,11 +297,11 @@ fn max<Scalar: geo::CoordNum>(a: Scalar, b: Scalar) -> Scalar {
     }
 }
 
-// The starting value is `1` so we can utilize `NonZeroU16`.
-static NEXT_ID: sync::atomic::AtomicU16 = sync::atomic::AtomicU16::new(1);
+// The starting value is `1` so we can utilize `NonZeroU32`.
+static NEXT_ID: sync::atomic::AtomicU32 = sync::atomic::AtomicU32::new(1);
 
 #[derive(Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Hash)]
-pub struct FeatureId(num::NonZeroU16);
+pub struct FeatureId(num::NonZeroU32);
 
 impl Default for FeatureId {
     fn default() -> Self {
@@ -315,7 +315,7 @@ impl FeatureId {
     }
 }
 
-fn new_id() -> num::NonZeroU16 {
+fn new_id() -> num::NonZeroU32 {
     // Unsafety: The starting ID is 1 and we always increment.
-    unsafe { num::NonZeroU16::new_unchecked(NEXT_ID.fetch_add(1, sync::atomic::Ordering::SeqCst)) }
+    unsafe { num::NonZeroU32::new_unchecked(NEXT_ID.fetch_add(1, sync::atomic::Ordering::SeqCst)) }
 }

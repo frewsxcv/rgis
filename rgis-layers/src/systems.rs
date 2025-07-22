@@ -8,7 +8,7 @@ fn handle_toggle_layer_visibility_events(
 ) {
     for event in toggle_layer_visibility_event_reader.read() {
         let Some(layer) = layers.get_mut(event.0) else {
-            bevy::log::warn!("Could not find layer");
+            warn!("Could not find layer");
             continue;
         };
         layer.visible = !layer.visible;
@@ -29,7 +29,7 @@ fn handle_update_color_events(
         let event = match event {
             rgis_events::UpdateLayerColorEvent::Stroke(layer_id, color) => {
                 let Some(layer) = layers.get_mut(*layer_id) else {
-                    bevy::log::warn!("Could not find layer");
+                    warn!("Could not find layer");
                     continue;
                 };
                 layer.color.stroke = *color;
@@ -37,7 +37,7 @@ fn handle_update_color_events(
             }
             rgis_events::UpdateLayerColorEvent::Fill(layer_id, color) => {
                 let Some(layer) = layers.get_mut(*layer_id) else {
-                    bevy::log::warn!("Could not find layer");
+                    warn!("Could not find layer");
                     continue;
                 };
                 layer.color.fill = Some(*color);
@@ -68,7 +68,7 @@ fn handle_move_layer_events(
         let old_z_index = match layers.get_with_index(event.0) {
             Some(result) => result.1 .0,
             None => {
-                bevy::log::warn!("Could not find layer");
+                warn!("Could not find layer");
                 continue;
             }
         };
@@ -91,7 +91,7 @@ fn handle_move_layer_events(
         };
         if new_z_index != old_z_index {
             let Some(other_layer_id) = layers.data.get(new_z_index).map(|l| l.id) else {
-                bevy::log::warn!("Could not find layer");
+                warn!("Could not find layer");
                 continue;
             };
 
@@ -133,6 +133,10 @@ fn handle_create_layer_events(
             event.name,
             event.source_crs_epsg_code,
         );
+        let Some(layer) = layers.get_mut(layer_id) else {
+            continue;
+        };
+        layer.current_lod = Some(0);
         layer_created_event_writer.write(rgis_events::LayerCreatedEvent(layer_id));
     }
 }

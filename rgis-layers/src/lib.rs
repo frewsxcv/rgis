@@ -8,9 +8,15 @@
 
 use bevy::prelude::*;
 use geo::contains::Contains;
+use std::collections::BTreeMap;
 use std::sync;
 
 mod systems;
+
+#[derive(Clone, Debug, Default)]
+pub struct ProjectedFeatureCollectionWithLOD {
+    pub projected: BTreeMap<u8, geo_features::FeatureCollection<geo_projected::ProjectedScalar>>,
+}
 
 #[derive(Copy, Clone, Debug)]
 pub struct LayerIndex(pub usize);
@@ -56,18 +62,17 @@ impl Layers {
         &self,
         coord: geo_projected::ProjectedCoord,
     ) -> impl Iterator<Item = &Layer> {
-        self.iter_top_to_bottom()
-            .filter(move |layer| match layer.projected_feature_collection {
-                Some(ref projected) => projected.contains(&coord),
-                None => false,
-            })
+        self.iter_top_to_bottom().filter(move |layer| {
+            layer
+                .get_current_lod_feature_collection()
+                .map_or(false, |p| p.contains(&coord))
+        })
     }
 
     fn feature_collections_iter(&self) -> impl Iterator<Item = FeatureCollectionsIterItem> {
-        self.iter_top_to_bottom().flat_map(|layer| {
+        self.iter_top_to_bottom().filter_map(|layer| {
             layer
-                .projected_feature_collection
-                .as_ref()
+                .get_current_lod_feature_collection()
                 .map(|projected| FeatureCollectionsIterItem {
                     layer,
                     unprojected: &layer.unprojected_feature_collection,
@@ -158,6 +163,7 @@ impl Layers {
         let layer = Layer {
             unprojected_feature_collection: unprojected,
             projected_feature_collection: None,
+            current_lod: None,
             color: if geom_type.has_fill() {
                 LayerColor {
                     fill: Some(colorous_color_to_bevy_color(next_colorous_color())),
@@ -182,11 +188,16 @@ impl Layers {
     pub fn clear_projected(&mut self) {
         for layer in self.data.iter_mut() {
             layer.projected_feature_collection = None;
+            layer.current_lod = None;
         }
     }
 
     pub fn iter(&self) -> impl Iterator<Item = &Layer> {
         self.data.iter()
+    }
+
+    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut Layer> {
+        self.data.iter_mut()
     }
 }
 
@@ -200,8 +211,8 @@ pub struct LayerColor {
 pub struct Layer {
     pub unprojected_feature_collection:
         geo_features::FeatureCollection<geo_projected::UnprojectedScalar>,
-    pub projected_feature_collection:
-        Option<geo_features::FeatureCollection<geo_projected::ProjectedScalar>>,
+    pub projected_feature_collection: Option<ProjectedFeatureCollectionWithLOD>,
+    pub current_lod: Option<u8>,
     pub color: LayerColor,
     pub id: rgis_layer_id::LayerId,
     pub name: String,
@@ -211,20 +222,30 @@ pub struct Layer {
 }
 
 impl Layer {
+    pub fn get_current_lod_feature_collection(
+        &self,
+    ) -> Option<&geo_features::FeatureCollection<geo_projected::ProjectedScalar>> {
+        let lod = self.current_lod?;
+        self.projected_feature_collection
+            .as_ref()?
+            .projected
+            .get(&lod)
+    }
+
     pub fn is_active(&self) -> bool {
-        self.projected_feature_collection.is_some()
+        self.get_current_lod_feature_collection().is_some()
     }
 
     #[inline]
     pub fn get_projected_feature_collection_or_log(
         &self,
     ) -> Option<&geo_features::FeatureCollection<geo_projected::ProjectedScalar>> {
-        match self.projected_feature_collection.as_ref() {
+        match self.get_current_lod_feature_collection() {
             Some(p) => Some(p),
             None => {
-                bevy::log::error!(
-                    "Expected layer (id: {:?}) to have a projected feature collection",
-                    self.id
+                error!(
+                    "Expected layer (id: {:?}) to have a projected feature collection for LOD {:?}",
+                    self.id, self.current_lod
                 );
                 None
             }

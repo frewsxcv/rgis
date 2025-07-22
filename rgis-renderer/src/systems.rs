@@ -4,11 +4,11 @@ use crate::{jobs::MeshBuildingJob, RenderEntityType};
 
 fn layer_loaded(
     layers: Res<rgis_layers::Layers>,
-    mut event_reader: EventReader<rgis_events::LayerReprojectedEvent>,
+    mut event_reader: EventReader<rgis_events::LODChangedEvent>,
     mut job_spawner: bevy_jobs::JobSpawner,
 ) {
     for layer in event_reader.read().flat_map(|event| layers.get(event.0)) {
-        let Some(feature_collection) = layer.projected_feature_collection.as_ref() else {
+        let Some(feature_collection) = layer.get_current_lod_feature_collection() else {
             continue;
         };
 
@@ -30,6 +30,7 @@ fn handle_mesh_building_job_outcome(
     mut meshes_spawned_event_writer: EventWriter<rgis_events::MeshesSpawnedEvent>,
     mut finished_jobs: bevy_jobs::FinishedJobs,
     asset_server: Res<AssetServer>,
+    query: LayerEntitiesWithColorMaterialsOrImagesQuery,
 ) {
     while let Some(outcome) = finished_jobs.take_next::<MeshBuildingJob>() {
         let crate::jobs::MeshBuildingJobOutcome {
@@ -46,6 +47,11 @@ fn handle_mesh_building_job_outcome(
         let Some((layer, layer_index)) = layers.get_with_index(layer_id) else {
             continue;
         };
+
+        // Despawn old meshes before spawning new ones
+        for (_, entity) in query.iter().filter(|(i, _)| **i == layer_id) {
+            commands.entity(entity).despawn();
+        }
 
         crate::spawn_geometry_meshes(
             geometry_mesh,
@@ -90,11 +96,11 @@ type LayerEntitiesWithColorMaterialsOrImagesQuery<'world, 'state, 'a> = Query<
 >;
 
 fn handle_despawn_meshes_event(
-    mut layer_deleted_event_reader: bevy::ecs::event::EventReader<rgis_events::DespawnMeshesEvent>,
+    mut despawn_meshes_event_reader: EventReader<rgis_events::DespawnMeshesEvent>,
     mut commands: Commands,
     query: LayerEntitiesWithColorMaterialsOrImagesQuery,
 ) {
-    for event in layer_deleted_event_reader.read() {
+    for event in despawn_meshes_event_reader.read() {
         for (_, entity) in query.iter().filter(|(i, _)| **i == event.0) {
             commands.entity(entity).despawn();
         }
