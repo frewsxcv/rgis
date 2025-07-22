@@ -12,3 +12,7 @@ geozero = { git = "https://github.com/georust/geozero.git", branch = "main", fea
     "with-gpx",
     "with-shp",
 ] }
+geotiff = "0.1.0"
+geo-raster = { path = "../geo-raster" }
+geo-types = "0.7.10"
+tiff = "0.9.1"

@@ -1,0 +1,7 @@
+[package]
+name = "geo-raster"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+geo-types = { version = "0.7.10", features = ["serde"] }

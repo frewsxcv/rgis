@@ -8,6 +8,7 @@
 
 use bevy::prelude::*;
 use geo_projected::{ProjectedCoord, UnprojectedScalar};
+use geo_raster::Raster;
 
 // Magic number used to normalize the host's scroll value.
 const ZOOM_FACTOR: f32 = 500.;
@@ -185,6 +186,13 @@ pub struct CreateLayerEvent {
 }
 
 #[derive(Event)]
+pub struct CreateRasterLayerEvent {
+    pub raster: Raster,
+    pub name: String,
+    pub source_crs_epsg_code: u16,
+}
+
+#[derive(Event)]
 pub struct LayerReprojectedEvent(pub rgis_layer_id::LayerId);
 
 #[derive(Default, Event)]
@@ -197,6 +205,7 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_event::<LoadFileEvent>()
             .add_event::<CreateLayerEvent>()
+            .add_event::<CreateRasterLayerEvent>()
             .add_event::<LayerCreatedEvent>()
             .add_event::<ToggleLayerVisibilityEvent>()
             .add_event::<LayerBecameHiddenEvent>()

@@ -85,10 +85,21 @@ impl<'a, 'w, Op: rgis_geo_ops::OperationEntry> OperationButton<'a, 'w, Op> {
 
 impl<Op: rgis_geo_ops::OperationEntry> egui::Widget for OperationButton<'_, '_, Op> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
-        let button = ui.add_enabled(
-            Op::ALLOWED_GEOM_TYPES.contains(self.layer.geom_type),
-            egui::Button::new(Op::NAME),
-        );
+        let (is_enabled, feature_collection) = if let rgis_layers::LayerData::Vector {
+            geom_type,
+            unprojected_feature_collection,
+            ..
+        } = &self.layer.data
+        {
+            (
+                Op::ALLOWED_GEOM_TYPES.contains(*geom_type),
+                unprojected_feature_collection.clone(),
+            )
+        } else {
+            (false, Default::default())
+        };
+
+        let button = ui.add_enabled(is_enabled, egui::Button::new(Op::NAME));
         if button.clicked() {
             let mut operation = Op::build();
             match operation.next_action() {
@@ -96,14 +107,13 @@ impl<Op: rgis_geo_ops::OperationEntry> egui::Widget for OperationButton<'_, '_, 
                     self.events.open_operation_window_event_writer.write(
                         crate::events::OpenOperationWindowEvent {
                             operation,
-                            feature_collection: self.layer.unprojected_feature_collection.clone(), // TODO: clone?
+                            feature_collection, // TODO: clone?
                         },
                     );
                 }
                 rgis_geo_ops::Action::Perform => {
                     // TODO: perform in background job
-                    let outcome =
-                        operation.perform(self.layer.unprojected_feature_collection.clone()); // TODO: clone?
+                    let outcome = operation.perform(feature_collection); // TODO: clone?
 
                     match outcome {
                         Ok(rgis_geo_ops::Outcome::FeatureCollection(feature_collection)) => {
@@ -180,7 +190,9 @@ impl Widget for Layer<'_, '_> {
                     return;
                 }
 
-                ui.label(format!("Type: {}", layer.geom_type));
+                if let rgis_layers::LayerData::Vector { geom_type, .. } = &layer.data {
+                    ui.label(format!("Type: {}", geom_type));
+                }
 
                 ui.with_layout(Layout::top_down_justified(Align::Center), |ui| {
                     if ui.button("✏ Manage").clicked() {
@@ -296,18 +308,23 @@ struct OperationsWidget<'a, 'w> {
 impl egui::Widget for OperationsWidget<'_, '_> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         ui.with_layout(Layout::top_down_justified(Align::LEFT), |ui| {
-            if ui.button("Bounding rect").clicked() {
-                if let Ok(bounding_rect) = self.layer.unprojected_feature_collection.bounding_rect()
-                {
-                    let feature_collection =
-                        geo_features::FeatureCollection::from_geometry(bounding_rect.into());
-                    self.events
-                        .create_layer_event_writer
-                        .write(rgis_events::CreateLayerEvent {
-                            feature_collection,           // todo
-                            name: "Bounding rect".into(), // todo
-                            source_crs_epsg_code: self.layer.crs_epsg_code,
-                        });
+            if let rgis_layers::LayerData::Vector {
+                unprojected_feature_collection,
+                ..
+            } = &self.layer.data
+            {
+                if ui.button("Bounding rect").clicked() {
+                    if let Ok(bounding_rect) = unprojected_feature_collection.bounding_rect() {
+                        let feature_collection =
+                            geo_features::FeatureCollection::from_geometry(bounding_rect.into());
+                        self.events.create_layer_event_writer.write(
+                            rgis_events::CreateLayerEvent {
+                                feature_collection,           // todo
+                                name: "Bounding rect".into(), // todo
+                                source_crs_epsg_code: self.layer.crs_epsg_code,
+                            },
+                        );
+                    }
                 }
             }
 

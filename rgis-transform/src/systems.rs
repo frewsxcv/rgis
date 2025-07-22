@@ -5,18 +5,35 @@ fn handle_layer_created_events(
     layers: bevy::ecs::system::Res<rgis_layers::Layers>,
     rgis_settings: bevy::ecs::system::Res<rgis_settings::RgisSettings>,
     mut job_spawner: bevy_jobs::JobSpawner,
+    mut layer_reprojected_event_writer: bevy::ecs::event::EventWriter<
+        rgis_events::LayerReprojectedEvent,
+    >,
 ) {
     for event in layer_created_event_reader.read() {
         let Some(layer) = layers.get(event.0) else {
             continue;
         };
 
-        job_spawner.spawn(crate::jobs::ReprojectGeometryJob {
-            feature_collection: layer.unprojected_feature_collection.clone(),
-            layer_id: event.0,
-            source_epsg_code: layer.crs_epsg_code,
-            target_epsg_code: rgis_settings.target_crs_epsg_code,
-        });
+        match &layer.data {
+            rgis_layers::LayerData::Vector {
+                unprojected_feature_collection,
+                ..
+            } => {
+                job_spawner.spawn(crate::jobs::ReprojectGeometryJob {
+                    feature_collection: unprojected_feature_collection.clone(),
+                    layer_id: event.0,
+                    source_epsg_code: layer.crs_epsg_code,
+                    target_epsg_code: rgis_settings.target_crs_epsg_code,
+                });
+            }
+            rgis_layers::LayerData::Raster { .. } => {
+                bevy::log::error!(
+                    "Firing LayerReprojectedEvent for raster layer {:?}",
+                    event.0
+                );
+                layer_reprojected_event_writer.write(rgis_events::LayerReprojectedEvent(event.0));
+            }
+        }
     }
 }
 
@@ -46,7 +63,13 @@ fn handle_reproject_geometry_job_completion_events(
             continue;
         };
 
-        layer.projected_feature_collection = Some(outcome.feature_collection);
+        if let rgis_layers::LayerData::Vector {
+            ref mut projected_feature_collection,
+            ..
+        } = layer.data
+        {
+            *projected_feature_collection = Some(outcome.feature_collection);
+        }
 
         layer_reprojected_event_writer.write(rgis_events::LayerReprojectedEvent(outcome.layer_id));
     }
@@ -62,12 +85,18 @@ fn handle_crs_changed_events(
         layers.clear_projected();
 
         for layer in layers.iter() {
-            job_spawner.spawn(crate::jobs::ReprojectGeometryJob {
-                feature_collection: layer.unprojected_feature_collection.clone(),
-                layer_id: layer.id,
-                source_epsg_code: layer.crs_epsg_code,
-                target_epsg_code: rgis_settings.target_crs_epsg_code,
-            });
+            if let rgis_layers::LayerData::Vector {
+                unprojected_feature_collection,
+                ..
+            } = &layer.data
+            {
+                job_spawner.spawn(crate::jobs::ReprojectGeometryJob {
+                    feature_collection: unprojected_feature_collection.clone(),
+                    layer_id: layer.id,
+                    source_epsg_code: layer.crs_epsg_code,
+                    target_epsg_code: rgis_settings.target_crs_epsg_code,
+                });
+            }
         }
     }
 }

@@ -22,3 +22,4 @@ geo-projected = { path = "../geo-projected" }
 rgis-events = { path = "../rgis-events" }
 rgis-layer-id = { path = "../rgis-layer-id" }
 geo = "0.30"
+geo-raster = { path = "../geo-raster" }

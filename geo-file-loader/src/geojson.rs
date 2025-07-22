@@ -6,6 +6,8 @@ pub struct GeoJsonSource {
 }
 
 impl crate::FileLoader for GeoJsonSource {
+    type Output = crate::Features;
+
     fn from_bytes(bytes: bytes::Bytes) -> Self {
         GeoJsonSource { bytes }
     }

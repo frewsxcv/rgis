@@ -1,5 +1,6 @@
 use geo_features::FeatureCollection;
 use geo_projected::WrapTo;
+use geo_raster::Raster;
 
 pub struct LoadFileJob {
     pub file_format: geo_file_loader::FileFormat,
@@ -8,8 +9,13 @@ pub struct LoadFileJob {
     pub source_crs_epsg_code: u16,
 }
 
+pub enum LoadedData {
+    Vector(FeatureCollection<geo_projected::UnprojectedScalar>),
+    Raster(Raster),
+}
+
 pub struct LoadFileJobOutcome {
-    pub feature_collection: FeatureCollection<geo_projected::UnprojectedScalar>,
+    pub data: LoadedData,
     pub name: String,
     pub source_crs_epsg_code: u16,
 }
@@ -23,12 +29,25 @@ impl bevy_jobs::Job for LoadFileJob {
     }
 
     async fn perform(self, _: bevy_jobs::Context) -> Self::Outcome {
-        let features = geo_file_loader::load_file(self.file_format, self.bytes)?
-            .into_iter()
-            .map(geo_file_loader_feature_to_geo_features_feature)
-            .collect();
+        let data = match self.file_format {
+            geo_file_loader::FileFormat::GeoJson
+            | geo_file_loader::FileFormat::Shapefile
+            | geo_file_loader::FileFormat::Wkt
+            | geo_file_loader::FileFormat::Gpx => {
+                let features = geo_file_loader::load_vector_file(self.file_format, self.bytes)?
+                    .into_iter()
+                    .map(geo_file_loader_feature_to_geo_features_feature)
+                    .collect();
+                LoadedData::Vector(FeatureCollection::from_features(features).wrap())
+            }
+            geo_file_loader::FileFormat::GeoTiff => {
+                let raster = geo_file_loader::load_raster_file(self.file_format, self.bytes)?;
+                LoadedData::Raster(raster)
+            }
+        };
+
         Ok(LoadFileJobOutcome {
-            feature_collection: FeatureCollection::from_features(features).wrap(),
+            data,
             name: self.name,
             source_crs_epsg_code: self.source_crs_epsg_code,
         })

@@ -23,6 +23,7 @@ pub enum RenderEntityType {
     SelectedPolygon,
     SelectedLineString,
     SelectedPoint,
+    Raster,
 }
 
 pub struct Plugin;
@@ -33,7 +34,56 @@ impl bevy::app::Plugin for Plugin {
     }
 }
 
+use bevy::render::render_asset::RenderAssetUsages;
+
 const SELECTED_COLOR: Color = Color::srgb(255., 192., 203.); // pink
+
+fn spawn_raster(
+    raster: &geo_raster::Raster,
+    materials: &mut Assets<ColorMaterial>,
+    layer: &rgis_layers::Layer,
+    commands: &mut Commands,
+    assets_meshes: &mut Assets<Mesh>,
+    layer_index: rgis_layers::LayerIndex,
+    images: &mut Assets<Image>,
+) {
+    let format = match raster.format {
+        geo_raster::RasterFormat::R8 => bevy::render::render_resource::TextureFormat::R8Unorm,
+        geo_raster::RasterFormat::Rgba8 => bevy::render::render_resource::TextureFormat::Rgba8Unorm,
+    };
+    let image = Image::new(
+        bevy::render::render_resource::Extent3d {
+            width: raster.width,
+            height: raster.height,
+            depth_or_array_layers: 1,
+        },
+        bevy::render::render_resource::TextureDimension::D2,
+        raster.data.clone(),
+        format,
+        RenderAssetUsages::RENDER_WORLD,
+    );
+    let image_handle = images.add(image);
+
+    let quad = Mesh::from(Rectangle::new(raster.width as f32, raster.height as f32));
+
+    let material = materials.add(ColorMaterial {
+        texture: Some(image_handle),
+        ..Default::default()
+    });
+
+    let z_index = ZIndex::calculate(layer_index, RenderEntityType::Raster);
+
+    let mut entity_commands = spawn_material_mesh_2d_bundle(
+        quad,
+        z_index,
+        material,
+        assets_meshes,
+        commands,
+        layer.visible,
+    );
+    entity_commands.insert(layer.id);
+    entity_commands.insert(RenderEntityType::Raster);
+}
 
 fn spawn_geometry_meshes(
     geometry_mesh: geo_bevy::GeometryMesh,
