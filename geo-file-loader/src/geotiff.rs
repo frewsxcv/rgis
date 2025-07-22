@@ -1,8 +1,10 @@
 use crate::{Error, Raster};
 use geo_raster::RasterFormat;
+use geo_types::{Coord, Rect};
 use std::io::Cursor;
 use tiff::{
     decoder::{Decoder, DecodingResult},
+    tags::Tag,
     ColorType,
 };
 
@@ -22,6 +24,34 @@ impl crate::FileLoader for GeoTiffSource {
         let mut decoder = Decoder::new(&mut cursor)?;
         let (width, height) = decoder.dimensions()?;
         let color_type = decoder.colortype()?;
+        let model_tiepoint = decoder
+            .get_tag_f64_vec(Tag::Unknown(33922))
+            .ok()
+            .and_then(|v| v.get(3..5).map(|s| (s[0], s[1])));
+
+        let model_pixel_scale = decoder
+            .get_tag_f64_vec(Tag::Unknown(33550))
+            .ok()
+            .and_then(|v| v.get(0..2).map(|s| (s[0], s[1])));
+
+        let extent = if let (Some((tie_x, tie_y)), Some((scale_x, scale_y))) =
+            (model_tiepoint, model_pixel_scale)
+        {
+            let min_x = tie_x;
+            let max_y = tie_y;
+            let max_x = min_x + (width as f64 * scale_x);
+            let min_y = max_y - (height as f64 * scale_y);
+            Rect::new(Coord { x: min_x, y: min_y }, Coord { x: max_x, y: max_y })
+        } else {
+            // Default to a dummy extent if tags are not found
+            Rect::new(
+                Coord { x: 0.0, y: 0.0 },
+                Coord {
+                    x: width as f64,
+                    y: height as f64,
+                },
+            )
+        };
         let image_data = match decoder.read_image()? {
             DecodingResult::U8(data) => data,
             // For now, just handle U8 and convert others, losing precision.
@@ -62,6 +92,7 @@ impl crate::FileLoader for GeoTiffSource {
             height,
             data,
             format,
+            extent,
         })
     }
 }

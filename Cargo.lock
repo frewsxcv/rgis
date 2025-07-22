@@ -2689,6 +2689,7 @@ dependencies = [
  "bytes",
  "geo",
  "geo-raster",
+ "geo-types",
  "geotiff",
  "geozero",
  "tiff",
@@ -2725,6 +2726,9 @@ dependencies = [
 [[package]]
 name = "geo-raster"
 version = "0.1.0"
+dependencies = [
+ "geo-types",
+]
 
 [[package]]
 name = "geo-traits"

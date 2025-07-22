@@ -6,6 +6,8 @@
     clippy::expect_used
 )]
 
+use geo_types::Rect;
+
 #[derive(Clone, Debug)]
 pub enum RasterFormat {
     R8,
@@ -18,4 +20,5 @@ pub struct Raster {
     pub height: u32,
     pub data: Vec<u8>,
     pub format: RasterFormat,
+    pub extent: Rect<f64>,
 }
