@@ -77,8 +77,8 @@ fn geo_file_loader_owned_column_value_to_geo_features_value(
             unimplemented!()
         }
         geo_file_loader::OwnedColumnValue::UByte(_) => unimplemented!(),
-        geo_file_loader::OwnedColumnValue::Short(_) => unimplemented!(),
-        geo_file_loader::OwnedColumnValue::UShort(_) => unimplemented!(),
-        geo_file_loader::OwnedColumnValue::DateTime(_) => unimplemented!(),
+        geo_file_loader::OwnedColumnValue::Short(n) => geo_features::Value::Number(f64::from(n)),
+        geo_file_loader::OwnedColumnValue::UShort(n) => geo_features::Value::Number(f64::from(n)),
+        geo_file_loader::OwnedColumnValue::DateTime(n) => geo_features::Value::String(n),
     }
 }
