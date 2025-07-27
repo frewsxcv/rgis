@@ -1,5 +1,3 @@
-use std::fmt::format;
-
 use geo_features::FeatureCollection;
 use geo_projected::WrapTo;
 
