@@ -67,7 +67,18 @@ fn geo_file_loader_owned_column_value_to_geo_features_value(
         geo_file_loader::OwnedColumnValue::Float(n) => geo_features::Value::Number(n.into()),
         geo_file_loader::OwnedColumnValue::Double(n) => geo_features::Value::Number(n),
         geo_file_loader::OwnedColumnValue::Bool(b) => geo_features::Value::Boolean(b),
-        // TODO: fill in the other implementations here
-        _ => unimplemented!(),
+        geo_file_loader::OwnedColumnValue::Binary(_) => {
+            unimplemented!()
+        }
+        geo_file_loader::OwnedColumnValue::Json(_) => {
+            unimplemented!()
+        }
+        geo_file_loader::OwnedColumnValue::Byte(_) => {
+            unimplemented!()
+        }
+        geo_file_loader::OwnedColumnValue::UByte(_) => unimplemented!(),
+        geo_file_loader::OwnedColumnValue::Short(_) => unimplemented!(),
+        geo_file_loader::OwnedColumnValue::UShort(_) => unimplemented!(),
+        geo_file_loader::OwnedColumnValue::DateTime(_) => unimplemented!(),
     }
 }
