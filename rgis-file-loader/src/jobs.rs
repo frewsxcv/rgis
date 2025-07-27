@@ -1,3 +1,5 @@
+use std::fmt::format;
+
 use geo_features::FeatureCollection;
 use geo_projected::WrapTo;
 
@@ -67,11 +69,11 @@ fn geo_file_loader_owned_column_value_to_geo_features_value(
         geo_file_loader::OwnedColumnValue::Float(n) => geo_features::Value::Number(n.into()),
         geo_file_loader::OwnedColumnValue::Double(n) => geo_features::Value::Number(n),
         geo_file_loader::OwnedColumnValue::Bool(b) => geo_features::Value::Boolean(b),
-        geo_file_loader::OwnedColumnValue::Binary(_) => {
-            unimplemented!()
+        geo_file_loader::OwnedColumnValue::Binary(b) => {
+            geo_features::Value::String(format!("{:?}", b))
         }
-        geo_file_loader::OwnedColumnValue::Json(_) => {
-            unimplemented!()
+        geo_file_loader::OwnedColumnValue::Json(j) => {
+            geo_features::Value::String(format!("{:?}", j))
         }
         geo_file_loader::OwnedColumnValue::Byte(n) => geo_features::Value::Number(f64::from(n)),
         geo_file_loader::OwnedColumnValue::UByte(n) => geo_features::Value::Number(f64::from(n)),
