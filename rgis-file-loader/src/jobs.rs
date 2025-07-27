@@ -73,10 +73,8 @@ fn geo_file_loader_owned_column_value_to_geo_features_value(
         geo_file_loader::OwnedColumnValue::Json(_) => {
             unimplemented!()
         }
-        geo_file_loader::OwnedColumnValue::Byte(_) => {
-            unimplemented!()
-        }
-        geo_file_loader::OwnedColumnValue::UByte(_) => unimplemented!(),
+        geo_file_loader::OwnedColumnValue::Byte(n) => geo_features::Value::Number(f64::from(n)),
+        geo_file_loader::OwnedColumnValue::UByte(n) => geo_features::Value::Number(f64::from(n)),
         geo_file_loader::OwnedColumnValue::Short(n) => geo_features::Value::Number(f64::from(n)),
         geo_file_loader::OwnedColumnValue::UShort(n) => geo_features::Value::Number(f64::from(n)),
         geo_file_loader::OwnedColumnValue::DateTime(n) => geo_features::Value::String(n),
