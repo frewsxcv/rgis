@@ -8,7 +8,7 @@ use bevy_egui::{
 fn render_bottom_panel(
     mut bevy_egui_ctx: EguiContexts,
     mouse_pos: Res<rgis_mouse::MousePos>,
-    rgis_settings: Res<rgis_settings::RgisSettings>,
+    target_crs: Res<rgis_crs::TargetCrs>,
     mut open_change_crs_window_event_writer: bevy::ecs::event::EventWriter<
         rgis_events::OpenChangeCrsWindow,
     >,
@@ -24,7 +24,7 @@ fn render_bottom_panel(
     crate::bottom_panel::BottomPanel {
         egui_ctx: bevy_egui_ctx_mut,
         mouse_pos: &mouse_pos,
-        rgis_settings: &rgis_settings,
+        target_crs: &target_crs,
         open_change_crs_window_event_writer: &mut open_change_crs_window_event_writer,
         bottom_panel_height: &mut bottom_panel_height,
     }
@@ -144,7 +144,7 @@ fn render_change_crs_window(
     mut open_change_crs_window_event_reader: bevy::ecs::event::EventReader<
         rgis_events::OpenChangeCrsWindow,
     >,
-    rgis_settings: Res<rgis_settings::RgisSettings>,
+    target_crs: Res<rgis_crs::TargetCrs>,
     mut bevy_egui_ctx: EguiContexts,
     mut text_field_value: Local<String>,
     mut change_crs_event_writer: bevy::ecs::event::EventWriter<rgis_events::ChangeCrsEvent>,
@@ -166,7 +166,7 @@ fn render_change_crs_window(
         egui_ctx: bevy_egui_ctx_mut,
         text_field_value: &mut text_field_value,
         change_crs_event_writer: &mut change_crs_event_writer,
-        rgis_settings: &rgis_settings,
+        target_crs: *target_crs,
         crs_input_outcome: &mut crs_input_outcome,
     }
     .render();
@@ -247,7 +247,7 @@ fn render_operation_window(
     if let Some(event) = events.drain().last() {
         state.is_visible = true;
         state.operation = Some(event.operation);
-        state.feature_collection = event.feature_collection; // Should this be `Some()`? Otherwise we'll always have something stored
+        state.feature_collection = Some(event.feature_collection);
     }
 
     crate::operation_window::OperationWindow {

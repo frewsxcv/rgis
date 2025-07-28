@@ -7,7 +7,7 @@ pub(crate) struct ChangeCrsWindow<'a, 'w> {
     pub text_field_value: &'a mut String,
     pub change_crs_event_writer:
         &'a mut bevy::ecs::event::EventWriter<'w, rgis_events::ChangeCrsEvent>,
-    pub rgis_settings: &'a rgis_settings::RgisSettings,
+    pub target_crs: rgis_crs::TargetCrs,
     pub crs_input_outcome: &'a mut Option<crate::widgets::crs_input::Outcome>,
 }
 
@@ -20,20 +20,23 @@ impl ChangeCrsWindow<'_, '_> {
                     self.text_field_value,
                     self.crs_input_outcome,
                 ));
-                let is_ok = self
-                    .crs_input_outcome
-                    .as_ref()
-                    .map(|n| n.is_ok())
-                    .unwrap_or(false);
+                let (is_ok, op_handle) = match self.crs_input_outcome {
+                    Some(Ok((_, op_handle))) => (true, Some(op_handle)),
+                    _ => (false, None),
+                };
                 if ui.add_enabled(is_ok, egui::Button::new("Set")).clicked() {
-                    let Ok(value) = u16::from_str(self.text_field_value) else {
+                    let Ok(epsg_code) = u16::from_str(self.text_field_value) else {
+                        // TODO: show error message to the user instead of logging an error
                         bevy::log::error!("Could not parse u16 value");
                         return;
                     };
                     self.change_crs_event_writer
                         .write(rgis_events::ChangeCrsEvent {
-                            old_crs_epsg_code: self.rgis_settings.target_crs_epsg_code,
-                            new_crs_epsg_code: value,
+                            old: self.target_crs.0,
+                            new: rgis_primitives::Crs {
+                                epsg_code,
+                                op_handle: *op_handle.unwrap(),
+                            },
                         });
                 }
             });

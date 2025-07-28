@@ -21,3 +21,5 @@ bevy_jobs = { git = "https://github.com/frewsxcv/bevy_jobs", features = [
     "tokio",
 ] }
 thiserror = "2"
+rgis-crs = { path = "../rgis-crs" }
+rgis-primitives = { path = "../rgis-primitives" }

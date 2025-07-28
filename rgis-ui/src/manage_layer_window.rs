@@ -32,7 +32,7 @@ impl ManageLayerWindow<'_> {
                         ui.label(&layer.name);
                         ui.end_row();
                         ui.label("CRS");
-                        ui.label(format!("EPSG {}", layer.crs_epsg_code));
+                        ui.label(format!("EPSG {}", layer.crs.epsg_code));
                         ui.end_row();
                         if layer.geom_type.has_fill() {
                             if let Some(fill) = layer.color.fill {
@@ -60,7 +60,7 @@ impl ManageLayerWindow<'_> {
 }
 
 struct StrokeColorWidget<'a> {
-    layer_id: rgis_layer_id::LayerId,
+    layer_id: rgis_primitives::LayerId,
     color: bevy::prelude::Color,
     pub color_events: &'a mut bevy::ecs::event::Events<rgis_events::UpdateLayerColorEvent>,
 }
@@ -86,7 +86,7 @@ impl egui::Widget for StrokeColorWidget<'_> {
 }
 
 struct FillColorWidget<'a> {
-    layer_id: rgis_layer_id::LayerId,
+    layer_id: rgis_primitives::LayerId,
     color: bevy::prelude::Color,
     pub color_events: &'a mut bevy::ecs::event::Events<rgis_events::UpdateLayerColorEvent>,
 }

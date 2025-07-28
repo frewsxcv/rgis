@@ -32,3 +32,9 @@ fn new_id() -> num::NonZeroU16 {
     // Unsafety: The starting ID is 1 and we always increment.
     unsafe { num::NonZeroU16::new_unchecked(NEXT_ID.fetch_add(1, sync::atomic::Ordering::SeqCst)) }
 }
+
+#[derive(Debug, Copy, Clone)]
+pub struct Crs {
+    pub epsg_code: u16,
+    pub op_handle: geodesy::OpHandle,
+}

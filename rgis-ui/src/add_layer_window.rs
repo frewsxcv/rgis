@@ -214,7 +214,10 @@ impl AddLayerWindow<'_, '_, '_, '_, '_> {
                                         file_name: loaded_file.file_name,
                                         file_format: selected_format,
                                         bytes: loaded_file.bytes.into(),
-                                        crs_epsg_code,
+                                        source_crs: rgis_primitives::Crs {
+                                            epsg_code: crs_epsg_code,
+                                            op_handle,
+                                        },
                                     },
                                 );
                             }
@@ -261,8 +264,11 @@ impl AddLayerWindow<'_, '_, '_, '_, '_> {
                                         file_format,
                                         bytes: new.into(),
                                         // TODO: don't allow the user to add a layer if the CRS isn't valid
-                                        crs_epsg_code: u16::from_str(&self.state.crs_input)
-                                            .unwrap(),
+                                        source_crs: rgis_primitives::Crs {
+                                            epsg_code: u16::from_str(&self.state.crs_input)
+                                                .unwrap(),
+                                            op_handle: (),
+                                        },
                                     },
                                 );
                             }
@@ -328,7 +334,10 @@ impl egui::Widget for LibraryEntryWidget<'_, '_, '_> {
                     .write(rgis_events::LoadFileEvent::FromNetwork {
                         name: format!("{}: {}", self.folder.name, self.entry.name),
                         url: self.entry.url.into(),
-                        crs_epsg_code: self.entry.crs,
+                        source_crs: rgis_primitives::Crs {
+                            epsg_code: self.entry.crs,
+                            op_handle: (),
+                        },
                     });
                 self.events.hide_add_layer_window_events.send_default();
             }

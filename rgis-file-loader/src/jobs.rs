@@ -5,13 +5,13 @@ pub struct LoadFileJob {
     pub file_format: geo_file_loader::FileFormat,
     pub bytes: bytes::Bytes,
     pub name: String,
-    pub source_crs_epsg_code: u16,
+    pub source_crs: rgis_primitives::Crs,
 }
 
 pub struct LoadFileJobOutcome {
     pub feature_collection: FeatureCollection<geo_projected::UnprojectedScalar>,
     pub name: String,
-    pub source_crs_epsg_code: u16,
+    pub source_crs: rgis_primitives::Crs,
 }
 
 impl bevy_jobs::Job for LoadFileJob {
@@ -30,7 +30,7 @@ impl bevy_jobs::Job for LoadFileJob {
         Ok(LoadFileJobOutcome {
             feature_collection: FeatureCollection::from_features(features).wrap(),
             name: self.name,
-            source_crs_epsg_code: self.source_crs_epsg_code,
+            source_crs: self.source_crs,
         })
     }
 }

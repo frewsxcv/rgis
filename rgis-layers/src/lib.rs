@@ -15,12 +15,12 @@ mod systems;
 #[derive(Copy, Clone, Debug)]
 pub struct LayerIndex(pub usize);
 
-#[derive(Clone, Debug, Resource)]
+#[derive(Debug, Resource)]
 pub struct Layers {
     // Ordered from bottom to top
     data: Vec<Layer>,
     // ID of the currently selected Layer
-    pub selected_layer_id: Option<rgis_layer_id::LayerId>,
+    pub selected_layer_id: Option<rgis_primitives::LayerId>,
 }
 
 impl Default for Layers {
@@ -108,30 +108,33 @@ impl Layers {
             .map(|item| (item.layer, item.unprojected))
     }
 
-    fn get_index(&self, layer_id: rgis_layer_id::LayerId) -> Option<usize> {
+    fn get_index(&self, layer_id: rgis_primitives::LayerId) -> Option<usize> {
         self.data.iter().position(|entry| entry.id == layer_id)
     }
 
     #[inline]
-    pub fn get(&self, layer_id: rgis_layer_id::LayerId) -> Option<&Layer> {
+    pub fn get(&self, layer_id: rgis_primitives::LayerId) -> Option<&Layer> {
         let index = self.get_index(layer_id)?;
         self.data.get(index)
     }
 
     #[inline]
-    pub fn get_with_index(&self, layer_id: rgis_layer_id::LayerId) -> Option<(&Layer, LayerIndex)> {
+    pub fn get_with_index(
+        &self,
+        layer_id: rgis_primitives::LayerId,
+    ) -> Option<(&Layer, LayerIndex)> {
         let index = self.get_index(layer_id)?;
         self.data.get(index).map(|layer| (layer, LayerIndex(index)))
     }
 
     #[inline]
-    pub fn get_mut(&mut self, layer_id: rgis_layer_id::LayerId) -> Option<&mut Layer> {
+    pub fn get_mut(&mut self, layer_id: rgis_primitives::LayerId) -> Option<&mut Layer> {
         let index = self.get_index(layer_id)?;
         self.data.get_mut(index)
     }
 
     #[inline]
-    pub fn remove(&mut self, layer_id: rgis_layer_id::LayerId) {
+    pub fn remove(&mut self, layer_id: rgis_primitives::LayerId) {
         if let Some(index) = self.get_index(layer_id) {
             self.data.remove(index);
         }
@@ -143,16 +146,16 @@ impl Layers {
             .and_then(|layer_id| self.get(layer_id))
     }
 
-    fn next_layer_id(&self) -> rgis_layer_id::LayerId {
-        rgis_layer_id::LayerId::new()
+    fn next_layer_id(&self) -> rgis_primitives::LayerId {
+        rgis_primitives::LayerId::new()
     }
 
     fn add(
         &mut self,
         unprojected: geo_features::FeatureCollection<geo_projected::UnprojectedScalar>,
         name: String,
-        source_crs_epsg_code: u16,
-    ) -> rgis_layer_id::LayerId {
+        crs: rgis_primitives::Crs,
+    ) -> rgis_primitives::LayerId {
         let layer_id = self.next_layer_id();
         let geom_type = geo_geom_type::determine(unprojected.geometry_iter());
         let layer = Layer {
@@ -172,7 +175,7 @@ impl Layers {
             name,
             visible: true,
             id: layer_id,
-            crs_epsg_code: source_crs_epsg_code,
+            crs,
             geom_type,
         };
         self.data.push(layer);
@@ -196,17 +199,17 @@ pub struct LayerColor {
     pub stroke: Color,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct Layer {
     pub unprojected_feature_collection:
         geo_features::FeatureCollection<geo_projected::UnprojectedScalar>,
     pub projected_feature_collection:
         Option<geo_features::FeatureCollection<geo_projected::ProjectedScalar>>,
     pub color: LayerColor,
-    pub id: rgis_layer_id::LayerId,
+    pub id: rgis_primitives::LayerId,
     pub name: String,
     pub visible: bool,
-    pub crs_epsg_code: u16,
+    pub crs: rgis_primitives::Crs,
     pub geom_type: geo_geom_type::GeomType,
 }
 

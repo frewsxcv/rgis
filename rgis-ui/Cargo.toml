@@ -23,7 +23,7 @@ geo-projected = { path = "../geo-projected" }
 dark-light = "2.0"
 rfd = "0.15"
 rgis-geo-ops = { path = "../rgis-geo-ops" }
-rgis-layer-id = { path = "../rgis-layer-id" }
+rgis-primitives = { path = "../rgis-primitives" }
 rgis-layers = { path = "../rgis-layers" }
 rgis-library = { path = "../rgis-library" }
 rgis-events = { path = "../rgis-events" }
@@ -32,7 +32,8 @@ rgis-settings = { path = "../rgis-settings" }
 rgis-units = { path = "../rgis-units" }
 bevy_jobs = { git = "https://github.com/frewsxcv/bevy_jobs" }
 geo = "0.30"
-geo-geodesy = "2"
+geo-geodesy = "4"
 thiserror = "2"
 crs-definitions = "0.3"
 geodesy = "0.13"
+rgis-crs = { path = "../rgis-crs" }

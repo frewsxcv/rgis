@@ -21,5 +21,6 @@ geo = "0.30"
 geo-projected = { path = "../geo-projected" }
 rgis-events = { path = "../rgis-events" }
 rgis-layers = { path = "../rgis-layers" }
-geo-geodesy = "2"
+geo-geodesy = "4"
 rgis-units = { path = "../rgis-units" }
+rgis-geodesy = { path = "../rgis-geodesy" }

@@ -128,11 +128,7 @@ fn handle_create_layer_events(
     mut layers: ResMut<crate::Layers>,
 ) {
     for event in create_layer_events.drain() {
-        let layer_id = layers.add(
-            event.feature_collection,
-            event.name,
-            event.source_crs_epsg_code,
-        );
+        let layer_id = layers.add(event.feature_collection, event.name, event.source_crs);
         layer_created_event_writer.write(rgis_events::LayerCreatedEvent(layer_id));
     }
 }
