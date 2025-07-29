@@ -1,5 +1,4 @@
 use bevy_egui::egui;
-use std::str::FromStr;
 
 pub(crate) struct ChangeCrsWindow<'a, 'w> {
     pub is_visible: &'a mut bool,
@@ -22,21 +21,24 @@ impl ChangeCrsWindow<'_, '_> {
                     self.crs_input_outcome,
                     self.text_field_value,
                 ));
-                let (is_ok, op_handle, epsg_code) = match self.crs_input_outcome {
-                    Some(Ok((op_handle, epsg_code))) => (true, Some(op_handle), Some(epsg_code)),
-                    _ => (false, None, None),
+                let button = egui::Button::new("Set");
+                match self.crs_input_outcome {
+                    Some(Ok((op_handle, epsg_code))) => {
+                        if ui.add_enabled(true, button).clicked() {
+                            self.change_crs_event_writer
+                                .write(rgis_events::ChangeCrsEvent {
+                                    old: self.target_crs.0,
+                                    new: rgis_primitives::Crs {
+                                        epsg_code: *epsg_code,
+                                        op_handle: *op_handle,
+                                    },
+                                });
+                        }
+                    }
+                    _ => {
+                        ui.add_enabled(false, button);
+                    }
                 };
-                if ui.add_enabled(is_ok, egui::Button::new("Set")).clicked() {
-                    // TODO: show error message to the user instead of logging an error
-                    self.change_crs_event_writer
-                        .write(rgis_events::ChangeCrsEvent {
-                            old: self.target_crs.0,
-                            new: rgis_primitives::Crs {
-                                epsg_code: *epsg_code.unwrap(),
-                                op_handle: *op_handle.unwrap(),
-                            },
-                        });
-                }
             });
     }
 }
