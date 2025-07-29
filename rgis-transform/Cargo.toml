@@ -3,8 +3,6 @@ name = "rgis-transform"
 version.workspace = true
 edition.workspace = true
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 bevy = { workspace = true }
 geo-features = { path = "../geo-features", version = "0.1.0" }
