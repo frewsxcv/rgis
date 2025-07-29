@@ -1,0 +1,16 @@
+[package]
+name = "rgis-primitives"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+geodesy = "0.13"
+bevy = { version = "0.16", default-features = false, features = [
+    "bevy_winit",
+    "bevy_core_pipeline",
+    "bevy_render",
+    "bevy_sprite",
+    "bevy_ui",
+    "wayland",
+    "png",
+] }

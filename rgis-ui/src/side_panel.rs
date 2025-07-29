@@ -111,7 +111,7 @@ impl<Op: rgis_geo_ops::OperationEntry> egui::Widget for OperationButton<'_, '_, 
                                 rgis_events::CreateLayerEvent {
                                     feature_collection,
                                     name: Op::NAME.into(),
-                                    source_crs_epsg_code: self.layer.crs_epsg_code,
+                                    source_crs: self.layer.crs,
                                 },
                             );
                         }
@@ -304,9 +304,9 @@ impl egui::Widget for OperationsWidget<'_, '_> {
                     self.events
                         .create_layer_event_writer
                         .write(rgis_events::CreateLayerEvent {
-                            feature_collection,           // todo
-                            name: "Bounding rect".into(), // todo
-                            source_crs_epsg_code: self.layer.crs_epsg_code,
+                            feature_collection,
+                            name: "Bounding rect".into(), // FIXME
+                            source_crs: self.layer.crs,
                         });
                 }
             }

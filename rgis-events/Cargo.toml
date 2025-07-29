@@ -20,4 +20,4 @@ geo = "0.30"
 geo-features = { path = "../geo-features" }
 geo-file-loader = { path = "../geo-file-loader" }
 geo-projected = { path = "../geo-projected" }
-rgis-layer-id = { path = "../rgis-layer-id" }
+rgis-primitives = { path = "../rgis-primitives" }

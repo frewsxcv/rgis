@@ -32,6 +32,7 @@ fn handle_change_crs_event(
     >,
     windows: Query<&Window, With<PrimaryWindow>>,
     ui_margins: rgis_units::UiMargins,
+    geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let Some(event) = change_crs_event_reader.read().last() else {
         return Ok(());
@@ -49,9 +50,15 @@ fn handle_change_crs_event(
     };
     let rect = map_area.projected_geo_rect(&transform, window);
 
-    let transformer =
-        geo_geodesy::Transformer::setup(event.old_crs_epsg_code, event.new_crs_epsg_code)?;
-    transformer.transform(&mut (rect.into()))?;
+    {
+        let geodesy_ctx = geodesy_ctx.0.read_blocking();
+        let transformer = geo_geodesy::Transformer::from_geodesy(
+            &*geodesy_ctx,
+            event.old.op_handle,
+            event.new.op_handle,
+        )?;
+        transformer.transform(&mut (rect.into()))?;
+    }
 
     crate::utils::center_camera_on_projected_world_rect(rect, &mut transform, map_area);
 

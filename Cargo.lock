@@ -2693,9 +2693,9 @@ dependencies = [
 
 [[package]]
 name = "geo-geodesy"
-version = "2.0.0"
+version = "4.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9d4c21982bde5b4551cc014e1113bbe39ae877731aa78f4baad01383f731e6ff"
+checksum = "0d385b14c4a948c1541a6bd2e5aa6863c95aab63efd4e5c4dad5af5bf190ad3c"
 dependencies = [
  "crs-definitions",
  "geo",
@@ -4837,8 +4837,10 @@ dependencies = [
  "geo",
  "rgis-camera",
  "rgis-cli",
+ "rgis-crs",
  "rgis-events",
  "rgis-file-loader",
+ "rgis-geodesy",
  "rgis-keyboard",
  "rgis-layers",
  "rgis-mouse",
@@ -4860,6 +4862,7 @@ dependencies = [
  "geo-geodesy",
  "geo-projected",
  "rgis-events",
+ "rgis-geodesy",
  "rgis-layers",
  "rgis-units",
 ]
@@ -4873,6 +4876,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "rgis-crs"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "geodesy",
+ "rgis-events",
+ "rgis-geodesy",
+ "rgis-primitives",
+]
+
+[[package]]
 name = "rgis-events"
 version = "0.1.0"
 dependencies = [
@@ -4882,7 +4896,7 @@ dependencies = [
  "geo-features",
  "geo-file-loader",
  "geo-projected",
- "rgis-layer-id",
+ "rgis-primitives",
 ]
 
 [[package]]
@@ -4897,6 +4911,7 @@ dependencies = [
  "geo-projected",
  "rgis-events",
  "rgis-network",
+ "rgis-primitives",
  "serde_json",
  "time-logger",
 ]
@@ -4914,18 +4929,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "rgis-geodesy"
+version = "0.1.0"
+dependencies = [
+ "async-lock",
+ "bevy",
+ "crs-definitions",
+ "geodesy",
+]
+
+[[package]]
 name = "rgis-keyboard"
 version = "0.1.0"
 dependencies = [
  "bevy",
  "rgis-events",
-]
-
-[[package]]
-name = "rgis-layer-id"
-version = "0.1.0"
-dependencies = [
- "bevy",
 ]
 
 [[package]]
@@ -4938,8 +4956,9 @@ dependencies = [
  "geo-features",
  "geo-geom-type",
  "geo-projected",
+ "rgis-crs",
  "rgis-events",
- "rgis-layer-id",
+ "rgis-primitives",
 ]
 
 [[package]]
@@ -4969,7 +4988,17 @@ dependencies = [
  "bytes",
  "futures-util",
  "reqwest",
+ "rgis-crs",
+ "rgis-primitives",
  "thiserror 2.0.12",
+]
+
+[[package]]
+name = "rgis-primitives"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "geodesy",
 ]
 
 [[package]]
@@ -4983,8 +5012,8 @@ dependencies = [
  "geo-geom-type",
  "geo-projected",
  "rgis-events",
- "rgis-layer-id",
  "rgis-layers",
+ "rgis-primitives",
 ]
 
 [[package]]
@@ -5006,9 +5035,11 @@ dependencies = [
  "geo-geodesy",
  "geo-projected",
  "num-t",
+ "rgis-crs",
  "rgis-events",
- "rgis-layer-id",
+ "rgis-geodesy",
  "rgis-layers",
+ "rgis-primitives",
  "rgis-settings",
 ]
 
@@ -5019,22 +5050,22 @@ dependencies = [
  "bevy",
  "bevy_egui",
  "bevy_jobs",
- "crs-definitions",
  "dark-light",
  "egui_plot",
  "geo",
  "geo-features",
  "geo-file-loader",
- "geo-geodesy",
  "geo-projected",
  "geodesy",
  "rfd",
+ "rgis-crs",
  "rgis-events",
  "rgis-geo-ops",
- "rgis-layer-id",
+ "rgis-geodesy",
  "rgis-layers",
  "rgis-library",
  "rgis-mouse",
+ "rgis-primitives",
  "rgis-settings",
  "rgis-units",
  "thiserror 2.0.12",

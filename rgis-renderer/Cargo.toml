@@ -20,6 +20,6 @@ geo-bevy = "8.0.0"
 geo-projected = { path = "../geo-projected" }
 geo-geom-type = { path = "../geo-geom-type" }
 rgis-events = { path = "../rgis-events" }
-rgis-layer-id = { path = "../rgis-layer-id" }
+rgis-primitives = { path = "../rgis-primitives" }
 rgis-layers = { path = "../rgis-layers" }
 bevy_jobs = { git = "https://github.com/frewsxcv/bevy_jobs" }

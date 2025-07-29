@@ -1,12 +1,12 @@
 pub struct MeshBuildingJob {
-    pub layer_id: rgis_layer_id::LayerId,
+    pub layer_id: rgis_primitives::LayerId,
     pub geometry: geo::Geometry<geo_projected::ProjectedScalar>,
     pub is_selected: bool,
 }
 
 pub struct MeshBuildingJobOutcome {
     pub geometry_mesh: geo_bevy::GeometryMesh,
-    pub layer_id: rgis_layer_id::LayerId,
+    pub layer_id: rgis_primitives::LayerId,
     pub is_selected: bool,
 }
 

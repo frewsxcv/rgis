@@ -12,12 +12,12 @@ use std::io;
 pub struct FetchedFile {
     pub name: String,
     pub bytes: bytes::Bytes,
-    pub crs_epsg_code: u16,
+    pub source_crs: rgis_primitives::Crs,
 }
 
 pub struct NetworkFetchJob {
     pub url: String,
-    pub crs_epsg_code: u16,
+    pub source_crs: rgis_primitives::Crs,
     pub name: String,
 }
 
@@ -40,7 +40,7 @@ impl bevy_jobs::Job for NetworkFetchJob {
     }
 
     async fn perform(self, ctx: bevy_jobs::Context) -> Self::Outcome {
-        build_request_future(self.url, self.crs_epsg_code, self.name, ctx).await
+        build_request_future(self.url, self.source_crs, self.name, ctx).await
     }
 }
 
@@ -52,7 +52,7 @@ impl bevy::app::Plugin for Plugin {
 
 async fn build_request_future(
     url: String,
-    crs_epsg_code: u16,
+    source_crs: rgis_primitives::Crs,
     name: String,
     ctx: bevy_jobs::Context,
 ) -> Result<FetchedFile, Error> {
@@ -76,7 +76,7 @@ async fn build_request_future(
 
     Ok(FetchedFile {
         bytes: bytes::Bytes::from(bytes),
-        crs_epsg_code,
+        source_crs,
         name,
     })
 }

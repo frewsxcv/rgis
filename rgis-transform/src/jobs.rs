@@ -2,15 +2,16 @@ use geo_projected::CastTo;
 
 pub struct ReprojectGeometryJob {
     pub feature_collection: geo_features::FeatureCollection<geo_projected::UnprojectedScalar>,
-    pub layer_id: rgis_layer_id::LayerId,
-    pub source_epsg_code: u16,
-    pub target_epsg_code: u16,
+    pub layer_id: rgis_primitives::LayerId,
+    pub source_crs: rgis_primitives::Crs,
+    pub target_crs: rgis_primitives::Crs,
+    pub geodesy_ctx: rgis_geodesy::GeodesyContext,
 }
 
 pub struct ReprojectGeometryJobOutcome {
     pub feature_collection: geo_features::FeatureCollection<geo_projected::ProjectedScalar>,
-    pub layer_id: rgis_layer_id::LayerId,
-    pub target_crs_epsg_code: u16,
+    pub layer_id: rgis_primitives::LayerId,
+    pub target_crs: rgis_primitives::Crs,
 }
 
 impl bevy_jobs::Job for ReprojectGeometryJob {
@@ -23,8 +24,13 @@ impl bevy_jobs::Job for ReprojectGeometryJob {
     async fn perform(self, progress_sender: bevy_jobs::Context) -> Self::Outcome {
         let total = self.feature_collection.features.len();
 
-        let transformer =
-            geo_geodesy::Transformer::setup(self.source_epsg_code, self.target_epsg_code)?;
+        let geodesy_ctx = self.geodesy_ctx.0.read().await;
+
+        let transformer = geo_geodesy::Transformer::from_geodesy(
+            &*geodesy_ctx,
+            self.source_crs.op_handle,
+            self.target_crs.op_handle,
+        )?;
 
         let mut feature_collection = self.feature_collection.cast::<geo_projected::Projected>();
 
@@ -43,7 +49,7 @@ impl bevy_jobs::Job for ReprojectGeometryJob {
         Ok(ReprojectGeometryJobOutcome {
             feature_collection,
             layer_id: self.layer_id,
-            target_crs_epsg_code: self.target_epsg_code,
+            target_crs: self.target_crs,
         })
     }
 }

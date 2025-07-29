@@ -100,7 +100,15 @@ fn spawn_geometry_meshes(
                 if is_selected {
                     SELECTED_COLOR
                 } else {
-                    layer.color.fill.unwrap()
+                    match layer.color.fill {
+                        Some(color) => color,
+                        None => {
+                            bevy::log::error!(
+                                "Expected a fill color for polygon, but none was provided."
+                            );
+                            SELECTED_COLOR
+                        }
+                    }
                 },
                 layer_index,
                 polygon_mesh.mesh,

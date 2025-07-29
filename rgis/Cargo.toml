@@ -22,6 +22,8 @@ rgis-transform = { path = "../rgis-transform" }
 rgis-ui = { path = "../rgis-ui" }
 time-logger = { path = "../time-logger" }
 rgis-events = { path = "../rgis-events" }
+rgis-crs = { path = "../rgis-crs" }
+rgis-geodesy = { path = "../rgis-geodesy" }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 rgis-cli = { path = "../rgis-cli" }

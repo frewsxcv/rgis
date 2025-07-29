@@ -1,9 +1,8 @@
 [package]
-name = "rgis-layer-id"
+name = "rgis-crs"
 version = "0.1.0"
-edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+edition = "2024"
+publish = false
 
 [dependencies]
 bevy = { version = "0.16", default-features = false, features = [
@@ -15,3 +14,7 @@ bevy = { version = "0.16", default-features = false, features = [
     "wayland",
     "png",
 ] }
+geodesy = "0.13"
+rgis-events = { path = "../rgis-events" }
+rgis-primitives = { path = "../rgis-primitives" }
+rgis-geodesy = { path = "../rgis-geodesy" }

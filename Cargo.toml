@@ -9,7 +9,6 @@ members = [
     "rgis-file-loader",
     "rgis-geo-ops",
     "rgis-keyboard",
-    "rgis-layer-id",
     "rgis-layers",
     "rgis-library",
     "rgis-mouse",
@@ -20,6 +19,8 @@ members = [
     "rgis-units",
     "rgis",
     "time-logger",
+    "rgis-crs",
+    "rgis-primitives", "rgis-geodesy",
 ]
 resolver = "2"
 

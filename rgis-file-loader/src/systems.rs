@@ -11,7 +11,7 @@ fn handle_network_fetch_finished_jobs(
                     file_format: geo_file_loader::FileFormat::GeoJson,
                     bytes: fetched.bytes,
                     file_name: fetched.name,
-                    crs_epsg_code: fetched.crs_epsg_code,
+                    source_crs: fetched.source_crs,
                 });
             }
             Err(e) => {
@@ -29,20 +29,20 @@ fn handle_load_file_events(
         match event {
             rgis_events::LoadFileEvent::FromNetwork {
                 url,
-                crs_epsg_code,
                 name,
+                source_crs,
             } => job_spawner.spawn(rgis_network::NetworkFetchJob {
                 url,
-                crs_epsg_code,
+                source_crs,
                 name,
             }),
             rgis_events::LoadFileEvent::FromBytes {
                 file_name,
                 bytes,
                 file_format,
-                crs_epsg_code,
+                source_crs,
             } => job_spawner.spawn(crate::jobs::LoadFileJob {
-                source_crs_epsg_code: crs_epsg_code,
+                source_crs,
                 name: file_name,
                 bytes,
                 file_format,
@@ -61,7 +61,7 @@ fn handle_load_file_job_finished_events(
                 create_layer_event_writer.write(rgis_events::CreateLayerEvent {
                     name: outcome.name,
                     feature_collection: outcome.feature_collection,
-                    source_crs_epsg_code: outcome.source_crs_epsg_code,
+                    source_crs: outcome.source_crs,
                 });
             }
             Err(e) => {
