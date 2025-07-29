@@ -9,6 +9,7 @@ pub(crate) struct ChangeCrsWindow<'a, 'w> {
         &'a mut bevy::ecs::event::EventWriter<'w, rgis_events::ChangeCrsEvent>,
     pub target_crs: rgis_crs::TargetCrs,
     pub crs_input_outcome: &'a mut Option<crate::widgets::crs_input::Outcome>,
+    pub geodesy_ctx: &'a rgis_geodesy::GeodesyContext,
 }
 
 impl ChangeCrsWindow<'_, '_> {
@@ -17,24 +18,21 @@ impl ChangeCrsWindow<'_, '_> {
             .open(self.is_visible)
             .show(self.egui_ctx, |ui| {
                 ui.add(crate::widgets::CrsInput::new(
-                    self.text_field_value,
+                    self.geodesy_ctx,
                     self.crs_input_outcome,
+                    self.text_field_value,
                 ));
-                let (is_ok, op_handle) = match self.crs_input_outcome {
-                    Some(Ok((_, op_handle))) => (true, Some(op_handle)),
-                    _ => (false, None),
+                let (is_ok, op_handle, epsg_code) = match self.crs_input_outcome {
+                    Some(Ok((op_handle, epsg_code))) => (true, Some(op_handle), Some(epsg_code)),
+                    _ => (false, None, None),
                 };
                 if ui.add_enabled(is_ok, egui::Button::new("Set")).clicked() {
-                    let Ok(epsg_code) = u16::from_str(self.text_field_value) else {
-                        // TODO: show error message to the user instead of logging an error
-                        bevy::log::error!("Could not parse u16 value");
-                        return;
-                    };
+                    // TODO: show error message to the user instead of logging an error
                     self.change_crs_event_writer
                         .write(rgis_events::ChangeCrsEvent {
                             old: self.target_crs.0,
                             new: rgis_primitives::Crs {
-                                epsg_code,
+                                epsg_code: *epsg_code.unwrap(),
                                 op_handle: *op_handle.unwrap(),
                             },
                         });

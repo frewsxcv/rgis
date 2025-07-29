@@ -14,3 +14,5 @@ bevy = { version = "0.16", default-features = false, features = [
     "png",
 ] }
 geodesy = "0.13"
+async-lock = "3"
+crs-definitions = "0.3"

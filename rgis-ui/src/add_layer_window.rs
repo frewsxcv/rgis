@@ -2,7 +2,6 @@ use bevy::prelude::*;
 use bevy_egui::egui;
 use geo_file_loader::FileFormat;
 use std::mem;
-use std::str::FromStr;
 
 #[derive(bevy::ecs::system::SystemParam)]
 pub struct Events<'w, 's> {
@@ -39,6 +38,7 @@ pub(crate) struct AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
     pub egui_ctx: &'a mut bevy_egui::egui::Context,
     pub job_spawner: &'a mut bevy_jobs::JobSpawner<'w1, 's1>,
     pub events: &'a mut Events<'w2, 's2>,
+    pub geodesy_ctx: &'a rgis_geodesy::GeodesyContext,
 }
 
 #[derive(PartialEq, Eq)]
@@ -124,14 +124,16 @@ impl AddLayerWindow<'_, '_, '_, '_, '_> {
                 if self.state.selected_source == Source::Library {
                     ui.add(LibraryWidget {
                         events: self.events,
+                        geodesy_ctx: self.geodesy_ctx,
                     });
                     return;
                 }
 
                 ui.label("Source CRS:");
                 let crs_input_widget = crate::widgets::CrsInput::new(
-                    &mut self.state.crs_input,
+                    &self.geodesy_ctx,
                     &mut self.state.crs_input_outcome,
+                    &mut self.state.crs_input,
                 );
                 ui.add(crs_input_widget);
 
@@ -202,11 +204,6 @@ impl AddLayerWindow<'_, '_, '_, '_, '_> {
                         .add_enabled(submittable, egui::Button::new("Add layer"))
                         .clicked()
                     {
-                        let crs_epsg_code = match selected_format {
-                            FileFormat::GeoJson => 4326,
-                            // TODO: don't allow the user to add a layer if the CRS isn't valid
-                            _ => u16::from_str(&self.state.crs_input).unwrap(),
-                        };
                         match self.selected_file.0.take() {
                             Some(loaded_file) => {
                                 self.events.load_file_event_writer.write(
@@ -215,8 +212,22 @@ impl AddLayerWindow<'_, '_, '_, '_, '_> {
                                         file_format: selected_format,
                                         bytes: loaded_file.bytes.into(),
                                         source_crs: rgis_primitives::Crs {
-                                            epsg_code: crs_epsg_code,
-                                            op_handle,
+                                            epsg_code: self
+                                                .state
+                                                .crs_input_outcome
+                                                .as_ref()
+                                                .unwrap()
+                                                .as_ref()
+                                                .unwrap()
+                                                .1,
+                                            op_handle: self
+                                                .state
+                                                .crs_input_outcome
+                                                .as_ref()
+                                                .unwrap()
+                                                .as_ref()
+                                                .unwrap()
+                                                .0,
                                         },
                                     },
                                 );
@@ -265,9 +276,22 @@ impl AddLayerWindow<'_, '_, '_, '_, '_> {
                                         bytes: new.into(),
                                         // TODO: don't allow the user to add a layer if the CRS isn't valid
                                         source_crs: rgis_primitives::Crs {
-                                            epsg_code: u16::from_str(&self.state.crs_input)
-                                                .unwrap(),
-                                            op_handle: (),
+                                            epsg_code: self
+                                                .state
+                                                .crs_input_outcome
+                                                .as_ref()
+                                                .unwrap()
+                                                .as_ref()
+                                                .unwrap()
+                                                .1,
+                                            op_handle: self
+                                                .state
+                                                .crs_input_outcome
+                                                .as_ref()
+                                                .unwrap()
+                                                .as_ref()
+                                                .unwrap()
+                                                .0,
                                         },
                                     },
                                 );
@@ -297,6 +321,7 @@ const fn hint_text(format: FileFormat) -> &'static str {
 
 struct LibraryWidget<'a, 'w, 's> {
     events: &'a mut Events<'w, 's>,
+    geodesy_ctx: &'a rgis_geodesy::GeodesyContext,
 }
 
 impl egui::Widget for LibraryWidget<'_, '_, '_> {
@@ -310,6 +335,7 @@ impl egui::Widget for LibraryWidget<'_, '_, '_> {
                             folder,
                             entry,
                             events: self.events,
+                            geodesy_ctx: self.geodesy_ctx,
                         });
                     }
                 });
@@ -323,12 +349,17 @@ struct LibraryEntryWidget<'a, 'w, 's> {
     entry: &'a rgis_library::Entry,
     folder: &'a rgis_library::Folder,
     events: &'a mut Events<'w, 's>,
+    geodesy_ctx: &'a rgis_geodesy::GeodesyContext,
 }
 
 impl egui::Widget for LibraryEntryWidget<'_, '_, '_> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         ui.horizontal(|ui| {
             if ui.button("➕ Add").clicked() {
+                let mut geodesy_ctx = self.geodesy_ctx.0.write_blocking();
+                let op_handle =
+                    rgis_geodesy::epsg_code_to_geodesy_op_handle(&mut *geodesy_ctx, self.entry.crs)
+                        .unwrap();
                 self.events
                     .load_file_event_writer
                     .write(rgis_events::LoadFileEvent::FromNetwork {
@@ -336,7 +367,7 @@ impl egui::Widget for LibraryEntryWidget<'_, '_, '_> {
                         url: self.entry.url.into(),
                         source_crs: rgis_primitives::Crs {
                             epsg_code: self.entry.crs,
-                            op_handle: (),
+                            op_handle,
                         },
                     });
                 self.events.hide_add_layer_window_events.send_default();

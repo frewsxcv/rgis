@@ -10,12 +10,20 @@ pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut bevy::app::App) {
-        app.insert_resource(TargetCrs(Crs {
-            epsg_code: DEFAULT_TARGET_CRS,
-            op_handle: geodesy::OpHandle::default(), // FIXME
-        }))
-        .add_systems(Update, handle_crs_changed_events);
+        app.add_systems(Update, handle_crs_changed_events)
+            .add_systems(Startup, insert_target_crs);
     }
+}
+
+fn insert_target_crs(mut commands: Commands, geodesy_ctx: Res<rgis_geodesy::GeodesyContext>) {
+    let mut geodesy_ctx = geodesy_ctx.0.write_blocking();
+    let op_handle =
+        rgis_geodesy::epsg_code_to_geodesy_op_handle(&mut *geodesy_ctx, DEFAULT_TARGET_CRS)
+            .unwrap();
+    commands.insert_resource(TargetCrs(Crs {
+        epsg_code: DEFAULT_TARGET_CRS,
+        op_handle,
+    }));
 }
 
 fn handle_crs_changed_events(

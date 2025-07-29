@@ -5,6 +5,7 @@ fn handle_layer_created_events(
     layers: bevy::ecs::system::Res<rgis_layers::Layers>,
     target_crs: bevy::ecs::system::Res<rgis_crs::TargetCrs>,
     mut job_spawner: bevy_jobs::JobSpawner,
+    geodesy_ctx: bevy::ecs::system::Res<rgis_geodesy::GeodesyContext>,
 ) {
     for event in layer_created_event_reader.read() {
         let Some(layer) = layers.get(event.0) else {
@@ -16,6 +17,7 @@ fn handle_layer_created_events(
             layer_id: event.0,
             source_crs: layer.crs,
             target_crs: target_crs.0,
+            geodesy_ctx: geodesy_ctx.clone(),
         });
     }
 }
@@ -26,7 +28,7 @@ fn handle_reproject_geometry_job_completion_events(
     mut layer_reprojected_event_writer: bevy::ecs::event::EventWriter<
         rgis_events::LayerReprojectedEvent,
     >,
-    rgis_settings: bevy::ecs::system::Res<rgis_settings::RgisSettings>,
+    target_crs: bevy::ecs::system::Res<rgis_crs::TargetCrs>,
 ) {
     while let Some(outcome) = finished_jobs.take_next::<crate::jobs::ReprojectGeometryJob>() {
         let outcome = match outcome {
@@ -37,7 +39,7 @@ fn handle_reproject_geometry_job_completion_events(
             }
         };
 
-        if outcome.target_crs_epsg_code != rgis_settings.target_crs_epsg_code {
+        if outcome.target_crs != target_crs.0 {
             bevy::log::error!("Encountered a reprojected geometry with a different CRS than the current target CRS");
             continue;
         }
@@ -57,6 +59,7 @@ fn handle_crs_changed_events(
     mut layers: bevy::ecs::system::ResMut<rgis_layers::Layers>,
     target_crs: bevy::ecs::system::Res<rgis_crs::TargetCrs>,
     mut job_spawner: bevy_jobs::JobSpawner,
+    geodesy_ctx: bevy::ecs::system::Res<rgis_geodesy::GeodesyContext>,
 ) {
     if crs_changed_event_reader.read().next().is_some() {
         layers.clear_projected();
@@ -67,6 +70,7 @@ fn handle_crs_changed_events(
                 layer_id: layer.id,
                 source_crs: layer.crs,
                 target_crs: target_crs.0,
+                geodesy_ctx: geodesy_ctx.clone(),
             });
         }
     }

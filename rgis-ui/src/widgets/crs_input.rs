@@ -3,35 +3,43 @@ use geodesy::Context;
 use std::str::FromStr;
 
 pub struct CrsInput<'a> {
-    pub outcome: &'a mut Option<Outcome>,
-    text_field_value: &'a mut String,
+    pub geodesy_ctx: &'a rgis_geodesy::GeodesyContext,
+    pub text_field_value: &'a mut String,
+    outcome: &'a mut Option<Outcome>,
 }
 
-pub type Outcome = Result<(geodesy::Minimal, geodesy::OpHandle), Error>;
-
 impl<'a> CrsInput<'a> {
-    pub fn new(text_field_value: &'a mut String, prev_outcome: &'a mut Option<Outcome>) -> Self {
-        CrsInput {
-            outcome: prev_outcome,
+    pub fn new(
+        geodesy_ctx: &'a rgis_geodesy::GeodesyContext,
+        outcome: &'a mut Option<Outcome>,
+        text_field_value: &'a mut String,
+    ) -> Self {
+        Self {
+            geodesy_ctx,
+            outcome,
             text_field_value,
         }
     }
 }
 
+pub type Outcome = Result<(geodesy::OpHandle, u16), Error>;
+
 impl egui::Widget for CrsInput<'_> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         ui.vertical(|ui| {
-            ui.add(EpsgCodeInputFieldWidget {
-                text_field_value: self.text_field_value,
-                outcome: self.outcome,
-            });
+            ui.add(EpsgCodeInputFieldWidget::new(
+                self.geodesy_ctx,
+                self.text_field_value,
+                self.outcome,
+            ));
 
             let Some(outcome) = self.outcome else { return };
 
-            match &outcome {
-                Ok((ctx, op_handle)) => {
+            match outcome {
+                Ok((op_handle, _)) => {
                     ui.vertical(|ui| {
-                        let Ok(steps) = ctx.steps(*op_handle) else {
+                        let geodesy_ctx = self.geodesy_ctx.0.read_blocking();
+                        let Ok(steps) = geodesy_ctx.steps(*op_handle) else {
                             return;
                         };
                         for step in steps {
@@ -49,12 +57,29 @@ impl egui::Widget for CrsInput<'_> {
 }
 
 struct EpsgCodeInputFieldWidget<'a> {
+    geodesy_ctx: &'a rgis_geodesy::GeodesyContext,
     text_field_value: &'a mut String,
     outcome: &'a mut Option<Outcome>,
+    parsed_text_field_value: Option<u16>,
+}
+
+impl<'a> EpsgCodeInputFieldWidget<'a> {
+    pub fn new(
+        geodesy_ctx: &'a rgis_geodesy::GeodesyContext,
+        text_field_value: &'a mut String,
+        outcome: &'a mut Option<Outcome>,
+    ) -> Self {
+        Self {
+            geodesy_ctx,
+            text_field_value,
+            outcome,
+            parsed_text_field_value: None,
+        }
+    }
 }
 
 impl egui::Widget for EpsgCodeInputFieldWidget<'_> {
-    fn ui(self, ui: &mut egui::Ui) -> egui::Response {
+    fn ui(mut self, ui: &mut egui::Ui) -> egui::Response {
         ui.horizontal(|ui| {
             ui.label("EPSG:");
             let edit_field = ui.text_edit_singleline(self.text_field_value);
@@ -63,7 +88,11 @@ impl egui::Widget for EpsgCodeInputFieldWidget<'_> {
                 || (!self.text_field_value.is_empty() && self.outcome.is_none())
             {
                 ui.add(ValidIconWidget);
-                Some(parse_epsg_input_value(self.text_field_value))
+                Some(parse_epsg_input_value(
+                    &mut self.geodesy_ctx,
+                    self.text_field_value,
+                    &mut self.parsed_text_field_value,
+                ))
             } else if let Some(n) = self.outcome.take() {
                 if n.is_ok() {
                     ui.add(ValidIconWidget);
@@ -85,24 +114,21 @@ pub enum Error {
     #[error("{0}")]
     ParseIntError(#[from] std::num::ParseIntError),
     #[error("{0}")]
-    TransformError(#[from] geo_geodesy::Error),
+    Geodesy(#[from] rgis_geodesy::Error),
 }
 
-pub fn lookup_epsg_code(
-    epsg_code: u16,
-) -> Result<(geodesy::Minimal, geodesy::OpHandle), geo_geodesy::Error> {
-    let mut ctx = geodesy::Minimal::new();
-    let def = crs_definitions::from_code(epsg_code)
-        .ok_or(geo_geodesy::Error::UnknownEpsgCode(epsg_code))?;
-    let source_geodesy_string = geodesy::parse_proj(def.proj4)?;
-    let op_handle = ctx.op(&source_geodesy_string)?;
-    Ok((ctx, op_handle))
-}
-
-fn parse_epsg_input_value(input: &str) -> Outcome {
-    let parsed = u16::from_str(input)?;
-    let outcome = lookup_epsg_code(parsed)?;
-    Ok(outcome)
+fn parse_epsg_input_value(
+    geodesy_ctx: &rgis_geodesy::GeodesyContext,
+    input: &str,
+    parsed_text_field_value: &mut Option<u16>,
+) -> Outcome {
+    let mut geodesy_ctx = geodesy_ctx.0.write_blocking();
+    let parsed = u16::from_str(input);
+    *parsed_text_field_value = parsed.as_ref().ok().copied();
+    let parsed = parsed?;
+    let outcome = rgis_geodesy::epsg_code_to_geodesy_op_handle(&mut *geodesy_ctx, parsed)
+        .map_err(Error::Geodesy)?;
+    Ok((outcome, parsed))
 }
 
 struct ValidIconWidget;

@@ -111,6 +111,7 @@ fn render_add_layer_window(
     mut job_spawner: bevy_jobs::JobSpawner,
     mut state: Local<crate::add_layer_window::State>,
     mut events: crate::add_layer_window::Events,
+    geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
 ) {
     let bevy_egui_ctx_mut = match bevy_egui_ctx.ctx_mut() {
         Ok(ctx) => ctx,
@@ -135,6 +136,7 @@ fn render_add_layer_window(
         egui_ctx: bevy_egui_ctx_mut,
         job_spawner: &mut job_spawner,
         events: &mut events,
+        geodesy_ctx: &*geodesy_ctx,
     }
     .render();
 }
@@ -149,6 +151,7 @@ fn render_change_crs_window(
     mut text_field_value: Local<String>,
     mut change_crs_event_writer: bevy::ecs::event::EventWriter<rgis_events::ChangeCrsEvent>,
     mut crs_input_outcome: Local<Option<crate::widgets::crs_input::Outcome>>,
+    geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
 ) {
     let bevy_egui_ctx_mut = match bevy_egui_ctx.ctx_mut() {
         Ok(ctx) => ctx,
@@ -168,6 +171,7 @@ fn render_change_crs_window(
         change_crs_event_writer: &mut change_crs_event_writer,
         target_crs: *target_crs,
         crs_input_outcome: &mut crs_input_outcome,
+        geodesy_ctx: &*geodesy_ctx,
     }
     .render();
 }

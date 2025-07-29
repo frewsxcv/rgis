@@ -17,3 +17,4 @@ bevy = { version = "0.16", default-features = false, features = [
 geodesy = "0.13"
 rgis-events = { path = "../rgis-events" }
 rgis-primitives = { path = "../rgis-primitives" }
+rgis-geodesy = { path = "../rgis-geodesy" }

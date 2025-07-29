@@ -4840,6 +4840,7 @@ dependencies = [
  "rgis-crs",
  "rgis-events",
  "rgis-file-loader",
+ "rgis-geodesy",
  "rgis-keyboard",
  "rgis-layers",
  "rgis-mouse",
@@ -4881,6 +4882,7 @@ dependencies = [
  "bevy",
  "geodesy",
  "rgis-events",
+ "rgis-geodesy",
  "rgis-primitives",
 ]
 
@@ -4930,7 +4932,9 @@ dependencies = [
 name = "rgis-geodesy"
 version = "0.1.0"
 dependencies = [
+ "async-lock",
  "bevy",
+ "crs-definitions",
  "geodesy",
 ]
 
@@ -5033,6 +5037,7 @@ dependencies = [
  "num-t",
  "rgis-crs",
  "rgis-events",
+ "rgis-geodesy",
  "rgis-layers",
  "rgis-primitives",
  "rgis-settings",
@@ -5045,19 +5050,18 @@ dependencies = [
  "bevy",
  "bevy_egui",
  "bevy_jobs",
- "crs-definitions",
  "dark-light",
  "egui_plot",
  "geo",
  "geo-features",
  "geo-file-loader",
- "geo-geodesy",
  "geo-projected",
  "geodesy",
  "rfd",
  "rgis-crs",
  "rgis-events",
  "rgis-geo-ops",
+ "rgis-geodesy",
  "rgis-layers",
  "rgis-library",
  "rgis-mouse",

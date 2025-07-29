@@ -5,6 +5,7 @@ pub struct ReprojectGeometryJob {
     pub layer_id: rgis_primitives::LayerId,
     pub source_crs: rgis_primitives::Crs,
     pub target_crs: rgis_primitives::Crs,
+    pub geodesy_ctx: rgis_geodesy::GeodesyContext,
 }
 
 pub struct ReprojectGeometryJobOutcome {
@@ -23,8 +24,13 @@ impl bevy_jobs::Job for ReprojectGeometryJob {
     async fn perform(self, progress_sender: bevy_jobs::Context) -> Self::Outcome {
         let total = self.feature_collection.features.len();
 
-        let transformer =
-            geo_geodesy::Transformer::from_geodesy((), self.source_crs, self.target_crs)?;
+        let geodesy_ctx = self.geodesy_ctx.0.read().await;
+
+        let transformer = geo_geodesy::Transformer::from_geodesy(
+            &*geodesy_ctx,
+            self.source_crs.op_handle,
+            self.target_crs.op_handle,
+        )?;
 
         let mut feature_collection = self.feature_collection.cast::<geo_projected::Projected>();
 

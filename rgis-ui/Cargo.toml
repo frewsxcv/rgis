@@ -32,8 +32,7 @@ rgis-settings = { path = "../rgis-settings" }
 rgis-units = { path = "../rgis-units" }
 bevy_jobs = { git = "https://github.com/frewsxcv/bevy_jobs" }
 geo = "0.30"
-geo-geodesy = "4"
 thiserror = "2"
-crs-definitions = "0.3"
 geodesy = "0.13"
 rgis-crs = { path = "../rgis-crs" }
+rgis-geodesy = { path = "../rgis-geodesy" }

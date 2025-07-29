@@ -26,3 +26,4 @@ bevy_jobs = { git = "https://github.com/frewsxcv/bevy_jobs" }
 geo-geodesy = "4"
 num-t = "3"
 rgis-crs = { path = "../rgis-crs" }
+rgis-geodesy = { path = "../rgis-geodesy" }

@@ -50,12 +50,15 @@ fn handle_change_crs_event(
     };
     let rect = map_area.projected_geo_rect(&transform, window);
 
-    let transformer = geo_geodesy::Transformer::from_geodesy(
-        &geodesy_ctx.0,
-        event.old.op_handle,
-        event.new.op_handle,
-    )?;
-    transformer.transform(&mut (rect.into()))?;
+    {
+        let geodesy_ctx = geodesy_ctx.0.read_blocking();
+        let transformer = geo_geodesy::Transformer::from_geodesy(
+            &*geodesy_ctx,
+            event.old.op_handle,
+            event.new.op_handle,
+        )?;
+        transformer.transform(&mut (rect.into()))?;
+    }
 
     crate::utils::center_camera_on_projected_world_rect(rect, &mut transform, map_area);
 
