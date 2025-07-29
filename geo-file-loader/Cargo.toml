@@ -1,14 +1,10 @@
 [package]
 name = "geo-file-loader"
-version = "0.1.0"
-edition = "2021"
-publish = false
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
 
 [dependencies]
-bytes = "1"
-geo = "0.30"
-geozero = { git = "https://github.com/georust/geozero.git", branch = "main", features = [
-    "with-wkt",
-    "with-gpx",
-    "with-shp",
-] }
+bytes = { workspace = true }
+geo = { workspace = true }
+geozero = { workspace = true, features = ["with-wkt", "with-gpx", "with-shp"] }

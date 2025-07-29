@@ -1,23 +1,15 @@
 [package]
 name = "rgis-events"
-version = "0.1.0"
-edition = "2021"
+version.workspace = true
+edition.workspace = true
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bevy = { version = "0.16", default-features = false, features = [
-    "bevy_winit",
-    "bevy_core_pipeline",
-    "bevy_render",
-    "bevy_sprite",
-    "bevy_ui",
-    "wayland",
-    "png",
-] }
-bytes = "1"
-geo = "0.30"
-geo-features = { path = "../geo-features" }
-geo-file-loader = { path = "../geo-file-loader" }
-geo-projected = { path = "../geo-projected" }
-rgis-primitives = { path = "../rgis-primitives" }
+bevy = { workspace = true }
+bytes = { workspace = true }
+geo = { workspace = true }
+geo-features = { path = "../geo-features", version = "0.1.0" }
+geo-file-loader = { path = "../geo-file-loader", version = "0.1.0" }
+geo-projected = { path = "../geo-projected", version = "0.1.0" }
+rgis-primitives = { path = "../rgis-primitives", version = "0.1.0" }

@@ -1,26 +1,18 @@
 [package]
 name = "rgis-camera"
-version = "0.1.0"
-authors = ["Corey Farwell <coreyf@rwell.org>"]
-edition = "2021"
-publish = false
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+publish.workspace = true
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bevy = { version = "0.16", default-features = false, features = [
-    "bevy_winit",
-    "bevy_core_pipeline",
-    "bevy_render",
-    "bevy_sprite",
-    "bevy_ui",
-    "wayland",
-    "png",
-] }
-geo = "0.30"
-geo-projected = { path = "../geo-projected" }
-rgis-events = { path = "../rgis-events" }
-rgis-layers = { path = "../rgis-layers" }
-geo-geodesy = "4"
-rgis-units = { path = "../rgis-units" }
-rgis-geodesy = { path = "../rgis-geodesy" }
+bevy = { workspace = true }
+geo = { workspace = true }
+geo-projected = { path = "../geo-projected", version = "0.1.0" }
+rgis-events = { path = "../rgis-events", version = "0.1.0" }
+rgis-layers = { path = "../rgis-layers", version = "0.1.0" }
+geo-geodesy = { workspace = true }
+rgis-units = { path = "../rgis-units", version = "0.1.0" }
+rgis-geodesy = { path = "../rgis-geodesy", version = "0.1.0" }

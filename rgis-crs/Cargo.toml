@@ -1,20 +1,12 @@
 [package]
 name = "rgis-crs"
-version = "0.1.0"
-edition = "2024"
-publish = false
+version.workspace = true
+edition = "2021"
+publish.workspace = true
 
 [dependencies]
-bevy = { version = "0.16", default-features = false, features = [
-    "bevy_winit",
-    "bevy_core_pipeline",
-    "bevy_render",
-    "bevy_sprite",
-    "bevy_ui",
-    "wayland",
-    "png",
-] }
-geodesy = "0.13"
-rgis-events = { path = "../rgis-events" }
-rgis-primitives = { path = "../rgis-primitives" }
-rgis-geodesy = { path = "../rgis-geodesy" }
+bevy = { workspace = true }
+geodesy = { workspace = true }
+rgis-events = { path = "../rgis-events", version = "0.1.0" }
+rgis-primitives = { path = "../rgis-primitives", version = "0.1.0" }
+rgis-geodesy = { path = "../rgis-geodesy", version = "0.1.0" }

@@ -1,8 +1,8 @@
 [package]
 name = "geo-geom-type"
-version = "0.1.0"
-edition = "2021"
+version.workspace = true
+edition.workspace = true
 
 [dependencies]
-bitflags = "2"
-geo = "0.30"
+bitflags = { workspace = true }
+geo = { workspace = true }

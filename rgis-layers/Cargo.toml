@@ -1,25 +1,17 @@
 [package]
 name = "rgis-layers"
-version = "0.1.0"
-authors = ["Corey Farwell <coreyf@rwell.org>"]
-edition = "2021"
-publish = false
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+publish.workspace = true
 
 [dependencies]
-bevy = { version = "0.16", default-features = false, features = [
-    "bevy_winit",
-    "bevy_core_pipeline",
-    "bevy_render",
-    "bevy_sprite",
-    "bevy_ui",
-    "wayland",
-    "png",
-] }
-colorous = "1"
-geo-features = { path = "../geo-features" }
-geo-geom-type = { path = "../geo-geom-type" }
-geo-projected = { path = "../geo-projected" }
-rgis-events = { path = "../rgis-events" }
-rgis-primitives = { path = "../rgis-primitives" }
-geo = "0.30"
-rgis-crs = { path = "../rgis-crs" }
+bevy = { workspace = true }
+colorous = { workspace = true }
+geo-features = { path = "../geo-features", version = "0.1.0" }
+geo-geom-type = { path = "../geo-geom-type", version = "0.1.0" }
+geo-projected = { path = "../geo-projected", version = "0.1.0" }
+rgis-events = { path = "../rgis-events", version = "0.1.0" }
+rgis-primitives = { path = "../rgis-primitives", version = "0.1.0" }
+geo = { workspace = true }
+rgis-crs = { path = "../rgis-crs", version = "0.1.0" }

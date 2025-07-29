@@ -1,10 +1,10 @@
 [package]
 name = "geo-projected"
-version = "0.1.0"
-edition = "2021"
-publish = false
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
 
 [dependencies]
-geo = "0.30"
-geo-features = { path = "../geo-features" }
-num-t = "3"
+geo = { workspace = true }
+geo-features = { path = "../geo-features", version = "0.1.0" }
+num-t = { workspace = true }

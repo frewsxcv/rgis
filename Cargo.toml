@@ -20,9 +20,57 @@ members = [
     "rgis",
     "time-logger",
     "rgis-crs",
-    "rgis-primitives", "rgis-geodesy",
+    "rgis-primitives",
+    "rgis-geodesy",
 ]
 resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+authors = ["Corey Farwell <coreyf@rwell.org>"]
+edition = "2021"
+publish = false
+
+[workspace.dependencies]
+async-lock = "3"
+bevy = { version = "0.16", default-features = false, features = [
+    "bevy_winit",
+    "bevy_core_pipeline",
+    "bevy_render",
+    "bevy_sprite",
+    "bevy_ui",
+    "wayland",
+    "png",
+] }
+bevy_egui = "0.35"
+bevy_jobs = { git = "https://github.com/frewsxcv/bevy_jobs" }
+bevy_log = "0.16"
+bitflags = "2"
+bytes = "1"
+clap = { version = "4", default-features = false, features = [
+    "std",
+    "help",
+    "usage",
+    "error-context",
+    "wrap_help",
+] }
+colorous = "1"
+crs-definitions = "0.3"
+dark-light = "2.0"
+egui_plot = "0.32"
+futures-util = "0.3"
+geo = "0.30"
+geo-bevy = "8.0.0"
+geo-geodesy = "4"
+geodesy = "0.13"
+geozero = { git = "https://github.com/georust/geozero.git", branch = "main" }
+num-t = "3"
+reqwest = { version = "0.12", features = ["stream"] }
+rfd = "0.15"
+serde_json = "1"
+thiserror = "2"
+wasm-bindgen = "0.2"
+web-time = "1"
 
 [profile.release]
 debug = true

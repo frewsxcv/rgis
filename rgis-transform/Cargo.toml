@@ -1,29 +1,21 @@
 [package]
 name = "rgis-transform"
-version = "0.1.0"
-edition = "2021"
+version.workspace = true
+edition.workspace = true
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bevy = { version = "0.16", default-features = false, features = [
-    "bevy_winit",
-    "bevy_core_pipeline",
-    "bevy_render",
-    "bevy_sprite",
-    "bevy_ui",
-    "wayland",
-    "png",
-] }
-geo-features = { path = "../geo-features" }
-geo-projected = { path = "../geo-projected" }
-geo = "0.30"
-rgis-events = { path = "../rgis-events" }
-rgis-primitives = { path = "../rgis-primitives" }
-rgis-layers = { path = "../rgis-layers" }
-rgis-settings = { path = "../rgis-settings" }
-bevy_jobs = { git = "https://github.com/frewsxcv/bevy_jobs" }
-geo-geodesy = "4"
-num-t = "3"
-rgis-crs = { path = "../rgis-crs" }
-rgis-geodesy = { path = "../rgis-geodesy" }
+bevy = { workspace = true }
+geo-features = { path = "../geo-features", version = "0.1.0" }
+geo-projected = { path = "../geo-projected", version = "0.1.0" }
+geo = { workspace = true }
+rgis-events = { path = "../rgis-events", version = "0.1.0" }
+rgis-primitives = { path = "../rgis-primitives", version = "0.1.0" }
+rgis-layers = { path = "../rgis-layers", version = "0.1.0" }
+rgis-settings = { path = "../rgis-settings", version = "0.1.0" }
+bevy_jobs = { workspace = true }
+geo-geodesy = { workspace = true }
+num-t = { workspace = true }
+rgis-crs = { path = "../rgis-crs", version = "0.1.0" }
+rgis-geodesy = { path = "../rgis-geodesy", version = "0.1.0" }

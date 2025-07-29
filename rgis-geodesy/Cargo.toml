@@ -1,18 +1,10 @@
 [package]
 name = "rgis-geodesy"
-version = "0.1.0"
-edition = "2024"
+version.workspace = true
+edition = "2021"
 
 [dependencies]
-bevy = { version = "0.16", default-features = false, features = [
-    "bevy_winit",
-    "bevy_core_pipeline",
-    "bevy_render",
-    "bevy_sprite",
-    "bevy_ui",
-    "wayland",
-    "png",
-] }
-geodesy = "0.13"
-async-lock = "3"
-crs-definitions = "0.3"
+bevy = { workspace = true }
+geodesy = { workspace = true }
+async-lock = { workspace = true }
+crs-definitions = { workspace = true }

@@ -1,38 +1,30 @@
 [package]
 name = "rgis-ui"
-version = "0.1.0"
-authors = ["Corey Farwell <coreyf@rwell.org>"]
-edition = "2021"
-publish = false
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+publish.workspace = true
 
 [dependencies]
-bevy = { version = "0.16", default-features = false, features = [
-    "bevy_winit",
-    "bevy_core_pipeline",
-    "bevy_render",
-    "bevy_sprite",
-    "bevy_ui",
-    "wayland",
-    "png",
-] }
-bevy_egui = "0.35"
-egui_plot = "0.32"
-geo-features = { path = "../geo-features" }
-geo-file-loader = { path = "../geo-file-loader" }
-geo-projected = { path = "../geo-projected" }
-dark-light = "2.0"
-rfd = "0.15"
-rgis-geo-ops = { path = "../rgis-geo-ops" }
-rgis-primitives = { path = "../rgis-primitives" }
-rgis-layers = { path = "../rgis-layers" }
-rgis-library = { path = "../rgis-library" }
-rgis-events = { path = "../rgis-events" }
-rgis-mouse = { path = "../rgis-mouse" }
-rgis-settings = { path = "../rgis-settings" }
-rgis-units = { path = "../rgis-units" }
-bevy_jobs = { git = "https://github.com/frewsxcv/bevy_jobs" }
-geo = "0.30"
-thiserror = "2"
-geodesy = "0.13"
-rgis-crs = { path = "../rgis-crs" }
-rgis-geodesy = { path = "../rgis-geodesy" }
+bevy = { workspace = true }
+bevy_egui = { workspace = true }
+egui_plot = { workspace = true }
+geo-features = { path = "../geo-features", version = "0.1.0" }
+geo-file-loader = { path = "../geo-file-loader", version = "0.1.0" }
+geo-projected = { path = "../geo-projected", version = "0.1.0" }
+dark-light = { workspace = true }
+rfd = { workspace = true }
+rgis-geo-ops = { path = "../rgis-geo-ops", version = "0.1.0" }
+rgis-primitives = { path = "../rgis-primitives", version = "0.1.0" }
+rgis-layers = { path = "../rgis-layers", version = "0.1.0" }
+rgis-library = { path = "../rgis-library", version = "0.1.0" }
+rgis-events = { path = "../rgis-events", version = "0.1.0" }
+rgis-mouse = { path = "../rgis-mouse", version = "0.1.0" }
+rgis-settings = { path = "../rgis-settings", version = "0.1.0" }
+rgis-units = { path = "../rgis-units", version = "0.1.0" }
+bevy_jobs = { workspace = true }
+geo = { workspace = true }
+thiserror = { workspace = true }
+geodesy = { workspace = true }
+rgis-crs = { path = "../rgis-crs", version = "0.1.0" }
+rgis-geodesy = { path = "../rgis-geodesy", version = "0.1.0" }
