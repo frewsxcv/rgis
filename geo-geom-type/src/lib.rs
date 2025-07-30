@@ -1,11 +1,3 @@
-#![warn(
-    clippy::unwrap_used,
-    clippy::cast_lossless,
-    clippy::unimplemented,
-    clippy::indexing_slicing,
-    clippy::expect_used
-)]
-
 bitflags::bitflags! {
     #[derive(Debug, Copy, Clone, PartialEq, Eq)]
     pub struct GeomType: u16 {

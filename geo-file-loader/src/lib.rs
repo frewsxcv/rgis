@@ -1,11 +1,3 @@
-#![warn(
-    clippy::unwrap_used,
-    clippy::cast_lossless,
-    clippy::unimplemented,
-    clippy::indexing_slicing,
-    clippy::expect_used
-)]
-
 mod geojson;
 mod gpx;
 mod shapefile;

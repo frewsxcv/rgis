@@ -1,11 +1,3 @@
-#![warn(
-    clippy::unwrap_used,
-    clippy::cast_lossless,
-    clippy::unimplemented,
-    clippy::indexing_slicing,
-    clippy::expect_used
-)]
-
 use bevy::prelude::*;
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;

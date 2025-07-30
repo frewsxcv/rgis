@@ -1,11 +1,3 @@
-#![warn(
-    clippy::unwrap_used,
-    clippy::cast_lossless,
-    clippy::unimplemented,
-    clippy::indexing_slicing,
-    clippy::expect_used
-)]
-
 pub struct TimeLogger {
     title: String,
     duration: web_time::Instant,

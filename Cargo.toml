@@ -25,6 +25,13 @@ members = [
 ]
 resolver = "2"
 
+[workspace.lints.clippy]
+unwrap_used = "warn"
+cast_lossless = "warn"
+unimplemented = "warn"
+indexing_slicing = "warn"
+expect_used = "warn"
+
 [workspace.package]
 version = "0.1.0"
 authors = ["Corey Farwell <coreyf@rwell.org>"]
