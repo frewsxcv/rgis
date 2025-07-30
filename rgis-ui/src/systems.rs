@@ -136,7 +136,7 @@ fn render_add_layer_window(
         egui_ctx: bevy_egui_ctx_mut,
         job_spawner: &mut job_spawner,
         events: &mut events,
-        geodesy_ctx: &*geodesy_ctx,
+        geodesy_ctx: &geodesy_ctx,
     }
     .render();
 }
@@ -171,7 +171,7 @@ fn render_change_crs_window(
         change_crs_event_writer: &mut change_crs_event_writer,
         target_crs: *target_crs,
         crs_input_outcome: &mut crs_input_outcome,
-        geodesy_ctx: &*geodesy_ctx,
+        geodesy_ctx: &geodesy_ctx,
     }
     .render();
 }

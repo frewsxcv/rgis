@@ -89,7 +89,7 @@ impl egui::Widget for EpsgCodeInputFieldWidget<'_> {
             {
                 ui.add(ValidIconWidget);
                 Some(parse_epsg_input_value(
-                    &mut self.geodesy_ctx,
+                    self.geodesy_ctx,
                     self.text_field_value,
                     &mut self.parsed_text_field_value,
                 ))

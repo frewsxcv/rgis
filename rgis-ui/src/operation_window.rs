@@ -58,7 +58,7 @@ impl OperationWindow<'_> {
                 egui::Window::new("Operation")
                     .open(&mut self.state.is_visible)
                     .show(self.egui_ctx, |ui| {
-                        operation.ui(ui, &feature_collection);
+                        operation.ui(ui, feature_collection);
                     });
             }
         }
