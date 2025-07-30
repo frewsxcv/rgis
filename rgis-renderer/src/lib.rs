@@ -30,10 +30,9 @@ const SELECTED_COLOR: Color = Color::srgb(255., 192., 203.); // pink
 fn spawn_geometry_meshes(
     geometry_mesh: geo_bevy::GeometryMesh,
     materials: &mut Assets<ColorMaterial>,
-    layer: &rgis_layers::Layer,
+    layer_with_index @ rgis_layers::LayerWithIndex(layer, layer_index): rgis_layers::LayerWithIndex,
     commands: &mut Commands,
     assets_meshes: &mut Assets<Mesh>,
-    layer_index: rgis_layers::LayerIndex,
     asset_server: &AssetServer,
     is_selected: bool,
 ) {
@@ -102,22 +101,20 @@ fn spawn_geometry_meshes(
                         }
                     }
                 },
-                layer_index,
+                layer_with_index,
                 polygon_mesh.mesh,
                 commands,
                 assets_meshes,
-                layer,
                 polygon_entity_type,
             );
             // Exterior border
             spawn_helper(
                 materials,
                 layer.color.stroke,
-                layer_index,
+                layer_with_index,
                 polygon_mesh.exterior_mesh,
                 commands,
                 assets_meshes,
-                layer,
                 line_string_entity_type,
             );
             // Interior borders
@@ -125,11 +122,10 @@ fn spawn_geometry_meshes(
                 spawn_helper(
                     materials,
                     layer.color.stroke,
-                    layer_index,
+                    layer_with_index,
                     mesh,
                     commands,
                     assets_meshes,
-                    layer,
                     line_string_entity_type,
                 );
             }
@@ -147,11 +143,10 @@ fn spawn_geometry_meshes(
                 } else {
                     layer.color.stroke
                 },
-                layer_index,
+                layer_with_index,
                 line_string_mesh,
                 commands,
                 assets_meshes,
-                layer,
                 entity_type,
             );
         }
@@ -161,11 +156,10 @@ fn spawn_geometry_meshes(
 fn spawn_helper<'a>(
     materials: &'a mut Assets<ColorMaterial>,
     color: bevy::color::Color,
-    layer_index: rgis_layers::LayerIndex,
+    rgis_layers::LayerWithIndex(layer, layer_index): rgis_layers::LayerWithIndex,
     mesh: Mesh,
     commands: &'a mut Commands<'_, '_>,
     assets_meshes: &'a mut Assets<Mesh>,
-    layer: &rgis_layers::Layer,
     entity_type: RenderEntityType,
 ) -> bevy::ecs::system::EntityCommands<'a> {
     let material = materials.add(color);

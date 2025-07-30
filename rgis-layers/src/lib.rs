@@ -7,6 +7,9 @@ mod systems;
 #[derive(Copy, Clone, Debug)]
 pub struct LayerIndex(pub usize);
 
+#[derive(Debug, Copy, Clone)]
+pub struct LayerWithIndex<'a>(pub &'a Layer, pub LayerIndex);
+
 #[derive(Debug, Resource)]
 pub struct Layers {
     // Ordered from bottom to top
@@ -111,12 +114,11 @@ impl Layers {
     }
 
     #[inline]
-    pub fn get_with_index(
-        &self,
-        layer_id: rgis_primitives::LayerId,
-    ) -> Option<(&Layer, LayerIndex)> {
+    pub fn get_with_index(&self, layer_id: rgis_primitives::LayerId) -> Option<LayerWithIndex> {
         let index = self.get_index(layer_id)?;
-        self.data.get(index).map(|layer| (layer, LayerIndex(index)))
+        self.data
+            .get(index)
+            .map(|layer| LayerWithIndex(layer, LayerIndex(index)))
     }
 
     #[inline]

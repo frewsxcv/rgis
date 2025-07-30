@@ -43,17 +43,16 @@ fn handle_mesh_building_job_outcome(
                 continue;
             }
         };
-        let Some((layer, layer_index)) = layers.get_with_index(layer_id) else {
+        let Some(layer_with_index) = layers.get_with_index(layer_id) else {
             continue;
         };
 
         crate::spawn_geometry_meshes(
             geometry_mesh,
             &mut materials,
-            layer,
+            layer_with_index,
             &mut commands,
             &mut assets_meshes,
-            layer_index,
             &asset_server,
             is_selected,
         );
@@ -70,13 +69,13 @@ fn handle_layer_z_index_updated_event(
     layers: Res<rgis_layers::Layers>,
 ) {
     for event in layer_z_index_updated_event_reader.read() {
-        let Some((_, layer_index)) = layers.get_with_index(event.0) else {
+        let Some(layer_with_index) = layers.get_with_index(event.0) else {
             continue;
         };
 
         for (_, mut transform, render_entity) in query.iter_mut().filter(|(i, _, _)| **i == event.0)
         {
-            let z_index = crate::ZIndex::calculate(layer_index, *render_entity);
+            let z_index = crate::ZIndex::calculate(layer_with_index.1, *render_entity);
             transform.translation.as_mut()[2] = z_index.0 as f32;
         }
     }
