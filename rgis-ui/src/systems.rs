@@ -3,6 +3,7 @@ use bevy_egui::{
     egui::{self, Widget},
     EguiContexts, EguiPrimaryContextPass,
 };
+use bevy_egui_window::Window;
 
 fn render_bottom_panel(
     mut bevy_egui_ctx: EguiContexts,
@@ -361,12 +362,8 @@ pub fn configure(app: &mut App) {
         ),
     );
 
-    app.insert_resource(bevy_egui_window::IsWindowOpen::<
-        crate::debug_window::DebugWindow,
-    >::closed());
-    app.insert_resource(bevy_egui_window::IsWindowOpen::<
-        crate::welcome_window::WelcomeWindow,
-    >::open());
+    crate::debug_window::DebugWindow::setup(app);
+    crate::welcome_window::WelcomeWindow::setup(app);
     app.add_systems(
         EguiPrimaryContextPass,
         bevy_egui_window::render_window_system::<crate::debug_window::DebugWindow>

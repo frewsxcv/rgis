@@ -6,10 +6,22 @@ use std::marker;
 pub trait Window: egui::Widget + SystemParam + Send + Sync {
     type Item<'world, 'state>: Window<State = Self::State>;
 
+    const INITIALLY_OPEN: bool = false;
+
     fn title(&self) -> &str;
     fn default_width(&self) -> f32;
     fn default_anchor(&self) -> (egui::Align2, [f32; 2]) {
         (egui::Align2::LEFT_TOP, [0., 0.])
+    }
+
+    fn setup(app: &mut App)
+    where
+        Self: 'static,
+    {
+        app.insert_resource(IsWindowOpen::<Self>(
+            Self::INITIALLY_OPEN,
+            marker::PhantomData,
+        ));
     }
 }
 
@@ -41,16 +53,6 @@ pub fn run_if_is_window_open<W: Window + 'static>(is_window_open: Res<IsWindowOp
 pub struct IsWindowOpen<W: Window + Send + Sync>(pub bool, marker::PhantomData<W>);
 
 impl<W: Window + Send + Sync + 'static> Resource for IsWindowOpen<W> {}
-
-impl<W: Window + Send + Sync> IsWindowOpen<W> {
-    pub fn closed() -> Self {
-        Self(false, marker::PhantomData)
-    }
-
-    pub fn open() -> Self {
-        Self(true, marker::PhantomData)
-    }
-}
 
 #[cfg(test)]
 mod tests {

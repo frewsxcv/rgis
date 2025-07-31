@@ -18,6 +18,7 @@ impl egui::Widget for WelcomeWindow<'_, '_> {
 
 impl bevy_egui_window::Window for WelcomeWindow<'_, '_> {
     type Item<'w, 's> = WelcomeWindow<'w, 's>;
+    const INITIALLY_OPEN: bool = true;
 
     fn title(&self) -> &str {
         "Welcome"
