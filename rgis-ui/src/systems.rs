@@ -413,10 +413,6 @@ pub fn configure(app: &mut App) {
         ),
     );
 
-    bevy::ecs::system::assert_is_system(
-        bevy_egui_window::render_window_system::<crate::debug_window::DebugWindow<'static, 'static>>,
-    );
-
     app.insert_resource(bevy_egui_window::IsWindowOpen::<
         crate::debug_window::DebugWindow,
     >::closed());
