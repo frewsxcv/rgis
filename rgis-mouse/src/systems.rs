@@ -15,24 +15,14 @@ fn cursor_moved_system(
     >,
     mut mouse_position: ResMut<crate::MousePos>,
     mut bevy_egui_ctx: bevy_egui::EguiContexts,
-) {
-    let bevy_egui_ctx_mut = match bevy_egui_ctx.ctx_mut() {
-        Ok(ctx) => ctx,
-        Err(e) => {
-            bevy::log::error!("{:?}", e);
-            return;
-        }
-    };
+) -> Result {
+    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     if bevy_egui_ctx_mut.is_pointer_over_area() {
         cursor_moved_event_reader.clear();
-        return;
+        return Ok(());
     }
-    let Ok(window) = windows.single_mut() else {
-        return;
-    };
-    let Ok(transform) = query.single() else {
-        return;
-    };
+    let window = windows.single_mut()?;
+    let transform = query.single()?;
     if let Some(event) = cursor_moved_event_reader.read().last() {
         mouse_position.0 = rgis_units::ScreenCoord {
             x: f64::from(event.position.x),
@@ -40,6 +30,7 @@ fn cursor_moved_system(
         }
         .to_projected_geo_coord(transform, &window);
     }
+    Ok(())
 }
 
 fn run_if_has_mouse_motion_events(
@@ -57,31 +48,22 @@ fn mouse_motion_system(
     mut bevy_egui_ctx: bevy_egui::EguiContexts,
     rgis_settings: Res<rgis_settings::RgisSettings>,
     mut last_cursor_icon: Local<Option<bevy::window::SystemCursorIcon>>,
-) {
-    let Ok(mut window) = windows.single_mut() else {
-        return;
-    };
-
+) -> Result {
+    let mut window = windows.single_mut()?;
     if let Some(_cursor_icon) = *last_cursor_icon {
         // FIXME
         // window.cursor.icon = cursor_icon;
     }
 
     // If egui wants to do something with the mouse then release the cursor icon to it
-    let bevy_egui_ctx_mut = match bevy_egui_ctx.ctx_mut() {
-        Ok(ctx) => ctx,
-        Err(e) => {
-            bevy::log::error!("{:?}", e);
-            return;
-        }
-    };
+    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     if bevy_egui_ctx_mut.wants_pointer_input()
         || bevy_egui_ctx_mut.is_pointer_over_area()
         || bevy_egui_ctx_mut.is_using_pointer()
     {
         mouse_motion_event_reader.clear();
         clear_cursor_icon(&mut last_cursor_icon);
-        return;
+        return Ok(());
     }
 
     // Handle panning
@@ -110,7 +92,7 @@ fn mouse_motion_system(
         if x_sum != 0. || y_sum != 0. {
             pan_camera_events.write(rgis_events::PanCameraEvent { x: x_sum, y: y_sum });
         }
-        return;
+        return Ok(());
     }
 
     mouse_motion_event_reader.clear();
@@ -119,6 +101,8 @@ fn mouse_motion_system(
         rgis_settings::Tool::Query => bevy::window::SystemCursorIcon::Crosshair,
     };
     set_cursor_icon(&mut window, &mut last_cursor_icon, cursor_icon);
+
+    Ok(())
 }
 
 fn set_cursor_icon(

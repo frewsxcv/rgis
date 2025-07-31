@@ -17,14 +17,8 @@ pub fn render_window_system<W: Window + SystemParam + 'static>(
     window: <W as Window>::Item<'_, '_>,
     mut bevy_egui_ctx: EguiContexts,
     mut is_window_open: ResMut<IsWindowOpen<W>>,
-) {
-    let bevy_egui_ctx_mut = match bevy_egui_ctx.ctx_mut() {
-        Ok(ctx) => ctx,
-        Err(e) => {
-            bevy::log::error!("{:?}", e);
-            return;
-        }
-    };
+) -> Result {
+    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
 
     let (anchor_align, anchor_offset) = window.default_anchor();
 
@@ -36,6 +30,8 @@ pub fn render_window_system<W: Window + SystemParam + 'static>(
         .show(bevy_egui_ctx_mut, |ui| {
             ui.add(window);
         });
+
+    Ok(())
 }
 
 pub fn run_if_is_window_open<W: Window + 'static>(is_window_open: Res<IsWindowOpen<W>>) -> bool {

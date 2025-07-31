@@ -9,19 +9,13 @@ pub fn configure(app: &mut App) {
             pan_camera_system,
             handle_meshes_spawned_events,
             zoom_camera_system,
-            handle_change_crs_event.pipe(log_error),
+            handle_change_crs_event,
         ),
     );
 }
 
 fn init_camera(mut commands: Commands) {
     commands.spawn((Camera2d, Camera { ..default() }));
-}
-
-fn log_error(result: In<Result<(), Box<dyn std::error::Error + Send + Sync>>>) {
-    if let Err(e) = result.0 {
-        bevy::log::error!("{}", e);
-    }
 }
 
 fn handle_change_crs_event(
@@ -33,7 +27,7 @@ fn handle_change_crs_event(
     windows: Query<&Window, With<PrimaryWindow>>,
     ui_margins: rgis_units::UiMargins,
     geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
-) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+) -> Result {
     let Some(event) = change_crs_event_reader.read().last() else {
         return Ok(());
     };
