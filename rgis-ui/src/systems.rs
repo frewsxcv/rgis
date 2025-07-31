@@ -1,4 +1,3 @@
-use crate::window;
 use bevy::{prelude::*, window::PrimaryWindow};
 use bevy_egui::{
     egui::{self, Widget},
@@ -324,7 +323,7 @@ fn render_top_panel(
     mut app_settings: ResMut<rgis_settings::RgisSettings>,
     mut top_panel_height: ResMut<rgis_units::TopPanelHeight>,
     mut is_debug_window_open: ResMut<
-        window::IsWindowOpen<crate::debug_window::DebugWindow<'static, 'static>>,
+        bevy_egui_window::IsWindowOpen<crate::debug_window::DebugWindow<'static, 'static>>,
     >,
 ) {
     let bevy_egui_ctx_mut = match bevy_egui_ctx.ctx_mut() {
@@ -414,16 +413,25 @@ pub fn configure(app: &mut App) {
         ),
     );
 
-    app.insert_resource(window::IsWindowOpen::<crate::debug_window::DebugWindow>::closed());
-    app.insert_resource(window::IsWindowOpen::<crate::welcome_window::WelcomeWindow>::open());
+    bevy::ecs::system::assert_is_system(
+        bevy_egui_window::render_window_system::<crate::debug_window::DebugWindow<'static, 'static>>,
+    );
+
+    app.insert_resource(bevy_egui_window::IsWindowOpen::<
+        crate::debug_window::DebugWindow,
+    >::closed());
+    app.insert_resource(bevy_egui_window::IsWindowOpen::<
+        crate::welcome_window::WelcomeWindow,
+    >::open());
     app.add_systems(
         EguiPrimaryContextPass,
-        window::render_window_system::<crate::debug_window::DebugWindow>
-            .run_if(window::run_if_is_window_open::<crate::debug_window::DebugWindow>),
+        bevy_egui_window::render_window_system::<crate::debug_window::DebugWindow>
+            .run_if(bevy_egui_window::run_if_is_window_open::<crate::debug_window::DebugWindow>),
     );
     app.add_systems(
         EguiPrimaryContextPass,
-        window::render_window_system::<crate::welcome_window::WelcomeWindow>
-            .run_if(window::run_if_is_window_open::<crate::welcome_window::WelcomeWindow>),
+        bevy_egui_window::render_window_system::<crate::welcome_window::WelcomeWindow>.run_if(
+            bevy_egui_window::run_if_is_window_open::<crate::welcome_window::WelcomeWindow>,
+        ),
     );
 }

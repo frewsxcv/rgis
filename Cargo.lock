@@ -847,6 +847,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_egui_window"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_egui",
+]
+
+[[package]]
 name = "bevy_encase_derive"
 version = "0.16.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5049,6 +5057,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_egui",
+ "bevy_egui_window",
  "bevy_jobs",
  "dark-light",
  "egui_plot",

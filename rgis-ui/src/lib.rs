@@ -15,8 +15,6 @@ mod top_panel;
 mod welcome_window;
 mod widgets;
 
-pub(crate) mod window;
-
 pub struct Plugin;
 
 #[derive(Default, Resource)]

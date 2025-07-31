@@ -1,6 +1,6 @@
-use crate::window;
 use bevy::prelude::*;
 use bevy_egui::egui;
+use bevy_egui_window as window;
 
 pub(crate) struct TopPanel<'a, 'w, 's> {
     pub app_exit_events: &'a mut bevy::ecs::event::Events<bevy::app::AppExit>,

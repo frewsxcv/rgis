@@ -119,7 +119,7 @@ impl DebugWindow<'_, '_> {
     }
 }
 
-impl crate::window::Window for DebugWindow<'_, '_> {
+impl bevy_egui_window::Window for DebugWindow<'_, '_> {
     type Item<'w, 's> = DebugWindow<'w, 's>;
 
     fn title(&self) -> &str {

@@ -21,7 +21,7 @@ members = [
     "time-logger",
     "rgis-crs",
     "rgis-primitives",
-    "rgis-geodesy",
+    "rgis-geodesy", "bevy_egui_window",
 ]
 resolver = "2"
 
