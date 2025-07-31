@@ -13,6 +13,10 @@ pub(crate) struct ChangeCrsWindow<'a, 'w> {
 
 impl ChangeCrsWindow<'_, '_> {
     pub(crate) fn render(&mut self) {
+        if !*self.is_visible {
+            return;
+        }
+
         egui::Window::new("Change CRS")
             .open(self.is_visible)
             .show(self.egui_ctx, |ui| {

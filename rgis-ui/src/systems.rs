@@ -121,11 +121,17 @@ fn render_add_layer_window(
     Ok(())
 }
 
+fn handle_open_change_crs_window_event(
+    mut events: EventReader<rgis_events::OpenChangeCrsWindow>,
+    mut state: ResMut<crate::ChangeCrsWindowState>,
+) {
+    if events.read().next().is_some() {
+        state.is_visible = true;
+    }
+}
+
 fn render_change_crs_window(
-    mut is_visible: Local<bool>,
-    mut open_change_crs_window_event_reader: bevy::ecs::event::EventReader<
-        rgis_events::OpenChangeCrsWindow,
-    >,
+    mut state: ResMut<crate::ChangeCrsWindowState>,
     target_crs: Res<rgis_crs::TargetCrs>,
     mut bevy_egui_ctx: EguiContexts,
     mut text_field_value: Local<String>,
@@ -134,12 +140,9 @@ fn render_change_crs_window(
     geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
-    if open_change_crs_window_event_reader.read().next().is_some() {
-        *is_visible = true;
-    }
 
     crate::change_crs_window::ChangeCrsWindow {
-        is_visible: &mut is_visible,
+        is_visible: &mut state.is_visible,
         egui_ctx: bevy_egui_ctx_mut,
         text_field_value: &mut text_field_value,
         change_crs_event_writer: &mut change_crs_event_writer,
@@ -356,13 +359,17 @@ pub fn configure(app: &mut App) {
             render_bottom_panel.in_set(RenderSystemSet::RenderingTopBottomPanels),
             render_side_panel.in_set(RenderSystemSet::SideBarProgressBar),
             render_in_progress.in_set(RenderSystemSet::SideBarProgressBar),
-            handle_open_file_job,
             render_manage_layer_window.in_set(RenderSystemSet::Windows),
             render_add_layer_window.in_set(RenderSystemSet::Windows),
             render_change_crs_window.in_set(RenderSystemSet::Windows),
             render_feature_properties_window.in_set(RenderSystemSet::Windows),
             render_operation_window.in_set(RenderSystemSet::Windows),
         ),
+    );
+
+    app.add_systems(
+        Update,
+        (handle_open_change_crs_window_event, handle_open_file_job),
     );
 
     crate::debug_window::DebugWindow::setup(app);

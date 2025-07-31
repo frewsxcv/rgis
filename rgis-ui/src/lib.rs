@@ -36,6 +36,11 @@ pub struct FeaturePropertiesWindowState {
     is_visible: bool,
 }
 
+#[derive(Resource, Default)]
+pub struct ChangeCrsWindowState {
+    pub is_visible: bool,
+}
+
 #[derive(Default)]
 struct OperationWindowState {
     is_visible: bool,
@@ -51,6 +56,7 @@ impl bevy::app::Plugin for Plugin {
             .insert_resource(rgis_units::TopPanelHeight(0.))
             .insert_resource(rgis_units::BottomPanelHeight(0.))
             .insert_resource(rgis_units::SidePanelWidth(0.))
+            .insert_resource(ChangeCrsWindowState::default())
             .add_event::<events::OpenOperationWindowEvent>();
 
         systems::configure(app);
