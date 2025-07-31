@@ -147,19 +147,13 @@ fn mouse_scroll_system(
     mut zoom_camera_events: bevy::ecs::event::EventWriter<rgis_events::ZoomCameraEvent>,
     mouse_position: Res<crate::MousePos>,
     mut bevy_egui_ctx: bevy_egui::EguiContexts,
-) {
-    let bevy_egui_ctx_mut = match bevy_egui_ctx.ctx_mut() {
-        Ok(ctx) => ctx,
-        Err(e) => {
-            bevy::log::error!("{:?}", e);
-            return;
-        }
-    };
+) -> Result {
+    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     if bevy_egui_ctx_mut.wants_pointer_input()
         || bevy_egui_ctx_mut.is_pointer_over_area()
         || bevy_egui_ctx_mut.is_using_pointer()
     {
-        return;
+        return Ok(());
     }
 
     let y_amount = mouse_scroll_event_reader
@@ -180,6 +174,7 @@ fn mouse_scroll_system(
             mouse_position.0,
         ));
     }
+    Ok(())
 }
 
 pub fn configure(app: &mut App) {

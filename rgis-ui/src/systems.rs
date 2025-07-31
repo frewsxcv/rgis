@@ -12,14 +12,8 @@ fn render_bottom_panel(
         rgis_events::OpenChangeCrsWindow,
     >,
     mut bottom_panel_height: ResMut<rgis_units::BottomPanelHeight>,
-) {
-    let bevy_egui_ctx_mut = match bevy_egui_ctx.ctx_mut() {
-        Ok(ctx) => ctx,
-        Err(e) => {
-            bevy::log::error!("{:?}", e);
-            return;
-        }
-    };
+) -> Result {
+    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     crate::bottom_panel::BottomPanel {
         egui_ctx: bevy_egui_ctx_mut,
         mouse_pos: &mouse_pos,
@@ -28,6 +22,7 @@ fn render_bottom_panel(
         bottom_panel_height: &mut bottom_panel_height,
     }
     .render();
+    Ok(())
 }
 
 fn render_side_panel(
@@ -35,14 +30,8 @@ fn render_side_panel(
     layers: Res<rgis_layers::Layers>,
     mut events: crate::side_panel::Events,
     mut side_panel_width: ResMut<rgis_units::SidePanelWidth>,
-) {
-    let bevy_egui_ctx_mut = match bevy_egui_ctx.ctx_mut() {
-        Ok(ctx) => ctx,
-        Err(e) => {
-            bevy::log::error!("{:?}", e);
-            return;
-        }
-    };
+) -> Result {
+    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
 
     crate::side_panel::SidePanel {
         egui_ctx: bevy_egui_ctx_mut,
@@ -51,6 +40,7 @@ fn render_side_panel(
         side_panel_width: &mut side_panel_width,
     }
     .render();
+    Ok(())
 }
 
 fn handle_open_file_job(
@@ -73,14 +63,8 @@ fn render_manage_layer_window(
     mut show_manage_layer_window_event_reader: bevy::ecs::event::EventReader<
         rgis_events::ShowManageLayerWindowEvent,
     >,
-) {
-    let bevy_egui_ctx_mut = match bevy_egui_ctx.ctx_mut() {
-        Ok(ctx) => ctx,
-        Err(e) => {
-            bevy::log::error!("{:?}", e);
-            return;
-        }
-    };
+) -> Result {
+    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     if let Some(event) = show_manage_layer_window_event_reader.read().last() {
         state.is_visible = true;
         state.layer_id = Some(event.0);
@@ -93,6 +77,7 @@ fn render_manage_layer_window(
         color_events: &mut color_events,
     }
     .render();
+    Ok(())
 }
 
 struct IsVisible(pub bool);
@@ -111,14 +96,8 @@ fn render_add_layer_window(
     mut state: Local<crate::add_layer_window::State>,
     mut events: crate::add_layer_window::Events,
     geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
-) {
-    let bevy_egui_ctx_mut = match bevy_egui_ctx.ctx_mut() {
-        Ok(ctx) => ctx,
-        Err(e) => {
-            bevy::log::error!("{:?}", e);
-            return;
-        }
-    };
+) -> Result {
+    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     if !events.show_add_layer_window_event_reader.is_empty() {
         (*is_visible).0 = true;
     }
@@ -138,6 +117,7 @@ fn render_add_layer_window(
         geodesy_ctx: &geodesy_ctx,
     }
     .render();
+    Ok(())
 }
 
 fn render_change_crs_window(
@@ -151,14 +131,8 @@ fn render_change_crs_window(
     mut change_crs_event_writer: bevy::ecs::event::EventWriter<rgis_events::ChangeCrsEvent>,
     mut crs_input_outcome: Local<Option<crate::widgets::crs_input::Outcome>>,
     geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
-) {
-    let bevy_egui_ctx_mut = match bevy_egui_ctx.ctx_mut() {
-        Ok(ctx) => ctx,
-        Err(e) => {
-            bevy::log::error!("{:?}", e);
-            return;
-        }
-    };
+) -> Result {
+    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     if open_change_crs_window_event_reader.read().next().is_some() {
         *is_visible = true;
     }
@@ -173,6 +147,7 @@ fn render_change_crs_window(
         geodesy_ctx: &geodesy_ctx,
     }
     .render();
+    Ok(())
 }
 
 fn render_feature_properties_window(
@@ -182,14 +157,8 @@ fn render_feature_properties_window(
     mut render_message_events: ResMut<
         bevy::ecs::event::Events<rgis_events::RenderFeaturePropertiesEvent>,
     >,
-) {
-    let bevy_egui_ctx_mut = match bevy_egui_ctx.ctx_mut() {
-        Ok(ctx) => ctx,
-        Err(e) => {
-            bevy::log::error!("{:?}", e);
-            return;
-        }
-    };
+) -> Result {
+    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     if let Some(event) = render_message_events.drain().last() {
         state.is_visible = true;
         state.layer_id = Some(event.layer_id);
@@ -197,7 +166,7 @@ fn render_feature_properties_window(
     }
 
     let Some(layer) = state.layer_id.and_then(|id| layers.get(id)) else {
-        return;
+        return Ok(());
     };
 
     crate::feature_properties_window::FeaturePropertiesWindow {
@@ -206,20 +175,15 @@ fn render_feature_properties_window(
         egui_ctx: bevy_egui_ctx_mut,
     }
     .render();
+    Ok(())
 }
 
 fn render_message_window(
     mut state: Local<crate::MessageWindowState>,
     mut bevy_egui_ctx: EguiContexts,
     mut render_message_events: ResMut<bevy::ecs::event::Events<rgis_events::RenderMessageEvent>>,
-) {
-    let bevy_egui_ctx_mut = match bevy_egui_ctx.ctx_mut() {
-        Ok(ctx) => ctx,
-        Err(e) => {
-            bevy::log::error!("{:?}", e);
-            return;
-        }
-    };
+) -> Result {
+    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     if let Some(event) = render_message_events.drain().last() {
         state.message = Some(event.0);
         state.is_visible = true;
@@ -230,6 +194,7 @@ fn render_message_window(
         egui_ctx: bevy_egui_ctx_mut,
     }
     .render();
+    Ok(())
 }
 
 fn render_operation_window(
@@ -238,14 +203,8 @@ fn render_operation_window(
     mut bevy_egui_ctx: EguiContexts,
     create_layer_event_writer: EventWriter<rgis_events::CreateLayerEvent>,
     render_message_event_writer: EventWriter<rgis_events::RenderMessageEvent>,
-) {
-    let bevy_egui_ctx_mut = match bevy_egui_ctx.ctx_mut() {
-        Ok(ctx) => ctx,
-        Err(e) => {
-            bevy::log::error!("{:?}", e);
-            return;
-        }
-    };
+) -> Result {
+    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
 
     if let Some(event) = events.drain().last() {
         state.is_visible = true;
@@ -260,22 +219,20 @@ fn render_operation_window(
         render_message_event_writer,
     }
     .render();
+    Ok(())
 }
 
-fn render_in_progress(query: Query<&bevy_jobs::InProgressJob>, mut bevy_egui_ctx: EguiContexts) {
-    let bevy_egui_ctx_mut = match bevy_egui_ctx.ctx_mut() {
-        Ok(ctx) => ctx,
-        Err(e) => {
-            bevy::log::error!("{:?}", e);
-            return;
-        }
-    };
+fn render_in_progress(
+    query: Query<&bevy_jobs::InProgressJob>,
+    mut bevy_egui_ctx: EguiContexts,
+) -> Result {
+    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     let mut in_progress_job_iter: std::iter::Peekable<
         bevy::ecs::query::QueryIter<'_, '_, &bevy_jobs::InProgressJob, ()>,
     > = query.iter().peekable();
 
     if in_progress_job_iter.peek().is_none() {
-        return;
+        return Ok(());
     }
 
     egui::Window::new("Running jobs")
@@ -288,6 +245,7 @@ fn render_in_progress(query: Query<&bevy_jobs::InProgressJob>, mut bevy_egui_ctx
                 ui.add(InProgressJobWidget { in_progress_job });
             }
         });
+    Ok(())
 }
 
 struct InProgressJobWidget<'a> {
@@ -325,16 +283,10 @@ fn render_top_panel(
     mut is_debug_window_open: ResMut<
         bevy_egui_window::IsWindowOpen<crate::debug_window::DebugWindow<'static, 'static>>,
     >,
-) {
-    let bevy_egui_ctx_mut = match bevy_egui_ctx.ctx_mut() {
-        Ok(ctx) => ctx,
-        Err(e) => {
-            bevy::log::error!("{:?}", e);
-            return;
-        }
-    };
+) -> Result {
+    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     let Ok(mut window) = windows.single_mut() else {
-        return;
+        return Ok(());
     };
 
     crate::top_panel::TopPanel {
@@ -346,16 +298,11 @@ fn render_top_panel(
         is_debug_window_open: &mut is_debug_window_open,
     }
     .render();
+    Ok(())
 }
 
-fn set_egui_theme(mut bevy_egui_ctx: EguiContexts, mut clear_color: ResMut<ClearColor>) {
-    let bevy_egui_ctx_mut = match bevy_egui_ctx.ctx_mut() {
-        Ok(ctx) => ctx,
-        Err(e) => {
-            bevy::log::error!("{:?}", e);
-            return;
-        }
-    };
+fn set_egui_theme(mut bevy_egui_ctx: EguiContexts, mut clear_color: ResMut<ClearColor>) -> Result {
+    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     let egui_visuals = match dark_light::detect() {
         Ok(dark_light::Mode::Dark) => egui::Visuals::dark(),
         Ok(dark_light::Mode::Light | dark_light::Mode::Unspecified) => egui::Visuals::light(),
@@ -368,6 +315,7 @@ fn set_egui_theme(mut bevy_egui_ctx: EguiContexts, mut clear_color: ResMut<Clear
     clear_color.0 = egui_color_to_bevy_color(egui_visuals.extreme_bg_color);
     // Set the egui theme
     bevy_egui_ctx_mut.set_visuals(egui_visuals);
+    Ok(())
 }
 
 fn egui_color_to_bevy_color(egui_color: bevy_egui::egui::Color32) -> bevy::color::Color {
