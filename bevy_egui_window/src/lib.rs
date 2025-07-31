@@ -25,7 +25,7 @@ pub trait Window: egui::Widget + SystemParam + Send + Sync {
     }
 }
 
-pub fn render_window_system<W: Window + SystemParam + 'static>(
+pub fn render_window_system<W: Window + 'static>(
     window: <W as Window>::Item<'_, '_>,
     mut bevy_egui_ctx: EguiContexts,
     mut is_window_open: ResMut<IsWindowOpen<W>>,
@@ -50,9 +50,9 @@ pub fn run_if_is_window_open<W: Window + 'static>(is_window_open: Res<IsWindowOp
     is_window_open.0
 }
 
-pub struct IsWindowOpen<W: Window + Send + Sync>(pub bool, marker::PhantomData<W>);
+pub struct IsWindowOpen<W: Window>(pub bool, marker::PhantomData<W>);
 
-impl<W: Window + Send + Sync + 'static> Resource for IsWindowOpen<W> {}
+impl<W: Window + 'static> Resource for IsWindowOpen<W> {}
 
 #[cfg(test)]
 mod tests {
