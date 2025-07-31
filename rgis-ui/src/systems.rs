@@ -332,7 +332,10 @@ enum RenderSystemSet {
 }
 
 pub fn configure(app: &mut App) {
-    app.add_systems(Startup, set_egui_theme);
+    app.add_systems(
+        PostStartup,
+        (bevy_egui::setup_primary_egui_context_system, set_egui_theme).chain(),
+    );
 
     app.configure_sets(
         EguiPrimaryContextPass,
