@@ -21,7 +21,8 @@ members = [
     "time-logger",
     "rgis-crs",
     "rgis-primitives",
-    "rgis-geodesy", "bevy_egui_window",
+    "rgis-geodesy",
+    "bevy_egui_window",
 ]
 resolver = "2"
 
@@ -39,7 +40,6 @@ edition = "2021"
 publish = false
 
 [workspace.dependencies]
-async-lock = "3"
 bevy = { version = "0.16", default-features = false, features = [
     "bevy_winit",
     "bevy_core_pipeline",

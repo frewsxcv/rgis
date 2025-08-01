@@ -4940,7 +4940,6 @@ dependencies = [
 name = "rgis-geodesy"
 version = "0.1.0"
 dependencies = [
- "async-lock",
  "bevy",
  "crs-definitions",
  "geodesy",

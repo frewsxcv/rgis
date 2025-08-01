@@ -24,18 +24,18 @@ impl bevy_jobs::Job for ReprojectGeometryJob {
     async fn perform(self, progress_sender: bevy_jobs::Context) -> Self::Outcome {
         let total = self.feature_collection.features.len();
 
-        let geodesy_ctx = self.geodesy_ctx.0.read().await;
-
-        let transformer = geo_geodesy::Transformer::from_geodesy(
-            &*geodesy_ctx,
-            self.source_crs.op_handle,
-            self.target_crs.op_handle,
-        )?;
-
         let mut feature_collection = self.feature_collection.cast::<geo_projected::Projected>();
 
         for (i, feature) in feature_collection.features.iter_mut().enumerate() {
             let _ = progress_sender.send_progress((100 * i / total) as u8).await;
+
+            let geodesy_ctx = self.geodesy_ctx.0.read().unwrap();
+
+            let transformer = geo_geodesy::Transformer::from_geodesy(
+                &*geodesy_ctx,
+                self.source_crs.op_handle,
+                self.target_crs.op_handle,
+            )?;
 
             if let Some(ref mut geometry) = &mut feature.geometry {
                 transformer.transform(geometry)?;

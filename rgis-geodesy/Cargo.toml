@@ -6,5 +6,4 @@ edition = "2021"
 [dependencies]
 bevy = { workspace = true }
 geodesy = { workspace = true }
-async-lock = { workspace = true }
 crs-definitions = { workspace = true }

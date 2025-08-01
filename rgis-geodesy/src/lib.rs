@@ -3,7 +3,7 @@ use std::sync::Arc;
 use bevy::prelude::*;
 
 #[derive(Resource, Clone)]
-pub struct GeodesyContext(pub Arc<async_lock::RwLock<geodesy::Minimal>>);
+pub struct GeodesyContext(pub Arc<std::sync::RwLock<geodesy::Minimal>>);
 
 pub struct Plugin;
 

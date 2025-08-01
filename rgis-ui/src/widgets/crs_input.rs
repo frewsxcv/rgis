@@ -38,7 +38,7 @@ impl egui::Widget for CrsInput<'_> {
             match outcome {
                 Ok((op_handle, _)) => {
                     ui.vertical(|ui| {
-                        let geodesy_ctx = self.geodesy_ctx.0.read_blocking();
+                        let geodesy_ctx = self.geodesy_ctx.0.read().unwrap();
                         let Ok(steps) = geodesy_ctx.steps(*op_handle) else {
                             return;
                         };
@@ -122,7 +122,7 @@ fn parse_epsg_input_value(
     input: &str,
     parsed_text_field_value: &mut Option<u16>,
 ) -> Outcome {
-    let mut geodesy_ctx = geodesy_ctx.0.write_blocking();
+    let mut geodesy_ctx = geodesy_ctx.0.write().unwrap();
     let parsed = u16::from_str(input);
     *parsed_text_field_value = parsed.as_ref().ok().copied();
     let parsed = parsed?;

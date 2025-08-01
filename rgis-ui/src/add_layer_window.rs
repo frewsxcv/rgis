@@ -356,7 +356,7 @@ impl egui::Widget for LibraryEntryWidget<'_, '_, '_> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         ui.horizontal(|ui| {
             if ui.button("➕ Add").clicked() {
-                let mut geodesy_ctx = self.geodesy_ctx.0.write_blocking();
+                let mut geodesy_ctx = self.geodesy_ctx.0.write().unwrap();
                 let op_handle =
                     rgis_geodesy::epsg_code_to_geodesy_op_handle(&mut *geodesy_ctx, self.entry.crs)
                         .unwrap();
