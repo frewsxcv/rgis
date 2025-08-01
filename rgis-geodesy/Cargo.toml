@@ -3,6 +3,9 @@ name = "rgis-geodesy"
 version.workspace = true
 edition = "2021"
 
+[lints]
+workspace = true
+
 [dependencies]
 bevy = { workspace = true }
 geodesy = { workspace = true }

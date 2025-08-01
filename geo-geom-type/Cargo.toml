@@ -3,6 +3,9 @@ name = "geo-geom-type"
 version.workspace = true
 edition.workspace = true
 
+[lints]
+workspace = true
+
 [dependencies]
 bitflags = { workspace = true }
 geo = { workspace = true }

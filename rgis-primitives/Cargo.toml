@@ -3,6 +3,9 @@ name = "rgis-primitives"
 version.workspace = true
 edition = "2021"
 
+[lints]
+workspace = true
+
 [dependencies]
 geodesy = { workspace = true }
 bevy = { workspace = true }

@@ -3,6 +3,9 @@ name = "rgis-settings"
 version.workspace = true
 edition.workspace = true
 
+[lints]
+workspace = true
+
 [dependencies]
 bevy = { workspace = true }
 rgis-events = { path = "../rgis-events", version = "0.1.0" }

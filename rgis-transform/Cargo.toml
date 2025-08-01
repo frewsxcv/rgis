@@ -3,6 +3,9 @@ name = "rgis-transform"
 version.workspace = true
 edition.workspace = true
 
+[lints]
+workspace = true
+
 [dependencies]
 bevy = { workspace = true }
 geo-features = { path = "../geo-features", version = "0.1.0" }

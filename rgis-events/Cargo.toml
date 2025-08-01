@@ -3,6 +3,9 @@ name = "rgis-events"
 version.workspace = true
 edition.workspace = true
 
+[lints]
+workspace = true
+
 [dependencies]
 bevy = { workspace = true }
 bytes = { workspace = true }

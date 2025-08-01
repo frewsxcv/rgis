@@ -4,6 +4,9 @@ version.workspace = true
 edition = "2021"
 publish.workspace = true
 
+[lints]
+workspace = true
+
 [dependencies]
 bevy = { workspace = true }
 geodesy = { workspace = true }
