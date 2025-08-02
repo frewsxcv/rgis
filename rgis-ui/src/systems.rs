@@ -1,4 +1,4 @@
-use bevy::{prelude::*, window::PrimaryWindow};
+use bevy::{ecs::query::QueryIter, prelude::*, window::PrimaryWindow};
 use bevy_egui::{
     egui::{self, Widget},
     EguiContexts, EguiPrimaryContextPass,
@@ -9,9 +9,7 @@ fn render_bottom(
     mut bevy_egui_ctx: EguiContexts,
     mouse_pos: Res<rgis_mouse::MousePos>,
     target_crs: Res<rgis_crs::TargetCrs>,
-    mut open_change_crs_window_event_writer: bevy::ecs::event::EventWriter<
-        rgis_events::OpenChangeCrsWindow,
-    >,
+    mut open_change_crs_window_event_writer: EventWriter<rgis_events::OpenChangeCrsWindow>,
     mut bottom_panel_height: ResMut<rgis_units::BottomPanelHeight>,
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
@@ -60,10 +58,8 @@ fn render_manage_layer_window(
     mut state: Local<crate::ManageLayerWindowState>,
     mut bevy_egui_ctx: EguiContexts,
     layers: Res<rgis_layers::Layers>,
-    mut color_events: ResMut<bevy::ecs::event::Events<rgis_events::UpdateLayerColorEvent>>,
-    mut show_manage_layer_window_event_reader: bevy::ecs::event::EventReader<
-        rgis_events::ShowManageLayerWindowEvent,
-    >,
+    mut color_events: ResMut<Events<rgis_events::UpdateLayerColorEvent>>,
+    mut show_manage_layer_window_event_reader: EventReader<rgis_events::ShowManageLayerWindowEvent>,
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     if let Some(event) = show_manage_layer_window_event_reader.read().last() {
@@ -191,7 +187,7 @@ fn render_change_crs_window(
     target_crs: Res<rgis_crs::TargetCrs>,
     mut bevy_egui_ctx: EguiContexts,
     mut text_field_value: Local<String>,
-    mut change_crs_event_writer: bevy::ecs::event::EventWriter<rgis_events::ChangeCrsEvent>,
+    mut change_crs_event_writer: EventWriter<rgis_events::ChangeCrsEvent>,
     mut crs_input_outcome: Local<Option<crate::widgets::crs_input::Outcome>>,
     geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
 ) -> Result {
@@ -214,9 +210,7 @@ fn render_feature_properties_window(
     mut state: Local<crate::FeaturePropertiesWindowState>,
     mut bevy_egui_ctx: EguiContexts,
     layers: Res<rgis_layers::Layers>,
-    mut render_message_events: ResMut<
-        bevy::ecs::event::Events<rgis_events::RenderFeaturePropertiesEvent>,
-    >,
+    mut render_message_events: ResMut<Events<rgis_events::RenderFeaturePropertiesEvent>>,
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     if let Some(event) = render_message_events.drain().last() {
@@ -241,7 +235,7 @@ fn render_feature_properties_window(
 fn render_message_window(
     mut state: Local<crate::MessageWindowState>,
     mut bevy_egui_ctx: EguiContexts,
-    mut render_message_events: ResMut<bevy::ecs::event::Events<rgis_events::RenderMessageEvent>>,
+    mut render_message_events: ResMut<Events<rgis_events::RenderMessageEvent>>,
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     if let Some(event) = render_message_events.drain().last() {
@@ -288,7 +282,7 @@ fn render_in_progress(
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     let mut in_progress_job_iter: std::iter::Peekable<
-        bevy::ecs::query::QueryIter<'_, '_, &bevy_jobs::InProgressJob, ()>,
+        QueryIter<'_, '_, &bevy_jobs::InProgressJob, ()>,
     > = query.iter().peekable();
 
     if in_progress_job_iter.peek().is_none() {
@@ -336,7 +330,7 @@ impl Widget for InProgressJobWidget<'_> {
 
 fn render_top(
     mut bevy_egui_ctx: EguiContexts,
-    mut app_exit_events: ResMut<bevy::ecs::event::Events<bevy::app::AppExit>>,
+    mut app_exit_events: ResMut<Events<AppExit>>,
     mut windows: Query<&mut bevy::window::Window, With<PrimaryWindow>>,
     mut app_settings: ResMut<rgis_settings::RgisSettings>,
     mut top_panel_height: ResMut<rgis_units::TopPanelHeight>,
@@ -367,7 +361,7 @@ fn set_egui_theme(mut bevy_egui_ctx: EguiContexts, mut clear_color: ResMut<Clear
         Ok(dark_light::Mode::Dark) => egui::Visuals::dark(),
         Ok(dark_light::Mode::Light | dark_light::Mode::Unspecified) => egui::Visuals::light(),
         Err(e) => {
-            bevy::log::error!("Error detecting dark/light mode: {:?}", e);
+            error!("Error detecting dark/light mode: {:?}", e);
             egui::Visuals::light()
         }
     };
@@ -378,8 +372,8 @@ fn set_egui_theme(mut bevy_egui_ctx: EguiContexts, mut clear_color: ResMut<Clear
     Ok(())
 }
 
-fn egui_color_to_bevy_color(egui_color: bevy_egui::egui::Color32) -> bevy::color::Color {
-    bevy::color::Color::srgb_u8(egui_color.r(), egui_color.g(), egui_color.b())
+fn egui_color_to_bevy_color(egui_color: bevy_egui::egui::Color32) -> Color {
+    Color::srgb_u8(egui_color.r(), egui_color.g(), egui_color.b())
 }
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]

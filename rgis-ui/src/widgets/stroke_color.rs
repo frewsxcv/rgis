@@ -1,10 +1,10 @@
-use bevy::color::ColorToComponents;
+use bevy::prelude::*;
 use bevy_egui::egui;
 
 pub struct StrokeColor<'a> {
     pub layer_id: rgis_primitives::LayerId,
-    pub color: bevy::prelude::Color,
-    pub color_events: &'a mut bevy::ecs::event::Events<rgis_events::UpdateLayerColorEvent>,
+    pub color: Color,
+    pub color_events: &'a mut Events<rgis_events::UpdateLayerColorEvent>,
 }
 
 impl egui::Widget for StrokeColor<'_> {
@@ -15,12 +15,7 @@ impl egui::Widget for StrokeColor<'_> {
             self.color_events
                 .send(rgis_events::UpdateLayerColorEvent::Stroke(
                     self.layer_id,
-                    bevy::prelude::Color::linear_rgba(
-                        old_color[0],
-                        old_color[1],
-                        old_color[2],
-                        old_color[3],
-                    ),
+                    Color::linear_rgba(old_color[0], old_color[1], old_color[2], old_color[3]),
                 ));
         }
         response

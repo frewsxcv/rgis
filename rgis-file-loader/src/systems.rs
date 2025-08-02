@@ -15,7 +15,7 @@ fn handle_network_fetch_finished_jobs(
                 });
             }
             Err(e) => {
-                bevy::log::error!("Could not fetch file: {:?}", e);
+                error!("Could not fetch file: {:?}", e);
             }
         }
     }
@@ -65,7 +65,7 @@ fn handle_load_file_job_finished_events(
                 });
             }
             Err(e) => {
-                bevy::log::error!("Encountered error when loading file: {:?}", e);
+                error!("Encountered error when loading file: {:?}", e);
             }
         }
     }

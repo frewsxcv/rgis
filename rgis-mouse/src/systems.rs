@@ -1,18 +1,17 @@
-use bevy::{prelude::*, window::PrimaryWindow};
+use bevy::{
+    input::mouse::{MouseButton, MouseMotion, MouseScrollUnit, MouseWheel},
+    prelude::*,
+    window::{PrimaryWindow, SystemCursorIcon},
+};
 
-fn run_if_has_cursor_moved_events(
-    cursor_moved_event_reader: bevy::ecs::event::EventReader<bevy::window::CursorMoved>,
-) -> bool {
+fn run_if_has_cursor_moved_events(cursor_moved_event_reader: EventReader<CursorMoved>) -> bool {
     !cursor_moved_event_reader.is_empty()
 }
 
 fn cursor_moved_system(
-    mut cursor_moved_event_reader: bevy::ecs::event::EventReader<bevy::window::CursorMoved>,
+    mut cursor_moved_event_reader: EventReader<CursorMoved>,
     mut windows: Query<&mut Window, With<PrimaryWindow>>,
-    query: Query<
-        &mut bevy::transform::components::Transform,
-        bevy::ecs::query::With<bevy::render::camera::Camera>,
-    >,
+    query: Query<&mut Transform, With<Camera>>,
     mut mouse_position: ResMut<crate::MousePos>,
     mut last_cursor_screen_position: ResMut<crate::LastCursorScreenPosition>,
     mut bevy_egui_ctx: bevy_egui::EguiContexts,
@@ -35,21 +34,19 @@ fn cursor_moved_system(
     Ok(())
 }
 
-fn run_if_has_mouse_motion_events(
-    mouse_motion_event_reader: bevy::ecs::event::EventReader<bevy::input::mouse::MouseMotion>,
-) -> bool {
+fn run_if_has_mouse_motion_events(mouse_motion_event_reader: EventReader<MouseMotion>) -> bool {
     !mouse_motion_event_reader.is_empty()
 }
 
 // FIXME: Cursor icon setting isn't working
 fn mouse_motion_system(
-    mut mouse_motion_event_reader: bevy::ecs::event::EventReader<bevy::input::mouse::MouseMotion>,
-    mouse_button: Res<bevy::input::ButtonInput<bevy::input::mouse::MouseButton>>,
-    mut pan_camera_events: bevy::ecs::event::EventWriter<rgis_events::PanCameraEvent>,
+    mut mouse_motion_event_reader: EventReader<MouseMotion>,
+    mouse_button: Res<ButtonInput<MouseButton>>,
+    mut pan_camera_events: EventWriter<rgis_events::PanCameraEvent>,
     mut windows: Query<&mut Window, With<PrimaryWindow>>,
     mut bevy_egui_ctx: bevy_egui::EguiContexts,
     rgis_settings: Res<rgis_settings::RgisSettings>,
-    mut last_cursor_icon: Local<Option<bevy::window::SystemCursorIcon>>,
+    mut last_cursor_icon: Local<Option<SystemCursorIcon>>,
 ) -> Result {
     let mut window = windows.single_mut()?;
     if let Some(_cursor_icon) = *last_cursor_icon {
@@ -70,13 +67,13 @@ fn mouse_motion_system(
 
     // Handle panning
     if rgis_settings.current_tool == rgis_settings::Tool::Pan
-        && mouse_button.pressed(bevy::input::mouse::MouseButton::Left)
-        || mouse_button.pressed(bevy::input::mouse::MouseButton::Right)
+        && mouse_button.pressed(MouseButton::Left)
+        || mouse_button.pressed(MouseButton::Right)
     {
         set_cursor_icon(
             &mut window,
             &mut last_cursor_icon,
-            bevy::window::SystemCursorIcon::Grabbing,
+            SystemCursorIcon::Grabbing,
         );
         let mut x_sum = 0.;
         let mut y_sum = 0.;
@@ -99,8 +96,8 @@ fn mouse_motion_system(
 
     mouse_motion_event_reader.clear();
     let cursor_icon = match rgis_settings.current_tool {
-        rgis_settings::Tool::Pan => bevy::window::SystemCursorIcon::Grab,
-        rgis_settings::Tool::Query => bevy::window::SystemCursorIcon::Crosshair,
+        rgis_settings::Tool::Pan => SystemCursorIcon::Grab,
+        rgis_settings::Tool::Query => SystemCursorIcon::Crosshair,
     };
     set_cursor_icon(&mut window, &mut last_cursor_icon, cursor_icon);
 
@@ -109,22 +106,20 @@ fn mouse_motion_system(
 
 fn set_cursor_icon(
     _window: &mut Window,
-    last_cursor_icon: &mut Option<bevy::window::SystemCursorIcon>,
-    cursor_icon: bevy::window::SystemCursorIcon,
+    last_cursor_icon: &mut Option<SystemCursorIcon>,
+    cursor_icon: SystemCursorIcon,
 ) {
     *last_cursor_icon = Some(cursor_icon);
     // FIXME
     // window.icon = cursor_icon;
 }
 
-fn clear_cursor_icon(last_cursor_icon: &mut Option<bevy::window::SystemCursorIcon>) {
+fn clear_cursor_icon(last_cursor_icon: &mut Option<SystemCursorIcon>) {
     *last_cursor_icon = None;
 }
 
-fn run_if_mouse_left_button_just_pressed(
-    mouse_button: Res<bevy::input::ButtonInput<bevy::input::mouse::MouseButton>>,
-) -> bool {
-    mouse_button.just_pressed(bevy::input::mouse::MouseButton::Left)
+fn run_if_mouse_left_button_just_pressed(mouse_button: Res<ButtonInput<MouseButton>>) -> bool {
+    mouse_button.just_pressed(MouseButton::Left)
 }
 
 fn current_tool_is_query(rgis_settings: Res<rgis_settings::RgisSettings>) -> bool {
@@ -132,21 +127,19 @@ fn current_tool_is_query(rgis_settings: Res<rgis_settings::RgisSettings>) -> boo
 }
 
 fn mouse_click_system(
-    mut map_clicked_event_writer: bevy::ecs::event::EventWriter<rgis_events::MapClickedEvent>,
+    mut map_clicked_event_writer: EventWriter<rgis_events::MapClickedEvent>,
     mouse_position: Res<crate::MousePos>,
 ) {
     map_clicked_event_writer.write(rgis_events::MapClickedEvent(mouse_position.0));
 }
 
-fn run_if_has_mouse_scroll_events(
-    mouse_scroll_event_reader: bevy::ecs::event::EventReader<bevy::input::mouse::MouseWheel>,
-) -> bool {
+fn run_if_has_mouse_scroll_events(mouse_scroll_event_reader: EventReader<MouseWheel>) -> bool {
     !mouse_scroll_event_reader.is_empty()
 }
 
 fn mouse_scroll_system(
-    mut mouse_scroll_event_reader: bevy::ecs::event::EventReader<bevy::input::mouse::MouseWheel>,
-    mut zoom_camera_events: bevy::ecs::event::EventWriter<rgis_events::ZoomCameraEvent>,
+    mut mouse_scroll_event_reader: EventReader<MouseWheel>,
+    mut zoom_camera_events: EventWriter<rgis_events::ZoomCameraEvent>,
     mouse_position: Res<crate::MousePos>,
     mut bevy_egui_ctx: bevy_egui::EguiContexts,
 ) -> Result {
@@ -161,7 +154,7 @@ fn mouse_scroll_system(
     let y_amount = mouse_scroll_event_reader
         .read()
         .map(|event| {
-            if let bevy::input::mouse::MouseScrollUnit::Line = event.unit {
+            if let MouseScrollUnit::Line = event.unit {
                 // Magic number was chosen because it resulted in a reasonable scrolling velocity
                 // with a mouse on macOS.
                 event.y * 10.
@@ -180,7 +173,7 @@ fn mouse_scroll_system(
 }
 
 fn run_if_has_recalculate_mouse_position_events(
-    recalculate_mouse_position_event_reader: bevy::ecs::event::EventReader<
+    recalculate_mouse_position_event_reader: EventReader<
         rgis_events::RecalculateMousePositionEvent,
     >,
 ) -> bool {
@@ -188,16 +181,13 @@ fn run_if_has_recalculate_mouse_position_events(
 }
 
 fn recalculate_mouse_position_system(
-    mut recalculate_mouse_position_event_reader: bevy::ecs::event::EventReader<
+    mut recalculate_mouse_position_event_reader: EventReader<
         rgis_events::RecalculateMousePositionEvent,
     >,
     mut mouse_position: ResMut<crate::MousePos>,
     last_cursor_screen_position: Res<crate::LastCursorScreenPosition>,
     windows: Query<&mut Window, With<PrimaryWindow>>,
-    query: Query<
-        &mut bevy::transform::components::Transform,
-        bevy::ecs::query::With<bevy::render::camera::Camera>,
-    >,
+    query: Query<&mut Transform, With<Camera>>,
 ) -> Result {
     recalculate_mouse_position_event_reader.clear();
 

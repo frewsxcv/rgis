@@ -1,10 +1,11 @@
+use bevy::prelude::*;
 use bevy_egui::egui;
 
 pub struct ManageLayer<'a> {
     pub state: &'a mut crate::ManageLayerWindowState,
     pub layers: &'a rgis_layers::Layers,
     pub egui_ctx: &'a mut bevy_egui::egui::Context,
-    pub color_events: &'a mut bevy::ecs::event::Events<rgis_events::UpdateLayerColorEvent>,
+    pub color_events: &'a mut Events<rgis_events::UpdateLayerColorEvent>,
 }
 
 impl ManageLayer<'_> {
@@ -13,7 +14,7 @@ impl ManageLayer<'_> {
             return;
         };
         let Some(layer) = self.layers.get(layer_id) else {
-            bevy::log::warn!(
+            warn!(
                 "Could not find layer with ID {:?}, closing manage layer window",
                 layer_id
             );
@@ -43,7 +44,7 @@ impl ManageLayer<'_> {
                                 });
                                 ui.end_row();
                             } else {
-                                bevy::log::error!("Expected layer to have a fill color");
+                                error!("Expected layer to have a fill color");
                             }
                         }
                         ui.label("Stroke color");

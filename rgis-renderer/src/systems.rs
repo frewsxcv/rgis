@@ -39,7 +39,7 @@ fn handle_mesh_building_job_outcome(
         } = match outcome {
             Ok(outcome) => outcome,
             Err(e) => {
-                bevy::log::error!("Error processing MeshBuildingJobOutcome: {:?}", e);
+                error!("Error processing MeshBuildingJobOutcome: {:?}", e);
                 continue;
             }
         };
@@ -62,9 +62,7 @@ fn handle_mesh_building_job_outcome(
 }
 
 fn handle_layer_z_index_updated_event(
-    mut layer_z_index_updated_event_reader: bevy::ecs::event::EventReader<
-        rgis_events::LayerZIndexUpdatedEvent,
-    >,
+    mut layer_z_index_updated_event_reader: EventReader<rgis_events::LayerZIndexUpdatedEvent>,
     mut query: Query<(&rgis_primitives::LayerId, &mut Transform, &RenderEntityType)>,
     layers: Res<rgis_layers::Layers>,
 ) {
@@ -89,7 +87,7 @@ type LayerEntitiesWithColorMaterialsOrImagesQuery<'world, 'state, 'a> = Query<
 >;
 
 fn handle_despawn_meshes_event(
-    mut layer_deleted_event_reader: bevy::ecs::event::EventReader<rgis_events::DespawnMeshesEvent>,
+    mut layer_deleted_event_reader: EventReader<rgis_events::DespawnMeshesEvent>,
     mut commands: Commands,
     query: LayerEntitiesWithColorMaterialsOrImagesQuery,
 ) {
@@ -102,10 +100,7 @@ fn handle_despawn_meshes_event(
 
 fn handle_layer_became_hidden_event(
     mut event_reader: EventReader<rgis_events::LayerBecameHiddenEvent>,
-    mut query: Query<(
-        &rgis_primitives::LayerId,
-        &mut bevy::render::view::Visibility,
-    )>,
+    mut query: Query<(&rgis_primitives::LayerId, &mut Visibility)>,
 ) {
     for event in event_reader.read() {
         for (_, mut visibility) in query.iter_mut().filter(|(i, _)| **i == event.0) {
@@ -116,10 +111,7 @@ fn handle_layer_became_hidden_event(
 
 fn handle_layer_became_visible_event(
     mut event_reader: EventReader<rgis_events::LayerBecameVisibleEvent>,
-    mut query: Query<(
-        &rgis_primitives::LayerId,
-        &mut bevy::render::view::Visibility,
-    )>,
+    mut query: Query<(&rgis_primitives::LayerId, &mut Visibility)>,
 ) {
     for event in event_reader.read() {
         for (_, mut visibility) in query.iter_mut().filter(|(i, _)| **i == event.0) {
@@ -129,7 +121,7 @@ fn handle_layer_became_visible_event(
 }
 
 fn handle_layer_color_updated_event(
-    mut event_reader: bevy::ecs::event::EventReader<rgis_events::LayerColorUpdatedEvent>,
+    mut event_reader: EventReader<rgis_events::LayerColorUpdatedEvent>,
     layers: Res<rgis_layers::Layers>,
     color_material_query: Query<(
         &rgis_primitives::LayerId,
@@ -184,7 +176,7 @@ fn handle_layer_color_updated_event(
 }
 
 fn handle_crs_changed_events(
-    mut crs_changed_event_reader: bevy::ecs::event::EventReader<rgis_events::CrsChangedEvent>,
+    mut crs_changed_event_reader: EventReader<rgis_events::CrsChangedEvent>,
     query: Query<(&rgis_primitives::LayerId, Entity), With<MeshMaterial2d<ColorMaterial>>>,
     mut commands: Commands,
 ) {
@@ -198,15 +190,8 @@ fn handle_crs_changed_events(
     }
 }
 
-type CameraGlobalTransformQuery<'world, 'state, 'a> = Query<
-    'world,
-    'state,
-    &'a bevy::transform::components::GlobalTransform,
-    (
-        bevy::ecs::query::With<bevy::render::camera::Camera>,
-        bevy::ecs::query::Changed<bevy::transform::components::GlobalTransform>,
-    ),
->;
+type CameraGlobalTransformQuery<'world, 'state, 'a> =
+    Query<'world, 'state, &'a GlobalTransform, (With<Camera>, Changed<GlobalTransform>)>;
 
 fn handle_camera_scale_changed_event(
     query: CameraGlobalTransformQuery,

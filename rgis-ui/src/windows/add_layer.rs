@@ -1,15 +1,14 @@
-use bevy::prelude::*;
+use bevy::{ecs::system::SystemParam, prelude::*};
 use bevy_egui::egui;
 use geo_file_loader::FileFormat;
 use std::mem;
 
-#[derive(bevy::ecs::system::SystemParam)]
+#[derive(SystemParam)]
 pub struct Events<'w, 's> {
-    pub load_file_event_writer: bevy::ecs::event::EventWriter<'w, rgis_events::LoadFileEvent>,
-    pub show_add_layer_window_event_reader:
-        bevy::ecs::event::EventReader<'w, 's, rgis_events::ShowAddLayerWindow>,
+    pub load_file_event_writer: EventWriter<'w, rgis_events::LoadFileEvent>,
+    pub show_add_layer_window_event_reader: EventReader<'w, 's, rgis_events::ShowAddLayerWindow>,
     pub hide_add_layer_window_events:
-        bevy::ecs::system::ResMut<'w, bevy::ecs::event::Events<rgis_events::HideAddLayerWindow>>,
+        ResMut<'w, bevy::prelude::Events<rgis_events::HideAddLayerWindow>>,
 }
 
 pub struct OpenFileJob;
@@ -251,7 +250,7 @@ impl AddLayer<'_> {
                                     });
                                 }
                                 None => {
-                                    bevy::log::error!(
+                                    error!(
                                         "Expected file to exist when loading, but no file exists"
                                     );
                                 }

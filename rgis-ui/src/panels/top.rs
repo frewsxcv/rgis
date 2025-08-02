@@ -3,7 +3,7 @@ use bevy_egui::egui;
 use bevy_egui_window as window;
 
 pub struct Top<'a, 'w, 's> {
-    pub app_exit_events: &'a mut bevy::ecs::event::Events<bevy::app::AppExit>,
+    pub app_exit_events: &'a mut Events<AppExit>,
     pub egui_ctx: &'a mut bevy_egui::egui::Context,
     pub window: &'a mut Window,
     pub app_settings: &'a mut rgis_settings::RgisSettings,

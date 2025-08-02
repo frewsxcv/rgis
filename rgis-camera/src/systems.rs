@@ -19,11 +19,8 @@ fn init_camera(mut commands: Commands) {
 }
 
 fn handle_change_crs_event(
-    mut change_crs_event_reader: bevy::ecs::event::EventReader<rgis_events::CrsChangedEvent>,
-    mut query: Query<
-        &mut bevy::transform::components::Transform,
-        bevy::ecs::query::With<bevy::render::camera::Camera>,
-    >,
+    mut change_crs_event_reader: EventReader<rgis_events::CrsChangedEvent>,
+    mut query: Query<&mut Transform, With<Camera>>,
     windows: Query<&Window, With<PrimaryWindow>>,
     ui_margins: rgis_units::UiMargins,
     geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
@@ -60,11 +57,8 @@ fn handle_change_crs_event(
 }
 
 fn pan_camera_system(
-    mut pan_camera_event_reader: bevy::ecs::event::EventReader<rgis_events::PanCameraEvent>,
-    mut query: Query<
-        &mut bevy::transform::components::Transform,
-        bevy::ecs::query::With<bevy::render::camera::Camera>,
-    >,
+    mut pan_camera_event_reader: EventReader<rgis_events::PanCameraEvent>,
+    mut query: Query<&mut Transform, With<Camera>>,
 ) {
     if pan_camera_event_reader.is_empty() {
         return;
@@ -83,12 +77,9 @@ fn pan_camera_system(
 }
 
 fn zoom_camera_system(
-    mut zoom_camera_event_reader: bevy::ecs::event::EventReader<rgis_events::ZoomCameraEvent>,
-    mut query: Query<
-        &mut bevy::transform::components::Transform,
-        bevy::ecs::query::With<bevy::render::camera::Camera>,
-    >,
-    mut recalculate_mouse_position_event_writer: bevy::ecs::event::EventWriter<
+    mut zoom_camera_event_reader: EventReader<rgis_events::ZoomCameraEvent>,
+    mut query: Query<&mut Transform, With<Camera>>,
+    mut recalculate_mouse_position_event_writer: EventWriter<
         rgis_events::RecalculateMousePositionEvent,
     >,
 ) {
@@ -139,9 +130,9 @@ fn zoom_camera_system(
 }
 
 fn handle_meshes_spawned_events(
-    mut meshes_spawned_event_reader: bevy::ecs::event::EventReader<rgis_events::MeshesSpawnedEvent>,
-    mut center_camera_event_writer: bevy::ecs::event::EventWriter<rgis_events::CenterCameraEvent>,
-    mut has_moved: bevy::ecs::system::Local<bool>,
+    mut meshes_spawned_event_reader: EventReader<rgis_events::MeshesSpawnedEvent>,
+    mut center_camera_event_writer: EventWriter<rgis_events::CenterCameraEvent>,
+    mut has_moved: Local<bool>,
 ) {
     for event in meshes_spawned_event_reader.read() {
         if !(*has_moved) {
@@ -154,10 +145,7 @@ fn handle_meshes_spawned_events(
 fn center_camera(
     layers: Res<rgis_layers::Layers>,
     mut event_reader: EventReader<rgis_events::CenterCameraEvent>,
-    mut query: Query<
-        &mut bevy::transform::components::Transform,
-        bevy::ecs::query::With<bevy::render::camera::Camera>,
-    >,
+    mut query: Query<&mut Transform, With<Camera>>,
     windows: Query<&Window, With<PrimaryWindow>>,
     ui_margins: rgis_units::UiMargins,
 ) {

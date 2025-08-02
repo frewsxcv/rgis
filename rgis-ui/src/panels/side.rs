@@ -1,25 +1,23 @@
+use bevy::{ecs::system::SystemParam, prelude::*};
 use bevy_egui::egui::{self, Align, Layout, Widget};
 use std::marker;
 
 // const MAX_SIDE_PANEL_WIDTH: f32 = 200.0f32;
 
-#[derive(bevy::ecs::system::SystemParam)]
+#[derive(SystemParam)]
 pub struct Events<'w> {
     pub toggle_layer_visibility_event_writer:
-        bevy::ecs::event::EventWriter<'w, rgis_events::ToggleLayerVisibilityEvent>,
-    pub center_layer_event_writer:
-        bevy::ecs::event::EventWriter<'w, rgis_events::CenterCameraEvent>,
-    pub delete_layer_event_writer: bevy::ecs::event::EventWriter<'w, rgis_events::DeleteLayerEvent>,
-    pub move_layer_event_writer: bevy::ecs::event::EventWriter<'w, rgis_events::MoveLayerEvent>,
-    pub create_layer_event_writer: bevy::ecs::event::EventWriter<'w, rgis_events::CreateLayerEvent>,
-    pub show_add_layer_window_event_writer:
-        bevy::ecs::event::EventWriter<'w, rgis_events::ShowAddLayerWindow>,
-    pub render_message_event_writer:
-        bevy::ecs::event::EventWriter<'w, rgis_events::RenderMessageEvent>,
+        EventWriter<'w, rgis_events::ToggleLayerVisibilityEvent>,
+    pub center_layer_event_writer: EventWriter<'w, rgis_events::CenterCameraEvent>,
+    pub delete_layer_event_writer: EventWriter<'w, rgis_events::DeleteLayerEvent>,
+    pub move_layer_event_writer: EventWriter<'w, rgis_events::MoveLayerEvent>,
+    pub create_layer_event_writer: EventWriter<'w, rgis_events::CreateLayerEvent>,
+    pub show_add_layer_window_event_writer: EventWriter<'w, rgis_events::ShowAddLayerWindow>,
+    pub render_message_event_writer: EventWriter<'w, rgis_events::RenderMessageEvent>,
     pub open_operation_window_event_writer:
-        bevy::ecs::event::EventWriter<'w, crate::events::OpenOperationWindowEvent>,
+        EventWriter<'w, crate::events::OpenOperationWindowEvent>,
     pub show_manage_layer_window_event_writer:
-        bevy::ecs::event::EventWriter<'w, rgis_events::ShowManageLayerWindowEvent>,
+        EventWriter<'w, rgis_events::ShowManageLayerWindowEvent>,
 }
 
 pub struct Side<'a, 'w> {
@@ -123,7 +121,7 @@ impl<Op: rgis_geo_ops::OperationEntry> egui::Widget for OperationButton<'_, '_, 
                                 .write(rgis_events::RenderMessageEvent(text));
                         }
                         Err(e) => {
-                            bevy::log::error!("Encountered an error during the operation: {}", e);
+                            error!("Encountered an error during the operation: {}", e);
                         }
                     }
                 }

@@ -1,6 +1,6 @@
 use std::marker;
 
-use bevy::prelude::*;
+use bevy::{ecs::system::SystemParam, math::DVec2, prelude::*};
 use geo_projected::{ProjectedCoord, ProjectedScalar};
 
 // From top-left
@@ -13,17 +13,12 @@ pub struct ScreenCoord {
 }
 
 impl ScreenCoord {
-    pub fn to_projected_geo_coord(
-        self,
-        transform: &bevy::transform::components::Transform,
-        window: &bevy::prelude::Window,
-    ) -> ProjectedCoord {
-        let size = bevy::math::DVec2::new(f64::from(window.width()), f64::from(window.height()));
+    pub fn to_projected_geo_coord(self, transform: &Transform, window: &Window) -> ProjectedCoord {
+        let size = DVec2::new(f64::from(window.width()), f64::from(window.height()));
 
         // the default orthographic projection is in pixels from the center;
         // just undo the translation
-        let d_vec =
-            bevy::math::DVec2::new(self.x, f64::from(window.height()) - self.y) - size / 2.0;
+        let d_vec = DVec2::new(self.x, f64::from(window.height()) - self.y) - size / 2.0;
 
         // apply the camera transform
         let pos_wld = transform.compute_matrix().as_dmat4() * d_vec.extend(0.0).extend(1.0);
@@ -36,7 +31,7 @@ impl ScreenCoord {
 }
 
 pub struct MapArea<'a> {
-    pub window: &'a bevy::window::Window,
+    pub window: &'a Window,
     /// Size of UI components (in pixels)
     pub left_offset_px: f32,
     pub top_offset_px: f32,
@@ -54,8 +49,8 @@ impl MapArea<'_> {
 
     fn top_left_projected_geo_coord(
         &self,
-        transform: &bevy::transform::components::Transform,
-        window: &bevy::prelude::Window,
+        transform: &Transform,
+        window: &Window,
     ) -> ProjectedCoord {
         self.top_left_screen_coord()
             .to_projected_geo_coord(transform, window)
@@ -70,8 +65,8 @@ impl MapArea<'_> {
 
     fn bottom_right_projected_geo_coord(
         &self,
-        transform: &bevy::transform::components::Transform,
-        window: &bevy::prelude::Window,
+        transform: &Transform,
+        window: &Window,
     ) -> ProjectedCoord {
         self.bottom_right_screen_coord()
             .to_projected_geo_coord(transform, window)
@@ -79,8 +74,8 @@ impl MapArea<'_> {
 
     pub fn projected_geo_rect(
         &self,
-        transform: &bevy::transform::components::Transform,
-        window: &bevy::prelude::Window,
+        transform: &Transform,
+        window: &Window,
     ) -> geo::Rect<ProjectedScalar> {
         geo::Rect::new(
             self.top_left_projected_geo_coord(transform, window),
@@ -128,7 +123,7 @@ pub struct TopPanelHeight(pub f32);
 #[derive(Copy, Clone, Resource)]
 pub struct BottomPanelHeight(pub f32);
 
-#[derive(bevy::ecs::system::SystemParam, Resource)]
+#[derive(SystemParam, Resource)]
 pub struct UiMargins<'w, 's> {
     pub left: Res<'w, SidePanelWidth>,
     pub top: Res<'w, TopPanelHeight>,

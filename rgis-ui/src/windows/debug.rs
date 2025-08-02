@@ -1,4 +1,8 @@
-use bevy::{diagnostic::FrameTimeDiagnosticsPlugin, ecs::system::SystemParam, prelude::*};
+use bevy::{
+    diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin},
+    ecs::system::SystemParam,
+    prelude::*,
+};
 use bevy_egui::egui;
 use egui_plot::{Line, Plot, PlotPoints};
 use std::collections;
@@ -28,7 +32,7 @@ impl Default for DebugStatsWindowState {
 
 #[derive(SystemParam)]
 pub struct Debug<'w, 's> {
-    diagnostics: Res<'w, bevy::diagnostic::DiagnosticsStore>,
+    diagnostics: Res<'w, DiagnosticsStore>,
     state: Local<'s, DebugStatsWindowState>,
     time: Res<'w, Time>,
     last: Local<'s, LastDebugStats>,

@@ -1,11 +1,11 @@
+use bevy::prelude::*;
 use bevy_egui::egui;
 
 pub struct ChangeCrs<'a, 'w> {
     pub is_visible: &'a mut bool,
     pub egui_ctx: &'a mut bevy_egui::egui::Context,
     pub text_field_value: &'a mut String,
-    pub change_crs_event_writer:
-        &'a mut bevy::ecs::event::EventWriter<'w, rgis_events::ChangeCrsEvent>,
+    pub change_crs_event_writer: &'a mut EventWriter<'w, rgis_events::ChangeCrsEvent>,
     pub target_crs: rgis_crs::TargetCrs,
     pub crs_input_outcome: &'a mut Option<crate::widgets::crs_input::Outcome>,
     pub geodesy_ctx: &'a rgis_geodesy::GeodesyContext,

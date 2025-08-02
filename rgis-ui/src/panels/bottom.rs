@@ -1,3 +1,4 @@
+use bevy::prelude::*;
 use bevy_egui::egui;
 
 pub struct Bottom<'a, 'w> {
@@ -5,7 +6,7 @@ pub struct Bottom<'a, 'w> {
     pub mouse_pos: &'a rgis_mouse::MousePos,
     pub target_crs: &'a rgis_crs::TargetCrs,
     pub open_change_crs_window_event_writer:
-        &'a mut bevy::ecs::event::EventWriter<'w, rgis_events::OpenChangeCrsWindow>,
+        &'a mut EventWriter<'w, rgis_events::OpenChangeCrsWindow>,
     pub bottom_panel_height: &'a mut rgis_units::BottomPanelHeight,
 }
 

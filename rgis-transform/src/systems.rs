@@ -1,11 +1,11 @@
-use bevy::prelude::{App, Update};
+use bevy::prelude::*;
 
 fn handle_layer_created_events(
-    mut layer_created_event_reader: bevy::ecs::event::EventReader<rgis_events::LayerCreatedEvent>,
-    layers: bevy::ecs::system::Res<rgis_layers::Layers>,
-    target_crs: bevy::ecs::system::Res<rgis_crs::TargetCrs>,
+    mut layer_created_event_reader: EventReader<rgis_events::LayerCreatedEvent>,
+    layers: Res<rgis_layers::Layers>,
+    target_crs: Res<rgis_crs::TargetCrs>,
     mut job_spawner: bevy_jobs::JobSpawner,
-    geodesy_ctx: bevy::ecs::system::Res<rgis_geodesy::GeodesyContext>,
+    geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
 ) {
     for event in layer_created_event_reader.read() {
         let Some(layer) = layers.get(event.0) else {
@@ -24,23 +24,21 @@ fn handle_layer_created_events(
 
 fn handle_reproject_geometry_job_completion_events(
     mut finished_jobs: bevy_jobs::FinishedJobs,
-    mut layers: bevy::ecs::system::ResMut<rgis_layers::Layers>,
-    mut layer_reprojected_event_writer: bevy::ecs::event::EventWriter<
-        rgis_events::LayerReprojectedEvent,
-    >,
-    target_crs: bevy::ecs::system::Res<rgis_crs::TargetCrs>,
+    mut layers: ResMut<rgis_layers::Layers>,
+    mut layer_reprojected_event_writer: EventWriter<rgis_events::LayerReprojectedEvent>,
+    target_crs: Res<rgis_crs::TargetCrs>,
 ) {
     while let Some(outcome) = finished_jobs.take_next::<crate::jobs::ReprojectGeometryJob>() {
         let outcome = match outcome {
             Ok(o) => o,
             Err(e) => {
-                bevy::log::error!("Encountered an error reprojecting geometry: {:?}", e);
+                error!("Encountered an error reprojecting geometry: {:?}", e);
                 continue;
             }
         };
 
         if outcome.target_crs != target_crs.0 {
-            bevy::log::error!("Encountered a reprojected geometry with a different CRS than the current target CRS");
+            error!("Encountered a reprojected geometry with a different CRS than the current target CRS");
             continue;
         }
 
@@ -55,11 +53,11 @@ fn handle_reproject_geometry_job_completion_events(
 }
 
 fn handle_crs_changed_events(
-    mut crs_changed_event_reader: bevy::ecs::event::EventReader<rgis_events::CrsChangedEvent>,
-    mut layers: bevy::ecs::system::ResMut<rgis_layers::Layers>,
-    target_crs: bevy::ecs::system::Res<rgis_crs::TargetCrs>,
+    mut crs_changed_event_reader: EventReader<rgis_events::CrsChangedEvent>,
+    mut layers: ResMut<rgis_layers::Layers>,
+    target_crs: Res<rgis_crs::TargetCrs>,
     mut job_spawner: bevy_jobs::JobSpawner,
-    geodesy_ctx: bevy::ecs::system::Res<rgis_geodesy::GeodesyContext>,
+    geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
 ) {
     if crs_changed_event_reader.read().next().is_some() {
         layers.clear_projected();
