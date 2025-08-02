@@ -58,7 +58,7 @@ impl Layers {
             })
     }
 
-    fn feature_collections_iter(&self) -> impl Iterator<Item = FeatureCollectionsIterItem> {
+    fn feature_collections_iter(&'_ self) -> impl Iterator<Item = FeatureCollectionsIterItem<'_>> {
         self.iter_top_to_bottom().flat_map(|layer| {
             layer
                 .projected_feature_collection
@@ -71,7 +71,7 @@ impl Layers {
         })
     }
 
-    fn features_iter(&self) -> impl Iterator<Item = FeaturesIterItem> {
+    fn features_iter(&'_ self) -> impl Iterator<Item = FeaturesIterItem<'_>> {
         self.feature_collections_iter().flat_map(
             |FeatureCollectionsIterItem {
                  layer,
@@ -114,7 +114,10 @@ impl Layers {
     }
 
     #[inline]
-    pub fn get_with_index(&self, layer_id: rgis_primitives::LayerId) -> Option<LayerWithIndex> {
+    pub fn get_with_index(
+        &'_ self,
+        layer_id: rgis_primitives::LayerId,
+    ) -> Option<LayerWithIndex<'_>> {
         let index = self.get_index(layer_id)?;
         self.data
             .get(index)
