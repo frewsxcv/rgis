@@ -5,18 +5,20 @@ use std::marker;
 
 #[derive(bevy::ecs::system::SystemParam)]
 pub struct Events<'w> {
-    toggle_layer_visibility_event_writer:
+    pub toggle_layer_visibility_event_writer:
         bevy::ecs::event::EventWriter<'w, rgis_events::ToggleLayerVisibilityEvent>,
-    center_layer_event_writer: bevy::ecs::event::EventWriter<'w, rgis_events::CenterCameraEvent>,
-    delete_layer_event_writer: bevy::ecs::event::EventWriter<'w, rgis_events::DeleteLayerEvent>,
-    move_layer_event_writer: bevy::ecs::event::EventWriter<'w, rgis_events::MoveLayerEvent>,
-    create_layer_event_writer: bevy::ecs::event::EventWriter<'w, rgis_events::CreateLayerEvent>,
-    show_add_layer_window_event_writer:
+    pub center_layer_event_writer:
+        bevy::ecs::event::EventWriter<'w, rgis_events::CenterCameraEvent>,
+    pub delete_layer_event_writer: bevy::ecs::event::EventWriter<'w, rgis_events::DeleteLayerEvent>,
+    pub move_layer_event_writer: bevy::ecs::event::EventWriter<'w, rgis_events::MoveLayerEvent>,
+    pub create_layer_event_writer: bevy::ecs::event::EventWriter<'w, rgis_events::CreateLayerEvent>,
+    pub show_add_layer_window_event_writer:
         bevy::ecs::event::EventWriter<'w, rgis_events::ShowAddLayerWindow>,
-    render_message_event_writer: bevy::ecs::event::EventWriter<'w, rgis_events::RenderMessageEvent>,
-    open_operation_window_event_writer:
+    pub render_message_event_writer:
+        bevy::ecs::event::EventWriter<'w, rgis_events::RenderMessageEvent>,
+    pub open_operation_window_event_writer:
         bevy::ecs::event::EventWriter<'w, crate::events::OpenOperationWindowEvent>,
-    show_manage_layer_window_event_writer:
+    pub show_manage_layer_window_event_writer:
         bevy::ecs::event::EventWriter<'w, rgis_events::ShowManageLayerWindowEvent>,
 }
 
@@ -42,7 +44,7 @@ impl SidePanel<'_, '_> {
         ui.vertical_centered_justified(|ui| {
             egui::ScrollArea::vertical().show(ui, |ui| {
                 self.render_layers_heading(ui);
-                ui.add(AddLayerButton {
+                ui.add(crate::widgets::add_layer_button::AddLayerButton {
                     events: self.events,
                 });
                 self.render_layers(ui);
@@ -67,14 +69,14 @@ impl SidePanel<'_, '_> {
     }
 }
 
-struct OperationButton<'a, 'w, Op: rgis_geo_ops::OperationEntry> {
+pub(crate) struct OperationButton<'a, 'w, Op: rgis_geo_ops::OperationEntry> {
     events: &'a mut Events<'w>,
     layer: &'a rgis_layers::Layer,
     operation: marker::PhantomData<Op>,
 }
 
 impl<'a, 'w, Op: rgis_geo_ops::OperationEntry> OperationButton<'a, 'w, Op> {
-    fn new(events: &'a mut Events<'w>, layer: &'a rgis_layers::Layer) -> Self {
+    pub(crate) fn new(events: &'a mut Events<'w>, layer: &'a rgis_layers::Layer) -> Self {
         OperationButton {
             events,
             layer,
@@ -131,24 +133,6 @@ impl<Op: rgis_geo_ops::OperationEntry> egui::Widget for OperationButton<'_, '_, 
     }
 }
 
-struct AddLayerButton<'a, 'w> {
-    events: &'a mut Events<'w>,
-}
-
-impl egui::Widget for AddLayerButton<'_, '_> {
-    fn ui(self, ui: &mut egui::Ui) -> egui::Response {
-        let button = ui.button("➕ Add Layer");
-
-        if button.clicked() {
-            self.events
-                .show_add_layer_window_event_writer
-                .write_default();
-        }
-
-        button
-    }
-}
-
 struct Layer<'a, 'w> {
     layer: &'a rgis_layers::Layer,
     is_move_up_enabled: bool,
@@ -189,14 +173,16 @@ impl Widget for Layer<'_, '_> {
                             .write(rgis_events::ShowManageLayerWindowEvent(layer.id));
                     }
 
-                    ui.add(MoveUpMoveDownWidget {
-                        layer,
-                        is_move_up_enabled,
-                        is_move_down_enabled,
-                        events: self.events,
-                    });
+                    ui.add(
+                        crate::widgets::move_up_move_down_widget::MoveUpMoveDownWidget {
+                            layer,
+                            is_move_up_enabled,
+                            is_move_down_enabled,
+                            events: self.events,
+                        },
+                    );
 
-                    ui.add(ToggleLayerWidget {
+                    ui.add(crate::widgets::toggle_layer_widget::ToggleLayerWidget {
                         layer,
                         events: self.events,
                     });
@@ -215,7 +201,7 @@ impl Widget for Layer<'_, '_> {
                         .id_salt(format!("{:?}-operations", layer.id)) // Instead of using the layer name as the ID (which is not unique), use the layer ID
                         .show(ui, |ui| {
                             ui.with_layout(Layout::top_down_justified(Align::LEFT), |ui| {
-                                ui.add(OperationsWidget {
+                                ui.add(crate::widgets::operations_widget::OperationsWidget {
                                     layer,
                                     events: self.events,
                                 });
@@ -224,122 +210,5 @@ impl Widget for Layer<'_, '_> {
                 });
             })
             .header_response
-    }
-}
-
-struct MoveUpMoveDownWidget<'a, 'w> {
-    layer: &'a rgis_layers::Layer,
-    is_move_up_enabled: bool,
-    is_move_down_enabled: bool,
-    events: &'a mut Events<'w>,
-}
-
-impl egui::Widget for MoveUpMoveDownWidget<'_, '_> {
-    fn ui(self, ui: &mut egui::Ui) -> egui::Response {
-        ui.horizontal(|ui| {
-            if ui
-                .add_enabled(self.is_move_up_enabled, egui::Button::new("⬆ Move up"))
-                .clicked()
-            {
-                self.events
-                    .move_layer_event_writer
-                    .write(rgis_events::MoveLayerEvent(
-                        self.layer.id,
-                        rgis_events::MoveDirection::Up,
-                    ));
-            }
-
-            if ui
-                .add_enabled(self.is_move_down_enabled, egui::Button::new("⬇ Move down"))
-                .clicked()
-            {
-                self.events
-                    .move_layer_event_writer
-                    .write(rgis_events::MoveLayerEvent(
-                        self.layer.id,
-                        rgis_events::MoveDirection::Down,
-                    ));
-            }
-        })
-        .response
-    }
-}
-
-struct ToggleLayerWidget<'a, 'w> {
-    layer: &'a rgis_layers::Layer,
-    events: &'a mut Events<'w>,
-}
-
-impl egui::Widget for ToggleLayerWidget<'_, '_> {
-    fn ui(self, ui: &mut egui::Ui) -> egui::Response {
-        let button = if self.layer.visible {
-            ui.button("👁 Hide")
-        } else {
-            ui.button("👁 Show")
-        };
-
-        if button.clicked() {
-            self.events
-                .toggle_layer_visibility_event_writer
-                .write(rgis_events::ToggleLayerVisibilityEvent(self.layer.id));
-        }
-
-        button
-    }
-}
-
-struct OperationsWidget<'a, 'w> {
-    layer: &'a rgis_layers::Layer,
-    events: &'a mut Events<'w>,
-}
-
-impl egui::Widget for OperationsWidget<'_, '_> {
-    fn ui(self, ui: &mut egui::Ui) -> egui::Response {
-        ui.with_layout(Layout::top_down_justified(Align::LEFT), |ui| {
-            if ui.button("Bounding rect").clicked() {
-                if let Ok(bounding_rect) = self.layer.unprojected_feature_collection.bounding_rect()
-                {
-                    let feature_collection =
-                        geo_features::FeatureCollection::from_geometry(bounding_rect.into());
-                    self.events
-                        .create_layer_event_writer
-                        .write(rgis_events::CreateLayerEvent {
-                            feature_collection,
-                            name: "Bounding rect".into(), // FIXME
-                            source_crs: self.layer.crs,
-                        });
-                }
-            }
-
-            ui.add(OperationButton::<rgis_geo_ops::ConvexHull>::new(
-                self.events,
-                self.layer,
-            ));
-            ui.add(OperationButton::<rgis_geo_ops::Outliers>::new(
-                self.events,
-                self.layer,
-            ));
-            ui.add(OperationButton::<rgis_geo_ops::Rotate>::new(
-                self.events,
-                self.layer,
-            ));
-            ui.add(OperationButton::<rgis_geo_ops::Simplify>::new(
-                self.events,
-                self.layer,
-            ));
-            ui.add(OperationButton::<rgis_geo_ops::Smoothing>::new(
-                self.events,
-                self.layer,
-            ));
-            ui.add(OperationButton::<rgis_geo_ops::Triangulate>::new(
-                self.events,
-                self.layer,
-            ));
-            ui.add(OperationButton::<rgis_geo_ops::UnsignedArea>::new(
-                self.events,
-                self.layer,
-            ));
-        })
-        .response
     }
 }

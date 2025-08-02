@@ -1,4 +1,3 @@
-use bevy::color::ColorToComponents;
 use bevy_egui::egui;
 
 pub(crate) struct ManageLayerWindow<'a> {
@@ -37,7 +36,7 @@ impl ManageLayerWindow<'_> {
                         if layer.geom_type.has_fill() {
                             if let Some(fill) = layer.color.fill {
                                 ui.label("Fill color");
-                                ui.add(FillColorWidget {
+                                ui.add(crate::widgets::fill_color_widget::FillColorWidget {
                                     layer_id,
                                     color: fill,
                                     color_events: self.color_events,
@@ -48,7 +47,7 @@ impl ManageLayerWindow<'_> {
                             }
                         }
                         ui.label("Stroke color");
-                        ui.add(StrokeColorWidget {
+                        ui.add(crate::widgets::stroke_color_widget::StrokeColorWidget {
                             layer_id,
                             color: layer.color.stroke,
                             color_events: self.color_events,
@@ -56,57 +55,5 @@ impl ManageLayerWindow<'_> {
                         ui.end_row();
                     });
             });
-    }
-}
-
-struct StrokeColorWidget<'a> {
-    layer_id: rgis_primitives::LayerId,
-    color: bevy::prelude::Color,
-    pub color_events: &'a mut bevy::ecs::event::Events<rgis_events::UpdateLayerColorEvent>,
-}
-
-impl egui::Widget for StrokeColorWidget<'_> {
-    fn ui(self, ui: &mut egui::Ui) -> egui::Response {
-        let mut old_color = self.color.to_linear().to_f32_array();
-        let response = ui.color_edit_button_rgba_unmultiplied(&mut old_color);
-        if response.changed() {
-            self.color_events
-                .send(rgis_events::UpdateLayerColorEvent::Stroke(
-                    self.layer_id,
-                    bevy::prelude::Color::linear_rgba(
-                        old_color[0],
-                        old_color[1],
-                        old_color[2],
-                        old_color[3],
-                    ),
-                ));
-        }
-        response
-    }
-}
-
-struct FillColorWidget<'a> {
-    layer_id: rgis_primitives::LayerId,
-    color: bevy::prelude::Color,
-    pub color_events: &'a mut bevy::ecs::event::Events<rgis_events::UpdateLayerColorEvent>,
-}
-
-impl egui::Widget for FillColorWidget<'_> {
-    fn ui(self, ui: &mut egui::Ui) -> egui::Response {
-        let mut old_color = self.color.to_linear().to_f32_array();
-        let response = ui.color_edit_button_rgba_unmultiplied(&mut old_color);
-        if response.changed() {
-            self.color_events
-                .send(rgis_events::UpdateLayerColorEvent::Fill(
-                    self.layer_id,
-                    bevy::prelude::Color::linear_rgba(
-                        old_color[0],
-                        old_color[1],
-                        old_color[2],
-                        old_color[3],
-                    ),
-                ));
-        }
-        response
     }
 }

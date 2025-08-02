@@ -150,7 +150,7 @@ impl AddLayerWindow<'_> {
                     }
 
                     ui.label("Source CRS:");
-                    let crs_input_widget = crate::widgets::CrsInput::new(
+                    let crs_input_widget = crate::widgets::crs_input::CrsInput::new(
                         self.geodesy_ctx,
                         &mut self.state.crs_input_outcome,
                         &mut self.state.crs_input,

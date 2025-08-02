@@ -20,7 +20,7 @@ impl ChangeCrsWindow<'_, '_> {
         egui::Window::new("Change CRS")
             .open(self.is_visible)
             .show(self.egui_ctx, |ui| {
-                ui.add(crate::widgets::CrsInput::new(
+                ui.add(crate::widgets::crs_input::CrsInput::new(
                     self.geodesy_ctx,
                     self.crs_input_outcome,
                     self.text_field_value,

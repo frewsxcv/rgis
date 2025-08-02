@@ -20,12 +20,12 @@ impl TopPanel<'_, '_, '_> {
 
                 ui.label("rgis");
                 ui.menu_button("File", |ui| {
-                    ui.add(ExitButton {
+                    ui.add(crate::widgets::exit_button::ExitButton {
                         app_exit_events: self.app_exit_events,
                     });
                 });
                 ui.menu_button("View", |ui| {
-                    ui.add(FullScreenButton {
+                    ui.add(crate::widgets::full_screen_button::FullScreenButton {
                         window: self.window,
                     });
                 });
@@ -74,43 +74,5 @@ impl TopPanel<'_, '_, '_> {
         });
 
         self.top_panel_height.0 = inner_response.response.rect.height();
-    }
-}
-
-struct ExitButton<'a> {
-    app_exit_events: &'a mut bevy::ecs::event::Events<bevy::app::AppExit>,
-}
-
-impl egui::Widget for ExitButton<'_> {
-    fn ui(self, ui: &mut egui::Ui) -> egui::Response {
-        ui.add_enabled_ui(cfg!(not(target_arch = "wasm32")), |ui| {
-            if ui.button("Exit").clicked() {
-                self.app_exit_events.send(bevy::app::AppExit::Success);
-            }
-        })
-        .response
-    }
-}
-
-struct FullScreenButton<'a> {
-    window: &'a mut bevy::window::Window,
-}
-
-impl egui::Widget for FullScreenButton<'_> {
-    fn ui(self, ui: &mut egui::Ui) -> egui::Response {
-        ui.add_enabled_ui(cfg!(not(target_arch = "wasm32")), |ui| {
-            if ui.button("Full screen").clicked() {
-                self.window.mode =
-                    if matches!(self.window.mode, bevy::window::WindowMode::Fullscreen(_, _)) {
-                        bevy::window::WindowMode::Windowed
-                    } else {
-                        bevy::window::WindowMode::Fullscreen(
-                            MonitorSelection::Current,
-                            VideoModeSelection::Current,
-                        )
-                    };
-            }
-        })
-        .response
     }
 }

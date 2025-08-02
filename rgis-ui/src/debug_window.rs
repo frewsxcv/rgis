@@ -4,10 +4,10 @@ use egui_plot::{Line, Plot, PlotPoints};
 use std::collections;
 
 #[derive(Default)]
-struct LastDebugStats {
-    fps: f64,
-    frame_time: f64,
-    frame_count: f64,
+pub struct LastDebugStats {
+    pub fps: f64,
+    pub frame_time: f64,
+    pub frame_count: f64,
 }
 
 pub struct DebugStatsWindowState {
@@ -84,7 +84,7 @@ impl DebugWindow<'_, '_> {
 
     fn render_debug_table(&self, ui: &mut egui::Ui) {
         ui.vertical(|ui| {
-            ui.add(DebugTable { last: &self.last });
+            ui.add(crate::widgets::debug_table::DebugTable { last: &self.last });
         });
     }
 
@@ -128,34 +128,5 @@ impl bevy_egui_window::Window for DebugWindow<'_, '_> {
 
     fn default_width(&self) -> f32 {
         200.
-    }
-}
-
-struct DebugTable<'a> {
-    last: &'a LastDebugStats,
-}
-
-impl egui::Widget for DebugTable<'_> {
-    fn ui(self, ui: &mut egui::Ui) -> egui::Response {
-        egui::Grid::new("some_unique_id")
-            .striped(true)
-            .show(ui, |ui| {
-                ui.label("Metric");
-                ui.label("Value");
-                ui.end_row();
-
-                ui.label("FPS");
-                ui.label(format!("{:.2} frames/sec.", self.last.fps));
-                ui.end_row();
-
-                ui.label("Frame time");
-                ui.label(format!("{:.3} sec.", self.last.frame_time));
-                ui.end_row();
-
-                ui.label("Frame count");
-                ui.label(format!("{} frames", self.last.frame_count));
-                ui.end_row();
-            })
-            .response
     }
 }
