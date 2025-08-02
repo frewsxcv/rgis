@@ -33,8 +33,8 @@ pub enum Error {
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            Error::Geodesy(err) => write!(f, "Geodesy error: {}", err),
-            Error::UnknownEpsgCode(code) => write!(f, "Unknown EPSG code: {}", code),
+            Error::Geodesy(err) => write!(f, "Geodesy error: {err}"),
+            Error::UnknownEpsgCode(code) => write!(f, "Unknown EPSG code: {code}"),
         }
     }
 }

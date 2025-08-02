@@ -28,8 +28,8 @@ pub enum Error {
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Error::Geozero(err) => write!(f, "{}", err),
-            Error::Shapefile(err) => write!(f, "{}", err),
+            Error::Geozero(err) => write!(f, "{err}"),
+            Error::Shapefile(err) => write!(f, "{err}"),
             Error::NoGeometry => write!(f, "No geometry found in file"),
         }
     }
