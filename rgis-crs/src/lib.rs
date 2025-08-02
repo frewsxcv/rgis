@@ -15,15 +15,23 @@ impl bevy::app::Plugin for Plugin {
     }
 }
 
-fn insert_target_crs(mut commands: Commands, geodesy_ctx: Res<rgis_geodesy::GeodesyContext>) {
-    let mut geodesy_ctx = geodesy_ctx.0.write().unwrap();
+fn insert_target_crs(
+    mut commands: Commands,
+    geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
+) -> Result {
+    let mut geodesy_ctx = match geodesy_ctx.0.write() {
+        Ok(ctx) => ctx,
+        Err(_) => {
+            return Err("Failed to acquire geodesy context write lock".into());
+        }
+    };
     let op_handle =
-        rgis_geodesy::epsg_code_to_geodesy_op_handle(&mut *geodesy_ctx, DEFAULT_TARGET_CRS)
-            .unwrap();
+        rgis_geodesy::epsg_code_to_geodesy_op_handle(&mut *geodesy_ctx, DEFAULT_TARGET_CRS)?;
     commands.insert_resource(TargetCrs(Crs {
         epsg_code: DEFAULT_TARGET_CRS,
         op_handle,
     }));
+    Ok(())
 }
 
 fn handle_crs_changed_events(
