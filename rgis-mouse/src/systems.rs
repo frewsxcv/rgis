@@ -14,6 +14,7 @@ fn cursor_moved_system(
         bevy::ecs::query::With<bevy::render::camera::Camera>,
     >,
     mut mouse_position: ResMut<crate::MousePos>,
+    mut last_cursor_screen_position: ResMut<crate::LastCursorScreenPosition>,
     mut bevy_egui_ctx: bevy_egui::EguiContexts,
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
@@ -24,11 +25,12 @@ fn cursor_moved_system(
     let window = windows.single_mut()?;
     let transform = query.single()?;
     if let Some(event) = cursor_moved_event_reader.read().last() {
-        mouse_position.0 = rgis_units::ScreenCoord {
+        let screen_coord = rgis_units::ScreenCoord {
             x: f64::from(event.position.x),
             y: f64::from(event.position.y),
-        }
-        .to_projected_geo_coord(transform, &window);
+        };
+        mouse_position.0 = screen_coord.to_projected_geo_coord(transform, &window);
+        last_cursor_screen_position.0 = Some(screen_coord);
     }
     Ok(())
 }
@@ -177,12 +179,45 @@ fn mouse_scroll_system(
     Ok(())
 }
 
+fn run_if_has_recalculate_mouse_position_events(
+    recalculate_mouse_position_event_reader: bevy::ecs::event::EventReader<
+        rgis_events::RecalculateMousePositionEvent,
+    >,
+) -> bool {
+    !recalculate_mouse_position_event_reader.is_empty()
+}
+
+fn recalculate_mouse_position_system(
+    mut recalculate_mouse_position_event_reader: bevy::ecs::event::EventReader<
+        rgis_events::RecalculateMousePositionEvent,
+    >,
+    mut mouse_position: ResMut<crate::MousePos>,
+    last_cursor_screen_position: Res<crate::LastCursorScreenPosition>,
+    windows: Query<&mut Window, With<PrimaryWindow>>,
+    query: Query<
+        &mut bevy::transform::components::Transform,
+        bevy::ecs::query::With<bevy::render::camera::Camera>,
+    >,
+) -> Result {
+    recalculate_mouse_position_event_reader.clear();
+
+    let window = windows.single()?;
+    let transform = query.single()?;
+
+    if let Some(last_cursor_screen_position) = last_cursor_screen_position.0 {
+        mouse_position.0 = last_cursor_screen_position.to_projected_geo_coord(transform, window);
+    }
+
+    Ok(())
+}
+
 pub fn configure(app: &mut App) {
     // https://github.com/vladbat00/bevy_egui/issues/47#issuecomment-2368811068
     app.add_systems(
         PreUpdate,
         (
             cursor_moved_system.run_if(run_if_has_cursor_moved_events),
+            recalculate_mouse_position_system.run_if(run_if_has_recalculate_mouse_position_events),
             mouse_scroll_system.run_if(run_if_has_mouse_scroll_events),
             mouse_click_system
                 .run_if(current_tool_is_query)

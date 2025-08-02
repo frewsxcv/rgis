@@ -6,6 +6,9 @@ mod systems;
 #[derive(Clone, Resource)]
 pub struct MousePos(pub geo::Coord<ProjectedScalar>);
 
+#[derive(Clone, Default, Resource)]
+pub struct LastCursorScreenPosition(pub Option<rgis_units::ScreenCoord>);
+
 pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
@@ -14,6 +17,7 @@ impl bevy::app::Plugin for Plugin {
         app.insert_resource(MousePos(geo::Coord {
             x: num_t::Num::new(0.),
             y: num_t::Num::new(0.),
-        }));
+        }))
+        .init_resource::<LastCursorScreenPosition>();
     }
 }

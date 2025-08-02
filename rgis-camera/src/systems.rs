@@ -88,6 +88,9 @@ fn zoom_camera_system(
         &mut bevy::transform::components::Transform,
         bevy::ecs::query::With<bevy::render::camera::Camera>,
     >,
+    mut recalculate_mouse_position_event_writer: bevy::ecs::event::EventWriter<
+        rgis_events::RecalculateMousePositionEvent,
+    >,
 ) {
     if zoom_camera_event_reader.is_empty() {
         return;
@@ -130,6 +133,7 @@ fn zoom_camera_system(
         if camera_offset.x.is_finite() && camera_offset.y.is_finite() {
             // Update the camera transform with the new offset and scale
             crate::utils::set_camera_transform(&mut transform, camera_offset, camera_scale);
+            recalculate_mouse_position_event_writer.write_default();
         }
     }
 }

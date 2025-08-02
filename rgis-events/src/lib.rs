@@ -148,6 +148,9 @@ impl ZoomCameraEvent {
     }
 }
 
+#[derive(Default, Event, Debug)]
+pub struct RecalculateMousePositionEvent;
+
 #[derive(Event)]
 pub struct ChangeCrsEvent {
     pub old: rgis_primitives::Crs,
@@ -195,6 +198,7 @@ impl bevy::app::Plugin for Plugin {
             .add_event::<LayerBecameVisibleEvent>()
             .add_event::<PanCameraEvent>()
             .add_event::<ZoomCameraEvent>()
+            .add_event::<RecalculateMousePositionEvent>()
             .add_event::<CenterCameraEvent>()
             .add_event::<LayerColorUpdatedEvent>()
             .add_event::<UpdateLayerColorEvent>()
