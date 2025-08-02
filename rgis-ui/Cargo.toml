@@ -12,23 +12,23 @@ workspace = true
 bevy = { workspace = true }
 bevy_egui = { workspace = true }
 egui_plot = { workspace = true }
-bevy_egui_window = { path = "../bevy_egui_window", version = "0.1.0" }
-geo-features = { path = "../geo-features", version = "0.1.0" }
-geo-file-loader = { path = "../geo-file-loader", version = "0.1.0" }
-geo-projected = { path = "../geo-projected", version = "0.1.0" }
+bevy_egui_window = { path = "../bevy_egui_window" }
+geo-features = { path = "../geo-features" }
+geo-file-loader = { path = "../geo-file-loader" }
+geo-projected = { path = "../geo-projected" }
 dark-light = { workspace = true }
 rfd = { workspace = true }
-rgis-geo-ops = { path = "../rgis-geo-ops", version = "0.1.0" }
-rgis-primitives = { path = "../rgis-primitives", version = "0.1.0" }
-rgis-layers = { path = "../rgis-layers", version = "0.1.0" }
-rgis-library = { path = "../rgis-library", version = "0.1.0" }
-rgis-events = { path = "../rgis-events", version = "0.1.0" }
-rgis-mouse = { path = "../rgis-mouse", version = "0.1.0" }
-rgis-settings = { path = "../rgis-settings", version = "0.1.0" }
-rgis-units = { path = "../rgis-units", version = "0.1.0" }
+rgis-geo-ops = { path = "../rgis-geo-ops" }
+rgis-primitives = { path = "../rgis-primitives" }
+rgis-layers = { path = "../rgis-layers" }
+rgis-library = { path = "../rgis-library" }
+rgis-events = { path = "../rgis-events" }
+rgis-mouse = { path = "../rgis-mouse" }
+rgis-settings = { path = "../rgis-settings" }
+rgis-units = { path = "../rgis-units" }
 bevy_jobs = { workspace = true }
 geo = { workspace = true }
 thiserror = { workspace = true }
 geodesy = { workspace = true }
-rgis-crs = { path = "../rgis-crs", version = "0.1.0" }
-rgis-geodesy = { path = "../rgis-geodesy", version = "0.1.0" }
+rgis-crs = { path = "../rgis-crs" }
+rgis-geodesy = { path = "../rgis-geodesy" }

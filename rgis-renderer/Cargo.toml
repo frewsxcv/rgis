@@ -10,9 +10,9 @@ workspace = true
 bevy = { workspace = true }
 geo = { workspace = true }
 geo-bevy = { workspace = true }
-geo-projected = { path = "../geo-projected", version = "0.1.0" }
-geo-geom-type = { path = "../geo-geom-type", version = "0.1.0" }
-rgis-events = { path = "../rgis-events", version = "0.1.0" }
-rgis-primitives = { path = "../rgis-primitives", version = "0.1.0" }
-rgis-layers = { path = "../rgis-layers", version = "0.1.0" }
+geo-projected = { path = "../geo-projected" }
+geo-geom-type = { path = "../geo-geom-type" }
+rgis-events = { path = "../rgis-events" }
+rgis-primitives = { path = "../rgis-primitives" }
+rgis-layers = { path = "../rgis-layers" }
 bevy_jobs = { workspace = true }

@@ -12,24 +12,24 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 geo = { workspace = true }
-rgis-camera = { path = "../rgis-camera", version = "0.1.0" }
-rgis-file-loader = { path = "../rgis-file-loader", version = "0.1.0" }
-rgis-keyboard = { path = "../rgis-keyboard", version = "0.1.0" }
-rgis-layers = { path = "../rgis-layers", version = "0.1.0" }
-rgis-mouse = { path = "../rgis-mouse", version = "0.1.0" }
-rgis-network = { path = "../rgis-network", version = "0.1.0" }
-rgis-renderer = { path = "../rgis-renderer", version = "0.1.0" }
-rgis-settings = { path = "../rgis-settings", version = "0.1.0" }
+rgis-camera = { path = "../rgis-camera" }
+rgis-file-loader = { path = "../rgis-file-loader" }
+rgis-keyboard = { path = "../rgis-keyboard" }
+rgis-layers = { path = "../rgis-layers" }
+rgis-mouse = { path = "../rgis-mouse" }
+rgis-network = { path = "../rgis-network" }
+rgis-renderer = { path = "../rgis-renderer" }
+rgis-settings = { path = "../rgis-settings" }
 bevy_jobs = { workspace = true }
-rgis-transform = { path = "../rgis-transform", version = "0.1.0" }
-rgis-ui = { path = "../rgis-ui", version = "0.1.0" }
-time-logger = { path = "../time-logger", version = "0.1.0" }
-rgis-events = { path = "../rgis-events", version = "0.1.0" }
-rgis-crs = { path = "../rgis-crs", version = "0.1.0" }
-rgis-geodesy = { path = "../rgis-geodesy", version = "0.1.0" }
+rgis-transform = { path = "../rgis-transform" }
+rgis-ui = { path = "../rgis-ui" }
+time-logger = { path = "../time-logger" }
+rgis-events = { path = "../rgis-events" }
+rgis-crs = { path = "../rgis-crs" }
+rgis-geodesy = { path = "../rgis-geodesy" }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-rgis-cli = { path = "../rgis-cli", version = "0.1.0" }
+rgis-cli = { path = "../rgis-cli" }
 bevy = { workspace = true }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]

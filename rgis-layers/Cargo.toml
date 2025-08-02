@@ -11,10 +11,10 @@ workspace = true
 [dependencies]
 bevy = { workspace = true }
 colorous = { workspace = true }
-geo-features = { path = "../geo-features", version = "0.1.0" }
-geo-geom-type = { path = "../geo-geom-type", version = "0.1.0" }
-geo-projected = { path = "../geo-projected", version = "0.1.0" }
-rgis-events = { path = "../rgis-events", version = "0.1.0" }
-rgis-primitives = { path = "../rgis-primitives", version = "0.1.0" }
+geo-features = { path = "../geo-features" }
+geo-geom-type = { path = "../geo-geom-type" }
+geo-projected = { path = "../geo-projected" }
+rgis-events = { path = "../rgis-events" }
+rgis-primitives = { path = "../rgis-primitives" }
 geo = { workspace = true }
-rgis-crs = { path = "../rgis-crs", version = "0.1.0" }
+rgis-crs = { path = "../rgis-crs" }

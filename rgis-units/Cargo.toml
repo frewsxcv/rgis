@@ -9,5 +9,5 @@ workspace = true
 [dependencies]
 bevy = { workspace = true }
 geo = { workspace = true }
-geo-features = { path = "../geo-features", version = "0.1.0" }
-geo-projected = { path = "../geo-projected", version = "0.1.0" }
+geo-features = { path = "../geo-features" }
+geo-projected = { path = "../geo-projected" }

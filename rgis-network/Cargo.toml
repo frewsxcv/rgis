@@ -14,5 +14,5 @@ futures-util = { workspace = true }
 reqwest = { workspace = true }
 bevy_jobs = { workspace = true, features = ["tokio"] }
 thiserror = { workspace = true }
-rgis-crs = { path = "../rgis-crs", version = "0.1.0" }
-rgis-primitives = { path = "../rgis-primitives", version = "0.1.0" }
+rgis-crs = { path = "../rgis-crs" }
+rgis-primitives = { path = "../rgis-primitives" }

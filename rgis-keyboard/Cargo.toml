@@ -10,4 +10,4 @@ workspace = true
 
 [dependencies]
 bevy = { workspace = true }
-rgis-events = { path = "../rgis-events", version = "0.1.0" }
+rgis-events = { path = "../rgis-events" }

@@ -10,7 +10,7 @@ workspace = true
 [dependencies]
 bevy_egui = { workspace = true }
 geo = { workspace = true }
-geo-features = { path = "../geo-features", version = "0.1.0" }
-geo-geom-type = { path = "../geo-geom-type", version = "0.1.0" }
-geo-projected = { path = "../geo-projected", version = "0.1.0" }
+geo-features = { path = "../geo-features" }
+geo-geom-type = { path = "../geo-geom-type" }
+geo-projected = { path = "../geo-projected" }
 num-t = { workspace = true, features = ["geo", "float_next_after"] }

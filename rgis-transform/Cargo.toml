@@ -8,15 +8,15 @@ workspace = true
 
 [dependencies]
 bevy = { workspace = true }
-geo-features = { path = "../geo-features", version = "0.1.0" }
-geo-projected = { path = "../geo-projected", version = "0.1.0" }
+geo-features = { path = "../geo-features" }
+geo-projected = { path = "../geo-projected" }
 geo = { workspace = true }
-rgis-events = { path = "../rgis-events", version = "0.1.0" }
-rgis-primitives = { path = "../rgis-primitives", version = "0.1.0" }
-rgis-layers = { path = "../rgis-layers", version = "0.1.0" }
-rgis-settings = { path = "../rgis-settings", version = "0.1.0" }
+rgis-events = { path = "../rgis-events" }
+rgis-primitives = { path = "../rgis-primitives" }
+rgis-layers = { path = "../rgis-layers" }
+rgis-settings = { path = "../rgis-settings" }
 bevy_jobs = { workspace = true }
 geo-geodesy = { workspace = true }
 num-t = { workspace = true }
-rgis-crs = { path = "../rgis-crs", version = "0.1.0" }
-rgis-geodesy = { path = "../rgis-geodesy", version = "0.1.0" }
+rgis-crs = { path = "../rgis-crs" }
+rgis-geodesy = { path = "../rgis-geodesy" }

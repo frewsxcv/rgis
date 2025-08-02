@@ -12,8 +12,8 @@ workspace = true
 bevy = { workspace = true }
 bevy_egui = { workspace = true }
 geo = { workspace = true }
-geo-projected = { path = "../geo-projected", version = "0.1.0" }
-rgis-events = { path = "../rgis-events", version = "0.1.0" }
-rgis-settings = { path = "../rgis-settings", version = "0.1.0" }
-rgis-units = { path = "../rgis-units", version = "0.1.0" }
+geo-projected = { path = "../geo-projected" }
+rgis-events = { path = "../rgis-events" }
+rgis-settings = { path = "../rgis-settings" }
+rgis-units = { path = "../rgis-units" }
 num-t = { workspace = true }

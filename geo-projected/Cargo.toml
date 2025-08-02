@@ -9,5 +9,5 @@ workspace = true
 
 [dependencies]
 geo = { workspace = true }
-geo-features = { path = "../geo-features", version = "0.1.0" }
+geo-features = { path = "../geo-features" }
 num-t = { workspace = true }
