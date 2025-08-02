@@ -1,6 +1,6 @@
 use bevy_egui::egui;
 
-pub struct ChangeCrsWindow<'a, 'w> {
+pub struct ChangeCrs<'a, 'w> {
     pub is_visible: &'a mut bool,
     pub egui_ctx: &'a mut bevy_egui::egui::Context,
     pub text_field_value: &'a mut String,
@@ -11,7 +11,7 @@ pub struct ChangeCrsWindow<'a, 'w> {
     pub geodesy_ctx: &'a rgis_geodesy::GeodesyContext,
 }
 
-impl ChangeCrsWindow<'_, '_> {
+impl ChangeCrs<'_, '_> {
     pub fn render(&mut self) {
         if !*self.is_visible {
             return;

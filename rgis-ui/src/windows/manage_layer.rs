@@ -1,13 +1,13 @@
 use bevy_egui::egui;
 
-pub struct ManageLayerWindow<'a> {
+pub struct ManageLayer<'a> {
     pub state: &'a mut crate::ManageLayerWindowState,
     pub layers: &'a rgis_layers::Layers,
     pub egui_ctx: &'a mut bevy_egui::egui::Context,
     pub color_events: &'a mut bevy::ecs::event::Events<rgis_events::UpdateLayerColorEvent>,
 }
 
-impl ManageLayerWindow<'_> {
+impl ManageLayer<'_> {
     pub fn render(&mut self) {
         let (true, Some(layer_id)) = (self.state.is_visible, self.state.layer_id) else {
             return;
@@ -36,7 +36,7 @@ impl ManageLayerWindow<'_> {
                         if layer.geom_type.has_fill() {
                             if let Some(fill) = layer.color.fill {
                                 ui.label("Fill color");
-                                ui.add(crate::widgets::fill_color_widget::FillColorWidget {
+                                ui.add(crate::widgets::fill_color::FillColor {
                                     layer_id,
                                     color: fill,
                                     color_events: self.color_events,
@@ -47,7 +47,7 @@ impl ManageLayerWindow<'_> {
                             }
                         }
                         ui.label("Stroke color");
-                        ui.add(crate::widgets::stroke_color_widget::StrokeColorWidget {
+                        ui.add(crate::widgets::stroke_color::StrokeColor {
                             layer_id,
                             color: layer.color.stroke,
                             color_events: self.color_events,

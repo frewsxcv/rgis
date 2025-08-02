@@ -1,11 +1,11 @@
-use crate::panels::side_panel::Events;
+use crate::panels::side::Events;
 use bevy_egui::egui;
 
-pub struct AddLayerButton<'a, 'w> {
+pub struct AddLayer<'a, 'w> {
     pub events: &'a mut Events<'w>,
 }
 
-impl egui::Widget for AddLayerButton<'_, '_> {
+impl egui::Widget for AddLayer<'_, '_> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         let button = ui.button("➕ Add Layer");
 

@@ -3,11 +3,11 @@ use bevy_egui::egui;
 use std::marker;
 
 #[derive(SystemParam)]
-pub struct WelcomeWindow<'w, 's> {
+pub struct Welcome<'w, 's> {
     _phantom: marker::PhantomData<(&'w (), &'s ())>,
 }
 
-impl egui::Widget for WelcomeWindow<'_, '_> {
+impl egui::Widget for Welcome<'_, '_> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         ui.vertical_centered_justified(|ui| {
             ui.label("Welcome to rgis!");
@@ -16,8 +16,8 @@ impl egui::Widget for WelcomeWindow<'_, '_> {
     }
 }
 
-impl bevy_egui_window::Window for WelcomeWindow<'_, '_> {
-    type Item<'w, 's> = WelcomeWindow<'w, 's>;
+impl bevy_egui_window::Window for Welcome<'_, '_> {
+    type Item<'w, 's> = Welcome<'w, 's>;
     const INITIALLY_OPEN: bool = true;
 
     fn title(&self) -> &str {

@@ -1,11 +1,11 @@
 use bevy::window::{MonitorSelection, VideoModeSelection};
 use bevy_egui::egui;
 
-pub struct FullScreenButton<'a> {
+pub struct FullScreen<'a> {
     pub window: &'a mut bevy::window::Window,
 }
 
-impl egui::Widget for FullScreenButton<'_> {
+impl egui::Widget for FullScreen<'_> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         ui.add_enabled_ui(cfg!(not(target_arch = "wasm32")), |ui| {
             if ui.button("Full screen").clicked() {

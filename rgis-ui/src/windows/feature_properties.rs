@@ -1,12 +1,12 @@
 use bevy_egui::egui;
 
-pub struct FeaturePropertiesWindow<'a> {
+pub struct FeatureProperties<'a> {
     pub egui_ctx: &'a mut bevy_egui::egui::Context,
     pub state: &'a mut crate::FeaturePropertiesWindowState,
     pub layer: &'a rgis_layers::Layer,
 }
 
-impl FeaturePropertiesWindow<'_> {
+impl FeatureProperties<'_> {
     pub fn render(&mut self) {
         let Some(ref properties) = self.state.properties else {
             return;

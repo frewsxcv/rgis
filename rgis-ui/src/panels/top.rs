@@ -2,17 +2,16 @@ use bevy::prelude::*;
 use bevy_egui::egui;
 use bevy_egui_window as window;
 
-pub struct TopPanel<'a, 'w, 's> {
+pub struct Top<'a, 'w, 's> {
     pub app_exit_events: &'a mut bevy::ecs::event::Events<bevy::app::AppExit>,
     pub egui_ctx: &'a mut bevy_egui::egui::Context,
     pub window: &'a mut Window,
     pub app_settings: &'a mut rgis_settings::RgisSettings,
     pub top_panel_height: &'a mut rgis_units::TopPanelHeight,
-    pub is_debug_window_open:
-        &'a mut window::IsWindowOpen<crate::windows::debug_window::DebugWindow<'w, 's>>,
+    pub is_debug_window_open: &'a mut window::IsWindowOpen<crate::windows::debug::Debug<'w, 's>>,
 }
 
-impl TopPanel<'_, '_, '_> {
+impl Top<'_, '_, '_> {
     pub fn render(&mut self) {
         let inner_response = egui::TopBottomPanel::top("top_panel").show(self.egui_ctx, |ui| {
             egui::menu::bar(ui, |ui| {
@@ -20,12 +19,12 @@ impl TopPanel<'_, '_, '_> {
 
                 ui.label("rgis");
                 ui.menu_button("File", |ui| {
-                    ui.add(crate::widgets::exit_button::ExitButton {
+                    ui.add(crate::widgets::exit::Exit {
                         app_exit_events: self.app_exit_events,
                     });
                 });
                 ui.menu_button("View", |ui| {
-                    ui.add(crate::widgets::full_screen_button::FullScreenButton {
+                    ui.add(crate::widgets::full_screen::FullScreen {
                         window: self.window,
                     });
                 });

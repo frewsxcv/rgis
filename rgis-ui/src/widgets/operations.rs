@@ -1,12 +1,12 @@
-use crate::panels::side_panel::{Events, OperationButton};
+use crate::panels::side::{Events, OperationButton};
 use bevy_egui::egui::{self, Align, Layout};
 
-pub struct OperationsWidget<'a, 'w> {
+pub struct Operations<'a, 'w> {
     pub layer: &'a rgis_layers::Layer,
     pub events: &'a mut Events<'w>,
 }
 
-impl egui::Widget for OperationsWidget<'_, '_> {
+impl egui::Widget for Operations<'_, '_> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         ui.with_layout(Layout::top_down_justified(Align::LEFT), |ui| {
             if ui.button("Bounding rect").clicked() {

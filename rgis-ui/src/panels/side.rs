@@ -22,14 +22,14 @@ pub struct Events<'w> {
         bevy::ecs::event::EventWriter<'w, rgis_events::ShowManageLayerWindowEvent>,
 }
 
-pub struct SidePanel<'a, 'w> {
+pub struct Side<'a, 'w> {
     pub egui_ctx: &'a egui::Context,
     pub layers: &'a rgis_layers::Layers,
     pub events: &'a mut Events<'w>,
     pub side_panel_width: &'a mut rgis_units::SidePanelWidth,
 }
 
-impl SidePanel<'_, '_> {
+impl Side<'_, '_> {
     pub fn render(&mut self) {
         let side_panel = egui::SidePanel::left("left-side-panel").resizable(true);
 
@@ -44,7 +44,7 @@ impl SidePanel<'_, '_> {
         ui.vertical_centered_justified(|ui| {
             egui::ScrollArea::vertical().show(ui, |ui| {
                 self.render_layers_heading(ui);
-                ui.add(crate::widgets::add_layer_button::AddLayerButton {
+                ui.add(crate::widgets::add_layer::AddLayer {
                     events: self.events,
                 });
                 self.render_layers(ui);
@@ -173,16 +173,14 @@ impl Widget for Layer<'_, '_> {
                             .write(rgis_events::ShowManageLayerWindowEvent(layer.id));
                     }
 
-                    ui.add(
-                        crate::widgets::move_up_move_down_widget::MoveUpMoveDownWidget {
-                            layer,
-                            is_move_up_enabled,
-                            is_move_down_enabled,
-                            events: self.events,
-                        },
-                    );
+                    ui.add(crate::widgets::move_up_move_down::MoveUpMoveDown {
+                        layer,
+                        is_move_up_enabled,
+                        is_move_down_enabled,
+                        events: self.events,
+                    });
 
-                    ui.add(crate::widgets::toggle_layer_widget::ToggleLayerWidget {
+                    ui.add(crate::widgets::toggle_layer::ToggleLayer {
                         layer,
                         events: self.events,
                     });
@@ -201,7 +199,7 @@ impl Widget for Layer<'_, '_> {
                         .id_salt(format!("{:?}-operations", layer.id)) // Instead of using the layer name as the ID (which is not unique), use the layer ID
                         .show(ui, |ui| {
                             ui.with_layout(Layout::top_down_justified(Align::LEFT), |ui| {
-                                ui.add(crate::widgets::operations_widget::OperationsWidget {
+                                ui.add(crate::widgets::operations::Operations {
                                     layer,
                                     events: self.events,
                                 });

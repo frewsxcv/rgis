@@ -31,7 +31,7 @@ impl bevy_jobs::Job for OpenFileJob {
     }
 }
 
-pub struct AddLayerWindow<'a> {
+pub struct AddLayer<'a> {
     pub state: &'a mut State,
     pub is_visible: &'a mut bool,
     pub selected_file: &'a mut SelectedFile,
@@ -86,7 +86,7 @@ pub struct OpenedFile {
     file_name: String,
 }
 
-pub enum AddLayerWindowOutput {
+pub enum AddLayerOutput {
     LoadFromText {
         text: String,
         file_format: FileFormat,
@@ -106,8 +106,8 @@ pub enum AddLayerWindowOutput {
     OpenFile,
 }
 
-impl AddLayerWindow<'_> {
-    pub fn render(&mut self) -> Option<AddLayerWindowOutput> {
+impl AddLayer<'_> {
+    pub fn render(&mut self) -> Option<AddLayerOutput> {
         let mut output = None;
 
         if *self.is_visible {
@@ -209,7 +209,7 @@ impl AddLayerWindow<'_> {
                         ui.label("Select file:");
 
                         if ui.button("📄 Select file").clicked() {
-                            output = Some(AddLayerWindowOutput::OpenFile);
+                            output = Some(AddLayerOutput::OpenFile);
                         }
 
                         let submittable = self.selected_file.0.is_some();
@@ -226,7 +226,7 @@ impl AddLayerWindow<'_> {
                         {
                             match self.selected_file.0.take() {
                                 Some(loaded_file) => {
-                                    output = Some(AddLayerWindowOutput::LoadFromFile {
+                                    output = Some(AddLayerOutput::LoadFromFile {
                                         file_name: loaded_file.file_name,
                                         file_format: selected_format,
                                         bytes: loaded_file.bytes,
@@ -287,7 +287,7 @@ impl AddLayerWindow<'_> {
                                 file_format @ (FileFormat::Wkt
                                 | FileFormat::GeoJson
                                 | FileFormat::Gpx) => {
-                                    output = Some(AddLayerWindowOutput::LoadFromText {
+                                    output = Some(AddLayerOutput::LoadFromText {
                                         text: new,
                                         file_format,
                                         source_crs: rgis_primitives::Crs {
@@ -337,7 +337,7 @@ struct LibraryWidget<'a> {
 }
 
 impl LibraryWidget<'_> {
-    fn show(self, ui: &mut egui::Ui) -> Option<AddLayerWindowOutput> {
+    fn show(self, ui: &mut egui::Ui) -> Option<AddLayerOutput> {
         let mut output = None;
         ui.vertical(|ui| {
             ui.heading("Library");
@@ -368,7 +368,7 @@ struct LibraryEntryWidget<'a> {
 }
 
 impl LibraryEntryWidget<'_> {
-    fn show(self, ui: &mut egui::Ui) -> Option<AddLayerWindowOutput> {
+    fn show(self, ui: &mut egui::Ui) -> Option<AddLayerOutput> {
         let mut output = None;
         ui.horizontal(|ui| {
             if ui.button("➕ Add").clicked() {
@@ -376,7 +376,7 @@ impl LibraryEntryWidget<'_> {
                 let op_handle =
                     rgis_geodesy::epsg_code_to_geodesy_op_handle(&mut *geodesy_ctx, self.entry.crs)
                         .unwrap();
-                output = Some(AddLayerWindowOutput::LoadFromLibrary {
+                output = Some(AddLayerOutput::LoadFromLibrary {
                     name: format!("{}: {}", self.folder.name, self.entry.name),
                     url: self.entry.url.into(),
                     source_crs: rgis_primitives::Crs {

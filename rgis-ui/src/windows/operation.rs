@@ -1,6 +1,6 @@
 use bevy_egui::egui;
 
-pub struct OperationWindow<'w> {
+pub struct Operation<'w> {
     pub egui_ctx: &'w mut bevy_egui::egui::Context,
     pub state: &'w mut crate::OperationWindowState,
     pub create_layer_event_writer: bevy::ecs::event::EventWriter<'w, rgis_events::CreateLayerEvent>,
@@ -8,7 +8,7 @@ pub struct OperationWindow<'w> {
         bevy::ecs::event::EventWriter<'w, rgis_events::RenderMessageEvent>,
 }
 
-impl OperationWindow<'_> {
+impl Operation<'_> {
     pub fn render(&mut self) {
         if !self.state.is_visible {
             self.state.operation = None;

@@ -27,7 +27,7 @@ impl Default for DebugStatsWindowState {
 }
 
 #[derive(SystemParam)]
-pub struct DebugWindow<'w, 's> {
+pub struct Debug<'w, 's> {
     diagnostics: Res<'w, bevy::diagnostic::DiagnosticsStore>,
     state: Local<'s, DebugStatsWindowState>,
     time: Res<'w, Time>,
@@ -36,7 +36,7 @@ pub struct DebugWindow<'w, 's> {
 
 const FPS_MAX: f64 = 100.;
 
-impl egui::Widget for DebugWindow<'_, '_> {
+impl egui::Widget for Debug<'_, '_> {
     fn ui(mut self, ui: &mut egui::Ui) -> egui::Response {
         if self.state.history.is_empty() || self.state.timer.tick(self.time.delta()).just_finished()
         {
@@ -48,7 +48,7 @@ impl egui::Widget for DebugWindow<'_, '_> {
     }
 }
 
-impl DebugWindow<'_, '_> {
+impl Debug<'_, '_> {
     fn update_stats(&mut self) {
         let fps = self
             .diagnostics
@@ -119,8 +119,8 @@ impl DebugWindow<'_, '_> {
     }
 }
 
-impl bevy_egui_window::Window for DebugWindow<'_, '_> {
-    type Item<'w, 's> = DebugWindow<'w, 's>;
+impl bevy_egui_window::Window for Debug<'_, '_> {
+    type Item<'w, 's> = Debug<'w, 's>;
 
     fn title(&self) -> &str {
         "Debug"

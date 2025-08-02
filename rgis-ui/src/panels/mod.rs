@@ -1,3 +1,3 @@
-pub mod bottom_panel;
-pub mod side_panel;
-pub mod top_panel;
+pub mod bottom;
+pub mod side;
+pub mod top;
