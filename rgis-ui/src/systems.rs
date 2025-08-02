@@ -108,16 +108,72 @@ fn render_add_layer_window(
         (*is_visible).0 = false;
     }
 
-    crate::add_layer_window::AddLayerWindow {
+    let output = crate::add_layer_window::AddLayerWindow {
         state: &mut state,
         selected_file: &mut selected_file,
         is_visible: &mut (*is_visible).0,
         egui_ctx: bevy_egui_ctx_mut,
-        job_spawner: &mut job_spawner,
-        events: &mut events,
         geodesy_ctx: &geodesy_ctx,
     }
     .render();
+
+    if let Some(output) = output {
+        use crate::add_layer_window::AddLayerWindowOutput;
+        match output {
+            AddLayerWindowOutput::LoadFromText {
+                text,
+                file_format,
+                source_crs,
+            } => {
+                events
+                    .load_file_event_writer
+                    .write(rgis_events::LoadFileEvent::FromBytes {
+                        file_name: "Inputted file".into(),
+                        file_format,
+                        bytes: text.into(),
+                        source_crs,
+                    });
+                events.hide_add_layer_window_events.send_default();
+                state.reset();
+            }
+            AddLayerWindowOutput::LoadFromFile {
+                file_name,
+                file_format,
+                bytes,
+                source_crs,
+            } => {
+                events
+                    .load_file_event_writer
+                    .write(rgis_events::LoadFileEvent::FromBytes {
+                        file_name,
+                        file_format,
+                        bytes: bytes.into(),
+                        source_crs,
+                    });
+                events.hide_add_layer_window_events.send_default();
+                state.reset();
+            }
+            AddLayerWindowOutput::LoadFromLibrary {
+                name,
+                url,
+                source_crs,
+            } => {
+                events
+                    .load_file_event_writer
+                    .write(rgis_events::LoadFileEvent::FromNetwork {
+                        name,
+                        url,
+                        source_crs,
+                    });
+                events.hide_add_layer_window_events.send_default();
+                state.reset();
+            }
+            AddLayerWindowOutput::OpenFile => {
+                job_spawner.spawn(crate::add_layer_window::OpenFileJob);
+            }
+        }
+    }
+
     Ok(())
 }
 

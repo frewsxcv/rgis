@@ -31,13 +31,11 @@ impl bevy_jobs::Job for OpenFileJob {
     }
 }
 
-pub(crate) struct AddLayerWindow<'a, 'w1, 's1, 'w2, 's2> {
+pub(crate) struct AddLayerWindow<'a> {
     pub state: &'a mut State,
     pub is_visible: &'a mut bool,
     pub selected_file: &'a mut SelectedFile,
     pub egui_ctx: &'a mut bevy_egui::egui::Context,
-    pub job_spawner: &'a mut bevy_jobs::JobSpawner<'w1, 's1>,
-    pub events: &'a mut Events<'w2, 's2>,
     pub geodesy_ctx: &'a rgis_geodesy::GeodesyContext,
 }
 
@@ -88,129 +86,150 @@ pub struct OpenedFile {
     file_name: String,
 }
 
-impl AddLayerWindow<'_, '_, '_, '_, '_> {
-    pub(crate) fn render(&mut self) {
-        if !*self.is_visible {
-            return;
-        }
+pub enum AddLayerWindowOutput {
+    LoadFromText {
+        text: String,
+        file_format: FileFormat,
+        source_crs: rgis_primitives::Crs,
+    },
+    LoadFromFile {
+        file_name: String,
+        file_format: FileFormat,
+        bytes: Vec<u8>,
+        source_crs: rgis_primitives::Crs,
+    },
+    LoadFromLibrary {
+        name: String,
+        url: String,
+        source_crs: rgis_primitives::Crs,
+    },
+    OpenFile,
+}
 
-        egui::Window::new("Add Layer")
-            .resizable(false)
-            .open(self.is_visible)
-            .show(self.egui_ctx, |ui| {
-                ui.label("Layer source:");
+impl AddLayerWindow<'_> {
+    pub(crate) fn render(&mut self) -> Option<AddLayerWindowOutput> {
+        let mut output = None;
 
-                ui.radio_value(&mut self.state.selected_source, Source::Library, "Library");
-                ui.radio_value(&mut self.state.selected_source, Source::File, "File");
-                ui.radio_value(&mut self.state.selected_source, Source::Text, "Text");
+        if *self.is_visible {
+            egui::Window::new("Add Layer")
+                .resizable(false)
+                .open(self.is_visible)
+                .show(self.egui_ctx, |ui| {
+                    ui.label("Layer source:");
 
-                if self.state.selected_source == Source::Unselected {
-                    return;
-                }
+                    ui.radio_value(&mut self.state.selected_source, Source::Library, "Library");
+                    ui.radio_value(&mut self.state.selected_source, Source::File, "File");
+                    ui.radio_value(&mut self.state.selected_source, Source::Text, "Text");
 
-                // If the user switched to "Text" and and they don't have a plaintext format selected, unselect their selection
-                if self.state.selected_source == Source::Text
-                    && self
-                        .state
-                        .selected_format
-                        .map(|f| !f.is_plaintext())
-                        .unwrap_or(false)
-                {
-                    self.state.selected_format = None;
-                }
-
-                ui.separator();
-
-                if self.state.selected_source == Source::Library {
-                    ui.add(LibraryWidget {
-                        events: self.events,
-                        geodesy_ctx: self.geodesy_ctx,
-                    });
-                    return;
-                }
-
-                ui.label("Source CRS:");
-                let crs_input_widget = crate::widgets::CrsInput::new(
-                    self.geodesy_ctx,
-                    &mut self.state.crs_input_outcome,
-                    &mut self.state.crs_input,
-                );
-                ui.add(crs_input_widget);
-
-                ui.separator();
-
-                if self.state.selected_source == Source::File
-                    || self.state.selected_source == Source::Text
-                {
-                    ui.label("Format:");
-                }
-
-                if self.state.selected_source == Source::File
-                    || self.state.selected_source == Source::Text
-                {
-                    ui.radio_value(
-                        &mut self.state.selected_format,
-                        Some(FileFormat::GeoJson),
-                        "GeoJSON",
-                    );
-
-                    ui.radio_value(
-                        &mut self.state.selected_format,
-                        Some(FileFormat::Gpx),
-                        "GPX",
-                    );
-                }
-
-                if self.state.selected_source == Source::File {
-                    ui.radio_value(
-                        &mut self.state.selected_format,
-                        Some(FileFormat::Shapefile),
-                        "Shapefile",
-                    );
-                }
-
-                if self.state.selected_source == Source::File
-                    || self.state.selected_source == Source::Text
-                {
-                    ui.radio_value(
-                        &mut self.state.selected_format,
-                        Some(FileFormat::Wkt),
-                        "WKT",
-                    );
-                }
-
-                let Some(selected_format) = self.state.selected_format else {
-                    return;
-                };
-
-                ui.separator();
-
-                if self.state.selected_source == Source::File {
-                    ui.label("Select file:");
-
-                    if ui.button("📄 Select file").clicked() {
-                        self.job_spawner.spawn(OpenFileJob);
+                    if self.state.selected_source == Source::Unselected {
+                        return;
                     }
 
-                    let submittable = self.selected_file.0.is_some();
-
-                    if let Some(loaded_file) = &self.selected_file.0 {
-                        ui.label(format!("Selected file: {}", loaded_file.file_name));
+                    // If the user switched to "Text" and and they don't have a plaintext format selected, unselect their selection
+                    if self.state.selected_source == Source::Text
+                        && self
+                            .state
+                            .selected_format
+                            .map(|f| !f.is_plaintext())
+                            .unwrap_or(false)
+                    {
+                        self.state.selected_format = None;
                     }
 
                     ui.separator();
 
-                    if ui
-                        .add_enabled(submittable, egui::Button::new("Add layer"))
-                        .clicked()
+                    if self.state.selected_source == Source::Library {
+                        if let Some(new_output) = (LibraryWidget {
+                            geodesy_ctx: self.geodesy_ctx,
+                        })
+                        .show(ui)
+                        {
+                            output = Some(new_output);
+                        }
+                        return;
+                    }
+
+                    ui.label("Source CRS:");
+                    let crs_input_widget = crate::widgets::CrsInput::new(
+                        self.geodesy_ctx,
+                        &mut self.state.crs_input_outcome,
+                        &mut self.state.crs_input,
+                    );
+                    ui.add(crs_input_widget);
+
+                    ui.separator();
+
+                    if self.state.selected_source == Source::File
+                        || self.state.selected_source == Source::Text
                     {
-                        match self.selected_file.0.take() {
-                            Some(loaded_file) => {
-                                self.events.load_file_event_writer.write(
-                                    rgis_events::LoadFileEvent::FromBytes {
+                        ui.label("Format:");
+                    }
+
+                    if self.state.selected_source == Source::File
+                        || self.state.selected_source == Source::Text
+                    {
+                        ui.radio_value(
+                            &mut self.state.selected_format,
+                            Some(FileFormat::GeoJson),
+                            "GeoJSON",
+                        );
+
+                        ui.radio_value(
+                            &mut self.state.selected_format,
+                            Some(FileFormat::Gpx),
+                            "GPX",
+                        );
+                    }
+
+                    if self.state.selected_source == Source::File {
+                        ui.radio_value(
+                            &mut self.state.selected_format,
+                            Some(FileFormat::Shapefile),
+                            "Shapefile",
+                        );
+                    }
+
+                    if self.state.selected_source == Source::File
+                        || self.state.selected_source == Source::Text
+                    {
+                        ui.radio_value(
+                            &mut self.state.selected_format,
+                            Some(FileFormat::Wkt),
+                            "WKT",
+                        );
+                    }
+
+                    let Some(selected_format) = self.state.selected_format else {
+                        return;
+                    };
+
+                    ui.separator();
+
+                    if self.state.selected_source == Source::File {
+                        ui.label("Select file:");
+
+                        if ui.button("📄 Select file").clicked() {
+                            output = Some(AddLayerWindowOutput::OpenFile);
+                        }
+
+                        let submittable = self.selected_file.0.is_some();
+
+                        if let Some(loaded_file) = &self.selected_file.0 {
+                            ui.label(format!("Selected file: {}", loaded_file.file_name));
+                        }
+
+                        ui.separator();
+
+                        if ui
+                            .add_enabled(submittable, egui::Button::new("Add layer"))
+                            .clicked()
+                        {
+                            match self.selected_file.0.take() {
+                                Some(loaded_file) => {
+                                    output = Some(AddLayerWindowOutput::LoadFromFile {
                                         file_name: loaded_file.file_name,
                                         file_format: selected_format,
-                                        bytes: loaded_file.bytes.into(),
+                                        bytes: loaded_file.bytes,
                                         source_crs: rgis_primitives::Crs {
                                             epsg_code: self
                                                 .state
@@ -229,52 +248,48 @@ impl AddLayerWindow<'_, '_, '_, '_, '_> {
                                                 .unwrap()
                                                 .0,
                                         },
-                                    },
-                                );
-                            }
-                            None => {
-                                bevy::log::error!(
-                                    "Expected file to exist when loading, but no file exists"
-                                );
-                            }
-                        };
-                        self.events.hide_add_layer_window_events.send_default();
-                        self.state.reset();
-                    }
-                } else if self.state.selected_source == Source::Text {
-                    ui.label("Input text:");
+                                    });
+                                }
+                                None => {
+                                    bevy::log::error!(
+                                        "Expected file to exist when loading, but no file exists"
+                                    );
+                                }
+                            };
+                        }
+                    } else if self.state.selected_source == Source::Text {
+                        ui.label("Input text:");
 
-                    egui::ScrollArea::vertical()
-                        .max_height(300.)
-                        .show(ui, |ui| {
-                            egui::widgets::TextEdit::multiline(&mut self.state.text_edit_contents)
+                        egui::ScrollArea::vertical()
+                            .max_height(300.)
+                            .show(ui, |ui| {
+                                egui::widgets::TextEdit::multiline(
+                                    &mut self.state.text_edit_contents,
+                                )
                                 .code_editor()
                                 .hint_text(hint_text(selected_format))
                                 .show(ui);
-                        });
+                            });
 
-                    let submittable = !self.state.text_edit_contents.is_empty();
+                        let submittable = !self.state.text_edit_contents.is_empty();
 
-                    ui.separator();
+                        ui.separator();
 
-                    if ui
-                        .add_enabled(submittable, egui::Button::new("Add layer"))
-                        .clicked()
-                    {
-                        let new = mem::take(&mut self.state.text_edit_contents);
-                        match selected_format {
-                            FileFormat::Shapefile => {
-                                unreachable!()
-                            }
-                            file_format @ (FileFormat::Wkt
-                            | FileFormat::GeoJson
-                            | FileFormat::Gpx) => {
-                                self.events.load_file_event_writer.write(
-                                    rgis_events::LoadFileEvent::FromBytes {
-                                        file_name: "Inputted file".into(),
+                        if ui
+                            .add_enabled(submittable, egui::Button::new("Add layer"))
+                            .clicked()
+                        {
+                            let new = mem::take(&mut self.state.text_edit_contents);
+                            match selected_format {
+                                FileFormat::Shapefile => {
+                                    unreachable!()
+                                }
+                                file_format @ (FileFormat::Wkt
+                                | FileFormat::GeoJson
+                                | FileFormat::Gpx) => {
+                                    output = Some(AddLayerWindowOutput::LoadFromText {
+                                        text: new,
                                         file_format,
-                                        bytes: new.into(),
-                                        // TODO: don't allow the user to add a layer if the CRS isn't valid
                                         source_crs: rgis_primitives::Crs {
                                             epsg_code: self
                                                 .state
@@ -293,20 +308,18 @@ impl AddLayerWindow<'_, '_, '_, '_, '_> {
                                                 .unwrap()
                                                 .0,
                                         },
-                                    },
-                                );
+                                    });
+                                }
                             }
                         }
-                        self.events.hide_add_layer_window_events.send_default();
-                        self.state.reset();
                     }
-                }
-            });
-
-        // If the user closes the window, reset the state.
-        if !*self.is_visible {
+                });
+        } else {
+            // If the user closes the window, reset the state.
             self.state.reset();
         }
+
+        output
     }
 }
 
@@ -319,61 +332,61 @@ const fn hint_text(format: FileFormat) -> &'static str {
     }
 }
 
-struct LibraryWidget<'a, 'w, 's> {
-    events: &'a mut Events<'w, 's>,
+struct LibraryWidget<'a> {
     geodesy_ctx: &'a rgis_geodesy::GeodesyContext,
 }
 
-impl egui::Widget for LibraryWidget<'_, '_, '_> {
-    fn ui(self, ui: &mut egui::Ui) -> egui::Response {
+impl LibraryWidget<'_> {
+    fn show(self, ui: &mut egui::Ui) -> Option<AddLayerWindowOutput> {
+        let mut output = None;
         ui.vertical(|ui| {
             ui.heading("Library");
             for folder in rgis_library::get() {
                 ui.collapsing(format!("📁 {}", folder.name), |ui| {
                     for entry in &folder.entries {
-                        ui.add(LibraryEntryWidget {
+                        if let Some(new_output) = (LibraryEntryWidget {
                             folder,
                             entry,
-                            events: self.events,
                             geodesy_ctx: self.geodesy_ctx,
-                        });
+                        })
+                        .show(ui)
+                        {
+                            output = Some(new_output);
+                        }
                     }
                 });
             }
-        })
-        .response
+        });
+        output
     }
 }
 
-struct LibraryEntryWidget<'a, 'w, 's> {
+struct LibraryEntryWidget<'a> {
     entry: &'a rgis_library::Entry,
     folder: &'a rgis_library::Folder,
-    events: &'a mut Events<'w, 's>,
     geodesy_ctx: &'a rgis_geodesy::GeodesyContext,
 }
 
-impl egui::Widget for LibraryEntryWidget<'_, '_, '_> {
-    fn ui(self, ui: &mut egui::Ui) -> egui::Response {
+impl LibraryEntryWidget<'_> {
+    fn show(self, ui: &mut egui::Ui) -> Option<AddLayerWindowOutput> {
+        let mut output = None;
         ui.horizontal(|ui| {
             if ui.button("➕ Add").clicked() {
                 let mut geodesy_ctx = self.geodesy_ctx.0.write().unwrap();
                 let op_handle =
                     rgis_geodesy::epsg_code_to_geodesy_op_handle(&mut *geodesy_ctx, self.entry.crs)
                         .unwrap();
-                self.events
-                    .load_file_event_writer
-                    .write(rgis_events::LoadFileEvent::FromNetwork {
-                        name: format!("{}: {}", self.folder.name, self.entry.name),
-                        url: self.entry.url.into(),
-                        source_crs: rgis_primitives::Crs {
-                            epsg_code: self.entry.crs,
-                            op_handle,
-                        },
-                    });
-                self.events.hide_add_layer_window_events.send_default();
+                output = Some(AddLayerWindowOutput::LoadFromLibrary {
+                    name: format!("{}: {}", self.folder.name, self.entry.name),
+                    url: self.entry.url.into(),
+                    source_crs: rgis_primitives::Crs {
+                        epsg_code: self.entry.crs,
+                        op_handle,
+                    },
+                });
             }
             ui.label(self.entry.name);
-        })
-        .response
+        });
+        output
     }
 }
