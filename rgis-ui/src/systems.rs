@@ -15,7 +15,7 @@ fn render_bottom_panel(
     mut bottom_panel_height: ResMut<rgis_units::BottomPanelHeight>,
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
-    crate::bottom_panel::BottomPanel {
+    crate::panels::bottom_panel::BottomPanel {
         egui_ctx: bevy_egui_ctx_mut,
         mouse_pos: &mouse_pos,
         target_crs: &target_crs,
@@ -29,12 +29,12 @@ fn render_bottom_panel(
 fn render_side_panel(
     mut bevy_egui_ctx: EguiContexts,
     layers: Res<rgis_layers::Layers>,
-    mut events: crate::side_panel::Events,
+    mut events: crate::panels::side_panel::Events,
     mut side_panel_width: ResMut<rgis_units::SidePanelWidth>,
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
 
-    crate::side_panel::SidePanel {
+    crate::panels::side_panel::SidePanel {
         egui_ctx: bevy_egui_ctx_mut,
         layers: &layers,
         events: &mut events,
@@ -46,10 +46,10 @@ fn render_side_panel(
 
 fn handle_open_file_job(
     mut finished_jobs: bevy_jobs::FinishedJobs,
-    mut selected_file: ResMut<crate::add_layer_window::SelectedFile>,
+    mut selected_file: ResMut<crate::windows::add_layer_window::SelectedFile>,
 ) {
     while let Some(outcome) = finished_jobs
-        .take_next::<crate::add_layer_window::OpenFileJob>()
+        .take_next::<crate::windows::add_layer_window::OpenFileJob>()
         .flatten()
     {
         selected_file.0 = Some(outcome);
@@ -71,7 +71,7 @@ fn render_manage_layer_window(
         state.layer_id = Some(event.0);
     }
 
-    crate::manage_layer_window::ManageLayerWindow {
+    crate::windows::manage_layer_window::ManageLayerWindow {
         state: &mut state,
         layers: &layers,
         egui_ctx: bevy_egui_ctx_mut,
@@ -91,11 +91,11 @@ impl Default for IsVisible {
 
 fn render_add_layer_window(
     mut is_visible: Local<IsVisible>,
-    mut selected_file: ResMut<crate::add_layer_window::SelectedFile>,
+    mut selected_file: ResMut<crate::windows::add_layer_window::SelectedFile>,
     mut bevy_egui_ctx: EguiContexts,
     mut job_spawner: bevy_jobs::JobSpawner,
-    mut state: Local<crate::add_layer_window::State>,
-    mut events: crate::add_layer_window::Events,
+    mut state: Local<crate::windows::add_layer_window::State>,
+    mut events: crate::windows::add_layer_window::Events,
     geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
@@ -108,7 +108,7 @@ fn render_add_layer_window(
         (*is_visible).0 = false;
     }
 
-    let output = crate::add_layer_window::AddLayerWindow {
+    let output = crate::windows::add_layer_window::AddLayerWindow {
         state: &mut state,
         selected_file: &mut selected_file,
         is_visible: &mut (*is_visible).0,
@@ -118,7 +118,7 @@ fn render_add_layer_window(
     .render();
 
     if let Some(output) = output {
-        use crate::add_layer_window::AddLayerWindowOutput;
+        use crate::windows::add_layer_window::AddLayerWindowOutput;
         match output {
             AddLayerWindowOutput::LoadFromText {
                 text,
@@ -169,7 +169,7 @@ fn render_add_layer_window(
                 state.reset();
             }
             AddLayerWindowOutput::OpenFile => {
-                job_spawner.spawn(crate::add_layer_window::OpenFileJob);
+                job_spawner.spawn(crate::windows::add_layer_window::OpenFileJob);
             }
         }
     }
@@ -197,7 +197,7 @@ fn render_change_crs_window(
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
 
-    crate::change_crs_window::ChangeCrsWindow {
+    crate::windows::change_crs_window::ChangeCrsWindow {
         is_visible: &mut state.is_visible,
         egui_ctx: bevy_egui_ctx_mut,
         text_field_value: &mut text_field_value,
@@ -229,7 +229,7 @@ fn render_feature_properties_window(
         return Ok(());
     };
 
-    crate::feature_properties_window::FeaturePropertiesWindow {
+    crate::windows::feature_properties_window::FeaturePropertiesWindow {
         state: &mut state,
         layer,
         egui_ctx: bevy_egui_ctx_mut,
@@ -249,7 +249,7 @@ fn render_message_window(
         state.is_visible = true;
     }
 
-    crate::message_window::MessageWindow {
+    crate::windows::message_window::MessageWindow {
         state: &mut state,
         egui_ctx: bevy_egui_ctx_mut,
     }
@@ -272,7 +272,7 @@ fn render_operation_window(
         state.feature_collection = Some(event.feature_collection);
     }
 
-    crate::operation_window::OperationWindow {
+    crate::windows::operation_window::OperationWindow {
         egui_ctx: bevy_egui_ctx_mut,
         state: &mut state,
         create_layer_event_writer,
@@ -341,7 +341,7 @@ fn render_top_panel(
     mut app_settings: ResMut<rgis_settings::RgisSettings>,
     mut top_panel_height: ResMut<rgis_units::TopPanelHeight>,
     mut is_debug_window_open: ResMut<
-        bevy_egui_window::IsWindowOpen<crate::debug_window::DebugWindow<'static, 'static>>,
+        bevy_egui_window::IsWindowOpen<crate::windows::debug_window::DebugWindow<'static, 'static>>,
     >,
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
@@ -349,7 +349,7 @@ fn render_top_panel(
         return Ok(());
     };
 
-    crate::top_panel::TopPanel {
+    crate::panels::top_panel::TopPanel {
         egui_ctx: bevy_egui_ctx_mut,
         app_exit_events: &mut app_exit_events,
         window: &mut window,
@@ -428,17 +428,21 @@ pub fn configure(app: &mut App) {
         (handle_open_change_crs_window_event, handle_open_file_job),
     );
 
-    crate::debug_window::DebugWindow::setup(app);
-    crate::welcome_window::WelcomeWindow::setup(app);
+    crate::windows::debug_window::DebugWindow::setup(app);
+    crate::windows::welcome_window::WelcomeWindow::setup(app);
     app.add_systems(
         EguiPrimaryContextPass,
-        bevy_egui_window::render_window_system::<crate::debug_window::DebugWindow>
-            .run_if(bevy_egui_window::run_if_is_window_open::<crate::debug_window::DebugWindow>),
+        bevy_egui_window::render_window_system::<crate::windows::debug_window::DebugWindow>.run_if(
+            bevy_egui_window::run_if_is_window_open::<crate::windows::debug_window::DebugWindow>,
+        ),
     );
     app.add_systems(
         EguiPrimaryContextPass,
-        bevy_egui_window::render_window_system::<crate::welcome_window::WelcomeWindow>.run_if(
-            bevy_egui_window::run_if_is_window_open::<crate::welcome_window::WelcomeWindow>,
-        ),
+        bevy_egui_window::render_window_system::<crate::windows::welcome_window::WelcomeWindow>
+            .run_if(
+                bevy_egui_window::run_if_is_window_open::<
+                    crate::windows::welcome_window::WelcomeWindow,
+                >,
+            ),
     );
 }

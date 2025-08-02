@@ -1,19 +1,10 @@
 use bevy::prelude::*;
 
-mod add_layer_window;
-mod bottom_panel;
-mod change_crs_window;
-mod debug_window;
 mod events;
-mod feature_properties_window;
-mod manage_layer_window;
-mod message_window;
-mod operation_window;
-mod side_panel;
+mod panels;
 mod systems;
-mod top_panel;
-mod welcome_window;
 mod widgets;
+mod windows;
 
 pub struct Plugin;
 
@@ -52,7 +43,7 @@ struct OperationWindowState {
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(bevy_egui::EguiPlugin::default())
-            .insert_resource(add_layer_window::SelectedFile(None))
+            .insert_resource(windows::add_layer_window::SelectedFile(None))
             .insert_resource(rgis_units::TopPanelHeight(0.))
             .insert_resource(rgis_units::BottomPanelHeight(0.))
             .insert_resource(rgis_units::SidePanelWidth(0.))

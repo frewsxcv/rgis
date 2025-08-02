@@ -2,18 +2,18 @@ use bevy::prelude::*;
 use bevy_egui::egui;
 use bevy_egui_window as window;
 
-pub(crate) struct TopPanel<'a, 'w, 's> {
+pub struct TopPanel<'a, 'w, 's> {
     pub app_exit_events: &'a mut bevy::ecs::event::Events<bevy::app::AppExit>,
     pub egui_ctx: &'a mut bevy_egui::egui::Context,
     pub window: &'a mut Window,
     pub app_settings: &'a mut rgis_settings::RgisSettings,
     pub top_panel_height: &'a mut rgis_units::TopPanelHeight,
     pub is_debug_window_open:
-        &'a mut window::IsWindowOpen<crate::debug_window::DebugWindow<'w, 's>>,
+        &'a mut window::IsWindowOpen<crate::windows::debug_window::DebugWindow<'w, 's>>,
 }
 
 impl TopPanel<'_, '_, '_> {
-    pub(crate) fn render(&mut self) {
+    pub fn render(&mut self) {
         let inner_response = egui::TopBottomPanel::top("top_panel").show(self.egui_ctx, |ui| {
             egui::menu::bar(ui, |ui| {
                 let prev_current_tool = self.app_settings.current_tool;

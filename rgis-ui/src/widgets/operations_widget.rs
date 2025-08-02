@@ -1,4 +1,4 @@
-use crate::side_panel::{Events, OperationButton};
+use crate::panels::side_panel::{Events, OperationButton};
 use bevy_egui::egui::{self, Align, Layout};
 
 pub struct OperationsWidget<'a, 'w> {

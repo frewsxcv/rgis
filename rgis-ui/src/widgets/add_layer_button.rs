@@ -1,4 +1,4 @@
-use crate::side_panel::Events;
+use crate::panels::side_panel::Events;
 use bevy_egui::egui;
 
 pub struct AddLayerButton<'a, 'w> {

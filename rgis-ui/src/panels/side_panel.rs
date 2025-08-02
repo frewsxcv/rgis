@@ -22,7 +22,7 @@ pub struct Events<'w> {
         bevy::ecs::event::EventWriter<'w, rgis_events::ShowManageLayerWindowEvent>,
 }
 
-pub(crate) struct SidePanel<'a, 'w> {
+pub struct SidePanel<'a, 'w> {
     pub egui_ctx: &'a egui::Context,
     pub layers: &'a rgis_layers::Layers,
     pub events: &'a mut Events<'w>,
@@ -30,7 +30,7 @@ pub(crate) struct SidePanel<'a, 'w> {
 }
 
 impl SidePanel<'_, '_> {
-    pub(crate) fn render(&mut self) {
+    pub fn render(&mut self) {
         let side_panel = egui::SidePanel::left("left-side-panel").resizable(true);
 
         let inner_response = side_panel.show(self.egui_ctx, |ui| {

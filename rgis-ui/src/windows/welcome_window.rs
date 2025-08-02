@@ -3,7 +3,7 @@ use bevy_egui::egui;
 use std::marker;
 
 #[derive(SystemParam)]
-pub(crate) struct WelcomeWindow<'w, 's> {
+pub struct WelcomeWindow<'w, 's> {
     _phantom: marker::PhantomData<(&'w (), &'s ())>,
 }
 

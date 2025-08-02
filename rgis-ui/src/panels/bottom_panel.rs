@@ -1,6 +1,6 @@
 use bevy_egui::egui;
 
-pub(crate) struct BottomPanel<'a, 'w> {
+pub struct BottomPanel<'a, 'w> {
     pub egui_ctx: &'a egui::Context,
     pub mouse_pos: &'a rgis_mouse::MousePos,
     pub target_crs: &'a rgis_crs::TargetCrs,
@@ -10,7 +10,7 @@ pub(crate) struct BottomPanel<'a, 'w> {
 }
 
 impl BottomPanel<'_, '_> {
-    pub(crate) fn render(&mut self) {
+    pub fn render(&mut self) {
         let inner_response = egui::TopBottomPanel::bottom("bottom").show(self.egui_ctx, |ui| {
             egui::menu::bar(ui, |ui| {
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {

@@ -1,4 +1,4 @@
-use crate::debug_window::LastDebugStats;
+use crate::windows::debug_window::LastDebugStats;
 use bevy_egui::egui;
 
 pub struct DebugTable<'a> {

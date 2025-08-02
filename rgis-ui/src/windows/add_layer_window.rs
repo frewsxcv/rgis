@@ -31,7 +31,7 @@ impl bevy_jobs::Job for OpenFileJob {
     }
 }
 
-pub(crate) struct AddLayerWindow<'a> {
+pub struct AddLayerWindow<'a> {
     pub state: &'a mut State,
     pub is_visible: &'a mut bool,
     pub selected_file: &'a mut SelectedFile,
@@ -49,10 +49,10 @@ enum Source {
 
 pub struct State {
     pub text_edit_contents: String,
-    crs_input: String,
+    pub crs_input: String,
     selected_source: Source,
-    selected_format: Option<FileFormat>,
-    crs_input_outcome: Option<crate::widgets::crs_input::Outcome>,
+    pub selected_format: Option<FileFormat>,
+    pub crs_input_outcome: Option<crate::widgets::crs_input::Outcome>,
 }
 
 const DEFAULT_CRS_INPUT: &str = "4326";
@@ -107,7 +107,7 @@ pub enum AddLayerWindowOutput {
 }
 
 impl AddLayerWindow<'_> {
-    pub(crate) fn render(&mut self) -> Option<AddLayerWindowOutput> {
+    pub fn render(&mut self) -> Option<AddLayerWindowOutput> {
         let mut output = None;
 
         if *self.is_visible {

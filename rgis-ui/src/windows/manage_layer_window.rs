@@ -1,6 +1,6 @@
 use bevy_egui::egui;
 
-pub(crate) struct ManageLayerWindow<'a> {
+pub struct ManageLayerWindow<'a> {
     pub state: &'a mut crate::ManageLayerWindowState,
     pub layers: &'a rgis_layers::Layers,
     pub egui_ctx: &'a mut bevy_egui::egui::Context,
@@ -8,7 +8,7 @@ pub(crate) struct ManageLayerWindow<'a> {
 }
 
 impl ManageLayerWindow<'_> {
-    pub(crate) fn render(&mut self) {
+    pub fn render(&mut self) {
         let (true, Some(layer_id)) = (self.state.is_visible, self.state.layer_id) else {
             return;
         };
