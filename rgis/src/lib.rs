@@ -19,12 +19,14 @@ pub fn run() {
     app.add_plugins(bevy::a11y::AccessibilityPlugin);
     app.add_plugins(bevy::winit::WinitPlugin::<bevy::winit::WakeUp>::default());
     app.add_plugins(bevy::render::RenderPlugin::default());
-    app.add_plugins(bevy::render::texture::ImagePlugin::default());
+    app.add_plugins(bevy::render::texture::ImagePlugin::default_nearest());
     app.add_plugins(bevy::log::LogPlugin::default());
     app.add_plugins(bevy::input::InputPlugin);
     app.add_plugins(bevy::core_pipeline::CorePipelinePlugin);
     app.add_plugins(bevy::transform::TransformPlugin);
     app.add_plugins(bevy::sprite::SpritePlugin);
+    app.add_plugins(MeshPickingPlugin);
+    app.add_plugins(bevy::picking::DefaultPickingPlugins);
     app.add_plugins(rgis_ui::Plugin);
     app.add_plugins(rgis_layers::Plugin);
     app.add_plugins(rgis_file_loader::Plugin);

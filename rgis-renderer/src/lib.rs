@@ -53,6 +53,13 @@ fn spawn_geometry_meshes(
                 let transform = Transform::from_xyz(coord.x, coord.y, z_index.0 as f32);
                 let mut entity_commands =
                     spawn_sprite_bundle(asset_server, transform, commands, layer.color.stroke);
+                // FIXME: doesn't yet work
+                entity_commands.observe(|trigger_meow: Trigger<Pointer<Pressed>>| {
+                    bevy::log::error!("Pointer pressed: {:?}", trigger_meow);
+                });
+                entity_commands.observe(|trigger_meow: Trigger<Pointer<Over>>| {
+                    bevy::log::error!("Pointer over: {:?}", trigger_meow);
+                });
                 entity_commands.insert(layer.id);
                 entity_commands.insert(stroke_entity_type);
 
@@ -70,6 +77,13 @@ fn spawn_geometry_meshes(
                         layer.color.fill.unwrap()
                     },
                 );
+                // FIXME: doesn't yet work
+                entity_commands.observe(|trigger_meow: Trigger<Pointer<Pressed>>| {
+                    bevy::log::error!("Pointer pressed: {:?}", trigger_meow);
+                });
+                entity_commands.observe(|trigger_meow: Trigger<Pointer<Over>>| {
+                    bevy::log::error!("Pointer over: {:?}", trigger_meow);
+                });
                 entity_commands.insert(layer.id);
                 entity_commands.insert(fill_entity_type);
             }
@@ -172,6 +186,12 @@ fn spawn_helper<'a>(
         commands,
         layer.visible,
     );
+    entity_commands.observe(|trigger_meow: Trigger<Pointer<Pressed>>| {
+        bevy::log::error!("Pointer pressed: {:?}", trigger_meow);
+    });
+    entity_commands.observe(|trigger_meow: Trigger<Pointer<Over>>| {
+        bevy::log::error!("Pointer over: {:?}", trigger_meow);
+    });
     entity_commands.insert(layer.id);
     entity_commands.insert(entity_type);
     entity_commands
@@ -187,9 +207,12 @@ fn spawn_sprite_bundle<'a>(
         Sprite {
             color,
             image: asset_server.load("circle.png"),
+            custom_size: Some(Vec2::new(20.0, 20.0)),
             ..Default::default()
         },
         transform,
+        Visibility::default(),
+        Pickable::default(),
     ))
 }
 
