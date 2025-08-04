@@ -38,41 +38,54 @@ fn spawn_geometry_meshes(
 ) {
     match geometry_mesh {
         geo_bevy::GeometryMesh::Point(points) => {
-            for coord in points {
-                let (stroke_entity_type, fill_entity_type) = if is_selected {
-                    (
-                        RenderEntityType::SelectedPoint,
-                        RenderEntityType::SelectedPoint,
-                    )
-                } else {
-                    (RenderEntityType::PointStroke, RenderEntityType::PointFill)
-                };
+            commands
+                .spawn((Visibility::default(), Transform::default(), layer.id))
+                .with_children(|commands| {
+                    let circle = asset_server.load("circle.png");
+                    for coord in points {
+                        let (stroke_entity_type, fill_entity_type) = if is_selected {
+                            (
+                                RenderEntityType::SelectedPoint,
+                                RenderEntityType::SelectedPoint,
+                            )
+                        } else {
+                            (RenderEntityType::PointStroke, RenderEntityType::PointFill)
+                        };
 
-                // Stroke
-                let z_index = ZIndex::calculate(layer_index, stroke_entity_type);
-                let transform = Transform::from_xyz(coord.x, coord.y, z_index.0 as f32);
-                let mut entity_commands =
-                    spawn_sprite_bundle(asset_server, transform, commands, layer.color.stroke);
-                entity_commands.insert(layer.id);
-                entity_commands.insert(stroke_entity_type);
+                        // Stroke
+                        let z_index = ZIndex::calculate(layer_index, stroke_entity_type);
+                        let transform = Transform::from_xyz(coord.x, coord.y, z_index.0 as f32);
+                        commands
+                            .spawn((
+                                Sprite {
+                                    color: layer.color.stroke,
+                                    image: circle.clone(),
+                                    ..Default::default()
+                                },
+                                transform,
+                            ))
+                            .insert(stroke_entity_type);
 
-                // Fill
-                let z_index = ZIndex::calculate(layer_index, fill_entity_type);
-                let mut transform = Transform::from_xyz(coord.x, coord.y, z_index.0 as f32);
-                transform.scale *= 0.7; // Fill should be smaller than stroke.
-                let mut entity_commands = spawn_sprite_bundle(
-                    asset_server,
-                    transform,
-                    commands,
-                    if is_selected {
-                        SELECTED_COLOR
-                    } else {
-                        layer.color.fill.unwrap()
-                    },
-                );
-                entity_commands.insert(layer.id);
-                entity_commands.insert(fill_entity_type);
-            }
+                        // Fill
+                        let z_index = ZIndex::calculate(layer_index, fill_entity_type);
+                        let mut transform = Transform::from_xyz(coord.x, coord.y, z_index.0 as f32);
+                        transform.scale *= 0.7; // Fill should be smaller than stroke.
+                        commands
+                            .spawn((
+                                Sprite {
+                                    color: if is_selected {
+                                        SELECTED_COLOR
+                                    } else {
+                                        layer.color.fill.unwrap()
+                                    },
+                                    image: circle.clone(),
+                                    ..Default::default()
+                                },
+                                transform,
+                            ))
+                            .insert(fill_entity_type);
+                    }
+                });
         }
         geo_bevy::GeometryMesh::Polygon(polygon_mesh) => {
             let polygon_entity_type = if is_selected {
@@ -175,22 +188,6 @@ fn spawn_helper<'a>(
     entity_commands.insert(layer.id);
     entity_commands.insert(entity_type);
     entity_commands
-}
-
-fn spawn_sprite_bundle<'a>(
-    asset_server: &AssetServer,
-    transform: Transform,
-    commands: &'a mut Commands<'_, '_>,
-    color: Color,
-) -> bevy::ecs::system::EntityCommands<'a> {
-    commands.spawn((
-        Sprite {
-            color,
-            image: asset_server.load("circle.png"),
-            ..Default::default()
-        },
-        transform,
-    ))
 }
 
 fn spawn_material_mesh_2d_bundle<'a>(
