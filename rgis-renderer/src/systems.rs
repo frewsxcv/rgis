@@ -79,17 +79,13 @@ fn handle_layer_z_index_updated_event(
     }
 }
 
-type LayerEntitiesWithColorMaterialsOrImagesQuery<'world, 'state, 'a> = Query<
-    'world,
-    'state,
-    (&'a rgis_primitives::LayerId, Entity),
-    Or<(With<MeshMaterial2d<ColorMaterial>>, With<Sprite>)>,
->;
+type LayerEntitiesQuery<'world, 'state, 'a> =
+    Query<'world, 'state, (&'a rgis_primitives::LayerId, Entity)>;
 
 fn handle_despawn_meshes_event(
     mut layer_deleted_event_reader: EventReader<rgis_events::DespawnMeshesEvent>,
     mut commands: Commands,
-    query: LayerEntitiesWithColorMaterialsOrImagesQuery,
+    query: LayerEntitiesQuery,
 ) {
     for event in layer_deleted_event_reader.read() {
         for (_, entity) in query.iter().filter(|(i, _)| **i == event.0) {
