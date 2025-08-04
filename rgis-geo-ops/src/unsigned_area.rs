@@ -20,9 +20,7 @@ impl OperationEntry for UnsignedArea {
     );
     const NAME: &'static str = "Area (unsigned)";
 
-    fn build() -> Box<dyn Operation + Send + Sync> {
-        Box::<UnsignedArea>::default()
-    }
+    type Op = UnsignedArea;
 }
 
 impl Operation for UnsignedArea {

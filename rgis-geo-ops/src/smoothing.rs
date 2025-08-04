@@ -17,9 +17,7 @@ impl OperationEntry for Smoothing {
     );
     const NAME: &'static str = "Smooth geometries";
 
-    fn build() -> Box<dyn Operation + Send + Sync> {
-        Box::<Smoothing>::default()
-    }
+    type Op = Smoothing;
 }
 
 const NUM_ITERATIONS: usize = 2;

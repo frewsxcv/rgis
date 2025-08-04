@@ -1,5 +1,6 @@
 use bevy::{ecs::system::SystemParam, prelude::*};
 use bevy_egui::egui::{self, Align, Layout, Widget};
+use rgis_geo_ops::Operation;
 use std::marker;
 
 // const MAX_SIDE_PANEL_WIDTH: f32 = 200.0f32;
@@ -95,7 +96,7 @@ impl<Op: rgis_geo_ops::OperationEntry> egui::Widget for OperationButton<'_, '_, 
                 rgis_geo_ops::Action::RenderUi => {
                     self.events.open_operation_window_event_writer.write(
                         crate::events::OpenOperationWindowEvent {
-                            operation,
+                            operation: Box::new(operation),
                             feature_collection: self.layer.unprojected_feature_collection.clone(), // TODO: clone?
                         },
                     );

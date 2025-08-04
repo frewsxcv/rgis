@@ -21,9 +21,7 @@ impl OperationEntry for Simplify {
     );
     const NAME: &'static str = "Simplify geometries";
 
-    fn build() -> Box<dyn Operation + Send + Sync> {
-        Box::<Simplify>::default()
-    }
+    type Op = Simplify;
 }
 
 impl Operation for Simplify {

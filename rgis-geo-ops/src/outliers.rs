@@ -10,9 +10,7 @@ impl OperationEntry for Outliers {
     );
     const NAME: &'static str = "Detect outliers";
 
-    fn build() -> Box<dyn Operation + Send + Sync> {
-        Box::<Outliers>::default()
-    }
+    type Op = Outliers;
 }
 
 #[derive(Default)]

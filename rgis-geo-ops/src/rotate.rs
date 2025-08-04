@@ -12,9 +12,7 @@ impl OperationEntry for Rotate {
     const ALLOWED_GEOM_TYPES: geo_geom_type::GeomType = geo_geom_type::GeomType::all();
     const NAME: &'static str = "Rotate geometries";
 
-    fn build() -> Box<dyn Operation + Send + Sync> {
-        Box::<Self>::default()
-    }
+    type Op = Rotate;
 }
 
 impl Operation for Rotate {

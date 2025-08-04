@@ -31,7 +31,11 @@ pub trait OperationEntry {
     const ALLOWED_GEOM_TYPES: geo_geom_type::GeomType;
     const NAME: &'static str;
 
-    fn build() -> Box<dyn Operation + Send + Sync>;
+    type Op: Operation + Send + Sync + Default + 'static;
+
+    fn build() -> Self::Op {
+        Self::Op::default()
+    }
 }
 
 pub enum Action {

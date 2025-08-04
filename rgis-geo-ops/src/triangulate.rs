@@ -9,9 +9,7 @@ impl OperationEntry for Triangulate {
     );
     const NAME: &'static str = "Triangulate";
 
-    fn build() -> Box<dyn Operation + Send + Sync> {
-        Box::<Triangulate>::default()
-    }
+    type Op = Triangulate;
 }
 
 #[derive(Default)]

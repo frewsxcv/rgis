@@ -11,9 +11,7 @@ impl OperationEntry for ConvexHull {
     const ALLOWED_GEOM_TYPES: geo_geom_type::GeomType = geo_geom_type::GeomType::all();
     const NAME: &'static str = "Convex hull";
 
-    fn build() -> Box<dyn Operation + Send + Sync> {
-        Box::<ConvexHull>::default()
-    }
+    type Op = ConvexHull;
 }
 
 impl Operation for ConvexHull {
