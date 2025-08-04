@@ -31,7 +31,6 @@ fn render_side(
     mut side_panel_width: ResMut<rgis_units::SidePanelWidth>,
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
-
     crate::panels::side::Side {
         egui_ctx: bevy_egui_ctx_mut,
         layers: &layers,
@@ -192,7 +191,6 @@ fn render_change_crs_window(
     geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
-
     crate::windows::change_crs::ChangeCrs {
         is_visible: &mut state.is_visible,
         egui_ctx: bevy_egui_ctx_mut,
@@ -259,7 +257,6 @@ fn render_operation_window(
     render_message_event_writer: EventWriter<rgis_events::RenderMessageEvent>,
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
-
     if let Some(event) = events.drain().last() {
         state.is_visible = true;
         state.operation = Some(event.operation);
@@ -385,6 +382,9 @@ enum RenderSystemSet {
 }
 
 pub fn configure(app: &mut App) {
+    app.add_event::<crate::events::OpenOperationWindowEvent>()
+        .add_event::<crate::events::PerformOperationEvent>();
+
     app.add_systems(
         PostStartup,
         (bevy_egui::setup_primary_egui_context_system, set_egui_theme).chain(),
@@ -419,7 +419,11 @@ pub fn configure(app: &mut App) {
 
     app.add_systems(
         Update,
-        (handle_open_change_crs_window_event, handle_open_file_job),
+        (
+            handle_open_change_crs_window_event,
+            handle_open_file_job,
+            perform_operation,
+        ),
     );
 
     crate::windows::debug::Debug::setup(app);
@@ -434,4 +438,52 @@ pub fn configure(app: &mut App) {
         bevy_egui_window::render_window_system::<crate::windows::welcome::Welcome>
             .run_if(bevy_egui_window::run_if_is_window_open::<crate::windows::welcome::Welcome>),
     );
+}
+
+#[allow(clippy::too_many_arguments)]
+fn perform_operation(
+    _commands: Commands,
+    mut events: ResMut<Events<crate::events::PerformOperationEvent>>,
+    layers: Res<rgis_layers::Layers>,
+    mut open_operation_window_event_writer: EventWriter<crate::events::OpenOperationWindowEvent>,
+    mut create_layer_event_writer: EventWriter<rgis_events::CreateLayerEvent>,
+    mut render_message_event_writer: EventWriter<rgis_events::RenderMessageEvent>,
+) {
+    for event in events.drain() {
+        let Some(layer) = layers.get(event.layer_id) else {
+            error!("Layer not found, cannot perform operation");
+            continue;
+        };
+
+        let mut operation = event.operation;
+
+        match operation.next_action() {
+            rgis_geo_ops::Action::RenderUi => {
+                open_operation_window_event_writer.write(crate::events::OpenOperationWindowEvent {
+                    operation,
+                    feature_collection: layer.unprojected_feature_collection.clone(), // TODO: clone?
+                });
+            }
+            rgis_geo_ops::Action::Perform => {
+                // TODO: perform in background job
+                let outcome = operation.perform(layer.unprojected_feature_collection.clone()); // TODO: clone?
+
+                match outcome {
+                    Ok(rgis_geo_ops::Outcome::FeatureCollection(feature_collection)) => {
+                        create_layer_event_writer.write(rgis_events::CreateLayerEvent {
+                            feature_collection,
+                            name: "foo".into(), // TODO
+                            source_crs: layer.crs,
+                        });
+                    }
+                    Ok(rgis_geo_ops::Outcome::Text(text)) => {
+                        render_message_event_writer.write(rgis_events::RenderMessageEvent(text));
+                    }
+                    Err(e) => {
+                        error!("Encountered an error during the operation: {}", e);
+                    }
+                }
+            }
+        }
+    }
 }

@@ -1,6 +1,5 @@
 use bevy::{ecs::system::SystemParam, prelude::*};
 use bevy_egui::egui::{self, Align, Layout, Widget};
-use rgis_geo_ops::Operation;
 use std::marker;
 
 // const MAX_SIDE_PANEL_WIDTH: f32 = 200.0f32;
@@ -14,11 +13,9 @@ pub struct Events<'w> {
     pub move_layer_event_writer: EventWriter<'w, rgis_events::MoveLayerEvent>,
     pub create_layer_event_writer: EventWriter<'w, rgis_events::CreateLayerEvent>,
     pub show_add_layer_window_event_writer: EventWriter<'w, rgis_events::ShowAddLayerWindow>,
-    pub render_message_event_writer: EventWriter<'w, rgis_events::RenderMessageEvent>,
-    pub open_operation_window_event_writer:
-        EventWriter<'w, crate::events::OpenOperationWindowEvent>,
     pub show_manage_layer_window_event_writer:
         EventWriter<'w, rgis_events::ShowManageLayerWindowEvent>,
+    pub perform_operation_event_writer: EventWriter<'w, crate::events::PerformOperationEvent>,
 }
 
 pub struct Side<'a, 'w> {
@@ -91,42 +88,12 @@ impl<Op: rgis_geo_ops::OperationEntry> egui::Widget for OperationButton<'_, '_, 
             egui::Button::new(Op::NAME),
         );
         if button.clicked() {
-            let mut operation = Op::build();
-            match operation.next_action() {
-                rgis_geo_ops::Action::RenderUi => {
-                    self.events.open_operation_window_event_writer.write(
-                        crate::events::OpenOperationWindowEvent {
-                            operation: Box::new(operation),
-                            feature_collection: self.layer.unprojected_feature_collection.clone(), // TODO: clone?
-                        },
-                    );
-                }
-                rgis_geo_ops::Action::Perform => {
-                    // TODO: perform in background job
-                    let outcome =
-                        operation.perform(self.layer.unprojected_feature_collection.clone()); // TODO: clone?
-
-                    match outcome {
-                        Ok(rgis_geo_ops::Outcome::FeatureCollection(feature_collection)) => {
-                            self.events.create_layer_event_writer.write(
-                                rgis_events::CreateLayerEvent {
-                                    feature_collection,
-                                    name: Op::NAME.into(),
-                                    source_crs: self.layer.crs,
-                                },
-                            );
-                        }
-                        Ok(rgis_geo_ops::Outcome::Text(text)) => {
-                            self.events
-                                .render_message_event_writer
-                                .write(rgis_events::RenderMessageEvent(text));
-                        }
-                        Err(e) => {
-                            error!("Encountered an error during the operation: {}", e);
-                        }
-                    }
-                }
-            }
+            self.events.perform_operation_event_writer.write(
+                crate::events::PerformOperationEvent {
+                    operation: Box::new(Op::build()),
+                    layer_id: self.layer.id,
+                },
+            );
         }
         button
     }
