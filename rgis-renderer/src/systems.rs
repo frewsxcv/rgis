@@ -61,6 +61,7 @@ fn handle_mesh_building_job_outcome(
     }
 }
 
+// TODO
 fn handle_layer_z_index_updated_event(
     mut layer_z_index_updated_event_reader: EventReader<rgis_events::LayerZIndexUpdatedEvent>,
     mut query: Query<(&rgis_primitives::LayerId, &mut Transform, &RenderEntityType)>,
@@ -119,12 +120,11 @@ fn handle_layer_became_visible_event(
 fn handle_layer_color_updated_event(
     mut event_reader: EventReader<rgis_events::LayerColorUpdatedEvent>,
     layers: Res<rgis_layers::Layers>,
-    color_material_query: Query<(
-        &rgis_primitives::LayerId,
-        &MeshMaterial2d<ColorMaterial>,
-        &RenderEntityType,
-    )>,
-    mut sprite_query: Query<(&rgis_primitives::LayerId, &mut Sprite, &RenderEntityType)>,
+    mut point_layer_query: Query<(&rgis_primitives::LayerId, &Children), With<crate::Point>>,
+    polygon_layer_query: Query<(&rgis_primitives::LayerId, &Children), With<crate::Polygon>>,
+    line_string_layer_query: Query<(&rgis_primitives::LayerId, &Children), With<crate::LineString>>,
+    mut sprite_fill_query: Query<&mut Sprite, (With<crate::Fill>, Without<crate::Stroke>)>,
+    mut sprite_stroke_query: Query<&mut Sprite, (With<crate::Stroke>, Without<crate::Fill>)>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     for event in event_reader.read() {
@@ -137,22 +137,26 @@ fn handle_layer_color_updated_event(
         };
 
         if layer.geom_type == geo_geom_type::GeomType::POINT {
-            let render_entity_type = if is_fill {
-                RenderEntityType::PointFill
-            } else {
-                RenderEntityType::PointStroke
-            };
-            for (_, mut sprite, _) in sprite_query.iter_mut().filter(|(i, _, entity_type)| {
-                **i == layer.id && **entity_type == render_entity_type
-            }) {
-                sprite.color = if is_fill {
-                    layer.color.fill.unwrap()
+            for child in point_layer_query
+                .iter_mut()
+                .filter(|(i, _children)| **i == layer.id)
+                .flat_map(|(_, children)| children.iter())
+            {
+                if is_fill {
+                    if let Ok(mut sprite) = sprite_fill_query.get_mut(child) {
+                        sprite.color = layer.color.fill.unwrap();
+                    }
                 } else {
-                    layer.color.stroke
-                };
+                    if let Ok(mut sprite) = sprite_stroke_query.get_mut(child) {
+                        sprite.color = layer.color.stroke;
+                    }
+                }
             }
-        } else if is_fill {
-            for (_, handle, _) in color_material_query.iter().filter(|(i, _, entity_type)| {
+        }
+
+        /*
+        if is_fill {
+            for (_, handle) in layer_query.iter().filter(|(i, _, entity_type)| {
                 **i == layer.id && **entity_type == RenderEntityType::Polygon
             }) {
                 if let Some(color_material) = materials.get_mut(handle) {
@@ -160,7 +164,7 @@ fn handle_layer_color_updated_event(
                 }
             }
         } else {
-            for (_, handle, _) in color_material_query.iter().filter(|(i, _, entity_type)| {
+            for (_, handle) in layer_query.iter().filter(|(i, _, entity_type)| {
                 **i == layer.id && **entity_type == RenderEntityType::LineString
             }) {
                 if let Some(color_material) = materials.get_mut(handle) {
@@ -168,6 +172,7 @@ fn handle_layer_color_updated_event(
                 }
             }
         }
+        */
     }
 }
 
