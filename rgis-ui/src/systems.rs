@@ -61,6 +61,7 @@ fn render_manage_layer_window(
     mut show_manage_layer_window_event_reader: EventReader<
         rgis_ui_events::ShowManageLayerWindowEvent,
     >,
+    mut duplicate_layer_events: EventWriter<rgis_layer_events::DuplicateLayerEvent>,
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     if let Some(event) = show_manage_layer_window_event_reader.read().last() {
@@ -73,6 +74,7 @@ fn render_manage_layer_window(
         layers: &layers,
         egui_ctx: bevy_egui_ctx_mut,
         color_events: &mut color_events,
+        duplicate_layer_events: &mut duplicate_layer_events,
     }
     .render();
     Ok(())
