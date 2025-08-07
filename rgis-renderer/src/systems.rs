@@ -121,10 +121,21 @@ fn handle_layer_color_updated_event(
     mut event_reader: EventReader<rgis_events::LayerColorUpdatedEvent>,
     layers: Res<rgis_layers::Layers>,
     mut point_layer_query: Query<(&rgis_primitives::LayerId, &Children), With<crate::Point>>,
-    polygon_layer_query: Query<(&rgis_primitives::LayerId, &Children), With<crate::Polygon>>,
-    line_string_layer_query: Query<(&rgis_primitives::LayerId, &Children), With<crate::LineString>>,
+    mut polygon_layer_query: Query<(&rgis_primitives::LayerId, &Children), With<crate::Polygon>>,
+    mut line_string_layer_query: Query<
+        (&rgis_primitives::LayerId, &Children),
+        With<crate::LineString>,
+    >,
     mut sprite_fill_query: Query<&mut Sprite, (With<crate::Fill>, Without<crate::Stroke>)>,
     mut sprite_stroke_query: Query<&mut Sprite, (With<crate::Stroke>, Without<crate::Fill>)>,
+    mut material_fill_query: Query<
+        &mut MeshMaterial2d<ColorMaterial>,
+        (With<crate::Fill>, Without<crate::Stroke>),
+    >,
+    mut material_stroke_query: Query<
+        &mut MeshMaterial2d<ColorMaterial>,
+        (With<crate::Stroke>, Without<crate::Fill>),
+    >,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     for event in event_reader.read() {
@@ -136,43 +147,58 @@ fn handle_layer_color_updated_event(
             continue;
         };
 
-        if layer.geom_type == geo_geom_type::GeomType::POINT {
-            for child in point_layer_query
-                .iter_mut()
-                .filter(|(i, _children)| **i == layer.id)
-                .flat_map(|(_, children)| children.iter())
-            {
-                if is_fill {
-                    if let Ok(mut sprite) = sprite_fill_query.get_mut(child) {
-                        sprite.color = layer.color.fill.unwrap();
-                    }
-                } else {
-                    if let Ok(mut sprite) = sprite_stroke_query.get_mut(child) {
-                        sprite.color = layer.color.stroke;
-                    }
+        // Update the point sprites
+        for child in point_layer_query
+            .iter_mut()
+            .filter(|(i, _children)| **i == layer.id)
+            .flat_map(|(_, children)| children.iter())
+        {
+            if is_fill {
+                if let Ok(mut sprite) = sprite_fill_query.get_mut(child) {
+                    sprite.color = layer.color.fill.unwrap();
+                }
+            } else {
+                if let Ok(mut sprite) = sprite_stroke_query.get_mut(child) {
+                    sprite.color = layer.color.stroke;
                 }
             }
         }
 
-        /*
-        if is_fill {
-            for (_, handle) in layer_query.iter().filter(|(i, _, entity_type)| {
-                **i == layer.id && **entity_type == RenderEntityType::Polygon
-            }) {
-                if let Some(color_material) = materials.get_mut(handle) {
-                    color_material.color = layer.color.fill.unwrap();
+        // Update the line string materials
+        for child in line_string_layer_query
+            .iter_mut()
+            .filter(|(i, _children)| **i == layer.id)
+            .flat_map(|(_, children)| children.iter())
+        {
+            if is_fill {
+                if let Ok(mut color_material) = material_fill_query.get_mut(child) {
+                    materials.get_mut(&mut color_material.0).unwrap().color =
+                        layer.color.fill.unwrap();
                 }
-            }
-        } else {
-            for (_, handle) in layer_query.iter().filter(|(i, _, entity_type)| {
-                **i == layer.id && **entity_type == RenderEntityType::LineString
-            }) {
-                if let Some(color_material) = materials.get_mut(handle) {
-                    color_material.color = layer.color.stroke;
+            } else {
+                if let Ok(mut color_material) = material_stroke_query.get_mut(child) {
+                    materials.get_mut(&mut color_material.0).unwrap().color = layer.color.stroke;
                 }
             }
         }
-        */
+
+        // Update the polygon materials
+        for child in polygon_layer_query
+            .iter_mut()
+            .filter(|(i, _children)| **i == layer.id)
+            .flat_map(|(_, children)| children.iter())
+        {
+            if is_fill {
+                if let Ok(mut color_material) = material_fill_query.get_mut(child) {
+                    materials.get_mut(&mut color_material.0).unwrap().color =
+                        layer.color.fill.unwrap();
+                }
+            } else {
+                if let Ok(mut color_material) = material_stroke_query.get_mut(child) {
+                    materials.get_mut(&mut color_material.0).unwrap().color = layer.color.stroke;
+                }
+            }
+        }
     }
 }
 
