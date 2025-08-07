@@ -44,6 +44,9 @@ pub struct CreateLayerEvent {
 #[derive(Event)]
 pub struct LayerReprojectedEvent(pub rgis_primitives::LayerId);
 
+#[derive(Event, Debug)]
+pub struct DuplicateLayerEvent(pub rgis_primitives::LayerId);
+
 pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
@@ -57,6 +60,7 @@ impl bevy::app::Plugin for Plugin {
             .add_event::<MoveLayerEvent>()
             .add_event::<LayerZIndexUpdatedEvent>()
             .add_event::<LayerReprojectedEvent>()
-            .add_event::<CreateLayerEvent>();
+            .add_event::<CreateLayerEvent>()
+            .add_event::<DuplicateLayerEvent>();
     }
 }

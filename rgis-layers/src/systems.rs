@@ -138,6 +138,25 @@ fn handle_create_layer_events(
     }
 }
 
+use crate::LayerWithIndex;
+
+fn handle_duplicate_layer_events(
+    mut duplicate_layer_event_reader: EventReader<rgis_layer_events::DuplicateLayerEvent>,
+    mut create_layer_event_writer: EventWriter<rgis_layer_events::CreateLayerEvent>,
+    layers: Res<crate::Layers>,
+) {
+    for event in duplicate_layer_event_reader.read() {
+        if let Some(LayerWithIndex(layer, _)) = layers.get_with_index(event.0) {
+            let new_name = format!("Copy of {}", layer.name);
+            create_layer_event_writer.write(rgis_layer_events::CreateLayerEvent {
+                feature_collection: layer.unprojected_feature_collection.clone(),
+                name: new_name,
+                source_crs: layer.crs,
+            });
+        }
+    }
+}
+
 pub fn configure(app: &mut App) {
     app.add_systems(
         Update,
@@ -148,6 +167,7 @@ pub fn configure(app: &mut App) {
             handle_delete_layer_events,
             handle_map_clicked_events,
             handle_create_layer_events,
+            handle_duplicate_layer_events,
         ),
     );
 }

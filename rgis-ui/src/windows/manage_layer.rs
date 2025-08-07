@@ -1,15 +1,17 @@
 use bevy::prelude::*;
 use bevy_egui::egui;
+use rgis_layer_events::DuplicateLayerEvent;
 use rgis_ui_events::UpdateLayerColorEvent;
 
-pub struct ManageLayer<'a> {
+pub struct ManageLayer<'a, 'w> {
     pub state: &'a mut crate::ManageLayerWindowState,
     pub layers: &'a rgis_layers::Layers,
     pub egui_ctx: &'a mut bevy_egui::egui::Context,
     pub color_events: &'a mut Events<UpdateLayerColorEvent>,
+    pub duplicate_layer_events: &'a mut EventWriter<'w, DuplicateLayerEvent>,
 }
 
-impl ManageLayer<'_> {
+impl<'w> ManageLayer<'_, 'w> {
     pub fn render(&mut self) {
         let (true, Some(layer_id)) = (self.state.is_visible, self.state.layer_id) else {
             return;
@@ -56,6 +58,11 @@ impl ManageLayer<'_> {
                         });
                         ui.end_row();
                     });
+                ui.separator();
+                if ui.button("Duplicate").clicked() {
+                    self.duplicate_layer_events
+                        .write(DuplicateLayerEvent(layer_id));
+                }
             });
     }
 }
