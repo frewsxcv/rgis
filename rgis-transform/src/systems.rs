@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 fn handle_layer_created_events(
-    mut layer_created_event_reader: EventReader<rgis_events::LayerCreatedEvent>,
+    mut layer_created_event_reader: EventReader<rgis_layer_events::LayerCreatedEvent>,
     layers: Res<rgis_layers::Layers>,
     target_crs: Res<rgis_crs::TargetCrs>,
     mut job_spawner: bevy_jobs::JobSpawner,
@@ -25,7 +25,7 @@ fn handle_layer_created_events(
 fn handle_reproject_geometry_job_completion_events(
     mut finished_jobs: bevy_jobs::FinishedJobs,
     mut layers: ResMut<rgis_layers::Layers>,
-    mut layer_reprojected_event_writer: EventWriter<rgis_events::LayerReprojectedEvent>,
+    mut layer_reprojected_event_writer: EventWriter<rgis_layer_events::LayerReprojectedEvent>,
     target_crs: Res<rgis_crs::TargetCrs>,
 ) {
     while let Some(outcome) = finished_jobs.take_next::<crate::jobs::ReprojectGeometryJob>() {
@@ -48,12 +48,13 @@ fn handle_reproject_geometry_job_completion_events(
 
         layer.projected_feature_collection = Some(outcome.feature_collection);
 
-        layer_reprojected_event_writer.write(rgis_events::LayerReprojectedEvent(outcome.layer_id));
+        layer_reprojected_event_writer
+            .write(rgis_layer_events::LayerReprojectedEvent(outcome.layer_id));
     }
 }
 
 fn handle_crs_changed_events(
-    mut crs_changed_event_reader: EventReader<rgis_events::CrsChangedEvent>,
+    mut crs_changed_event_reader: EventReader<rgis_crs_events::CrsChangedEvent>,
     mut layers: ResMut<rgis_layers::Layers>,
     target_crs: Res<rgis_crs::TargetCrs>,
     mut job_spawner: bevy_jobs::JobSpawner,

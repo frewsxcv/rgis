@@ -12,7 +12,10 @@ geo = { workspace = true }
 geo-bevy = { workspace = true }
 geo-projected = { path = "../geo-projected" }
 geo-geom-type = { path = "../geo-geom-type" }
-rgis-events = { path = "../rgis-events" }
+rgis-renderer-events = { path = "../rgis-renderer-events" }
+rgis-layer-events = { path = "../rgis-layer-events" }
+rgis-crs-events = { path = "../rgis-crs-events" }
+rgis-map-events = { path = "../rgis-map-events" }
 rgis-primitives = { path = "../rgis-primitives" }
 rgis-layers = { path = "../rgis-layers" }
 bevy_jobs = { workspace = true }

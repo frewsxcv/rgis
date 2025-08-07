@@ -1,5 +1,6 @@
 use crate::panels::side::Events;
 use bevy_egui::egui;
+use rgis_layer_events::ToggleLayerVisibilityEvent;
 
 pub struct ToggleLayer<'a, 'w> {
     pub layer: &'a rgis_layers::Layer,
@@ -17,7 +18,7 @@ impl egui::Widget for ToggleLayer<'_, '_> {
         if button.clicked() {
             self.events
                 .toggle_layer_visibility_event_writer
-                .write(rgis_events::ToggleLayerVisibilityEvent(self.layer.id));
+                .write(ToggleLayerVisibilityEvent(self.layer.id));
         }
 
         button

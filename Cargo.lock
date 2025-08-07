@@ -4844,19 +4844,25 @@ dependencies = [
  "bevy_jobs",
  "geo",
  "rgis-camera",
+ "rgis-camera-events",
  "rgis-cli",
  "rgis-crs",
- "rgis-events",
+ "rgis-crs-events",
  "rgis-file-loader",
+ "rgis-file-loader-events",
  "rgis-geodesy",
  "rgis-keyboard",
+ "rgis-layer-events",
  "rgis-layers",
+ "rgis-map-events",
  "rgis-mouse",
  "rgis-network",
  "rgis-renderer",
+ "rgis-renderer-events",
  "rgis-settings",
  "rgis-transform",
  "rgis-ui",
+ "rgis-ui-events",
  "time-logger",
  "wasm-bindgen",
 ]
@@ -4869,10 +4875,21 @@ dependencies = [
  "geo",
  "geo-geodesy",
  "geo-projected",
- "rgis-events",
+ "rgis-camera-events",
+ "rgis-crs-events",
  "rgis-geodesy",
  "rgis-layers",
+ "rgis-renderer-events",
  "rgis-units",
+]
+
+[[package]]
+name = "rgis-camera-events"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "geo-projected",
+ "rgis-primitives",
 ]
 
 [[package]]
@@ -4889,21 +4906,16 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "geodesy",
- "rgis-events",
+ "rgis-crs-events",
  "rgis-geodesy",
  "rgis-primitives",
 ]
 
 [[package]]
-name = "rgis-events"
+name = "rgis-crs-events"
 version = "0.1.0"
 dependencies = [
  "bevy",
- "bytes",
- "geo",
- "geo-features",
- "geo-file-loader",
- "geo-projected",
  "rgis-primitives",
 ]
 
@@ -4917,11 +4929,22 @@ dependencies = [
  "geo-features",
  "geo-file-loader",
  "geo-projected",
- "rgis-events",
+ "rgis-file-loader-events",
+ "rgis-layer-events",
  "rgis-network",
  "rgis-primitives",
  "serde_json",
  "time-logger",
+]
+
+[[package]]
+name = "rgis-file-loader-events"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bytes",
+ "geo-file-loader",
+ "rgis-primitives",
 ]
 
 [[package]]
@@ -4950,7 +4973,17 @@ name = "rgis-keyboard"
 version = "0.1.0"
 dependencies = [
  "bevy",
- "rgis-events",
+ "rgis-camera-events",
+]
+
+[[package]]
+name = "rgis-layer-events"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "geo-features",
+ "geo-projected",
+ "rgis-primitives",
 ]
 
 [[package]]
@@ -4964,13 +4997,26 @@ dependencies = [
  "geo-geom-type",
  "geo-projected",
  "rgis-crs",
- "rgis-events",
+ "rgis-layer-events",
+ "rgis-map-events",
  "rgis-primitives",
+ "rgis-renderer-events",
+ "rgis-ui-events",
 ]
 
 [[package]]
 name = "rgis-library"
 version = "0.1.0"
+
+[[package]]
+name = "rgis-map-events"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "geo-features",
+ "geo-projected",
+ "rgis-primitives",
+]
 
 [[package]]
 name = "rgis-mouse"
@@ -4981,7 +5027,8 @@ dependencies = [
  "geo",
  "geo-projected",
  "num-t",
- "rgis-events",
+ "rgis-camera-events",
+ "rgis-map-events",
  "rgis-settings",
  "rgis-units",
 ]
@@ -5018,8 +5065,19 @@ dependencies = [
  "geo-bevy",
  "geo-geom-type",
  "geo-projected",
- "rgis-events",
+ "rgis-crs-events",
+ "rgis-layer-events",
  "rgis-layers",
+ "rgis-map-events",
+ "rgis-primitives",
+ "rgis-renderer-events",
+]
+
+[[package]]
+name = "rgis-renderer-events"
+version = "0.1.0"
+dependencies = [
+ "bevy",
  "rgis-primitives",
 ]
 
@@ -5028,7 +5086,7 @@ name = "rgis-settings"
 version = "0.1.0"
 dependencies = [
  "bevy",
- "rgis-events",
+ "rgis-map-events",
 ]
 
 [[package]]
@@ -5043,8 +5101,9 @@ dependencies = [
  "geo-projected",
  "num-t",
  "rgis-crs",
- "rgis-events",
+ "rgis-crs-events",
  "rgis-geodesy",
+ "rgis-layer-events",
  "rgis-layers",
  "rgis-primitives",
  "rgis-settings",
@@ -5066,17 +5125,31 @@ dependencies = [
  "geo-projected",
  "geodesy",
  "rfd",
+ "rgis-camera-events",
  "rgis-crs",
- "rgis-events",
+ "rgis-crs-events",
+ "rgis-file-loader-events",
  "rgis-geo-ops",
  "rgis-geodesy",
+ "rgis-layer-events",
  "rgis-layers",
  "rgis-library",
+ "rgis-map-events",
  "rgis-mouse",
  "rgis-primitives",
  "rgis-settings",
+ "rgis-ui-events",
  "rgis-units",
  "thiserror 2.0.12",
+]
+
+[[package]]
+name = "rgis-ui-events"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "geo-features",
+ "rgis-primitives",
 ]
 
 [[package]]

@@ -1,12 +1,12 @@
 use bevy::prelude::*;
 use bevy_egui::egui;
+use rgis_ui_events::OpenChangeCrsWindow;
 
 pub struct Bottom<'a, 'w> {
     pub egui_ctx: &'a egui::Context,
     pub mouse_pos: &'a rgis_mouse::MousePos,
     pub target_crs: &'a rgis_crs::TargetCrs,
-    pub open_change_crs_window_event_writer:
-        &'a mut EventWriter<'w, rgis_events::OpenChangeCrsWindow>,
+    pub open_change_crs_window_event_writer: &'a mut EventWriter<'w, OpenChangeCrsWindow>,
     pub bottom_panel_height: &'a mut rgis_units::BottomPanelHeight,
 }
 

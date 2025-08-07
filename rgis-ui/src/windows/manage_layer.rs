@@ -1,11 +1,12 @@
 use bevy::prelude::*;
 use bevy_egui::egui;
+use rgis_ui_events::UpdateLayerColorEvent;
 
 pub struct ManageLayer<'a> {
     pub state: &'a mut crate::ManageLayerWindowState,
     pub layers: &'a rgis_layers::Layers,
     pub egui_ctx: &'a mut bevy_egui::egui::Context,
-    pub color_events: &'a mut Events<rgis_events::UpdateLayerColorEvent>,
+    pub color_events: &'a mut Events<UpdateLayerColorEvent>,
 }
 
 impl ManageLayer<'_> {

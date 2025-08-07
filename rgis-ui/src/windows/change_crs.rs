@@ -1,11 +1,12 @@
 use bevy::prelude::*;
 use bevy_egui::egui;
+use rgis_crs_events::ChangeCrsEvent;
 
 pub struct ChangeCrs<'a, 'w> {
     pub is_visible: &'a mut bool,
     pub egui_ctx: &'a mut bevy_egui::egui::Context,
     pub text_field_value: &'a mut String,
-    pub change_crs_event_writer: &'a mut EventWriter<'w, rgis_events::ChangeCrsEvent>,
+    pub change_crs_event_writer: &'a mut EventWriter<'w, ChangeCrsEvent>,
     pub target_crs: rgis_crs::TargetCrs,
     pub crs_input_outcome: &'a mut Option<crate::widgets::crs_input::Outcome>,
     pub geodesy_ctx: &'a rgis_geodesy::GeodesyContext,
@@ -29,14 +30,13 @@ impl ChangeCrs<'_, '_> {
                 match self.crs_input_outcome {
                     Some(Ok((op_handle, epsg_code))) => {
                         if ui.add_enabled(true, button).clicked() {
-                            self.change_crs_event_writer
-                                .write(rgis_events::ChangeCrsEvent {
-                                    old: self.target_crs.0,
-                                    new: rgis_primitives::Crs {
-                                        epsg_code: *epsg_code,
-                                        op_handle: *op_handle,
-                                    },
-                                });
+                            self.change_crs_event_writer.write(ChangeCrsEvent {
+                                old: self.target_crs.0,
+                                new: rgis_primitives::Crs {
+                                    epsg_code: *epsg_code,
+                                    op_handle: *op_handle,
+                                },
+                            });
                         }
                     }
                     _ => {

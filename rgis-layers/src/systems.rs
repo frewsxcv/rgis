@@ -1,9 +1,11 @@
 use bevy::prelude::*;
 
 fn handle_toggle_layer_visibility_events(
-    mut toggle_layer_visibility_event_reader: EventReader<rgis_events::ToggleLayerVisibilityEvent>,
-    mut layer_became_visible_event_writer: EventWriter<rgis_events::LayerBecameVisibleEvent>,
-    mut layer_became_hidden_event_writer: EventWriter<rgis_events::LayerBecameHiddenEvent>,
+    mut toggle_layer_visibility_event_reader: EventReader<
+        rgis_layer_events::ToggleLayerVisibilityEvent,
+    >,
+    mut layer_became_visible_event_writer: EventWriter<rgis_layer_events::LayerBecameVisibleEvent>,
+    mut layer_became_hidden_event_writer: EventWriter<rgis_layer_events::LayerBecameHiddenEvent>,
     mut layers: ResMut<crate::Layers>,
 ) {
     for event in toggle_layer_visibility_event_reader.read() {
@@ -13,35 +15,37 @@ fn handle_toggle_layer_visibility_events(
         };
         layer.visible = !layer.visible;
         if layer.visible {
-            layer_became_visible_event_writer.write(rgis_events::LayerBecameVisibleEvent(event.0));
+            layer_became_visible_event_writer
+                .write(rgis_layer_events::LayerBecameVisibleEvent(event.0));
         } else {
-            layer_became_hidden_event_writer.write(rgis_events::LayerBecameHiddenEvent(event.0));
+            layer_became_hidden_event_writer
+                .write(rgis_layer_events::LayerBecameHiddenEvent(event.0));
         }
     }
 }
 
 fn handle_update_color_events(
-    mut update_events: EventReader<rgis_events::UpdateLayerColorEvent>,
-    mut updated_events: EventWriter<rgis_events::LayerColorUpdatedEvent>,
+    mut update_events: EventReader<rgis_ui_events::UpdateLayerColorEvent>,
+    mut updated_events: EventWriter<rgis_layer_events::LayerColorUpdatedEvent>,
     mut layers: ResMut<crate::Layers>,
 ) {
     for event in update_events.read() {
         let event = match event {
-            rgis_events::UpdateLayerColorEvent::Stroke(layer_id, color) => {
+            rgis_ui_events::UpdateLayerColorEvent::Stroke(layer_id, color) => {
                 let Some(layer) = layers.get_mut(*layer_id) else {
                     warn!("Could not find layer");
                     continue;
                 };
                 layer.color.stroke = *color;
-                rgis_events::LayerColorUpdatedEvent::Stroke(*layer_id)
+                rgis_layer_events::LayerColorUpdatedEvent::Stroke(*layer_id)
             }
-            rgis_events::UpdateLayerColorEvent::Fill(layer_id, color) => {
+            rgis_ui_events::UpdateLayerColorEvent::Fill(layer_id, color) => {
                 let Some(layer) = layers.get_mut(*layer_id) else {
                     warn!("Could not find layer");
                     continue;
                 };
                 layer.color.fill = Some(*color);
-                rgis_events::LayerColorUpdatedEvent::Fill(*layer_id)
+                rgis_layer_events::LayerColorUpdatedEvent::Fill(*layer_id)
             }
         };
         updated_events.write(event);
@@ -49,19 +53,19 @@ fn handle_update_color_events(
 }
 
 fn handle_delete_layer_events(
-    mut delete_layer_event_reader: EventReader<rgis_events::DeleteLayerEvent>,
-    mut despawn_meshes_event_writer: EventWriter<rgis_events::DespawnMeshesEvent>,
+    mut delete_layer_event_reader: EventReader<rgis_layer_events::DeleteLayerEvent>,
+    mut despawn_meshes_event_writer: EventWriter<rgis_renderer_events::DespawnMeshesEvent>,
     mut layers: ResMut<crate::Layers>,
 ) {
     for event in delete_layer_event_reader.read() {
         layers.remove(event.0);
-        despawn_meshes_event_writer.write(rgis_events::DespawnMeshesEvent(event.0));
+        despawn_meshes_event_writer.write(rgis_renderer_events::DespawnMeshesEvent(event.0));
     }
 }
 
 fn handle_move_layer_events(
-    mut move_layer_event_reader: EventReader<rgis_events::MoveLayerEvent>,
-    mut layer_z_index_updated_event_writer: EventWriter<rgis_events::LayerZIndexUpdatedEvent>,
+    mut move_layer_event_reader: EventReader<rgis_layer_events::MoveLayerEvent>,
+    mut layer_z_index_updated_event_writer: EventWriter<rgis_layer_events::LayerZIndexUpdatedEvent>,
     mut layers: ResMut<crate::Layers>,
 ) {
     for event in move_layer_event_reader.read() {
@@ -74,14 +78,14 @@ fn handle_move_layer_events(
         };
 
         let new_z_index = match event.1 {
-            rgis_events::MoveDirection::Up => {
+            rgis_layer_events::MoveDirection::Up => {
                 if old_z_index < layers.count() - 1 {
                     old_z_index + 1
                 } else {
                     old_z_index
                 }
             }
-            rgis_events::MoveDirection::Down => {
+            rgis_layer_events::MoveDirection::Down => {
                 if old_z_index > 0 {
                     old_z_index - 1
                 } else {
@@ -97,39 +101,40 @@ fn handle_move_layer_events(
 
             layers.data.swap(old_z_index, new_z_index);
 
-            layer_z_index_updated_event_writer.write(rgis_events::LayerZIndexUpdatedEvent(event.0));
             layer_z_index_updated_event_writer
-                .write(rgis_events::LayerZIndexUpdatedEvent(other_layer_id));
+                .write(rgis_layer_events::LayerZIndexUpdatedEvent(event.0));
+            layer_z_index_updated_event_writer
+                .write(rgis_layer_events::LayerZIndexUpdatedEvent(other_layer_id));
         }
     }
 }
 
 fn handle_map_clicked_events(
-    mut map_clicked_event_reader: EventReader<rgis_events::MapClickedEvent>,
-    mut render_message_event_writer: EventWriter<rgis_events::RenderFeaturePropertiesEvent>,
-    mut feature_clicked_event_writer: EventWriter<rgis_events::FeatureSelectedEvent>,
+    mut map_clicked_event_reader: EventReader<rgis_map_events::MapClickedEvent>,
+    mut render_message_event_writer: EventWriter<rgis_ui_events::RenderFeaturePropertiesEvent>,
+    mut feature_clicked_event_writer: EventWriter<rgis_map_events::FeatureSelectedEvent>,
     layers: Res<crate::Layers>,
 ) {
     for event in map_clicked_event_reader.read() {
         if let Some((layer, feature)) = layers.feature_from_click(event.0) {
-            render_message_event_writer.write(rgis_events::RenderFeaturePropertiesEvent {
+            render_message_event_writer.write(rgis_ui_events::RenderFeaturePropertiesEvent {
                 layer_id: layer.id,
                 properties: feature.properties.clone(),
             });
             feature_clicked_event_writer
-                .write(rgis_events::FeatureSelectedEvent(layer.id, feature.id));
+                .write(rgis_map_events::FeatureSelectedEvent(layer.id, feature.id));
         }
     }
 }
 
 fn handle_create_layer_events(
-    mut create_layer_events: ResMut<Events<rgis_events::CreateLayerEvent>>,
-    mut layer_created_event_writer: EventWriter<rgis_events::LayerCreatedEvent>,
+    mut create_layer_events: ResMut<Events<rgis_layer_events::CreateLayerEvent>>,
+    mut layer_created_event_writer: EventWriter<rgis_layer_events::LayerCreatedEvent>,
     mut layers: ResMut<crate::Layers>,
 ) {
     for event in create_layer_events.drain() {
         let layer_id = layers.add(event.feature_collection, event.name, event.source_crs);
-        layer_created_event_writer.write(rgis_events::LayerCreatedEvent(layer_id));
+        layer_created_event_writer.write(rgis_layer_events::LayerCreatedEvent(layer_id));
     }
 }
 
