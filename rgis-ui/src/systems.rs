@@ -408,6 +408,7 @@ pub fn configure(app: &mut App) {
     app.add_systems(
         EguiPrimaryContextPass,
         (
+            crate::widgets::scale_bar::render_map_scale.in_set(RenderSystemSet::Side),
             render_message_window.in_set(RenderSystemSet::RenderingMessageWindow),
             render_top.in_set(RenderSystemSet::RenderingTopBottom),
             render_bottom.in_set(RenderSystemSet::RenderingTopBottom),
