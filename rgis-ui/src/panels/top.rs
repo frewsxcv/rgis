@@ -27,6 +27,19 @@ impl Top<'_, '_, '_> {
                     ui.add(crate::widgets::full_screen::FullScreen {
                         window: self.window,
                     });
+                    if ui
+                        .button(format!(
+                            "{} scale",
+                            if self.app_settings.show_scale {
+                                "Hide"
+                            } else {
+                                "Show"
+                            }
+                        ))
+                        .clicked()
+                    {
+                        self.app_settings.show_scale = !self.app_settings.show_scale;
+                    }
                 });
                 ui.menu_button("Help", |ui| {
                     if ui.button("Debug stats").clicked() {
