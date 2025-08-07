@@ -1,0 +1,10 @@
+[package]
+name = "rgis-layer-events"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bevy = { workspace = true }
+rgis-primitives = { path = "../rgis-primitives" }
+geo-features = { path = "../geo-features" }
+geo-projected = { path = "../geo-projected" }

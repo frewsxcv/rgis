@@ -1,14 +1,15 @@
 use bevy::{ecs::system::SystemParam, prelude::*};
 use bevy_egui::egui;
 use geo_file_loader::FileFormat;
+use rgis_file_loader_events::LoadFileEvent;
+use rgis_ui_events::{HideAddLayerWindow, ShowAddLayerWindow};
 use std::mem;
 
 #[derive(SystemParam)]
 pub struct Events<'w, 's> {
-    pub load_file_event_writer: EventWriter<'w, rgis_events::LoadFileEvent>,
-    pub show_add_layer_window_event_reader: EventReader<'w, 's, rgis_events::ShowAddLayerWindow>,
-    pub hide_add_layer_window_events:
-        ResMut<'w, bevy::prelude::Events<rgis_events::HideAddLayerWindow>>,
+    pub load_file_event_writer: EventWriter<'w, LoadFileEvent>,
+    pub show_add_layer_window_event_reader: EventReader<'w, 's, ShowAddLayerWindow>,
+    pub hide_add_layer_window_events: ResMut<'w, bevy::prelude::Events<HideAddLayerWindow>>,
 }
 
 pub struct OpenFileJob;

@@ -4,7 +4,7 @@ use crate::{jobs::MeshBuildingJob, RenderEntityType};
 
 fn layer_loaded(
     layers: Res<rgis_layers::Layers>,
-    mut event_reader: EventReader<rgis_events::LayerReprojectedEvent>,
+    mut event_reader: EventReader<rgis_layer_events::LayerReprojectedEvent>,
     mut job_spawner: bevy_jobs::JobSpawner,
 ) {
     for layer in event_reader.read().flat_map(|event| layers.get(event.0)) {
@@ -27,7 +27,7 @@ fn handle_mesh_building_job_outcome(
     mut assets_meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     layers: Res<rgis_layers::Layers>,
-    mut meshes_spawned_event_writer: EventWriter<rgis_events::MeshesSpawnedEvent>,
+    mut meshes_spawned_event_writer: EventWriter<rgis_renderer_events::MeshesSpawnedEvent>,
     mut finished_jobs: bevy_jobs::FinishedJobs,
     asset_server: Res<AssetServer>,
 ) {
@@ -62,7 +62,7 @@ fn handle_mesh_building_job_outcome(
 }
 
 fn handle_layer_z_index_updated_event(
-    mut layer_z_index_updated_event_reader: EventReader<rgis_events::LayerZIndexUpdatedEvent>,
+    mut layer_z_index_updated_event_reader: EventReader<rgis_layer_events::LayerZIndexUpdatedEvent>,
     mut query: Query<(&rgis_primitives::LayerId, &mut Transform, &RenderEntityType)>,
     layers: Res<rgis_layers::Layers>,
 ) {
@@ -87,7 +87,7 @@ type LayerEntitiesWithColorMaterialsOrImagesQuery<'world, 'state, 'a> = Query<
 >;
 
 fn handle_despawn_meshes_event(
-    mut layer_deleted_event_reader: EventReader<rgis_events::DespawnMeshesEvent>,
+    mut layer_deleted_event_reader: EventReader<rgis_renderer_events::DespawnMeshesEvent>,
     mut commands: Commands,
     query: LayerEntitiesWithColorMaterialsOrImagesQuery,
 ) {
@@ -99,7 +99,7 @@ fn handle_despawn_meshes_event(
 }
 
 fn handle_layer_became_hidden_event(
-    mut event_reader: EventReader<rgis_events::LayerBecameHiddenEvent>,
+    mut event_reader: EventReader<rgis_layer_events::LayerBecameHiddenEvent>,
     mut query: Query<(&rgis_primitives::LayerId, &mut Visibility)>,
 ) {
     for event in event_reader.read() {
@@ -110,7 +110,7 @@ fn handle_layer_became_hidden_event(
 }
 
 fn handle_layer_became_visible_event(
-    mut event_reader: EventReader<rgis_events::LayerBecameVisibleEvent>,
+    mut event_reader: EventReader<rgis_layer_events::LayerBecameVisibleEvent>,
     mut query: Query<(&rgis_primitives::LayerId, &mut Visibility)>,
 ) {
     for event in event_reader.read() {
@@ -121,7 +121,7 @@ fn handle_layer_became_visible_event(
 }
 
 fn handle_layer_color_updated_event(
-    mut event_reader: EventReader<rgis_events::LayerColorUpdatedEvent>,
+    mut event_reader: EventReader<rgis_layer_events::LayerColorUpdatedEvent>,
     layers: Res<rgis_layers::Layers>,
     color_material_query: Query<(
         &rgis_primitives::LayerId,
@@ -133,8 +133,8 @@ fn handle_layer_color_updated_event(
 ) {
     for event in event_reader.read() {
         let (layer_id, is_fill) = match event {
-            rgis_events::LayerColorUpdatedEvent::Fill(layer_id) => (layer_id, true),
-            rgis_events::LayerColorUpdatedEvent::Stroke(layer_id) => (layer_id, false),
+            rgis_layer_events::LayerColorUpdatedEvent::Fill(layer_id) => (layer_id, true),
+            rgis_layer_events::LayerColorUpdatedEvent::Stroke(layer_id) => (layer_id, false),
         };
         let Some(layer) = layers.get(*layer_id) else {
             continue;
@@ -176,7 +176,7 @@ fn handle_layer_color_updated_event(
 }
 
 fn handle_crs_changed_events(
-    mut crs_changed_event_reader: EventReader<rgis_events::CrsChangedEvent>,
+    mut crs_changed_event_reader: EventReader<rgis_crs_events::CrsChangedEvent>,
     query: Query<(&rgis_primitives::LayerId, Entity), With<MeshMaterial2d<ColorMaterial>>>,
     mut commands: Commands,
 ) {
@@ -214,7 +214,7 @@ type SelectedFeatureQuery<'world, 'state, 'a> = Query<
 >;
 
 fn handle_feature_selected_event_despawn(
-    event_reader: EventReader<rgis_events::FeatureSelectedEvent>,
+    event_reader: EventReader<rgis_map_events::FeatureSelectedEvent>,
     mut commands: Commands,
     query: SelectedFeatureQuery,
 ) {
@@ -231,7 +231,7 @@ fn handle_feature_selected_event_despawn(
 }
 
 fn handle_feature_selected_event_spawn(
-    mut event_reader: EventReader<rgis_events::FeatureSelectedEvent>,
+    mut event_reader: EventReader<rgis_map_events::FeatureSelectedEvent>,
     layers: Res<rgis_layers::Layers>,
     mut job_spawner: bevy_jobs::JobSpawner,
 ) {

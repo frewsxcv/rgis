@@ -1,0 +1,10 @@
+[package]
+name = "rgis-file-loader-events"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bevy = { workspace = true }
+rgis-primitives = { path = "../rgis-primitives" }
+bytes = { workspace = true }
+geo-file-loader = { path = "../geo-file-loader" }

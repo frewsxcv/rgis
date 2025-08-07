@@ -33,7 +33,13 @@ pub fn run() {
     app.add_plugins(rgis_keyboard::Plugin);
     app.add_plugins(rgis_network::Plugin);
     app.add_plugins(rgis_camera::Plugin);
-    app.add_plugins(rgis_events::Plugin);
+    app.add_plugins(rgis_ui_events::Plugin);
+    app.add_plugins(rgis_camera_events::Plugin);
+    app.add_plugins(rgis_layer_events::Plugin);
+    app.add_plugins(rgis_map_events::Plugin);
+    app.add_plugins(rgis_file_loader_events::Plugin);
+    app.add_plugins(rgis_crs_events::Plugin);
+    app.add_plugins(rgis_renderer_events::Plugin);
     app.add_plugins(bevy_jobs::Plugin);
     app.add_plugins(rgis_transform::Plugin);
     app.add_plugins(rgis_settings::Plugin);

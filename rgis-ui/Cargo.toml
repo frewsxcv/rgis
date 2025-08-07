@@ -22,7 +22,12 @@ rgis-geo-ops = { path = "../rgis-geo-ops" }
 rgis-primitives = { path = "../rgis-primitives" }
 rgis-layers = { path = "../rgis-layers" }
 rgis-library = { path = "../rgis-library" }
-rgis-events = { path = "../rgis-events" }
+rgis-ui-events = { path = "../rgis-ui-events" }
+rgis-camera-events = { path = "../rgis-camera-events" }
+rgis-layer-events = { path = "../rgis-layer-events" }
+rgis-map-events = { path = "../rgis-map-events" }
+rgis-file-loader-events = { path = "../rgis-file-loader-events" }
+rgis-crs-events = { path = "../rgis-crs-events" }
 rgis-mouse = { path = "../rgis-mouse" }
 rgis-settings = { path = "../rgis-settings" }
 rgis-units = { path = "../rgis-units" }

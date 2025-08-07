@@ -24,7 +24,13 @@ bevy_jobs = { workspace = true }
 rgis-transform = { path = "../rgis-transform" }
 rgis-ui = { path = "../rgis-ui" }
 time-logger = { path = "../time-logger" }
-rgis-events = { path = "../rgis-events" }
+rgis-ui-events = { path = "../rgis-ui-events" }
+rgis-camera-events = { path = "../rgis-camera-events" }
+rgis-layer-events = { path = "../rgis-layer-events" }
+rgis-map-events = { path = "../rgis-map-events" }
+rgis-file-loader-events = { path = "../rgis-file-loader-events" }
+rgis-crs-events = { path = "../rgis-crs-events" }
+rgis-renderer-events = { path = "../rgis-renderer-events" }
 rgis-crs = { path = "../rgis-crs" }
 rgis-geodesy = { path = "../rgis-geodesy" }
 

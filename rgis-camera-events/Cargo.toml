@@ -1,0 +1,9 @@
+[package]
+name = "rgis-camera-events"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bevy = { workspace = true }
+geo-projected = { path = "../geo-projected" }
+rgis-primitives = { path = "../rgis-primitives" }

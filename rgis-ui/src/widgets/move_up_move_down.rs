@@ -1,5 +1,6 @@
 use crate::panels::side::Events;
 use bevy_egui::egui;
+use rgis_layer_events::MoveDirection;
 
 pub struct MoveUpMoveDown<'a, 'w> {
     pub layer: &'a rgis_layers::Layer,
@@ -17,9 +18,9 @@ impl egui::Widget for MoveUpMoveDown<'_, '_> {
             {
                 self.events
                     .move_layer_event_writer
-                    .write(rgis_events::MoveLayerEvent(
+                    .write(rgis_layer_events::MoveLayerEvent(
                         self.layer.id,
-                        rgis_events::MoveDirection::Up,
+                        MoveDirection::Up,
                     ));
             }
 
@@ -29,9 +30,9 @@ impl egui::Widget for MoveUpMoveDown<'_, '_> {
             {
                 self.events
                     .move_layer_event_writer
-                    .write(rgis_events::MoveLayerEvent(
+                    .write(rgis_layer_events::MoveLayerEvent(
                         self.layer.id,
-                        rgis_events::MoveDirection::Down,
+                        MoveDirection::Down,
                     ));
             }
         })

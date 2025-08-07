@@ -1,20 +1,23 @@
 use bevy::{ecs::system::SystemParam, prelude::*};
 use bevy_egui::egui::{self, Align, Layout, Widget};
+use rgis_camera_events::CenterCameraEvent;
+use rgis_layer_events::{
+    CreateLayerEvent, DeleteLayerEvent, MoveLayerEvent, ToggleLayerVisibilityEvent,
+};
+use rgis_ui_events::{ShowAddLayerWindow, ShowManageLayerWindowEvent};
 use std::marker;
 
 // const MAX_SIDE_PANEL_WIDTH: f32 = 200.0f32;
 
 #[derive(SystemParam)]
 pub struct Events<'w> {
-    pub toggle_layer_visibility_event_writer:
-        EventWriter<'w, rgis_events::ToggleLayerVisibilityEvent>,
-    pub center_layer_event_writer: EventWriter<'w, rgis_events::CenterCameraEvent>,
-    pub delete_layer_event_writer: EventWriter<'w, rgis_events::DeleteLayerEvent>,
-    pub move_layer_event_writer: EventWriter<'w, rgis_events::MoveLayerEvent>,
-    pub create_layer_event_writer: EventWriter<'w, rgis_events::CreateLayerEvent>,
-    pub show_add_layer_window_event_writer: EventWriter<'w, rgis_events::ShowAddLayerWindow>,
-    pub show_manage_layer_window_event_writer:
-        EventWriter<'w, rgis_events::ShowManageLayerWindowEvent>,
+    pub toggle_layer_visibility_event_writer: EventWriter<'w, ToggleLayerVisibilityEvent>,
+    pub center_layer_event_writer: EventWriter<'w, CenterCameraEvent>,
+    pub delete_layer_event_writer: EventWriter<'w, DeleteLayerEvent>,
+    pub move_layer_event_writer: EventWriter<'w, MoveLayerEvent>,
+    pub create_layer_event_writer: EventWriter<'w, CreateLayerEvent>,
+    pub show_add_layer_window_event_writer: EventWriter<'w, ShowAddLayerWindow>,
+    pub show_manage_layer_window_event_writer: EventWriter<'w, ShowManageLayerWindowEvent>,
     pub perform_operation_event_writer: EventWriter<'w, crate::events::PerformOperationEvent>,
 }
 
@@ -110,7 +113,7 @@ impl Layer<'_, '_> {
     fn delete_layer(&mut self, layer: &rgis_layers::Layer) {
         self.events
             .delete_layer_event_writer
-            .write(rgis_events::DeleteLayerEvent(layer.id));
+            .write(DeleteLayerEvent(layer.id));
     }
 }
 
@@ -136,7 +139,7 @@ impl Widget for Layer<'_, '_> {
                     if ui.button("✏ Manage").clicked() {
                         self.events
                             .show_manage_layer_window_event_writer
-                            .write(rgis_events::ShowManageLayerWindowEvent(layer.id));
+                            .write(ShowManageLayerWindowEvent(layer.id));
                     }
 
                     ui.add(crate::widgets::move_up_move_down::MoveUpMoveDown {
@@ -154,7 +157,7 @@ impl Widget for Layer<'_, '_> {
                     if ui.button("🔎 Zoom to extent").clicked() {
                         self.events
                             .center_layer_event_writer
-                            .write(rgis_events::CenterCameraEvent(layer.id));
+                            .write(CenterCameraEvent(layer.id));
                     }
 
                     if ui.button("❌ Remove").clicked() {
