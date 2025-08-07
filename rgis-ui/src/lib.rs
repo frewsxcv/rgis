@@ -40,6 +40,9 @@ struct OperationWindowState {
     source_crs: Option<rgis_primitives::Crs>,
 }
 
+#[derive(Resource, Default)]
+pub struct WelcomeWindowOpen(pub bool);
+
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(bevy_egui::EguiPlugin::default())
@@ -48,6 +51,7 @@ impl bevy::app::Plugin for Plugin {
             .insert_resource(rgis_units::BottomPanelHeight(0.))
             .insert_resource(rgis_units::SidePanelWidth(0.))
             .insert_resource(ChangeCrsWindowState::default())
+            .insert_resource(WelcomeWindowOpen(true))
             .add_event::<events::OpenOperationWindowEvent>();
 
         systems::configure(app);

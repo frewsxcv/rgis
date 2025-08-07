@@ -50,7 +50,7 @@ pub fn run_if_is_window_open<W: Window + 'static>(is_window_open: Res<IsWindowOp
     is_window_open.0
 }
 
-pub struct IsWindowOpen<W: Window>(pub bool, marker::PhantomData<W>);
+pub struct IsWindowOpen<W>(pub bool, pub marker::PhantomData<W>);
 
 impl<W: Window + 'static> Resource for IsWindowOpen<W> {}
 

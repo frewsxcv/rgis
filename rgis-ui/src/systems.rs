@@ -432,7 +432,6 @@ pub fn configure(app: &mut App) {
     );
 
     crate::windows::debug::Debug::setup(app);
-    crate::windows::welcome::Welcome::setup(app);
     app.add_systems(
         EguiPrimaryContextPass,
         bevy_egui_window::render_window_system::<crate::windows::debug::Debug>
@@ -440,8 +439,8 @@ pub fn configure(app: &mut App) {
     );
     app.add_systems(
         EguiPrimaryContextPass,
-        bevy_egui_window::render_window_system::<crate::windows::welcome::Welcome>
-            .run_if(bevy_egui_window::run_if_is_window_open::<crate::windows::welcome::Welcome>),
+        crate::windows::welcome::render_welcome_window
+            .run_if(|is_window_open: Res<crate::WelcomeWindowOpen>| is_window_open.0),
     );
 }
 
