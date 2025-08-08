@@ -22,10 +22,13 @@ fn layer_loaded(
     }
 }
 
+use crate::line_material::LineMaterial;
+
 fn handle_mesh_building_job_outcome(
     mut commands: Commands,
     mut assets_meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    mut line_materials: ResMut<Assets<LineMaterial>>,
     layers: Res<rgis_layers::Layers>,
     mut meshes_spawned_event_writer: EventWriter<rgis_renderer_events::MeshesSpawnedEvent>,
     mut finished_jobs: bevy_jobs::FinishedJobs,
@@ -50,6 +53,7 @@ fn handle_mesh_building_job_outcome(
         crate::spawn_geometry_meshes(
             geometry_mesh,
             &mut materials,
+            &mut line_materials,
             layer_with_index,
             &mut commands,
             &mut assets_meshes,
@@ -163,14 +167,15 @@ fn handle_layer_color_updated_event(
     mut sprite_fill_query: Query<&mut Sprite, (With<crate::Fill>, Without<crate::Stroke>)>,
     mut sprite_stroke_query: Query<&mut Sprite, (With<crate::Stroke>, Without<crate::Fill>)>,
     mut material_fill_query: Query<
-        &mut MeshMaterial2d<ColorMaterial>,
+        &Handle<ColorMaterial>,
         (With<crate::Fill>, Without<crate::Stroke>),
     >,
-    mut material_stroke_query: Query<
-        &mut MeshMaterial2d<ColorMaterial>,
+    mut line_material_stroke_query: Query<
+        &Handle<LineMaterial>,
         (With<crate::Stroke>, Without<crate::Fill>),
     >,
-    mut materials: ResMut<Assets<ColorMaterial>>,
+    mut color_materials: ResMut<Assets<ColorMaterial>>,
+    mut line_materials: ResMut<Assets<LineMaterial>>,
 ) {
     for event in event_reader.read() {
         let (layer_id, is_fill) = match event {
@@ -200,36 +205,31 @@ fn handle_layer_color_updated_event(
 
         // Update the line string materials
         for child in line_string_layer_query
-            .iter_mut()
+            .iter()
             .filter(|(i, _children)| **i == layer.id)
             .flat_map(|(_, children)| children.iter())
         {
-            if is_fill {
-                if let Ok(mut color_material) = material_fill_query.get_mut(child) {
-                    materials.get_mut(&mut color_material.0).unwrap().color =
-                        layer.color.fill.unwrap();
-                }
-            } else {
-                if let Ok(mut color_material) = material_stroke_query.get_mut(child) {
-                    materials.get_mut(&mut color_material.0).unwrap().color = layer.color.stroke;
+            if !is_fill {
+                if let Ok(line_material) = line_material_stroke_query.get(child) {
+                    line_materials.get_mut(line_material).unwrap().color = layer.color.stroke;
                 }
             }
         }
 
         // Update the polygon materials
         for child in polygon_layer_query
-            .iter_mut()
+            .iter()
             .filter(|(i, _children)| **i == layer.id)
             .flat_map(|(_, children)| children.iter())
         {
             if is_fill {
-                if let Ok(mut color_material) = material_fill_query.get_mut(child) {
-                    materials.get_mut(&mut color_material.0).unwrap().color =
+                if let Ok(color_material) = material_fill_query.get(child) {
+                    color_materials.get_mut(color_material).unwrap().color =
                         layer.color.fill.unwrap();
                 }
             } else {
-                if let Ok(mut color_material) = material_stroke_query.get_mut(child) {
-                    materials.get_mut(&mut color_material.0).unwrap().color = layer.color.stroke;
+                if let Ok(line_material) = line_material_stroke_query.get(child) {
+                    line_materials.get_mut(line_material).unwrap().color = layer.color.stroke;
                 }
             }
         }
@@ -238,7 +238,10 @@ fn handle_layer_color_updated_event(
 
 fn handle_crs_changed_events(
     mut crs_changed_event_reader: EventReader<rgis_crs_events::CrsChangedEvent>,
-    query: Query<(&rgis_primitives::LayerId, Entity), With<MeshMaterial2d<ColorMaterial>>>,
+    query: Query<
+        (&rgis_primitives::LayerId, Entity),
+        Or<(With<Handle<ColorMaterial>>, With<Handle<LineMaterial>>)>,
+    >,
     mut commands: Commands,
 ) {
     for _ in crs_changed_event_reader.read() {
@@ -280,7 +283,11 @@ type SelectedFeatureQuery<'world, 'state, 'a> = Query<
     'world,
     'state,
     (Entity, &'a RenderEntityType),
-    Or<(With<MeshMaterial2d<ColorMaterial>>, With<Sprite>)>,
+    Or<(
+        With<Handle<ColorMaterial>>,
+        With<Handle<LineMaterial>>,
+        With<Sprite>,
+    )>,
 >;
 
 fn handle_feature_selected_event_despawn(
