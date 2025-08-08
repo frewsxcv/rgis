@@ -11,26 +11,26 @@ workspace = true
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
+bevy_jobs = { workspace = true }
 geo = { workspace = true }
 rgis-camera = { path = "../rgis-camera" }
+rgis-camera-events = { path = "../rgis-camera-events" }
+rgis-crs = { path = "../rgis-crs" }
+rgis-crs-events = { path = "../rgis-crs-events" }
 rgis-file-loader = { path = "../rgis-file-loader" }
+rgis-file-loader-events = { path = "../rgis-file-loader-events" }
+rgis-geodesy = { path = "../rgis-geodesy" }
 rgis-keyboard = { path = "../rgis-keyboard" }
+rgis-layer-events = { path = "../rgis-layer-events" }
 rgis-layers = { path = "../rgis-layers" }
+rgis-map-events = { path = "../rgis-map-events" }
 rgis-mouse = { path = "../rgis-mouse" }
 rgis-renderer = { path = "../rgis-renderer" }
+rgis-renderer-events = { path = "../rgis-renderer-events" }
 rgis-settings = { path = "../rgis-settings" }
-bevy_jobs = { workspace = true }
 rgis-transform = { path = "../rgis-transform" }
 rgis-ui = { path = "../rgis-ui" }
 rgis-ui-events = { path = "../rgis-ui-events" }
-rgis-camera-events = { path = "../rgis-camera-events" }
-rgis-layer-events = { path = "../rgis-layer-events" }
-rgis-map-events = { path = "../rgis-map-events" }
-rgis-file-loader-events = { path = "../rgis-file-loader-events" }
-rgis-crs-events = { path = "../rgis-crs-events" }
-rgis-renderer-events = { path = "../rgis-renderer-events" }
-rgis-crs = { path = "../rgis-crs" }
-rgis-geodesy = { path = "../rgis-geodesy" }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 rgis-cli = { path = "../rgis-cli" }
