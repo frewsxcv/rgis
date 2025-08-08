@@ -17,6 +17,5 @@ rgis-layer-events = { path = "../rgis-layer-events" }
 bevy_jobs = { workspace = true }
 bevy_jobs_fetch = { workspace = true }
 serde_json = { workspace = true }
-time-logger = { path = "../time-logger" }
 bytes = { workspace = true }
 rgis-primitives = { path = "../rgis-primitives" }

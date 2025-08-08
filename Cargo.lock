@@ -243,7 +243,7 @@ dependencies = [
  "objc2-foundation 0.3.1",
  "parking_lot",
  "percent-encoding",
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
  "x11rb",
 ]
 
@@ -1529,7 +1529,7 @@ dependencies = [
  "bitflags 2.9.1",
  "cexpr",
  "clang-sys",
- "itertools 0.13.0",
+ "itertools 0.11.0",
  "log",
  "prettyplease",
  "proc-macro2",
@@ -1643,9 +1643,9 @@ checksum = "46c5e41b57b8bba42a04676d81cb89e9ee8e859a1a66f80a5a72e1cb76b34d43"
 
 [[package]]
 name = "bytemuck"
-version = "1.23.2"
+version = "1.23.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3995eaeebcdf32f91f980d360f78732ddc061097ab4e39991ae7a6ace9194677"
+checksum = "5c76a5792e44e4abe34d3abf15636779261d45a7450612059293d1d2cfc63422"
 dependencies = [
  "bytemuck_derive",
 ]
@@ -3046,9 +3046,9 @@ dependencies = [
 
 [[package]]
 name = "hashbrown"
-version = "0.15.5"
+version = "0.15.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9229cfe53dfd69f0609a49f65461bd93001ea1ef889cd5529dd176593f5338a1"
+checksum = "5971ac85611da7067dbfcabef3c70ebb5606018acd9e2a3903a0da507521e0d5"
 dependencies = [
  "allocator-api2",
  "equivalent",
@@ -3448,15 +3448,6 @@ dependencies = [
 
 [[package]]
 name = "itertools"
-version = "0.13.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "413ee7dfc52ee1a4949ceeb7dbc8a33f2d6c088194d9f922fb8318faf1f01186"
-dependencies = [
- "either",
-]
-
-[[package]]
-name = "itertools"
 version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2b192c782037fadd9cfa75548310488aabdbf3d2da73885b31bd0abd03351285"
@@ -3587,7 +3578,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "07033963ba89ebaf1584d767badaa2e8fcec21aedea6b8c0346d487d49c28667"
 dependencies = [
  "cfg-if",
- "windows-targets 0.53.3",
+ "windows-targets 0.48.5",
 ]
 
 [[package]]
@@ -4873,7 +4864,6 @@ dependencies = [
  "rgis-transform",
  "rgis-ui",
  "rgis-ui-events",
- "time-logger",
  "wasm-bindgen",
 ]
 
@@ -4944,7 +4934,6 @@ dependencies = [
  "rgis-layer-events",
  "rgis-primitives",
  "serde_json",
- "time-logger",
 ]
 
 [[package]]
@@ -5229,7 +5218,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys 0.4.15",
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -5733,7 +5722,7 @@ dependencies = [
  "getrandom 0.3.3",
  "once_cell",
  "rustix 1.0.8",
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -5835,14 +5824,6 @@ name = "time-core"
 version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c9e9a38711f559d9e3ce1cdb06dd7c5b8ea546bc90052da6d06bb76da74bb07c"
-
-[[package]]
-name = "time-logger"
-version = "0.1.0"
-dependencies = [
- "bevy_log",
- "web-time",
-]
 
 [[package]]
 name = "time-macros"
@@ -6348,19 +6329,18 @@ dependencies = [
 [[package]]
 name = "wasm-bindgen"
 version = "0.2.100"
-source = "git+https://github.com/rustwasm/wasm-bindgen#7cabba8596c50ed10a0ab830943bcdbe36fb0c74"
+source = "git+https://github.com/rustwasm/wasm-bindgen#bc3ce7c0de6d68ffcd7e8e0838664ccc04616ad1"
 dependencies = [
  "cfg-if",
  "once_cell",
  "rustversion",
  "wasm-bindgen-macro",
- "wasm-bindgen-shared",
 ]
 
 [[package]]
 name = "wasm-bindgen-backend"
 version = "0.2.100"
-source = "git+https://github.com/rustwasm/wasm-bindgen#7cabba8596c50ed10a0ab830943bcdbe36fb0c74"
+source = "git+https://github.com/rustwasm/wasm-bindgen#bc3ce7c0de6d68ffcd7e8e0838664ccc04616ad1"
 dependencies = [
  "bumpalo",
  "log",
@@ -6386,7 +6366,7 @@ dependencies = [
 [[package]]
 name = "wasm-bindgen-macro"
 version = "0.2.100"
-source = "git+https://github.com/rustwasm/wasm-bindgen#7cabba8596c50ed10a0ab830943bcdbe36fb0c74"
+source = "git+https://github.com/rustwasm/wasm-bindgen#bc3ce7c0de6d68ffcd7e8e0838664ccc04616ad1"
 dependencies = [
  "quote",
  "wasm-bindgen-macro-support",
@@ -6395,7 +6375,7 @@ dependencies = [
 [[package]]
 name = "wasm-bindgen-macro-support"
 version = "0.2.100"
-source = "git+https://github.com/rustwasm/wasm-bindgen#7cabba8596c50ed10a0ab830943bcdbe36fb0c74"
+source = "git+https://github.com/rustwasm/wasm-bindgen#bc3ce7c0de6d68ffcd7e8e0838664ccc04616ad1"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -6407,7 +6387,7 @@ dependencies = [
 [[package]]
 name = "wasm-bindgen-shared"
 version = "0.2.100"
-source = "git+https://github.com/rustwasm/wasm-bindgen#7cabba8596c50ed10a0ab830943bcdbe36fb0c74"
+source = "git+https://github.com/rustwasm/wasm-bindgen#bc3ce7c0de6d68ffcd7e8e0838664ccc04616ad1"
 dependencies = [
  "unicode-ident",
 ]
@@ -6708,7 +6688,7 @@ version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf221c93e13a30d793f7645a0e7762c55d169dbb0a49671918a2319d289b10bb"
 dependencies = [
- "windows-sys 0.59.0",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]
