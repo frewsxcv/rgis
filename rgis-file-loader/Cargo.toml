@@ -16,6 +16,5 @@ rgis-file-loader-events = { path = "../rgis-file-loader-events" }
 rgis-layer-events = { path = "../rgis-layer-events" }
 bevy_jobs = { workspace = true }
 bevy_jobs_fetch = { workspace = true }
-serde_json = { workspace = true }
 bytes = { workspace = true }
 rgis-primitives = { path = "../rgis-primitives" }

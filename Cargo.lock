@@ -4933,7 +4933,6 @@ dependencies = [
  "rgis-file-loader-events",
  "rgis-layer-events",
  "rgis-primitives",
- "serde_json",
 ]
 
 [[package]]
