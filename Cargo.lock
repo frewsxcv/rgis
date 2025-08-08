@@ -999,7 +999,7 @@ dependencies = [
 [[package]]
 name = "bevy_jobs"
 version = "0.1.0"
-source = "git+https://github.com/frewsxcv/bevy_jobs#11a3a3d79131331654f0eae8bf037b01d50170fd"
+source = "git+https://github.com/frewsxcv/bevy_jobs#ed8a5e4762994bf0c11c3b9fcaf9e0f5455160e9"
 dependencies = [
  "async-channel 2.5.0",
  "bevy_app",
@@ -1009,6 +1009,17 @@ dependencies = [
  "tokio",
  "tokio_with_wasm",
  "web-time",
+]
+
+[[package]]
+name = "bevy_jobs_fetch"
+version = "0.1.0"
+source = "git+https://github.com/frewsxcv/bevy_jobs#ed8a5e4762994bf0c11c3b9fcaf9e0f5455160e9"
+dependencies = [
+ "bevy_jobs",
+ "bytes",
+ "futures-util",
+ "reqwest",
 ]
 
 [[package]]
@@ -1632,9 +1643,9 @@ checksum = "46c5e41b57b8bba42a04676d81cb89e9ee8e859a1a66f80a5a72e1cb76b34d43"
 
 [[package]]
 name = "bytemuck"
-version = "1.23.1"
+version = "1.23.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5c76a5792e44e4abe34d3abf15636779261d45a7450612059293d1d2cfc63422"
+checksum = "3995eaeebcdf32f91f980d360f78732ddc061097ab4e39991ae7a6ace9194677"
 dependencies = [
  "bytemuck_derive",
 ]
@@ -3035,9 +3046,9 @@ dependencies = [
 
 [[package]]
 name = "hashbrown"
-version = "0.15.4"
+version = "0.15.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5971ac85611da7067dbfcabef3c70ebb5606018acd9e2a3903a0da507521e0d5"
+checksum = "9229cfe53dfd69f0609a49f65461bd93001ea1ef889cd5529dd176593f5338a1"
 dependencies = [
  "allocator-api2",
  "equivalent",
@@ -4856,7 +4867,6 @@ dependencies = [
  "rgis-layers",
  "rgis-map-events",
  "rgis-mouse",
- "rgis-network",
  "rgis-renderer",
  "rgis-renderer-events",
  "rgis-settings",
@@ -4925,13 +4935,13 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_jobs",
+ "bevy_jobs_fetch",
  "bytes",
  "geo-features",
  "geo-file-loader",
  "geo-projected",
  "rgis-file-loader-events",
  "rgis-layer-events",
- "rgis-network",
  "rgis-primitives",
  "serde_json",
  "time-logger",
@@ -5031,20 +5041,6 @@ dependencies = [
  "rgis-map-events",
  "rgis-settings",
  "rgis-units",
-]
-
-[[package]]
-name = "rgis-network"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bevy_jobs",
- "bytes",
- "futures-util",
- "reqwest",
- "rgis-crs",
- "rgis-primitives",
- "thiserror 2.0.12",
 ]
 
 [[package]]
@@ -6352,18 +6348,19 @@ dependencies = [
 [[package]]
 name = "wasm-bindgen"
 version = "0.2.100"
-source = "git+https://github.com/rustwasm/wasm-bindgen#bc3ce7c0de6d68ffcd7e8e0838664ccc04616ad1"
+source = "git+https://github.com/rustwasm/wasm-bindgen#7cabba8596c50ed10a0ab830943bcdbe36fb0c74"
 dependencies = [
  "cfg-if",
  "once_cell",
  "rustversion",
  "wasm-bindgen-macro",
+ "wasm-bindgen-shared",
 ]
 
 [[package]]
 name = "wasm-bindgen-backend"
 version = "0.2.100"
-source = "git+https://github.com/rustwasm/wasm-bindgen#bc3ce7c0de6d68ffcd7e8e0838664ccc04616ad1"
+source = "git+https://github.com/rustwasm/wasm-bindgen#7cabba8596c50ed10a0ab830943bcdbe36fb0c74"
 dependencies = [
  "bumpalo",
  "log",
@@ -6389,7 +6386,7 @@ dependencies = [
 [[package]]
 name = "wasm-bindgen-macro"
 version = "0.2.100"
-source = "git+https://github.com/rustwasm/wasm-bindgen#bc3ce7c0de6d68ffcd7e8e0838664ccc04616ad1"
+source = "git+https://github.com/rustwasm/wasm-bindgen#7cabba8596c50ed10a0ab830943bcdbe36fb0c74"
 dependencies = [
  "quote",
  "wasm-bindgen-macro-support",
@@ -6398,7 +6395,7 @@ dependencies = [
 [[package]]
 name = "wasm-bindgen-macro-support"
 version = "0.2.100"
-source = "git+https://github.com/rustwasm/wasm-bindgen#bc3ce7c0de6d68ffcd7e8e0838664ccc04616ad1"
+source = "git+https://github.com/rustwasm/wasm-bindgen#7cabba8596c50ed10a0ab830943bcdbe36fb0c74"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -6410,7 +6407,7 @@ dependencies = [
 [[package]]
 name = "wasm-bindgen-shared"
 version = "0.2.100"
-source = "git+https://github.com/rustwasm/wasm-bindgen#bc3ce7c0de6d68ffcd7e8e0838664ccc04616ad1"
+source = "git+https://github.com/rustwasm/wasm-bindgen#7cabba8596c50ed10a0ab830943bcdbe36fb0c74"
 dependencies = [
  "unicode-ident",
 ]

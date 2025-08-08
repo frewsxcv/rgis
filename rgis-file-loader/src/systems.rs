@@ -1,17 +1,23 @@
 use bevy::prelude::*;
+use rgis_primitives::Crs;
+
+#[derive(Clone)]
+struct SourceCrs(Crs);
 
 fn handle_network_fetch_finished_jobs(
     mut load_event_reader: ResMut<Events<rgis_file_loader_events::LoadFileEvent>>,
     mut finished_jobs: bevy_jobs::FinishedJobs,
 ) {
-    while let Some(outcome) = finished_jobs.take_next::<rgis_network::NetworkFetchJob>() {
+    while let Some(outcome) =
+        finished_jobs.take_next::<bevy_jobs_fetch::NetworkFetchJob<SourceCrs>>()
+    {
         match outcome {
             Ok(fetched) => {
                 load_event_reader.send(rgis_file_loader_events::LoadFileEvent::FromBytes {
                     file_format: geo_file_loader::FileFormat::GeoJson,
                     bytes: fetched.bytes,
                     file_name: fetched.name,
-                    source_crs: fetched.source_crs,
+                    source_crs: fetched.user_data.0,
                 });
             }
             Err(e) => {
@@ -31,9 +37,9 @@ fn handle_load_file_events(
                 url,
                 name,
                 source_crs,
-            } => job_spawner.spawn(rgis_network::NetworkFetchJob {
+            } => job_spawner.spawn(bevy_jobs_fetch::NetworkFetchJob {
                 url,
-                source_crs,
+                user_data: SourceCrs(source_crs),
                 name,
             }),
             rgis_file_loader_events::LoadFileEvent::FromBytes {

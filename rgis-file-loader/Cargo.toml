@@ -14,8 +14,8 @@ geo-file-loader = { path = "../geo-file-loader" }
 geo-projected = { path = "../geo-projected" }
 rgis-file-loader-events = { path = "../rgis-file-loader-events" }
 rgis-layer-events = { path = "../rgis-layer-events" }
-rgis-network = { path = "../rgis-network" }
 bevy_jobs = { workspace = true }
+bevy_jobs_fetch = { workspace = true }
 serde_json = { workspace = true }
 time-logger = { path = "../time-logger" }
 bytes = { workspace = true }
