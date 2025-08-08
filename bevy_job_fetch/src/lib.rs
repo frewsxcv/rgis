@@ -1,15 +1,16 @@
+use bevy_jobs::Job;
 use futures_util::StreamExt;
 use std::io;
 
-pub struct FetchedFile {
+pub struct FetchedFile<T: Clone + Send + Sync + 'static> {
     pub name: String,
     pub bytes: bytes::Bytes,
-    pub source_crs: rgis_primitives::Crs,
+    pub user_data: T,
 }
 
-pub struct NetworkFetchJob {
+pub struct NetworkFetchJob<T: Clone + Send + Sync + 'static> {
     pub url: String,
-    pub source_crs: rgis_primitives::Crs,
+    pub user_data: T,
     pub name: String,
 }
 
@@ -23,8 +24,8 @@ pub enum Error {
     Reqwest(#[from] reqwest::Error),
 }
 
-impl bevy_jobs::Job for NetworkFetchJob {
-    type Outcome = Result<FetchedFile, Error>;
+impl<T: Clone + Send + Sync + 'static> Job for NetworkFetchJob<T> {
+    type Outcome = Result<FetchedFile<T>, Error>;
     const JOB_TYPE: bevy_jobs::JobType = bevy_jobs::JobType::Tokio;
 
     fn name(&self) -> String {
@@ -32,7 +33,7 @@ impl bevy_jobs::Job for NetworkFetchJob {
     }
 
     async fn perform(self, ctx: bevy_jobs::Context) -> Self::Outcome {
-        build_request_future(self.url, self.source_crs, self.name, ctx).await
+        build_request_future(self.url, self.user_data, self.name, ctx).await
     }
 }
 
@@ -42,12 +43,12 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, _app: &mut bevy::app::App) {}
 }
 
-async fn build_request_future(
+async fn build_request_future<T: Clone + Send + Sync + 'static>(
     url: String,
-    source_crs: rgis_primitives::Crs,
+    user_data: T,
     name: String,
     ctx: bevy_jobs::Context,
-) -> Result<FetchedFile, Error> {
+) -> Result<FetchedFile<T>, Error> {
     let response = reqwest::get(url).await?;
     let total_size = response.content_length().unwrap_or(0);
     let mut bytes_stream = response.bytes_stream();
@@ -68,7 +69,7 @@ async fn build_request_future(
 
     Ok(FetchedFile {
         bytes: bytes::Bytes::from(bytes),
-        source_crs,
+        user_data,
         name,
     })
 }
