@@ -35,7 +35,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var rgis
   \********************************/
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-eval("module.exports = __webpack_require__.p + \"59fdc458e755661a9e23.wasm\";\n\n//# sourceURL=webpack://rgis-www/../rgis/pkg/rgis_bg.wasm?");
+eval("module.exports = __webpack_require__.p + \"e4c28fa6879a614e7e99.wasm\";\n\n//# sourceURL=webpack://rgis-www/../rgis/pkg/rgis_bg.wasm?");
 
 /***/ })
 
