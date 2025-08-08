@@ -7,6 +7,7 @@ pub mod operations;
 pub mod toggle_layer;
 
 pub mod fill_color;
+pub mod point_size;
 pub mod stroke_color;
 
 pub mod exit;

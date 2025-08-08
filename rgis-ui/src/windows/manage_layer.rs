@@ -1,17 +1,18 @@
 use bevy::prelude::*;
 use bevy_egui::egui;
 use rgis_layer_events::DuplicateLayerEvent;
-use rgis_ui_events::UpdateLayerColorEvent;
+use rgis_ui_events::{UpdateLayerColorEvent, UpdateLayerPointSizeEvent};
 
-pub struct ManageLayer<'a, 'w> {
+pub struct ManageLayer<'a> {
     pub state: &'a mut crate::ManageLayerWindowState,
     pub layers: &'a rgis_layers::Layers,
     pub egui_ctx: &'a mut bevy_egui::egui::Context,
     pub color_events: &'a mut Events<UpdateLayerColorEvent>,
-    pub duplicate_layer_events: &'a mut EventWriter<'w, DuplicateLayerEvent>,
+    pub point_size_events: &'a mut Events<UpdateLayerPointSizeEvent>,
+    pub duplicate_layer_events: &'a mut Events<DuplicateLayerEvent>,
 }
 
-impl<'w> ManageLayer<'_, 'w> {
+impl ManageLayer<'_> {
     pub fn render(&mut self) {
         let (true, Some(layer_id)) = (self.state.is_visible, self.state.layer_id) else {
             return;
@@ -57,11 +58,24 @@ impl<'w> ManageLayer<'_, 'w> {
                             color_events: self.color_events,
                         });
                         ui.end_row();
+                        if layer.geom_type.contains(geo_geom_type::GeomType::POINT)
+                            || layer
+                                .geom_type
+                                .contains(geo_geom_type::GeomType::MULTI_POINT)
+                        {
+                            ui.label("Point size");
+                            ui.add(crate::widgets::point_size::PointSize {
+                                layer_id,
+                                size: layer.point_size,
+                                size_events: self.point_size_events,
+                            });
+                            ui.end_row();
+                        }
                     });
                 ui.separator();
                 if ui.button("Duplicate").clicked() {
                     self.duplicate_layer_events
-                        .write(DuplicateLayerEvent(layer_id));
+                        .send(DuplicateLayerEvent(layer_id));
                 }
             });
     }

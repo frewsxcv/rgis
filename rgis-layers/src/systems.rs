@@ -52,6 +52,21 @@ fn handle_update_color_events(
     }
 }
 
+fn handle_update_point_size_events(
+    mut update_events: EventReader<rgis_ui_events::UpdateLayerPointSizeEvent>,
+    mut updated_events: EventWriter<rgis_layer_events::LayerPointSizeUpdatedEvent>,
+    mut layers: ResMut<crate::Layers>,
+) {
+    for rgis_ui_events::UpdateLayerPointSizeEvent(layer_id, point_size) in update_events.read() {
+        let Some(layer) = layers.get_mut(*layer_id) else {
+            warn!("Could not find layer");
+            continue;
+        };
+        layer.point_size = *point_size;
+        updated_events.write(rgis_layer_events::LayerPointSizeUpdatedEvent(*layer_id));
+    }
+}
+
 fn handle_delete_layer_events(
     mut delete_layer_event_reader: EventReader<rgis_layer_events::DeleteLayerEvent>,
     mut despawn_meshes_event_writer: EventWriter<rgis_renderer_events::DespawnMeshesEvent>,
@@ -163,6 +178,7 @@ pub fn configure(app: &mut App) {
         (
             handle_toggle_layer_visibility_events,
             handle_update_color_events,
+            handle_update_point_size_events,
             handle_move_layer_events,
             handle_delete_layer_events,
             handle_map_clicked_events,

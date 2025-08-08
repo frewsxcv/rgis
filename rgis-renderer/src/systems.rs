@@ -72,10 +72,42 @@ fn handle_layer_z_index_updated_event(
             continue;
         };
 
-        for (_, mut transform, render_entity) in query.iter_mut().filter(|(i, _, _)| **i == event.0)
-        {
-            let z_index = crate::ZIndex::calculate(layer_with_index.1, *render_entity);
-            transform.translation.as_mut()[2] = z_index.0 as f32;
+        for (layer_id, mut transform, render_entity) in query.iter_mut() {
+            if *layer_id == event.0 {
+                let z_index = crate::ZIndex::calculate(layer_with_index.1, *render_entity);
+                transform.translation.z = z_index.0 as f32;
+            }
+        }
+    }
+}
+
+fn handle_layer_point_size_updated_event(
+    mut events: EventReader<rgis_layer_events::LayerPointSizeUpdatedEvent>,
+    layers: Res<rgis_layers::Layers>,
+    mut sprite_query: Query<(
+        &mut Sprite,
+        &rgis_primitives::LayerId,
+        &crate::PointSprite,
+    )>,
+    camera_query: Query<&GlobalTransform, With<Camera>>,
+) {
+    let changed_layers: std::collections::HashSet<rgis_primitives::LayerId> =
+        events.read().map(|event| event.0).collect();
+
+    if changed_layers.is_empty() {
+        return;
+    }
+
+    let camera_transform = camera_query.single().unwrap();
+    let (camera_scale, _, _) = camera_transform.to_scale_rotation_translation();
+
+    for (mut sprite, layer_id, point_sprite) in sprite_query.iter_mut() {
+        if changed_layers.contains(layer_id) {
+            if let Some(layer) = layers.get(*layer_id) {
+                sprite.custom_size = Some(
+                    camera_scale.truncate() * layer.point_size * point_sprite.relative_scale,
+                );
+            }
         }
     }
 }
@@ -89,8 +121,10 @@ fn handle_despawn_meshes_event(
     query: LayerEntitiesQuery,
 ) {
     for event in layer_deleted_event_reader.read() {
-        for (_, entity) in query.iter().filter(|(i, _)| **i == event.0) {
-            commands.entity(entity).despawn();
+        for (layer_id, entity) in query.iter() {
+            if *layer_id == event.0 {
+                commands.entity(entity).despawn();
+            }
         }
     }
 }
@@ -222,13 +256,22 @@ type CameraGlobalTransformQuery<'world, 'state, 'a> =
 
 fn handle_camera_scale_changed_event(
     query: CameraGlobalTransformQuery,
-    mut sprite_bundle_query: Query<&mut Sprite>,
+    mut sprite_query: Query<(
+        &mut Sprite,
+        &rgis_primitives::LayerId,
+        &crate::PointSprite,
+    )>,
+    layers: Res<rgis_layers::Layers>,
 ) {
     if let Ok(camera_global_transform) = query.single() {
         let (scale, _, _) = camera_global_transform.to_scale_rotation_translation();
 
-        for mut sprite in &mut sprite_bundle_query {
-            sprite.custom_size = Some(scale.truncate() * 5.);
+        for (mut sprite, layer_id, point_sprite) in &mut sprite_query {
+            if let Some(layer) = layers.get(*layer_id) {
+                sprite.custom_size = Some(
+                    scale.truncate() * layer.point_size * point_sprite.relative_scale,
+                );
+            }
         }
     }
 }
@@ -288,6 +331,7 @@ pub fn configure(app: &mut App) {
             handle_layer_became_hidden_event,
             handle_layer_became_visible_event,
             handle_layer_color_updated_event,
+            handle_layer_point_size_updated_event,
             handle_layer_z_index_updated_event,
             handle_despawn_meshes_event,
             handle_mesh_building_job_outcome,

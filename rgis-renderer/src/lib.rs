@@ -37,6 +37,11 @@ struct LineString;
 #[derive(Copy, Clone, Component)]
 struct Polygon;
 
+#[derive(Component)]
+pub struct PointSprite {
+    pub relative_scale: f32,
+}
+
 #[derive(Copy, Clone, Component)]
 struct Fill;
 
@@ -228,6 +233,7 @@ fn spawn_point_geometry(
         circle.clone(),
         1.0,
         false,
+        layer,
     );
 
     // Fill
@@ -244,6 +250,7 @@ fn spawn_point_geometry(
         circle.clone(),
         0.7, // Fill should be smaller than stroke.
         true,
+        layer,
     );
 }
 
@@ -282,11 +289,11 @@ fn spawn_point_sprites(
     circle: Handle<Image>,
     scale: f32,
     is_fill: bool,
+    layer: &rgis_layers::Layer,
 ) {
     for coord in points {
         let z_index = ZIndex::calculate(layer_index, entity_type);
-        let mut transform = Transform::from_xyz(coord.x, coord.y, z_index.0 as f32);
-        transform.scale *= scale;
+        let transform = Transform::from_xyz(coord.x, coord.y, z_index.0 as f32);
         let mut entity_commands = commands.spawn((
             Sprite {
                 color,
@@ -295,6 +302,10 @@ fn spawn_point_sprites(
             },
             entity_type,
             transform,
+            layer.id,
+            PointSprite {
+                relative_scale: scale,
+            },
         ));
         if is_fill {
             entity_commands.insert(Fill);
