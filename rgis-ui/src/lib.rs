@@ -3,6 +3,7 @@ use bevy::prelude::*;
 mod events;
 mod panels;
 mod systems;
+mod ui_helpers;
 mod widgets;
 mod windows;
 

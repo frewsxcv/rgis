@@ -351,39 +351,18 @@ struct LibraryEntryWidget<'a> {
     geodesy_ctx: &'a rgis_geodesy::GeodesyContext,
 }
 
+use crate::ui_helpers::library_helpers;
+
 impl LibraryEntryWidget<'_> {
     fn show(self, ui: &mut egui::Ui) -> Option<AddLayerOutput> {
         let mut output = None;
         ui.horizontal(|ui| {
             if ui.button("➕ Add").clicked() {
-                match self.geodesy_ctx.0.write() {
-                    Ok(mut geodesy_ctx) => {
-                        match rgis_geodesy::epsg_code_to_geodesy_op_handle(
-                            &mut *geodesy_ctx,
-                            self.entry.crs,
-                        ) {
-                            Ok(op_handle) => {
-                                output = Some(AddLayerOutput::LoadFromLibrary {
-                                    name: format!("{}: {}", self.folder.name, self.entry.name),
-                                    url: self.entry.url.into(),
-                                    source_crs: rgis_primitives::Crs {
-                                        epsg_code: self.entry.crs,
-                                        op_handle,
-                                    },
-                                });
-                            }
-                            Err(e) => {
-                                error!(
-                                    "Failed to get geodesy op handle for EPSG:{}: {:?}",
-                                    self.entry.crs, e
-                                );
-                            }
-                        }
-                    }
-                    Err(e) => {
-                        error!("Failed to acquire write lock on geodesy context: {}", e);
-                    }
-                }
+                output = library_helpers::add_from_library(
+                    self.geodesy_ctx,
+                    self.entry,
+                    self.folder,
+                );
             }
             ui.label(self.entry.name);
         });

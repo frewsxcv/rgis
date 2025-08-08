@@ -1,6 +1,8 @@
+use crate::ui_helpers::crs_validator;
 use bevy_egui::egui;
 use geodesy::Context;
-use std::str::FromStr;
+
+pub use crate::ui_helpers::crs_validator::Error;
 
 pub struct CrsInput<'a> {
     pub geodesy_ctx: &'a rgis_geodesy::GeodesyContext,
@@ -93,7 +95,7 @@ impl egui::Widget for EpsgCodeInputFieldWidget<'_> {
                 || (!self.text_field_value.is_empty() && self.outcome.is_none())
             {
                 ui.add(ValidIconWidget);
-                Some(parse_epsg_input_value(
+                Some(crs_validator::parse_epsg_input_value(
                     self.geodesy_ctx,
                     self.text_field_value,
                     &mut self.parsed_text_field_value,
@@ -112,30 +114,6 @@ impl egui::Widget for EpsgCodeInputFieldWidget<'_> {
         })
         .response
     }
-}
-
-#[derive(thiserror::Error, Debug)]
-pub enum Error {
-    #[error("{0}")]
-    ParseIntError(#[from] std::num::ParseIntError),
-    #[error("{0}")]
-    Geodesy(#[from] rgis_geodesy::Error),
-    #[error("RwLock poisoned")]
-    RwLock,
-}
-
-fn parse_epsg_input_value(
-    geodesy_ctx: &rgis_geodesy::GeodesyContext,
-    input: &str,
-    parsed_text_field_value: &mut Option<u16>,
-) -> Outcome {
-    let mut geodesy_ctx = geodesy_ctx.0.write().map_err(|_| Error::RwLock)?;
-    let parsed = u16::from_str(input);
-    *parsed_text_field_value = parsed.as_ref().ok().copied();
-    let parsed = parsed?;
-    let outcome = rgis_geodesy::epsg_code_to_geodesy_op_handle(&mut *geodesy_ctx, parsed)
-        .map_err(Error::Geodesy)?;
-    Ok((outcome, parsed))
 }
 
 struct ValidIconWidget;
