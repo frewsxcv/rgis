@@ -157,6 +157,13 @@ impl AddLayer<'_> {
                     );
                     ui.add(crs_input_widget);
 
+                    let crs_is_valid = self
+                        .state
+                        .crs_input_outcome
+                        .as_ref()
+                        .map(|o| o.is_ok())
+                        .unwrap_or(false);
+
                     ui.separator();
 
                     if self.state.selected_source == Source::File
@@ -212,7 +219,7 @@ impl AddLayer<'_> {
                             output = Some(AddLayerOutput::OpenFile);
                         }
 
-                        let submittable = self.selected_file.0.is_some();
+                        let submittable = self.selected_file.0.is_some() && crs_is_valid;
 
                         if let Some(loaded_file) = &self.selected_file.0 {
                             ui.label(format!("Selected file: {}", loaded_file.file_name));
@@ -224,38 +231,24 @@ impl AddLayer<'_> {
                             .add_enabled(submittable, egui::Button::new("Add layer"))
                             .clicked()
                         {
-                            match self.selected_file.0.take() {
-                                Some(loaded_file) => {
-                                    output = Some(AddLayerOutput::LoadFromFile {
-                                        file_name: loaded_file.file_name,
-                                        file_format: selected_format,
-                                        bytes: loaded_file.bytes,
-                                        source_crs: rgis_primitives::Crs {
-                                            epsg_code: self
-                                                .state
-                                                .crs_input_outcome
-                                                .as_ref()
-                                                .unwrap()
-                                                .as_ref()
-                                                .unwrap()
-                                                .1,
-                                            op_handle: self
-                                                .state
-                                                .crs_input_outcome
-                                                .as_ref()
-                                                .unwrap()
-                                                .as_ref()
-                                                .unwrap()
-                                                .0,
-                                        },
-                                    });
-                                }
-                                None => {
-                                    error!(
-                                        "Expected file to exist when loading, but no file exists"
-                                    );
-                                }
-                            };
+                            if let (Some(loaded_file), Some(Ok((op_handle, epsg_code)))) = (
+                                self.selected_file.0.take(),
+                                self.state.crs_input_outcome.as_ref(),
+                            ) {
+                                output = Some(AddLayerOutput::LoadFromFile {
+                                    file_name: loaded_file.file_name,
+                                    file_format: selected_format,
+                                    bytes: loaded_file.bytes,
+                                    source_crs: rgis_primitives::Crs {
+                                        epsg_code: *epsg_code,
+                                        op_handle: *op_handle,
+                                    },
+                                });
+                            } else {
+                                error!(
+                                    "Expected file to exist when loading, but no file exists"
+                                );
+                            }
                         }
                     } else if self.state.selected_source == Source::Text {
                         ui.label("Input text:");
@@ -271,7 +264,8 @@ impl AddLayer<'_> {
                                 .show(ui);
                             });
 
-                        let submittable = !self.state.text_edit_contents.is_empty();
+                        let submittable =
+                            !self.state.text_edit_contents.is_empty() && crs_is_valid;
 
                         ui.separator();
 
@@ -279,36 +273,26 @@ impl AddLayer<'_> {
                             .add_enabled(submittable, egui::Button::new("Add layer"))
                             .clicked()
                         {
-                            let new = mem::take(&mut self.state.text_edit_contents);
-                            match selected_format {
-                                FileFormat::Shapefile => {
-                                    unreachable!()
-                                }
-                                file_format @ (FileFormat::Wkt
-                                | FileFormat::GeoJson
-                                | FileFormat::Gpx) => {
-                                    output = Some(AddLayerOutput::LoadFromText {
-                                        text: new,
-                                        file_format,
-                                        source_crs: rgis_primitives::Crs {
-                                            epsg_code: self
-                                                .state
-                                                .crs_input_outcome
-                                                .as_ref()
-                                                .unwrap()
-                                                .as_ref()
-                                                .unwrap()
-                                                .1,
-                                            op_handle: self
-                                                .state
-                                                .crs_input_outcome
-                                                .as_ref()
-                                                .unwrap()
-                                                .as_ref()
-                                                .unwrap()
-                                                .0,
-                                        },
-                                    });
+                            if let Some(Ok((op_handle, epsg_code))) =
+                                self.state.crs_input_outcome.as_ref()
+                            {
+                                let new = mem::take(&mut self.state.text_edit_contents);
+                                match selected_format {
+                                    FileFormat::Shapefile => {
+                                        unreachable!()
+                                    }
+                                    file_format @ (FileFormat::Wkt
+                                    | FileFormat::GeoJson
+                                    | FileFormat::Gpx) => {
+                                        output = Some(AddLayerOutput::LoadFromText {
+                                            text: new,
+                                            file_format,
+                                            source_crs: rgis_primitives::Crs {
+                                                epsg_code: *epsg_code,
+                                                op_handle: *op_handle,
+                                            },
+                                        });
+                                    }
                                 }
                             }
                         }
@@ -372,18 +356,34 @@ impl LibraryEntryWidget<'_> {
         let mut output = None;
         ui.horizontal(|ui| {
             if ui.button("➕ Add").clicked() {
-                let mut geodesy_ctx = self.geodesy_ctx.0.write().unwrap();
-                let op_handle =
-                    rgis_geodesy::epsg_code_to_geodesy_op_handle(&mut *geodesy_ctx, self.entry.crs)
-                        .unwrap();
-                output = Some(AddLayerOutput::LoadFromLibrary {
-                    name: format!("{}: {}", self.folder.name, self.entry.name),
-                    url: self.entry.url.into(),
-                    source_crs: rgis_primitives::Crs {
-                        epsg_code: self.entry.crs,
-                        op_handle,
-                    },
-                });
+                match self.geodesy_ctx.0.write() {
+                    Ok(mut geodesy_ctx) => {
+                        match rgis_geodesy::epsg_code_to_geodesy_op_handle(
+                            &mut *geodesy_ctx,
+                            self.entry.crs,
+                        ) {
+                            Ok(op_handle) => {
+                                output = Some(AddLayerOutput::LoadFromLibrary {
+                                    name: format!("{}: {}", self.folder.name, self.entry.name),
+                                    url: self.entry.url.into(),
+                                    source_crs: rgis_primitives::Crs {
+                                        epsg_code: self.entry.crs,
+                                        op_handle,
+                                    },
+                                });
+                            }
+                            Err(e) => {
+                                error!(
+                                    "Failed to get geodesy op handle for EPSG:{}: {:?}",
+                                    self.entry.crs, e
+                                );
+                            }
+                        }
+                    }
+                    Err(e) => {
+                        error!("Failed to acquire write lock on geodesy context: {}", e);
+                    }
+                }
             }
             ui.label(self.entry.name);
         });
