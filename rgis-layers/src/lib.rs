@@ -174,6 +174,7 @@ impl Layers {
             id: layer_id,
             crs,
             geom_type,
+            point_size: 5.0,
         };
         self.data.push(layer);
         layer_id
@@ -208,6 +209,7 @@ pub struct Layer {
     pub visible: bool,
     pub crs: rgis_primitives::Crs,
     pub geom_type: geo_geom_type::GeomType,
+    pub point_size: f32,
 }
 
 impl Layer {

@@ -28,6 +28,9 @@ pub enum UpdateLayerColorEvent {
     Stroke(rgis_primitives::LayerId, bevy::prelude::Color),
 }
 
+#[derive(Event, Debug)]
+pub struct UpdateLayerPointSizeEvent(pub rgis_primitives::LayerId, pub f32);
+
 #[derive(Event)]
 pub struct OpenOperationWindowEvent {
     pub operation: Box<dyn Send + Sync + rgis_geo_ops::Operation>,
@@ -51,6 +54,7 @@ impl bevy::app::Plugin for Plugin {
             .add_event::<RenderMessageEvent>()
             .add_event::<RenderFeaturePropertiesEvent>()
             .add_event::<UpdateLayerColorEvent>()
+            .add_event::<UpdateLayerPointSizeEvent>()
             .add_event::<OpenOperationWindowEvent>()
             .add_event::<PerformOperationEvent>();
     }

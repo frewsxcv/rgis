@@ -20,6 +20,9 @@ pub enum LayerColorUpdatedEvent {
     Stroke(rgis_primitives::LayerId),
 }
 
+#[derive(Event, Debug)]
+pub struct LayerPointSizeUpdatedEvent(pub rgis_primitives::LayerId);
+
 #[derive(Event)]
 pub struct DeleteLayerEvent(pub rgis_primitives::LayerId);
 
@@ -56,6 +59,7 @@ impl bevy::app::Plugin for Plugin {
             .add_event::<LayerBecameHiddenEvent>()
             .add_event::<LayerBecameVisibleEvent>()
             .add_event::<LayerColorUpdatedEvent>()
+            .add_event::<LayerPointSizeUpdatedEvent>()
             .add_event::<DeleteLayerEvent>()
             .add_event::<MoveLayerEvent>()
             .add_event::<LayerZIndexUpdatedEvent>()
