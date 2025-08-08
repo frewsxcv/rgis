@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 
-mod events;
 mod panels;
 mod systems;
 mod widgets;
@@ -47,8 +46,7 @@ impl bevy::app::Plugin for Plugin {
             .insert_resource(rgis_units::TopPanelHeight(0.))
             .insert_resource(rgis_units::BottomPanelHeight(0.))
             .insert_resource(rgis_units::SidePanelWidth(0.))
-            .insert_resource(ChangeCrsWindowState::default())
-            .add_event::<events::OpenOperationWindowEvent>();
+            .insert_resource(ChangeCrsWindowState::default());
 
         systems::configure(app);
     }

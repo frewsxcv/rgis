@@ -28,6 +28,18 @@ pub enum UpdateLayerColorEvent {
     Stroke(rgis_primitives::LayerId, bevy::prelude::Color),
 }
 
+#[derive(Event)]
+pub struct OpenOperationWindowEvent {
+    pub operation: Box<dyn Send + Sync + rgis_geo_ops::Operation>,
+    pub feature_collection: geo_features::FeatureCollection<geo_projected::UnprojectedScalar>,
+}
+
+#[derive(Event)]
+pub struct PerformOperationEvent {
+    pub operation: Box<dyn Send + Sync + rgis_geo_ops::Operation>,
+    pub layer_id: rgis_primitives::LayerId,
+}
+
 pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
@@ -38,6 +50,8 @@ impl bevy::app::Plugin for Plugin {
             .add_event::<HideAddLayerWindow>()
             .add_event::<RenderMessageEvent>()
             .add_event::<RenderFeaturePropertiesEvent>()
-            .add_event::<UpdateLayerColorEvent>();
+            .add_event::<UpdateLayerColorEvent>()
+            .add_event::<OpenOperationWindowEvent>()
+            .add_event::<PerformOperationEvent>();
     }
 }

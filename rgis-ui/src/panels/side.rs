@@ -18,7 +18,7 @@ pub struct Events<'w> {
     pub create_layer_event_writer: EventWriter<'w, CreateLayerEvent>,
     pub show_add_layer_window_event_writer: EventWriter<'w, ShowAddLayerWindow>,
     pub show_manage_layer_window_event_writer: EventWriter<'w, ShowManageLayerWindowEvent>,
-    pub perform_operation_event_writer: EventWriter<'w, crate::events::PerformOperationEvent>,
+    pub perform_operation_event_writer: EventWriter<'w, rgis_ui_events::PerformOperationEvent>,
 }
 
 pub struct Side<'a, 'w> {
@@ -92,7 +92,7 @@ impl<Op: rgis_geo_ops::OperationEntry> egui::Widget for OperationButton<'_, '_, 
         );
         if button.clicked() {
             self.events.perform_operation_event_writer.write(
-                crate::events::PerformOperationEvent {
+                rgis_ui_events::PerformOperationEvent {
                     operation: Box::new(Op::build()),
                     layer_id: self.layer.id,
                 },

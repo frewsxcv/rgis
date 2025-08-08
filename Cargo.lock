@@ -5133,6 +5133,8 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "geo-features",
+ "geo-projected",
+ "rgis-geo-ops",
  "rgis-primitives",
 ]
 

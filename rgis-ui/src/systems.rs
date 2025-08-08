@@ -124,14 +124,14 @@ fn render_add_layer_window(
                 file_format,
                 source_crs,
             } => {
-                events
-                    .load_file_event_writer
-                    .write(rgis_file_loader_events::LoadFileEvent::FromBytes {
+                events.load_file_event_writer.write(
+                    rgis_file_loader_events::LoadFileEvent::FromBytes {
                         file_name: "Inputted file".into(),
                         file_format,
                         bytes: text.into(),
                         source_crs,
-                    });
+                    },
+                );
                 events.hide_add_layer_window_events.send_default();
                 state.reset();
             }
@@ -141,14 +141,14 @@ fn render_add_layer_window(
                 bytes,
                 source_crs,
             } => {
-                events
-                    .load_file_event_writer
-                    .write(rgis_file_loader_events::LoadFileEvent::FromBytes {
+                events.load_file_event_writer.write(
+                    rgis_file_loader_events::LoadFileEvent::FromBytes {
                         file_name,
                         file_format,
                         bytes: bytes.into(),
                         source_crs,
-                    });
+                    },
+                );
                 events.hide_add_layer_window_events.send_default();
                 state.reset();
             }
@@ -157,13 +157,13 @@ fn render_add_layer_window(
                 url,
                 source_crs,
             } => {
-                events
-                    .load_file_event_writer
-                    .write(rgis_file_loader_events::LoadFileEvent::FromNetwork {
+                events.load_file_event_writer.write(
+                    rgis_file_loader_events::LoadFileEvent::FromNetwork {
                         name,
                         url,
                         source_crs,
-                    });
+                    },
+                );
                 events.hide_add_layer_window_events.send_default();
                 state.reset();
             }
@@ -255,7 +255,7 @@ fn render_message_window(
 
 fn render_operation_window(
     mut state: Local<crate::OperationWindowState>,
-    mut events: ResMut<Events<crate::events::OpenOperationWindowEvent>>,
+    mut events: ResMut<Events<rgis_ui_events::OpenOperationWindowEvent>>,
     mut bevy_egui_ctx: EguiContexts,
     create_layer_event_writer: EventWriter<rgis_layer_events::CreateLayerEvent>,
     render_message_event_writer: EventWriter<rgis_ui_events::RenderMessageEvent>,
@@ -386,9 +386,6 @@ enum RenderSystemSet {
 }
 
 pub fn configure(app: &mut App) {
-    app.add_event::<crate::events::OpenOperationWindowEvent>()
-        .add_event::<crate::events::PerformOperationEvent>();
-
     app.add_systems(
         PostStartup,
         (bevy_egui::setup_primary_egui_context_system, set_egui_theme).chain(),
@@ -448,9 +445,9 @@ pub fn configure(app: &mut App) {
 #[allow(clippy::too_many_arguments)]
 fn perform_operation(
     _commands: Commands,
-    mut events: ResMut<Events<crate::events::PerformOperationEvent>>,
+    mut events: ResMut<Events<rgis_ui_events::PerformOperationEvent>>,
     layers: Res<rgis_layers::Layers>,
-    mut open_operation_window_event_writer: EventWriter<crate::events::OpenOperationWindowEvent>,
+    mut open_operation_window_event_writer: EventWriter<rgis_ui_events::OpenOperationWindowEvent>,
     mut create_layer_event_writer: EventWriter<rgis_layer_events::CreateLayerEvent>,
     mut render_message_event_writer: EventWriter<rgis_ui_events::RenderMessageEvent>,
 ) {
@@ -464,10 +461,12 @@ fn perform_operation(
 
         match operation.next_action() {
             rgis_geo_ops::Action::RenderUi => {
-                open_operation_window_event_writer.write(crate::events::OpenOperationWindowEvent {
-                    operation,
-                    feature_collection: layer.unprojected_feature_collection.clone(), // TODO: clone?
-                });
+                open_operation_window_event_writer.write(
+                    rgis_ui_events::OpenOperationWindowEvent {
+                        operation,
+                        feature_collection: layer.unprojected_feature_collection.clone(), // TODO: clone?
+                    },
+                );
             }
             rgis_geo_ops::Action::Perform => {
                 // TODO: perform in background job
