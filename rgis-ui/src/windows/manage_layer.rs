@@ -58,9 +58,11 @@ impl ManageLayer<'_> {
                             color_events: self.color_events,
                         });
                         ui.end_row();
-                        if layer.geom_type.contains(
-                            geo_geom_type::GeomType::POINT | geo_geom_type::GeomType::MULTI_POINT,
-                        ) {
+                        if layer.geom_type.contains(geo_geom_type::GeomType::POINT)
+                            || layer
+                                .geom_type
+                                .contains(geo_geom_type::GeomType::MULTI_POINT)
+                        {
                             ui.label("Point size");
                             ui.add(crate::widgets::point_size::PointSize {
                                 layer_id,
