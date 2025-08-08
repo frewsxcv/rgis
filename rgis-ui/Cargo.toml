@@ -33,7 +33,6 @@ rgis-settings = { path = "../rgis-settings" }
 rgis-units = { path = "../rgis-units" }
 bevy_jobs = { workspace = true }
 geo = { workspace = true }
-thiserror = { workspace = true }
 geodesy = { workspace = true }
 rgis-crs = { path = "../rgis-crs" }
 rgis-geodesy = { path = "../rgis-geodesy" }

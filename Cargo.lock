@@ -5125,7 +5125,6 @@ dependencies = [
  "rgis-settings",
  "rgis-ui-events",
  "rgis-units",
- "thiserror 2.0.12",
 ]
 
 [[package]]

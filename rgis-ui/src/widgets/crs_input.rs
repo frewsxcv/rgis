@@ -109,12 +109,33 @@ impl egui::Widget for EpsgCodeInputFieldWidget<'_> {
     }
 }
 
-#[derive(thiserror::Error, Debug)]
+#[derive(Debug)]
 pub enum Error {
-    #[error("{0}")]
-    ParseIntError(#[from] std::num::ParseIntError),
-    #[error("{0}")]
-    Geodesy(#[from] rgis_geodesy::Error),
+    ParseIntError(std::num::ParseIntError),
+    Geodesy(rgis_geodesy::Error),
+}
+
+impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Error::ParseIntError(e) => write!(f, "ParseIntError: {}", e),
+            Error::Geodesy(e) => write!(f, "Geodesy error: {}", e),
+        }
+    }
+}
+
+impl std::error::Error for Error {}
+
+impl From<std::num::ParseIntError> for Error {
+    fn from(err: std::num::ParseIntError) -> Self {
+        Error::ParseIntError(err)
+    }
+}
+
+impl From<rgis_geodesy::Error> for Error {
+    fn from(err: rgis_geodesy::Error) -> Self {
+        Error::Geodesy(err)
+    }
 }
 
 fn parse_epsg_input_value(
