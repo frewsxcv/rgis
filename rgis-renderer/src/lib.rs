@@ -1,9 +1,14 @@
 use bevy::{ecs::relationship::RelatedSpawnerCommands, prelude::*};
 
+mod fill_helper;
 mod jobs;
+mod line_helper;
+pub mod line_material;
+mod mesh_conversion;
 mod systems;
 mod z_index;
 
+use line_material::LineMaterial;
 use rgis_layers::LayerIndex;
 use z_index::ZIndex;
 
@@ -20,8 +25,11 @@ pub enum RenderEntityType {
 
 pub struct Plugin;
 
+use bevy::pbr::MaterialPlugin;
+
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
+        app.add_plugins(MaterialPlugin::<LineMaterial>::default());
         systems::configure(app);
     }
 }
@@ -49,8 +57,9 @@ struct Fill;
 struct Stroke;
 
 fn spawn_geometry_meshes(
-    geometry_mesh: geo_bevy::GeometryMesh,
+    geometry_mesh: mesh_conversion::GeometryMesh,
     materials: &mut Assets<ColorMaterial>,
+    line_materials: &mut Assets<LineMaterial>,
     rgis_layers::LayerWithIndex(layer, layer_index): rgis_layers::LayerWithIndex,
     commands: &mut Commands,
     assets_meshes: &mut Assets<Mesh>,
@@ -64,18 +73,18 @@ fn spawn_geometry_meshes(
     };
     let mut entity_commands = commands.spawn((visibility, Transform::default(), layer.id));
     match geometry_mesh {
-        geo_bevy::GeometryMesh::Point(_) => {
+        mesh_conversion::GeometryMesh::Point(_) => {
             entity_commands.insert(Point);
         }
-        geo_bevy::GeometryMesh::Polygon(_) => {
+        mesh_conversion::GeometryMesh::Polygon(_) => {
             entity_commands.insert(Polygon);
         }
-        geo_bevy::GeometryMesh::LineString(_) => {
+        mesh_conversion::GeometryMesh::LineString(_) => {
             entity_commands.insert(LineString);
         }
     };
     entity_commands.with_children(|commands| match geometry_mesh {
-        geo_bevy::GeometryMesh::Point(points) => {
+        mesh_conversion::GeometryMesh::Point(points) => {
             spawn_point_geometry(
                 commands,
                 &points,
@@ -85,22 +94,23 @@ fn spawn_geometry_meshes(
                 layer,
             );
         }
-        geo_bevy::GeometryMesh::Polygon(polygon_mesh) => {
+        mesh_conversion::GeometryMesh::Polygon(polygon_mesh) => {
             spawn_polygon_geometry(
                 commands,
                 polygon_mesh,
                 materials,
+                line_materials,
                 assets_meshes,
                 is_selected,
                 layer_index,
                 layer,
             );
         }
-        geo_bevy::GeometryMesh::LineString(line_string_mesh) => {
+        mesh_conversion::GeometryMesh::LineString(line_string_mesh) => {
             spawn_linestring_geometry(
                 commands,
                 line_string_mesh,
-                materials,
+                line_materials,
                 assets_meshes,
                 is_selected,
                 layer_index,
@@ -110,10 +120,13 @@ fn spawn_geometry_meshes(
     });
 }
 
+use crate::fill_helper::spawn_fill_helper;
+use crate::line_helper::spawn_line_string_helper;
+
 fn spawn_linestring_geometry(
     commands: &mut RelatedSpawnerCommands<ChildOf>,
     line_string_mesh: Mesh,
-    materials: &mut Assets<ColorMaterial>,
+    materials: &mut Assets<LineMaterial>,
     assets_meshes: &mut Assets<Mesh>,
     is_selected: bool,
     layer_index: LayerIndex,
@@ -124,26 +137,27 @@ fn spawn_linestring_geometry(
     } else {
         RenderEntityType::LineString
     };
-    spawn_helper(
+    spawn_line_string_helper(
         materials,
         if is_selected {
             SELECTED_COLOR
         } else {
             layer.color.stroke
         },
+        1.0, // TODO: make this configurable
         layer_index,
         line_string_mesh,
         commands,
         assets_meshes,
         entity_type,
-        false,
     );
 }
 
 fn spawn_polygon_geometry(
     commands: &mut RelatedSpawnerCommands<ChildOf>,
-    polygon_mesh: geo_bevy::PolygonMesh,
+    polygon_mesh: mesh_conversion::PolygonMesh,
     materials: &mut Assets<ColorMaterial>,
+    line_materials: &mut Assets<LineMaterial>,
     assets_meshes: &mut Assets<Mesh>,
     is_selected: bool,
     layer_index: LayerIndex,
@@ -160,7 +174,7 @@ fn spawn_polygon_geometry(
         RenderEntityType::LineString
     };
     // Fill
-    spawn_helper(
+    spawn_fill_helper(
         materials,
         if is_selected {
             SELECTED_COLOR
@@ -178,37 +192,36 @@ fn spawn_polygon_geometry(
         commands,
         assets_meshes,
         polygon_entity_type,
-        true,
     );
     // Exterior border
-    spawn_helper(
-        materials,
+    spawn_line_string_helper(
+        line_materials,
         layer.color.stroke,
+        1.0, // TODO: make this configurable
         layer_index,
         polygon_mesh.exterior_mesh,
         commands,
         assets_meshes,
         line_string_entity_type,
-        false,
     );
     // Interior borders
     for mesh in polygon_mesh.interior_meshes {
-        spawn_helper(
-            materials,
+        spawn_line_string_helper(
+            line_materials,
             layer.color.stroke,
+            1.0, // TODO: make this configurable
             layer_index,
             mesh,
             commands,
             assets_meshes,
             line_string_entity_type,
-            false,
         );
     }
 }
 
 fn spawn_point_geometry(
     commands: &mut RelatedSpawnerCommands<ChildOf>,
-    points: &[geo_bevy::SpritePosition],
+    points: &[mesh_conversion::SpritePosition],
     asset_server: &AssetServer,
     is_selected: bool,
     layer_index: LayerIndex,
@@ -254,35 +267,10 @@ fn spawn_point_geometry(
     );
 }
 
-fn spawn_helper<'a>(
-    materials: &'a mut Assets<ColorMaterial>,
-    color: bevy::color::Color,
-    layer_index: LayerIndex,
-    mesh: Mesh,
-    commands: &'a mut RelatedSpawnerCommands<ChildOf>,
-    assets_meshes: &'a mut Assets<Mesh>,
-    entity_type: RenderEntityType,
-    is_fill: bool,
-) -> bevy::ecs::system::EntityCommands<'a> {
-    let material = materials.add(color);
-    let z_index = ZIndex::calculate(layer_index, entity_type);
-    let mut entity_commands = commands.spawn((
-        Mesh2d(assets_meshes.add(mesh)),
-        Transform::from_xyz(0., 0., z_index.0 as f32),
-        MeshMaterial2d(material),
-        entity_type,
-    ));
-    if is_fill {
-        entity_commands.insert(Fill);
-    } else {
-        entity_commands.insert(Stroke);
-    }
-    entity_commands
-}
 
 fn spawn_point_sprites(
     commands: &mut RelatedSpawnerCommands<ChildOf>,
-    points: &[geo_bevy::SpritePosition],
+    points: &[mesh_conversion::SpritePosition],
     layer_index: LayerIndex,
     entity_type: RenderEntityType,
     color: Color,

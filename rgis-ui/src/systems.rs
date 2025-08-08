@@ -53,12 +53,15 @@ fn handle_open_file_job(
     }
 }
 
+use rgis_layer_events::LayerStrokeWidthUpdatedEvent;
+
 fn render_manage_layer_window(
     mut state: Local<crate::ManageLayerWindowState>,
     mut bevy_egui_ctx: EguiContexts,
     layers: Res<rgis_layers::Layers>,
     mut color_events: ResMut<Events<rgis_ui_events::UpdateLayerColorEvent>>,
     mut point_size_events: ResMut<Events<rgis_ui_events::UpdateLayerPointSizeEvent>>,
+    mut stroke_width_events: ResMut<Events<LayerStrokeWidthUpdatedEvent>>,
     mut show_manage_layer_window_event_reader: EventReader<
         rgis_ui_events::ShowManageLayerWindowEvent,
     >,
@@ -76,6 +79,7 @@ fn render_manage_layer_window(
         egui_ctx: bevy_egui_ctx_mut,
         color_events: &mut color_events,
         point_size_events: &mut point_size_events,
+        stroke_width_events: &mut stroke_width_events,
         duplicate_layer_events: &mut duplicate_layer_events,
     }
     .render();

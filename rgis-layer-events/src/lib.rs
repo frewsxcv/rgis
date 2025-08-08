@@ -50,6 +50,9 @@ pub struct LayerReprojectedEvent(pub rgis_primitives::LayerId);
 #[derive(Event, Debug)]
 pub struct DuplicateLayerEvent(pub rgis_primitives::LayerId);
 
+#[derive(Event, Debug)]
+pub struct LayerStrokeWidthUpdatedEvent(pub rgis_primitives::LayerId, pub f32);
+
 pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
@@ -60,6 +63,7 @@ impl bevy::app::Plugin for Plugin {
             .add_event::<LayerBecameVisibleEvent>()
             .add_event::<LayerColorUpdatedEvent>()
             .add_event::<LayerPointSizeUpdatedEvent>()
+            .add_event::<LayerStrokeWidthUpdatedEvent>()
             .add_event::<DeleteLayerEvent>()
             .add_event::<MoveLayerEvent>()
             .add_event::<LayerZIndexUpdatedEvent>()
