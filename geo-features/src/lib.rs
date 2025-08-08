@@ -289,11 +289,11 @@ fn max<Scalar: geo::CoordNum>(a: Scalar, b: Scalar) -> Scalar {
     }
 }
 
-// The starting value is `1` so we can utilize `NonZeroU32`.
-static NEXT_ID: sync::atomic::AtomicU32 = sync::atomic::AtomicU32::new(1);
+// The starting value is `1` so we can utilize `NonZeroU64`.
+static NEXT_ID: sync::atomic::AtomicU64 = sync::atomic::AtomicU64::new(1);
 
 #[derive(Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Hash)]
-pub struct FeatureId(num::NonZeroU32);
+pub struct FeatureId(num::NonZeroU64);
 
 impl Default for FeatureId {
     fn default() -> Self {
@@ -307,6 +307,8 @@ impl FeatureId {
     }
 }
 
-fn new_id() -> num::NonZeroU32 {
-    num::NonZeroU32::new(NEXT_ID.fetch_add(1, sync::atomic::Ordering::SeqCst)).unwrap()
+fn new_id() -> num::NonZeroU64 {
+    #[allow(clippy::expect_used)]
+    num::NonZeroU64::new(NEXT_ID.fetch_add(1, sync::atomic::Ordering::SeqCst))
+        .expect("Encountered more than 2^64 features")
 }
