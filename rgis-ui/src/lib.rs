@@ -26,9 +26,19 @@ pub struct FeaturePropertiesWindowState {
     is_visible: bool,
 }
 
-#[derive(Resource, Default)]
+#[derive(Resource)]
 pub struct ChangeCrsWindowState {
     pub is_visible: bool,
+    pub input_type: widgets::crs_input::CrsInputType,
+}
+
+impl Default for ChangeCrsWindowState {
+    fn default() -> Self {
+        Self {
+            is_visible: false,
+            input_type: widgets::crs_input::CrsInputType::Epsg,
+        }
+    }
 }
 
 #[derive(Default)]

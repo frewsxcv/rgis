@@ -197,14 +197,19 @@ fn render_change_crs_window(
     geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
+    let crate::ChangeCrsWindowState {
+        is_visible,
+        input_type,
+    } = &mut *state;
     crate::windows::change_crs::ChangeCrs {
-        is_visible: &mut state.is_visible,
+        is_visible,
         egui_ctx: bevy_egui_ctx_mut,
         text_field_value: &mut text_field_value,
         change_crs_event_writer: &mut change_crs_event_writer,
         target_crs: *target_crs,
         crs_input_outcome: &mut crs_input_outcome,
         geodesy_ctx: &geodesy_ctx,
+        input_type,
     }
     .render();
     Ok(())

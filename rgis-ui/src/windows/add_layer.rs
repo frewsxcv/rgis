@@ -53,6 +53,7 @@ pub struct State {
     selected_source: Source,
     pub selected_format: Option<FileFormat>,
     pub crs_input_outcome: Option<crate::widgets::crs_input::Outcome>,
+    pub crs_input_type: crate::widgets::crs_input::CrsInputType,
 }
 
 const DEFAULT_CRS_INPUT: &str = "4326";
@@ -65,6 +66,7 @@ impl Default for State {
             crs_input_outcome: None,
             selected_format: None,
             selected_source: Source::Unselected,
+            crs_input_type: crate::widgets::crs_input::CrsInputType::Epsg,
         }
     }
 }
@@ -154,6 +156,7 @@ impl AddLayer<'_> {
                         self.geodesy_ctx,
                         &mut self.state.crs_input_outcome,
                         &mut self.state.crs_input,
+                        &mut self.state.crs_input_type,
                     );
                     ui.add(crs_input_widget);
 
