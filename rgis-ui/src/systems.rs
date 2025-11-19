@@ -4,7 +4,7 @@ use bevy_egui::{
     EguiContexts, EguiPrimaryContextPass,
 };
 use bevy_egui_window::Window;
-use geo::{Distance, Haversine};
+use geo::algorithm::haversine_distance::HaversineDistance;
 
 fn render_bottom(
     mut bevy_egui_ctx: EguiContexts,
@@ -380,6 +380,7 @@ fn egui_color_to_bevy_color(egui_color: bevy_egui::egui::Color32) -> Color {
     Color::srgb_u8(egui_color.r(), egui_color.g(), egui_color.b())
 }
 
+#[allow(deprecated)]
 fn render_measure_tool(
     mut bevy_egui_ctx: EguiContexts,
     rgis_settings: Res<rgis_settings::RgisSettings>,
@@ -440,7 +441,7 @@ fn render_measure_tool(
         return Ok(());
     };
 
-    let distance = Haversine::distance(start_point, end_point);
+    let distance = start_point.haversine_distance(&end_point);
 
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     let painter = bevy_egui_ctx_mut.layer_painter(egui::LayerId::new(
