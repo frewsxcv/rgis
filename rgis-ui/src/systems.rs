@@ -4,7 +4,7 @@ use bevy_egui::{
     EguiContexts, EguiPrimaryContextPass,
 };
 use bevy_egui_window::Window;
-use geo::algorithm::haversine_distance::HaversineDistance;
+use geo::{Distance, Haversine};
 
 fn render_bottom(
     mut bevy_egui_ctx: EguiContexts,
@@ -428,13 +428,19 @@ fn render_measure_tool(
         return Ok(());
     };
 
-    let mut start_lat_lon = geo::Point::new(start.x.0, start.y.0);
-    let mut end_lat_lon = geo::Point::new(end.x.0, end.y.0);
+    let mut start_lat_lon = geo::Geometry::Point(geo::Point::new(start.x.0, start.y.0));
+    let mut end_lat_lon = geo::Geometry::Point(geo::Point::new(end.x.0, end.y.0));
 
-    let _ = transformer.transform_point(&mut start_lat_lon);
-    let _ = transformer.transform_point(&mut end_lat_lon);
+    let _ = transformer.transform(&mut start_lat_lon);
+    let _ = transformer.transform(&mut end_lat_lon);
 
-    let distance = start_lat_lon.haversine_distance(&end_lat_lon);
+    let (Some(geo::Geometry::Point(start_point)), Some(geo::Geometry::Point(end_point))) =
+        (Some(start_lat_lon), Some(end_lat_lon))
+    else {
+        return Ok(());
+    };
+
+    let distance = Haversine::distance(start_point, end_point);
 
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     let painter = bevy_egui_ctx_mut.layer_painter(egui::LayerId::new(

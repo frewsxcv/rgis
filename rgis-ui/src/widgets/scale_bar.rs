@@ -67,7 +67,7 @@ fn desired_bar_length(full_bar_length: f32) -> f32 {
     desired_length
 }
 
-fn distance_to_readable_string(distance: f32) -> String {
+pub fn distance_to_readable_string(distance: f32) -> String {
     let res = get_proper_distance_unit(distance);
     format!("{}{}m", (res.1 * distance).round(), res.0)
 }
