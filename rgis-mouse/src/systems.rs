@@ -98,6 +98,7 @@ fn mouse_motion_system(
     let cursor_icon = match rgis_settings.current_tool {
         rgis_settings::Tool::Pan => SystemCursorIcon::Grab,
         rgis_settings::Tool::Query => SystemCursorIcon::Crosshair,
+        rgis_settings::Tool::Measure => SystemCursorIcon::Crosshair,
     };
     set_cursor_icon(&mut window, &mut last_cursor_icon, cursor_icon);
 
@@ -126,11 +127,22 @@ fn current_tool_is_query(rgis_settings: Res<rgis_settings::RgisSettings>) -> boo
     rgis_settings.current_tool == rgis_settings::Tool::Query
 }
 
+fn current_tool_is_measure(rgis_settings: Res<rgis_settings::RgisSettings>) -> bool {
+    rgis_settings.current_tool == rgis_settings::Tool::Measure
+}
+
 fn mouse_click_system(
     mut map_clicked_event_writer: EventWriter<rgis_map_events::MapClickedEvent>,
     mouse_position: Res<crate::MousePos>,
 ) {
     map_clicked_event_writer.write(rgis_map_events::MapClickedEvent(mouse_position.0));
+}
+
+fn measure_click_system(
+    mut measure_state: ResMut<crate::MeasureState>,
+    mouse_position: Res<crate::MousePos>,
+) {
+    measure_state.start = Some(mouse_position.0);
 }
 
 fn run_if_has_mouse_scroll_events(mouse_scroll_event_reader: EventReader<MouseWheel>) -> bool {
@@ -211,6 +223,9 @@ pub fn configure(app: &mut App) {
             mouse_scroll_system.run_if(run_if_has_mouse_scroll_events),
             mouse_click_system
                 .run_if(current_tool_is_query)
+                .run_if(run_if_mouse_left_button_just_pressed),
+            measure_click_system
+                .run_if(current_tool_is_measure)
                 .run_if(run_if_mouse_left_button_just_pressed),
             mouse_motion_system.run_if(run_if_has_mouse_motion_events),
         )
