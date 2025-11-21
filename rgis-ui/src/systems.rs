@@ -4,6 +4,7 @@ use bevy_egui::{
     EguiContexts, EguiPrimaryContextPass,
 };
 use bevy_egui_window::Window;
+use geo::algorithm::haversine_distance::HaversineDistance;
 
 fn render_bottom(
     mut bevy_egui_ctx: EguiContexts,
@@ -379,6 +380,111 @@ fn egui_color_to_bevy_color(egui_color: bevy_egui::egui::Color32) -> Color {
     Color::srgb_u8(egui_color.r(), egui_color.g(), egui_color.b())
 }
 
+#[allow(deprecated)]
+fn render_measure_tool(
+    mut bevy_egui_ctx: EguiContexts,
+    rgis_settings: Res<rgis_settings::RgisSettings>,
+    measure_state: Res<rgis_mouse::MeasureState>,
+    mouse_pos: Res<rgis_mouse::MousePos>,
+    geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
+    target_crs: Res<rgis_crs::TargetCrs>,
+    camera_q: Query<&Transform, With<Camera>>,
+    windows: Query<&bevy::window::Window, With<PrimaryWindow>>,
+) -> Result {
+    if rgis_settings.current_tool != rgis_settings::Tool::Measure {
+        return Ok(());
+    }
+
+    let Some(start) = measure_state.start else {
+        return Ok(());
+    };
+
+    let end = mouse_pos.0;
+    let transform = camera_q.single()?;
+    let window = windows.single()?;
+
+    // Project points to screen for rendering
+    let start_screen_pos =
+        project_to_screen(geo::Coord { x: start.x.0, y: start.y.0 }, transform, window);
+    let end_screen_pos =
+        project_to_screen(geo::Coord { x: end.x.0, y: end.y.0 }, transform, window);
+
+    // Calculate Haversine distance
+    let mut geodesy_ctx_inner = geodesy_ctx.0.write().unwrap();
+    let target_epsg_code = 4326; // WGS 84
+
+    let Ok(target_op_handle) =
+        rgis_geodesy::epsg_code_to_geodesy_op_handle(&mut *geodesy_ctx_inner, target_epsg_code)
+    else {
+        // TODO: log error
+        return Ok(());
+    };
+
+    let Ok(transformer) = geo_geodesy::Transformer::from_geodesy(
+        &*geodesy_ctx_inner,
+        target_crs.0.op_handle,
+        target_op_handle,
+    ) else {
+        // TODO: log error
+        return Ok(());
+    };
+
+    let mut start_lat_lon = geo::Geometry::Point(geo::Point::new(start.x.0, start.y.0));
+    let mut end_lat_lon = geo::Geometry::Point(geo::Point::new(end.x.0, end.y.0));
+
+    let _ = transformer.transform(&mut start_lat_lon);
+    let _ = transformer.transform(&mut end_lat_lon);
+
+    let (Some(geo::Geometry::Point(start_point)), Some(geo::Geometry::Point(end_point))) =
+        (Some(start_lat_lon), Some(end_lat_lon))
+    else {
+        return Ok(());
+    };
+
+    let distance = start_point.haversine_distance(&end_point);
+
+    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
+    let painter = bevy_egui_ctx_mut.layer_painter(egui::LayerId::new(
+        egui::Order::Foreground,
+        egui::Id::new("measure_tool"),
+    ));
+
+    painter.line_segment(
+        [start_screen_pos, end_screen_pos],
+        egui::Stroke::new(2.0, egui::Color32::RED),
+    );
+
+    let text_pos = start_screen_pos.lerp(end_screen_pos, 0.5);
+    painter.text(
+        text_pos,
+        egui::Align2::CENTER_CENTER,
+        crate::widgets::scale_bar::distance_to_readable_string(distance as f32),
+        egui::FontId::default(),
+        egui::Color32::BLACK,
+    );
+
+    Ok(())
+}
+
+fn project_to_screen(
+    projected: geo::Coord<f64>,
+    camera_transform: &Transform,
+    window: &bevy::window::Window,
+) -> egui::Pos2 {
+    let pos_wld = Vec4::new(projected.x as f32, projected.y as f32, 0.0, 1.0);
+    let matrix = camera_transform.compute_matrix();
+    let inverse_matrix = matrix.inverse();
+    let d_vec_4 = inverse_matrix * pos_wld;
+    let d_vec = d_vec_4.truncate().truncate(); // Vec2
+
+    let half_size = Vec2::new(window.width() as f32, window.height() as f32) / 2.0;
+
+    let x = d_vec.x + half_size.x;
+    let y = half_size.y - d_vec.y;
+
+    egui::Pos2::new(x, y)
+}
+
 #[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
 enum RenderSystemSet {
     RenderingMessageWindow,
@@ -418,6 +524,7 @@ pub fn configure(app: &mut App) {
             render_change_crs_window.in_set(RenderSystemSet::Windows),
             render_feature_properties_window.in_set(RenderSystemSet::Windows),
             render_operation_window.in_set(RenderSystemSet::Windows),
+            render_measure_tool.in_set(RenderSystemSet::RenderingTopBottom),
         ),
     );
 

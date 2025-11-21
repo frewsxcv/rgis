@@ -6,6 +6,7 @@ mod systems;
 pub enum Tool {
     Pan,
     Query,
+    Measure,
 }
 
 #[derive(Resource)]

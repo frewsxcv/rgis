@@ -5106,6 +5106,7 @@ dependencies = [
  "geo",
  "geo-features",
  "geo-file-loader",
+ "geo-geodesy",
  "geo-geom-type",
  "geo-projected",
  "geodesy",

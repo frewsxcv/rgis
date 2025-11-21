@@ -77,6 +77,17 @@ impl Top<'_, '_, '_> {
                     self.app_settings.current_tool = rgis_settings::Tool::Query;
                 }
 
+                if ui
+                    .add_enabled(
+                        self.app_settings.current_tool != rgis_settings::Tool::Measure,
+                        egui::Button::new("📏 Measure Tool")
+                            .selected(self.app_settings.current_tool == rgis_settings::Tool::Measure),
+                    )
+                    .clicked()
+                {
+                    self.app_settings.current_tool = rgis_settings::Tool::Measure;
+                }
+
                 if prev_current_tool == rgis_settings::Tool::Query
                     && self.app_settings.current_tool != rgis_settings::Tool::Query
                 {
