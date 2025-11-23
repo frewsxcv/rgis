@@ -600,3 +600,54 @@ fn perform_operation(
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_render_measure_tool() {
+        let mut app = App::new();
+        app.add_plugins(MinimalPlugins);
+        app.add_plugins(bevy::asset::AssetPlugin::default());
+        app.add_plugins(bevy::window::WindowPlugin::default());
+        app.add_plugins(bevy::input::InputPlugin);
+        // Initialize Shader asset to satisfy bevy_egui requirement
+        app.init_asset::<bevy::render::render_resource::Shader>();
+        app.init_asset::<bevy::prelude::Image>();
+
+        app.add_plugins(bevy_egui::EguiPlugin::default());
+        app.add_plugins(rgis_geodesy::Plugin);
+        app.add_plugins(rgis_crs_events::Plugin);
+        app.add_plugins(rgis_crs::Plugin);
+
+        app.insert_resource(rgis_settings::RgisSettings {
+            current_tool: rgis_settings::Tool::Measure,
+            show_scale: true,
+        });
+
+        app.insert_resource(rgis_mouse::MeasureState {
+            start: Some(geo::Coord {
+                x: 0.0.into(),
+                y: 0.0.into(),
+            }),
+        });
+
+        app.insert_resource(rgis_mouse::MousePos(geo::Coord {
+            x: 10.0.into(),
+            y: 10.0.into(),
+        }));
+
+        // Spawn an entity with Transform and Camera, which is what the system queries for.
+        // We avoid using Camera2d bundle/component to avoid pulling in too many render dependencies.
+        app.world_mut().spawn((
+            Transform::default(),
+            bevy::render::camera::Camera::default(),
+        ));
+
+        app.update();
+
+        app.add_systems(Update, render_measure_tool);
+        app.update();
+    }
+}
