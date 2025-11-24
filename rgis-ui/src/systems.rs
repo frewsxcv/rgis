@@ -381,6 +381,44 @@ fn egui_color_to_bevy_color(egui_color: bevy_egui::egui::Color32) -> Color {
 }
 
 #[allow(deprecated)]
+fn calculate_haversine_distance(
+    start: geo::Coord<f64>,
+    end: geo::Coord<f64>,
+    geodesy_ctx: &rgis_geodesy::GeodesyContext,
+    target_crs: &rgis_crs::TargetCrs,
+) -> Option<f64> {
+    let mut geodesy_ctx_inner = geodesy_ctx.0.write().ok()?;
+    let target_epsg_code = 4326; // WGS 84
+
+    let target_op_handle =
+        rgis_geodesy::epsg_code_to_geodesy_op_handle(&mut *geodesy_ctx_inner, target_epsg_code).ok()?;
+
+    let transformer = geo_geodesy::Transformer::from_geodesy(
+        &*geodesy_ctx_inner,
+        target_crs.0.op_handle,
+        target_op_handle,
+    )
+    .ok()?;
+
+    let mut start_lat_lon = geo::Geometry::Point(geo::Point::new(start.x, start.y));
+    let mut end_lat_lon = geo::Geometry::Point(geo::Point::new(end.x, end.y));
+
+    transformer.transform(&mut start_lat_lon).ok()?;
+    transformer.transform(&mut end_lat_lon).ok()?;
+
+    let (Some(geo::Geometry::Point(start_point)), Some(geo::Geometry::Point(end_point))) =
+        (Some(start_lat_lon), Some(end_lat_lon))
+    else {
+        return None;
+    };
+
+    // Geodesy outputs radians for angular coordinates, but geo expects degrees
+    let start_point_deg =
+        geo::Point::new(start_point.x().to_degrees(), start_point.y().to_degrees());
+    let end_point_deg = geo::Point::new(end_point.x().to_degrees(), end_point.y().to_degrees());
+
+    Some(start_point_deg.haversine_distance(&end_point_deg))
+}
 fn render_measure_tool(
     mut bevy_egui_ctx: EguiContexts,
     rgis_settings: Res<rgis_settings::RgisSettings>,
@@ -409,39 +447,19 @@ fn render_measure_tool(
     let end_screen_pos =
         project_to_screen(geo::Coord { x: end.x.0, y: end.y.0 }, transform, window);
 
-    // Calculate Haversine distance
-    let mut geodesy_ctx_inner = geodesy_ctx.0.write().unwrap();
-    let target_epsg_code = 4326; // WGS 84
-
-    let Ok(target_op_handle) =
-        rgis_geodesy::epsg_code_to_geodesy_op_handle(&mut *geodesy_ctx_inner, target_epsg_code)
-    else {
-        // TODO: log error
-        return Ok(());
-    };
-
-    let Ok(transformer) = geo_geodesy::Transformer::from_geodesy(
-        &*geodesy_ctx_inner,
-        target_crs.0.op_handle,
-        target_op_handle,
-    ) else {
-        // TODO: log error
-        return Ok(());
-    };
-
-    let mut start_lat_lon = geo::Geometry::Point(geo::Point::new(start.x.0, start.y.0));
-    let mut end_lat_lon = geo::Geometry::Point(geo::Point::new(end.x.0, end.y.0));
-
-    let _ = transformer.transform(&mut start_lat_lon);
-    let _ = transformer.transform(&mut end_lat_lon);
-
-    let (Some(geo::Geometry::Point(start_point)), Some(geo::Geometry::Point(end_point))) =
-        (Some(start_lat_lon), Some(end_lat_lon))
-    else {
-        return Ok(());
-    };
-
-    let distance = start_point.haversine_distance(&end_point);
+    let distance = calculate_haversine_distance(
+        geo::Coord {
+            x: start.x.0,
+            y: start.y.0,
+        },
+        geo::Coord {
+            x: end.x.0,
+            y: end.y.0,
+        },
+        &geodesy_ctx,
+        &target_crs,
+    )
+    .unwrap_or(0.0);
 
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     let painter = bevy_egui_ctx_mut.layer_painter(egui::LayerId::new(
@@ -649,5 +667,71 @@ mod tests {
 
         app.add_systems(Update, render_measure_tool);
         app.update();
+    }
+
+    #[test]
+    fn test_project_to_screen() {
+        let mut app = App::new();
+        app.add_plugins(MinimalPlugins);
+        app.add_plugins(bevy::window::WindowPlugin::default());
+
+        let window_entity = app
+            .world_mut()
+            .spawn(bevy::window::Window {
+                resolution: bevy::window::WindowResolution::new(800.0, 600.0),
+                ..default()
+            })
+            .id();
+
+        app.update();
+
+        let window = app.world().get::<bevy::window::Window>(window_entity).unwrap();
+        let camera_transform = Transform::from_translation(Vec3::new(0.0, 0.0, 0.0));
+        let projected = geo::Coord { x: 0.0, y: 0.0 };
+
+        let screen_pos = super::project_to_screen(projected, &camera_transform, window);
+
+        assert_eq!(screen_pos.x, 400.0);
+        assert_eq!(screen_pos.y, 300.0);
+    }
+
+    #[test]
+    fn test_calculate_haversine_distance() {
+        let mut app = App::new();
+        app.add_plugins(MinimalPlugins);
+        app.add_plugins(rgis_geodesy::Plugin);
+        app.add_plugins(rgis_crs_events::Plugin);
+        app.add_plugins(rgis_crs::Plugin);
+
+        app.update();
+
+        // Manually set TargetCrs to 4326 (WGS84) to simplify test and verify logic without projection issues
+        let op_handle = {
+            let geodesy_ctx = app.world().resource::<rgis_geodesy::GeodesyContext>();
+            let mut geodesy_ctx_inner = geodesy_ctx.0.write().unwrap();
+            rgis_geodesy::epsg_code_to_geodesy_op_handle(&mut *geodesy_ctx_inner, 4326).unwrap()
+        };
+
+        app.insert_resource(rgis_crs::TargetCrs(rgis_primitives::Crs {
+            epsg_code: 4326,
+            op_handle,
+        }));
+
+        let geodesy_ctx = app.world().resource::<rgis_geodesy::GeodesyContext>();
+        let target_crs = app.world().resource::<rgis_crs::TargetCrs>();
+
+        let start = geo::Coord { x: 0.0, y: 0.0 };
+        // 1 degree lat
+        let end = geo::Coord { x: 0.0, y: 1.0 };
+
+        let distance =
+            super::calculate_haversine_distance(start, end, geodesy_ctx, target_crs).unwrap();
+
+        // 1 degree lat is approx 111km
+        assert!(
+            distance > 110000.0 && distance < 112000.0,
+            "Distance was {}",
+            distance
+        );
     }
 }
