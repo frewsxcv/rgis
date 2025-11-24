@@ -42,7 +42,7 @@ struct OperationWindowState {
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(bevy_egui::EguiPlugin::default())
-            .insert_resource(windows::add_layer::SelectedFile(None))
+            .insert_resource(windows::add_layer::file::SelectedFile(None))
             .insert_resource(rgis_units::TopPanelHeight(0.))
             .insert_resource(rgis_units::BottomPanelHeight(0.))
             .insert_resource(rgis_units::SidePanelWidth(0.))

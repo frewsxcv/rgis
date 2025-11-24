@@ -6,6 +6,8 @@ use bevy_egui::{
 use bevy_egui_window::Window;
 use geo::algorithm::haversine_distance::HaversineDistance;
 
+use crate::windows::add_layer::file::{OpenFileJob, SelectedFile};
+
 fn render_bottom(
     mut bevy_egui_ctx: EguiContexts,
     mouse_pos: Res<rgis_mouse::MousePos>,
@@ -44,12 +46,9 @@ fn render_side(
 
 fn handle_open_file_job(
     mut finished_jobs: bevy_jobs::FinishedJobs,
-    mut selected_file: ResMut<crate::windows::add_layer::SelectedFile>,
+    mut selected_file: ResMut<SelectedFile>,
 ) {
-    while let Some(outcome) = finished_jobs
-        .take_next::<crate::windows::add_layer::OpenFileJob>()
-        .flatten()
-    {
+    while let Some(outcome) = finished_jobs.take_next::<OpenFileJob>().flatten() {
         selected_file.0 = Some(outcome);
     }
 }
@@ -93,7 +92,7 @@ impl Default for IsVisible {
 
 fn render_add_layer_window(
     mut is_visible: Local<IsVisible>,
-    mut selected_file: ResMut<crate::windows::add_layer::SelectedFile>,
+    mut selected_file: ResMut<SelectedFile>,
     mut bevy_egui_ctx: EguiContexts,
     mut job_spawner: bevy_jobs::JobSpawner,
     mut state: Local<crate::windows::add_layer::State>,
@@ -171,7 +170,7 @@ fn render_add_layer_window(
                 state.reset();
             }
             AddLayerOutput::OpenFile => {
-                job_spawner.spawn(crate::windows::add_layer::OpenFileJob);
+                job_spawner.spawn(OpenFileJob);
             }
         }
     }
