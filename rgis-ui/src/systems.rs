@@ -720,16 +720,23 @@ mod tests {
         let geodesy_ctx = app.world().resource::<rgis_geodesy::GeodesyContext>();
         let target_crs = app.world().resource::<rgis_crs::TargetCrs>();
 
-        let start = geo::Coord { x: 0.0, y: 0.0 };
-        // 1 degree lat
-        let end = geo::Coord { x: 0.0, y: 1.0 };
+        // San Francisco
+        let start = geo::Coord {
+            x: -122.4194,
+            y: 37.7749,
+        };
+        // New York City
+        let end = geo::Coord {
+            x: -74.0060,
+            y: 40.7128,
+        };
 
         let distance =
             super::calculate_haversine_distance(start, end, geodesy_ctx, target_crs).unwrap();
 
-        // 1 degree lat is approx 111km
+        // Distance is approx 4,129 km
         assert!(
-            distance > 110000.0 && distance < 112000.0,
+            distance > 4_120_000.0 && distance < 4_140_000.0,
             "Distance was {}",
             distance
         );

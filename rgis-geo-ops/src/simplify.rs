@@ -74,7 +74,7 @@ impl Operation for Simplify {
         let Some(epsilon) = self.epsilon else { return };
         self.simplified
             .0
-            .push(line_string.simplify(&epsilon).into());
+            .push(line_string.simplify(epsilon).into());
     }
 
     fn visit_multi_line_string(
@@ -84,12 +84,12 @@ impl Operation for Simplify {
         let Some(epsilon) = self.epsilon else { return };
         self.simplified
             .0
-            .push(multi_line_string.simplify(&epsilon).into());
+            .push(multi_line_string.simplify(epsilon).into());
     }
 
     fn visit_polygon(&mut self, polygon: &geo::Polygon<UnprojectedScalar>) {
         let Some(epsilon) = self.epsilon else { return };
-        let simplified = polygon.simplify(&epsilon);
+        let simplified = polygon.simplify(epsilon);
         debug_assert!(simplified.exterior().0.len() >= 4);
         for interior in polygon.interiors() {
             debug_assert!(interior.0.len() >= 4);
@@ -101,7 +101,7 @@ impl Operation for Simplify {
         let Some(epsilon) = self.epsilon else { return };
         self.simplified
             .0
-            .push(multi_polygon.simplify(&epsilon).into());
+            .push(multi_polygon.simplify(epsilon).into());
     }
 
     fn finalize(&mut self) -> Result<Outcome, Box<dyn error::Error>> {

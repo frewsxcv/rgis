@@ -1,5 +1,5 @@
 use bevy_egui::egui;
-use geodesy::Context;
+use geodesy::ctx::Context;
 use std::str::FromStr;
 
 pub struct CrsInput<'a> {
@@ -22,7 +22,7 @@ impl<'a> CrsInput<'a> {
     }
 }
 
-pub type Outcome = Result<(geodesy::OpHandle, u16), Error>;
+pub type Outcome = Result<(geodesy::ctx::OpHandle, u16), Error>;
 
 impl egui::Widget for CrsInput<'_> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {

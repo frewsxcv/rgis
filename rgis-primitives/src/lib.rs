@@ -28,5 +28,5 @@ fn new_id() -> num::NonZeroU16 {
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct Crs {
     pub epsg_code: u16,
-    pub op_handle: geodesy::OpHandle,
+    pub op_handle: geodesy::ctx::OpHandle,
 }
