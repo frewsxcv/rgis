@@ -5,5 +5,7 @@ edition = "2021"
 
 [dependencies]
 bevy = { workspace = true }
+geo = { workspace = true }
 geo-projected = { path = "../geo-projected" }
 rgis-primitives = { path = "../rgis-primitives" }
+num-t = { workspace = true }
