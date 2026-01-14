@@ -3,12 +3,15 @@ use bevy_egui::egui;
 use rgis_layer_events::DuplicateLayerEvent;
 use rgis_ui_events::{UpdateLayerColorEvent, UpdateLayerPointSizeEvent};
 
+use rgis_layer_events::LayerStrokeWidthUpdatedEvent;
+
 pub struct ManageLayer<'a> {
     pub state: &'a mut crate::ManageLayerWindowState,
     pub layers: &'a rgis_layers::Layers,
     pub egui_ctx: &'a mut bevy_egui::egui::Context,
     pub color_events: &'a mut Events<UpdateLayerColorEvent>,
     pub point_size_events: &'a mut Events<UpdateLayerPointSizeEvent>,
+    pub stroke_width_events: &'a mut Events<LayerStrokeWidthUpdatedEvent>,
     pub duplicate_layer_events: &'a mut Events<DuplicateLayerEvent>,
 }
 
@@ -71,6 +74,15 @@ impl ManageLayer<'_> {
                             });
                             ui.end_row();
                         }
+                    if layer.geom_type.has_stroke() {
+                        ui.label("Stroke width");
+                        crate::widgets::stroke_width::stroke_width(
+                            self.egui_ctx,
+                            self.layers,
+                            self.stroke_width_events,
+                        );
+                        ui.end_row();
+                    }
                     });
                 ui.separator();
                 if ui.button("Duplicate").clicked() {
