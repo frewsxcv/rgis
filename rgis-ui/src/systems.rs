@@ -4,7 +4,7 @@ use bevy_egui::{
     EguiContexts, EguiPrimaryContextPass,
 };
 use bevy_egui_window::Window;
-use geo::algorithm::haversine_distance::HaversineDistance;
+use geo::{Distance, Haversine};
 
 use crate::windows::add_layer::file::{OpenFileJob, SelectedFile};
 
@@ -379,7 +379,6 @@ fn egui_color_to_bevy_color(egui_color: bevy_egui::egui::Color32) -> Color {
     Color::srgb_u8(egui_color.r(), egui_color.g(), egui_color.b())
 }
 
-#[allow(deprecated)]
 fn calculate_haversine_distance(
     start: geo::Coord<f64>,
     end: geo::Coord<f64>,
@@ -416,7 +415,7 @@ fn calculate_haversine_distance(
         geo::Point::new(start_point.x().to_degrees(), start_point.y().to_degrees());
     let end_point_deg = geo::Point::new(end_point.x().to_degrees(), end_point.y().to_degrees());
 
-    Some(start_point_deg.haversine_distance(&end_point_deg))
+    Some(Haversine.distance(start_point_deg, end_point_deg))
 }
 fn render_measure_tool(
     mut bevy_egui_ctx: EguiContexts,
