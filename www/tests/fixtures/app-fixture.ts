@@ -19,10 +19,6 @@ export class AppPage {
 
     // Allow time for first frame to render
     await this.page.waitForTimeout(2000);
-
-    // Click the canvas to ensure it has focus for keyboard events
-    await canvas.click();
-    await this.page.waitForTimeout(200);
   }
 
   get canvas() {
@@ -33,45 +29,6 @@ export class AppPage {
     const box = await this.canvas.boundingBox();
     if (!box) throw new Error("Canvas not found");
     return box;
-  }
-
-  async pressKey(key: string, count: number = 1) {
-    for (let i = 0; i < count; i++) {
-      await this.page.keyboard.press(key);
-      await this.page.waitForTimeout(100);
-    }
-    // Wait for render to settle
-    await this.page.waitForTimeout(500);
-  }
-
-  async scrollAtCenter(deltaY: number) {
-    const box = await this.canvasBoundingBox();
-    await this.page.mouse.wheel(0, deltaY);
-    await this.page.waitForTimeout(1000);
-  }
-
-  async dragOnCanvas(
-    startFrac: { x: number; y: number },
-    endFrac: { x: number; y: number },
-  ) {
-    const box = await this.canvasBoundingBox();
-    const startX = box.x + box.width * startFrac.x;
-    const startY = box.y + box.height * startFrac.y;
-    const endX = box.x + box.width * endFrac.x;
-    const endY = box.y + box.height * endFrac.y;
-
-    await this.page.mouse.move(startX, startY);
-    await this.page.mouse.down();
-    // Move in steps for smoother drag
-    const steps = 10;
-    for (let i = 1; i <= steps; i++) {
-      const x = startX + ((endX - startX) * i) / steps;
-      const y = startY + ((endY - startY) * i) / steps;
-      await this.page.mouse.move(x, y);
-      await this.page.waitForTimeout(50);
-    }
-    await this.page.mouse.up();
-    await this.page.waitForTimeout(1000);
   }
 
   async regionHasContent(
