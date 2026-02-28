@@ -4,7 +4,7 @@ use bevy_egui::{
     EguiContexts, EguiPrimaryContextPass,
 };
 use bevy_egui_window::Window;
-use geo::algorithm::haversine_distance::HaversineDistance;
+use geo::{Distance, Haversine};
 
 use crate::windows::add_layer::file::{OpenFileJob, SelectedFile};
 
@@ -379,7 +379,6 @@ fn egui_color_to_bevy_color(egui_color: bevy_egui::egui::Color32) -> Color {
     Color::srgb_u8(egui_color.r(), egui_color.g(), egui_color.b())
 }
 
-#[allow(deprecated)]
 fn calculate_haversine_distance(
     start: geo::Coord<f64>,
     end: geo::Coord<f64>,
@@ -416,7 +415,7 @@ fn calculate_haversine_distance(
         geo::Point::new(start_point.x().to_degrees(), start_point.y().to_degrees());
     let end_point_deg = geo::Point::new(end_point.x().to_degrees(), end_point.y().to_degrees());
 
-    Some(start_point_deg.haversine_distance(&end_point_deg))
+    Some(Haversine.distance(start_point_deg, end_point_deg))
 }
 fn render_measure_tool(
     mut bevy_egui_ctx: EguiContexts,
@@ -719,15 +718,17 @@ mod tests {
         let geodesy_ctx = app.world().resource::<rgis_geodesy::GeodesyContext>();
         let target_crs = app.world().resource::<rgis_crs::TargetCrs>();
 
-        // San Francisco
+        // Geodesy works with radians internally for angular CRSes like EPSG:4326,
+        // so input coordinates must be in radians.
+        // San Francisco (lon: -122.4194°, lat: 37.7749°)
         let start = geo::Coord {
-            x: -122.4194,
-            y: 37.7749,
+            x: -122.4194_f64.to_radians(),
+            y: 37.7749_f64.to_radians(),
         };
-        // New York City
+        // New York City (lon: -74.0060°, lat: 40.7128°)
         let end = geo::Coord {
-            x: -74.0060,
-            y: 40.7128,
+            x: -74.0060_f64.to_radians(),
+            y: 40.7128_f64.to_radians(),
         };
 
         let distance =
