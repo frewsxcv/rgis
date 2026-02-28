@@ -64,4 +64,6 @@ test("clicking Library option changes the view", async ({ appPage }) => {
 
   const after = await appPage.page.screenshot();
   expect(Buffer.compare(before, after)).not.toBe(0);
+
+  await expect(appPage.page).toHaveScreenshot("library-selected.png");
 });
