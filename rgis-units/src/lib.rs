@@ -1,5 +1,3 @@
-use std::marker;
-
 use bevy::{ecs::system::SystemParam, math::DVec2, prelude::*};
 use geo_projected::{ProjectedCoord, ProjectedScalar};
 
@@ -21,7 +19,7 @@ impl ScreenCoord {
         let d_vec = DVec2::new(self.x, f64::from(window.height()) - self.y) - size / 2.0;
 
         // apply the camera transform
-        let pos_wld = transform.compute_matrix().as_dmat4() * d_vec.extend(0.0).extend(1.0);
+        let pos_wld = transform.to_matrix().as_dmat4() * d_vec.extend(0.0).extend(1.0);
 
         geo::Coord {
             x: pos_wld.x.into(),
@@ -123,10 +121,9 @@ pub struct TopPanelHeight(pub f32);
 #[derive(Copy, Clone, Resource)]
 pub struct BottomPanelHeight(pub f32);
 
-#[derive(SystemParam, Resource)]
-pub struct UiMargins<'w, 's> {
+#[derive(SystemParam)]
+pub struct UiMargins<'w> {
     pub left: Res<'w, SidePanelWidth>,
     pub top: Res<'w, TopPanelHeight>,
     pub bottom: Res<'w, BottomPanelHeight>,
-    marker: marker::PhantomData<&'s usize>,
 }

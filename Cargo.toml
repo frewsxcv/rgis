@@ -44,20 +44,21 @@ edition = "2021"
 publish = false
 
 [workspace.dependencies]
-bevy = { version = "0.16", default-features = false, features = [
+bevy = { version = "0.18", default-features = false, features = [
     "bevy_winit",
     "bevy_core_pipeline",
     "bevy_log",
     "bevy_render",
     "bevy_sprite",
+    "bevy_sprite_render",
     "bevy_ui",
     "wayland",
     "png",
 ] }
-bevy_egui = "0.35"
-bevy_jobs = { git = "https://github.com/frewsxcv/bevy_jobs" }
-bevy_jobs_fetch = { git = "https://github.com/frewsxcv/bevy_jobs" }
-bevy_log = "0.16"
+bevy_egui = "0.39"
+bevy_jobs = { git = "https://github.com/frewsxcv/bevy_jobs", rev = "7b412d4ea7f0b7ed65ed7c4e3c8145d59c0df03e" }
+bevy_jobs_fetch = { git = "https://github.com/frewsxcv/bevy_jobs", rev = "7b412d4ea7f0b7ed65ed7c4e3c8145d59c0df03e" }
+bevy_log = "0.18"
 bitflags = "2"
 bytes = "1"
 clap = { version = "4", default-features = false, features = [
@@ -70,9 +71,9 @@ clap = { version = "4", default-features = false, features = [
 colorous = "1"
 crs-definitions = "0.3"
 dark-light = "2.0"
-egui_plot = "0.32"
+egui_plot = "0.34"
 geo = "0.32"
-geo-bevy = "9"
+geo-bevy = "10"
 geo-geodesy = "6"
 geodesy = "0.14"
 geozero = { git = "https://github.com/georust/geozero.git", branch = "main" }

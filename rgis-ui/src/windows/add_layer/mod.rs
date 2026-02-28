@@ -11,9 +11,9 @@ pub mod library;
 
 #[derive(SystemParam)]
 pub struct Events<'w, 's> {
-    pub load_file_event_writer: EventWriter<'w, LoadFileEvent>,
-    pub show_add_layer_window_event_reader: EventReader<'w, 's, ShowAddLayerWindow>,
-    pub hide_add_layer_window_events: ResMut<'w, bevy::prelude::Events<HideAddLayerWindow>>,
+    pub load_file_event_writer: MessageWriter<'w, LoadFileEvent>,
+    pub show_add_layer_window_event_reader: MessageReader<'w, 's, ShowAddLayerWindow>,
+    pub hide_add_layer_window_events: ResMut<'w, bevy::prelude::Messages<HideAddLayerWindow>>,
 }
 
 pub struct AddLayer<'a> {

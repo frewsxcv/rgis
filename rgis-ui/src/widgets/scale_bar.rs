@@ -4,7 +4,7 @@ use bevy_egui::{egui::{self, Widget}, EguiContexts};
 pub fn render_map_scale(
     query: Query<
         &bevy::transform::components::Transform,
-        bevy::ecs::query::With<bevy::render::camera::Camera>,
+        bevy::ecs::query::With<bevy::camera::Camera>,
     >,
     mut bevy_egui_ctx: EguiContexts,
     rgis_settings: Res<rgis_settings::RgisSettings>,

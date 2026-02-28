@@ -4,7 +4,7 @@ use geo_projected::ProjectedCoord;
 // Magic number used to normalize the host's scroll value.
 const ZOOM_FACTOR: f32 = 500.;
 
-#[derive(Event, Debug)]
+#[derive(Message, Debug)]
 pub struct PanCameraEvent {
     // X offset for camera position. Positive is right, negative is left.
     pub x: f32,
@@ -34,7 +34,7 @@ impl PanCameraEvent {
     }
 }
 
-#[derive(Event, Debug)]
+#[derive(Message, Debug)]
 pub struct ZoomCameraEvent {
     /// * `amount ∈ (1, ∞)` → zoom in
     /// * `amount ∈ [1]` → no change
@@ -54,7 +54,7 @@ impl ZoomCameraEvent {
     }
 }
 
-#[derive(Event, Debug)]
+#[derive(Message, Debug)]
 pub struct CenterCameraEvent(pub rgis_primitives::LayerId);
 
 impl From<rgis_primitives::LayerId> for CenterCameraEvent {
@@ -64,16 +64,16 @@ impl From<rgis_primitives::LayerId> for CenterCameraEvent {
     }
 }
 
-#[derive(Default, Event, Debug)]
+#[derive(Default, Message, Debug)]
 pub struct RecalculateMousePositionEvent;
 
 pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<PanCameraEvent>()
-            .add_event::<ZoomCameraEvent>()
-            .add_event::<CenterCameraEvent>()
-            .add_event::<RecalculateMousePositionEvent>();
+        app.add_message::<PanCameraEvent>()
+            .add_message::<ZoomCameraEvent>()
+            .add_message::<CenterCameraEvent>()
+            .add_message::<RecalculateMousePositionEvent>();
     }
 }

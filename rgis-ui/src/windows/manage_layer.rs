@@ -7,9 +7,9 @@ pub struct ManageLayer<'a> {
     pub state: &'a mut crate::ManageLayerWindowState,
     pub layers: &'a rgis_layers::Layers,
     pub egui_ctx: &'a mut bevy_egui::egui::Context,
-    pub color_events: &'a mut Events<UpdateLayerColorEvent>,
-    pub point_size_events: &'a mut Events<UpdateLayerPointSizeEvent>,
-    pub duplicate_layer_events: &'a mut Events<DuplicateLayerEvent>,
+    pub color_events: &'a mut Messages<UpdateLayerColorEvent>,
+    pub point_size_events: &'a mut Messages<UpdateLayerPointSizeEvent>,
+    pub duplicate_layer_events: &'a mut Messages<DuplicateLayerEvent>,
 }
 
 impl ManageLayer<'_> {
@@ -75,7 +75,7 @@ impl ManageLayer<'_> {
                 ui.separator();
                 if ui.button("Duplicate").clicked() {
                     self.duplicate_layer_events
-                        .send(DuplicateLayerEvent(layer_id));
+                        .write(DuplicateLayerEvent(layer_id));
                 }
             });
     }

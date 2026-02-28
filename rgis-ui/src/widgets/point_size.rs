@@ -5,7 +5,7 @@ use rgis_ui_events::UpdateLayerPointSizeEvent;
 pub struct PointSize<'a> {
     pub layer_id: rgis_primitives::LayerId,
     pub size: f32,
-    pub size_events: &'a mut Events<UpdateLayerPointSizeEvent>,
+    pub size_events: &'a mut Messages<UpdateLayerPointSizeEvent>,
 }
 
 impl egui::Widget for PointSize<'_> {
@@ -14,7 +14,7 @@ impl egui::Widget for PointSize<'_> {
         let response = ui.add(egui::Slider::new(&mut new_size, 1.0..=50.0));
         if response.changed() {
             self.size_events
-                .send(UpdateLayerPointSizeEvent(self.layer_id, new_size));
+                .write(UpdateLayerPointSizeEvent(self.layer_id, new_size));
         }
         response
     }

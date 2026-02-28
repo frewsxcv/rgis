@@ -5,7 +5,7 @@ use rgis_primitives::Crs;
 struct SourceCrs(Crs);
 
 fn handle_network_fetch_finished_jobs(
-    mut load_event_reader: ResMut<Events<rgis_file_loader_events::LoadFileEvent>>,
+    mut load_event_reader: ResMut<Messages<rgis_file_loader_events::LoadFileEvent>>,
     mut finished_jobs: bevy_jobs::FinishedJobs,
 ) {
     while let Some(outcome) =
@@ -13,7 +13,7 @@ fn handle_network_fetch_finished_jobs(
     {
         match outcome {
             Ok(fetched) => {
-                load_event_reader.send(rgis_file_loader_events::LoadFileEvent::FromBytes {
+                load_event_reader.write(rgis_file_loader_events::LoadFileEvent::FromBytes {
                     file_format: geo_file_loader::FileFormat::GeoJson,
                     bytes: fetched.bytes,
                     file_name: fetched.name,
@@ -28,7 +28,7 @@ fn handle_network_fetch_finished_jobs(
 }
 
 fn handle_load_file_events(
-    mut load_event_reader: ResMut<Events<rgis_file_loader_events::LoadFileEvent>>,
+    mut load_event_reader: ResMut<Messages<rgis_file_loader_events::LoadFileEvent>>,
     mut job_spawner: bevy_jobs::JobSpawner,
 ) {
     for event in load_event_reader.drain() {
@@ -59,7 +59,7 @@ fn handle_load_file_events(
 
 fn handle_load_file_job_finished_events(
     mut finished_jobs: bevy_jobs::FinishedJobs,
-    mut create_layer_event_writer: EventWriter<rgis_layer_events::CreateLayerEvent>,
+    mut create_layer_event_writer: MessageWriter<rgis_layer_events::CreateLayerEvent>,
 ) {
     while let Some(outcome) = finished_jobs.take_next::<crate::jobs::LoadFileJob>() {
         match outcome {
