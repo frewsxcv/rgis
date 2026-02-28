@@ -54,3 +54,14 @@ test("welcome dialog is visible in center", async ({ appPage }) => {
   const centerHasContent = await appPage.regionHasContent(0.3, 0.3, 0.4, 0.4);
   expect(centerHasContent).toBe(true);
 });
+
+test("clicking Library option changes the view", async ({ appPage }) => {
+  const before = await appPage.page.screenshot();
+
+  // Click the "Library" radio button in the Add Layer panel
+  // Located at approximately (190, 105) in the 1280x720 viewport
+  await appPage.clickOnCanvas(0.148, 0.146);
+
+  const after = await appPage.page.screenshot();
+  expect(Buffer.compare(before, after)).not.toBe(0);
+});

@@ -31,6 +31,14 @@ export class AppPage {
     return box;
   }
 
+  async clickOnCanvas(xFrac: number, yFrac: number) {
+    const box = await this.canvasBoundingBox();
+    const x = box.x + box.width * xFrac;
+    const y = box.y + box.height * yFrac;
+    await this.page.mouse.click(x, y);
+    await this.page.waitForTimeout(500);
+  }
+
   async regionHasContent(
     xFrac: number,
     yFrac: number,
