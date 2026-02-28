@@ -69,13 +69,20 @@ jobs:
       - name: Install Playwright browsers
         run: cd www && npx playwright install --with-deps chromium
       - name: Run Playwright tests
-        run: cd www && npx playwright test --update-snapshots
+        run: cd www && npx playwright test
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
           path: www/playwright-report/
+          retention-days: 30
+      - name: Upload Playwright snapshots
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-snapshots
+          path: www/tests/**/*-snapshots/
           retention-days: 30
       - name: Deploy to GitHub Pages
         if: github.ref == 'refs/heads/main'
