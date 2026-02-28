@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "build": "webpack --config webpack.config.js",
-    "start": "webpack-dev-server"
+    "start": "webpack-dev-server",
+    "test": "playwright test",
+    "test:update": "playwright test --update-snapshots"
   },
   "keywords": [],
   "license": "(MIT OR Apache-2.0)",
@@ -13,7 +15,9 @@
     "copy-webpack-plugin": "^12",
     "webpack": "^5",
     "webpack-cli": "^5",
-    "webpack-dev-server": "^4"
+    "webpack-dev-server": "^4",
+    "@playwright/test": "^1",
+    "serve": "^14"
   },
   "dependencies": {
     "npm": "^10.4.0"

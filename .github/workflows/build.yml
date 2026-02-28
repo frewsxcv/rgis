@@ -66,6 +66,17 @@ jobs:
         run: (cd www && npm install)
       - name: Build and publish
         run: ./.github/publish.sh
+      - name: Install Playwright browsers
+        run: cd www && npx playwright install --with-deps chromium
+      - name: Run Playwright tests
+        run: cd www && npx playwright test --update-snapshots
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: www/playwright-report/
+          retention-days: 30
       - name: Deploy to GitHub Pages
         if: github.ref == 'refs/heads/main'
         uses: JamesIves/github-pages-deploy-action@v4.2.5
