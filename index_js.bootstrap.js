@@ -25,7 +25,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
   \******************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var rgis_pkg_rgis_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! rgis-pkg/rgis.js */ \"../rgis/pkg/rgis.js\");\n\n\nasync function main() {\n    // Initialize the wasm module\n    await (0,rgis_pkg_rgis_js__WEBPACK_IMPORTED_MODULE_0__[\"default\"])();\n    // Call the run function\n    (0,rgis_pkg_rgis_js__WEBPACK_IMPORTED_MODULE_0__.run)();\n}\n\nmain().catch(console.error);\n\n\n//# sourceURL=webpack://rgis-www/./index.js?");
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var rgis_pkg_rgis_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! rgis-pkg/rgis.js */ \"../rgis/pkg/rgis.js\");\n\n\nasync function main() {\n    // Initialize the wasm module\n    await (0,rgis_pkg_rgis_js__WEBPACK_IMPORTED_MODULE_0__[\"default\"])();\n    // Signal that WASM has loaded and initialized\n    document.title = \"rgis - ready\";\n    // Call the run function\n    (0,rgis_pkg_rgis_js__WEBPACK_IMPORTED_MODULE_0__.run)();\n}\n\nmain().catch(console.error);\n\n\n//# sourceURL=webpack://rgis-www/./index.js?");
 
 /***/ }),
 
