@@ -77,6 +77,13 @@ jobs:
           name: playwright-report
           path: www/playwright-report/
           retention-days: 30
+      - name: Upload Playwright snapshots
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-snapshots
+          path: www/tests/**/*-snapshots/
+          retention-days: 30
       - name: Deploy to GitHub Pages
         if: github.ref == 'refs/heads/main'
         uses: JamesIves/github-pages-deploy-action@v4.2.5
