@@ -19,6 +19,10 @@ export class AppPage {
 
     // Allow time for first frame to render
     await this.page.waitForTimeout(2000);
+
+    // Click the canvas to ensure it has focus for keyboard events
+    await canvas.click();
+    await this.page.waitForTimeout(200);
   }
 
   get canvas() {
@@ -34,7 +38,7 @@ export class AppPage {
   async pressKey(key: string, count: number = 1) {
     for (let i = 0; i < count; i++) {
       await this.page.keyboard.press(key);
-      await this.page.waitForTimeout(150);
+      await this.page.waitForTimeout(100);
     }
     // Wait for render to settle
     await this.page.waitForTimeout(500);

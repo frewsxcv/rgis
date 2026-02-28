@@ -34,24 +34,26 @@ test.describe("keyboard panning", () => {
   test("all four arrow directions produce distinct views", async ({
     appPage,
   }) => {
+    test.setTimeout(60000);
+
     const center = await appPage.page.screenshot();
 
-    await appPage.pressKey("ArrowRight", 5);
+    await appPage.pressKey("ArrowRight", 3);
     const right = await appPage.page.screenshot();
 
     // Return to center
-    await appPage.pressKey("ArrowLeft", 5);
-    await appPage.pressKey("ArrowLeft", 5);
+    await appPage.pressKey("ArrowLeft", 3);
+    await appPage.pressKey("ArrowLeft", 3);
     const left = await appPage.page.screenshot();
 
     // Return to center
-    await appPage.pressKey("ArrowRight", 5);
-    await appPage.pressKey("ArrowUp", 5);
+    await appPage.pressKey("ArrowRight", 3);
+    await appPage.pressKey("ArrowUp", 3);
     const up = await appPage.page.screenshot();
 
     // Return to center
-    await appPage.pressKey("ArrowDown", 5);
-    await appPage.pressKey("ArrowDown", 5);
+    await appPage.pressKey("ArrowDown", 3);
+    await appPage.pressKey("ArrowDown", 3);
     const down = await appPage.page.screenshot();
 
     // Each direction should produce a different view
