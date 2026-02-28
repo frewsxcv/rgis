@@ -72,7 +72,7 @@ crs-definitions = "0.3"
 dark-light = "2.0"
 egui_plot = "0.32"
 geo = "0.31"
-geo-bevy = { git = "https://github.com/frewsxcv/geo-bevy" }
+geo-bevy = "9"
 geo-geodesy = "5"
 geodesy = "0.14"
 geozero = { git = "https://github.com/georust/geozero.git", branch = "main" }
