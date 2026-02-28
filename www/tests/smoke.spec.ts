@@ -67,3 +67,22 @@ test("clicking Library option changes the view", async ({ appPage }) => {
 
   await expect(appPage.page).toHaveScreenshot("library-selected.png");
 });
+
+test("add World Countries layer from library", async ({ appPage }) => {
+  test.setTimeout(60000);
+
+  // Click the "Library" radio button
+  await appPage.clickOnCanvas(0.148, 0.146);
+
+  // Expand the "World" folder (click the ► arrow)
+  await appPage.clickOnCanvas(0.137, 0.424);
+  await appPage.page.waitForTimeout(500);
+
+  // Click the "+ Add" button next to "Countries"
+  await appPage.clickOnCanvas(0.162, 0.454);
+
+  // Wait for the layer to load from network and render
+  await appPage.page.waitForTimeout(10000);
+
+  await expect(appPage.page).toHaveScreenshot("world-countries-rendered.png");
+});
