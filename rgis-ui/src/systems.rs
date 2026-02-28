@@ -629,7 +629,7 @@ mod tests {
         app.add_plugins(bevy::window::WindowPlugin::default());
         app.add_plugins(bevy::input::InputPlugin);
         // Initialize Shader asset to satisfy bevy_egui requirement
-        app.init_asset::<bevy::render::render_resource::Shader>();
+        app.init_asset::<bevy::prelude::Shader>();
         app.init_asset::<bevy::prelude::Image>();
 
         app.add_plugins(bevy_egui::EguiPlugin::default());
@@ -658,7 +658,7 @@ mod tests {
         // We avoid using Camera2d bundle/component to avoid pulling in too many render dependencies.
         app.world_mut().spawn((
             Transform::default(),
-            bevy::render::camera::Camera::default(),
+            Camera::default(),
         ));
 
         app.update();
@@ -676,7 +676,7 @@ mod tests {
         let window_entity = app
             .world_mut()
             .spawn(bevy::window::Window {
-                resolution: bevy::window::WindowResolution::new(800.0, 600.0),
+                resolution: bevy::window::WindowResolution::new(800, 600),
                 ..default()
             })
             .id();
