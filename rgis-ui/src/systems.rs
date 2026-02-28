@@ -718,15 +718,17 @@ mod tests {
         let geodesy_ctx = app.world().resource::<rgis_geodesy::GeodesyContext>();
         let target_crs = app.world().resource::<rgis_crs::TargetCrs>();
 
-        // San Francisco
+        // Geodesy works with radians internally for angular CRSes like EPSG:4326,
+        // so input coordinates must be in radians.
+        // San Francisco (lon: -122.4194°, lat: 37.7749°)
         let start = geo::Coord {
-            x: -122.4194,
-            y: 37.7749,
+            x: -122.4194_f64.to_radians(),
+            y: 37.7749_f64.to_radians(),
         };
-        // New York City
+        // New York City (lon: -74.0060°, lat: 40.7128°)
         let end = geo::Coord {
-            x: -74.0060,
-            y: 40.7128,
+            x: -74.0060_f64.to_radians(),
+            y: 40.7128_f64.to_radians(),
         };
 
         let distance =
