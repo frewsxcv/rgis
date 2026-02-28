@@ -46,7 +46,8 @@ impl bevy::app::Plugin for Plugin {
             .insert_resource(rgis_units::TopPanelHeight(0.))
             .insert_resource(rgis_units::BottomPanelHeight(0.))
             .insert_resource(rgis_units::SidePanelWidth(0.))
-            .insert_resource(ChangeCrsWindowState::default());
+            .insert_resource(ChangeCrsWindowState::default())
+            .insert_resource(ClearColor::default());
 
         systems::configure(app);
     }
