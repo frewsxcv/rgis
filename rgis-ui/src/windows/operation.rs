@@ -5,8 +5,8 @@ use rgis_ui_events::RenderMessageEvent;
 pub struct Operation<'w> {
     pub egui_ctx: &'w mut bevy_egui::egui::Context,
     pub state: &'w mut crate::OperationWindowState,
-    pub create_layer_event_writer: bevy::ecs::event::EventWriter<'w, CreateLayerEvent>,
-    pub render_message_event_writer: bevy::ecs::event::EventWriter<'w, RenderMessageEvent>,
+    pub create_layer_event_writer: bevy::ecs::message::MessageWriter<'w, CreateLayerEvent>,
+    pub render_message_event_writer: bevy::ecs::message::MessageWriter<'w, RenderMessageEvent>,
 }
 
 impl Operation<'_> {

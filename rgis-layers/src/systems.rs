@@ -1,11 +1,11 @@
 use bevy::prelude::*;
 
 fn handle_toggle_layer_visibility_events(
-    mut toggle_layer_visibility_event_reader: EventReader<
+    mut toggle_layer_visibility_event_reader: MessageReader<
         rgis_layer_events::ToggleLayerVisibilityEvent,
     >,
-    mut layer_became_visible_event_writer: EventWriter<rgis_layer_events::LayerBecameVisibleEvent>,
-    mut layer_became_hidden_event_writer: EventWriter<rgis_layer_events::LayerBecameHiddenEvent>,
+    mut layer_became_visible_event_writer: MessageWriter<rgis_layer_events::LayerBecameVisibleEvent>,
+    mut layer_became_hidden_event_writer: MessageWriter<rgis_layer_events::LayerBecameHiddenEvent>,
     mut layers: ResMut<crate::Layers>,
 ) {
     for event in toggle_layer_visibility_event_reader.read() {
@@ -25,8 +25,8 @@ fn handle_toggle_layer_visibility_events(
 }
 
 fn handle_update_color_events(
-    mut update_events: EventReader<rgis_ui_events::UpdateLayerColorEvent>,
-    mut updated_events: EventWriter<rgis_layer_events::LayerColorUpdatedEvent>,
+    mut update_events: MessageReader<rgis_ui_events::UpdateLayerColorEvent>,
+    mut updated_events: MessageWriter<rgis_layer_events::LayerColorUpdatedEvent>,
     mut layers: ResMut<crate::Layers>,
 ) {
     for event in update_events.read() {
@@ -53,8 +53,8 @@ fn handle_update_color_events(
 }
 
 fn handle_update_point_size_events(
-    mut update_events: EventReader<rgis_ui_events::UpdateLayerPointSizeEvent>,
-    mut updated_events: EventWriter<rgis_layer_events::LayerPointSizeUpdatedEvent>,
+    mut update_events: MessageReader<rgis_ui_events::UpdateLayerPointSizeEvent>,
+    mut updated_events: MessageWriter<rgis_layer_events::LayerPointSizeUpdatedEvent>,
     mut layers: ResMut<crate::Layers>,
 ) {
     for rgis_ui_events::UpdateLayerPointSizeEvent(layer_id, point_size) in update_events.read() {
@@ -68,8 +68,8 @@ fn handle_update_point_size_events(
 }
 
 fn handle_delete_layer_events(
-    mut delete_layer_event_reader: EventReader<rgis_layer_events::DeleteLayerEvent>,
-    mut despawn_meshes_event_writer: EventWriter<rgis_renderer_events::DespawnMeshesEvent>,
+    mut delete_layer_event_reader: MessageReader<rgis_layer_events::DeleteLayerEvent>,
+    mut despawn_meshes_event_writer: MessageWriter<rgis_renderer_events::DespawnMeshesEvent>,
     mut layers: ResMut<crate::Layers>,
 ) {
     for event in delete_layer_event_reader.read() {
@@ -79,8 +79,8 @@ fn handle_delete_layer_events(
 }
 
 fn handle_move_layer_events(
-    mut move_layer_event_reader: EventReader<rgis_layer_events::MoveLayerEvent>,
-    mut layer_z_index_updated_event_writer: EventWriter<rgis_layer_events::LayerZIndexUpdatedEvent>,
+    mut move_layer_event_reader: MessageReader<rgis_layer_events::MoveLayerEvent>,
+    mut layer_z_index_updated_event_writer: MessageWriter<rgis_layer_events::LayerZIndexUpdatedEvent>,
     mut layers: ResMut<crate::Layers>,
 ) {
     for event in move_layer_event_reader.read() {
@@ -125,9 +125,9 @@ fn handle_move_layer_events(
 }
 
 fn handle_map_clicked_events(
-    mut map_clicked_event_reader: EventReader<rgis_map_events::MapClickedEvent>,
-    mut render_message_event_writer: EventWriter<rgis_ui_events::RenderFeaturePropertiesEvent>,
-    mut feature_clicked_event_writer: EventWriter<rgis_map_events::FeatureSelectedEvent>,
+    mut map_clicked_event_reader: MessageReader<rgis_map_events::MapClickedEvent>,
+    mut render_message_event_writer: MessageWriter<rgis_ui_events::RenderFeaturePropertiesEvent>,
+    mut feature_clicked_event_writer: MessageWriter<rgis_map_events::FeatureSelectedEvent>,
     layers: Res<crate::Layers>,
 ) {
     for event in map_clicked_event_reader.read() {
@@ -143,8 +143,8 @@ fn handle_map_clicked_events(
 }
 
 fn handle_create_layer_events(
-    mut create_layer_events: ResMut<Events<rgis_layer_events::CreateLayerEvent>>,
-    mut layer_created_event_writer: EventWriter<rgis_layer_events::LayerCreatedEvent>,
+    mut create_layer_events: ResMut<Messages<rgis_layer_events::CreateLayerEvent>>,
+    mut layer_created_event_writer: MessageWriter<rgis_layer_events::LayerCreatedEvent>,
     mut layers: ResMut<crate::Layers>,
 ) {
     for event in create_layer_events.drain() {
@@ -156,8 +156,8 @@ fn handle_create_layer_events(
 use crate::LayerWithIndex;
 
 fn handle_duplicate_layer_events(
-    mut duplicate_layer_event_reader: EventReader<rgis_layer_events::DuplicateLayerEvent>,
-    mut create_layer_event_writer: EventWriter<rgis_layer_events::CreateLayerEvent>,
+    mut duplicate_layer_event_reader: MessageReader<rgis_layer_events::DuplicateLayerEvent>,
+    mut create_layer_event_writer: MessageWriter<rgis_layer_events::CreateLayerEvent>,
     layers: Res<crate::Layers>,
 ) {
     for event in duplicate_layer_event_reader.read() {

@@ -86,6 +86,6 @@ mod tests {
 
     #[test]
     fn assert_system() {
-        assert_is_system(render_window_system::<FakeWindow>);
+        assert_is_system(render_window_system::<FakeWindow>.map(|_: Result| {}));
     }
 }

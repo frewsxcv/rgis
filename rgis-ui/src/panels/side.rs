@@ -11,14 +11,14 @@ use std::marker;
 
 #[derive(SystemParam)]
 pub struct Events<'w> {
-    pub toggle_layer_visibility_event_writer: EventWriter<'w, ToggleLayerVisibilityEvent>,
-    pub center_layer_event_writer: EventWriter<'w, CenterCameraEvent>,
-    pub delete_layer_event_writer: EventWriter<'w, DeleteLayerEvent>,
-    pub move_layer_event_writer: EventWriter<'w, MoveLayerEvent>,
-    pub create_layer_event_writer: EventWriter<'w, CreateLayerEvent>,
-    pub show_add_layer_window_event_writer: EventWriter<'w, ShowAddLayerWindow>,
-    pub show_manage_layer_window_event_writer: EventWriter<'w, ShowManageLayerWindowEvent>,
-    pub perform_operation_event_writer: EventWriter<'w, rgis_ui_events::PerformOperationEvent>,
+    pub toggle_layer_visibility_event_writer: MessageWriter<'w, ToggleLayerVisibilityEvent>,
+    pub center_layer_event_writer: MessageWriter<'w, CenterCameraEvent>,
+    pub delete_layer_event_writer: MessageWriter<'w, DeleteLayerEvent>,
+    pub move_layer_event_writer: MessageWriter<'w, MoveLayerEvent>,
+    pub create_layer_event_writer: MessageWriter<'w, CreateLayerEvent>,
+    pub show_add_layer_window_event_writer: MessageWriter<'w, ShowAddLayerWindow>,
+    pub show_manage_layer_window_event_writer: MessageWriter<'w, ShowManageLayerWindowEvent>,
+    pub perform_operation_event_writer: MessageWriter<'w, rgis_ui_events::PerformOperationEvent>,
 }
 
 pub struct Side<'a, 'w> {

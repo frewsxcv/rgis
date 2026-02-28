@@ -1,9 +1,9 @@
 use bevy::prelude::*;
 
-#[derive(Event)]
+#[derive(Message)]
 pub struct DespawnMeshesEvent(pub rgis_primitives::LayerId);
 
-#[derive(Event)]
+#[derive(Message)]
 pub struct MeshesSpawnedEvent(pub rgis_primitives::LayerId);
 
 impl From<rgis_primitives::LayerId> for MeshesSpawnedEvent {
@@ -17,7 +17,7 @@ pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<DespawnMeshesEvent>()
-            .add_event::<MeshesSpawnedEvent>();
+        app.add_message::<DespawnMeshesEvent>()
+            .add_message::<MeshesSpawnedEvent>();
     }
 }

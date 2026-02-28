@@ -3,7 +3,7 @@ use bevy_egui::egui;
 use bevy_egui_window as window;
 
 pub struct Top<'a, 'w, 's> {
-    pub app_exit_events: &'a mut Events<AppExit>,
+    pub app_exit_events: &'a mut Messages<AppExit>,
     pub egui_ctx: &'a mut bevy_egui::egui::Context,
     pub window: &'a mut Window,
     pub app_settings: &'a mut rgis_settings::RgisSettings,
@@ -14,7 +14,7 @@ pub struct Top<'a, 'w, 's> {
 impl Top<'_, '_, '_> {
     pub fn render(&mut self) {
         let inner_response = egui::TopBottomPanel::top("top_panel").show(self.egui_ctx, |ui| {
-            egui::menu::bar(ui, |ui| {
+            egui::MenuBar::new().ui(ui, |ui| {
                 let prev_current_tool = self.app_settings.current_tool;
 
                 ui.label("rgis");
