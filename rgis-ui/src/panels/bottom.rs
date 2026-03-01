@@ -27,7 +27,9 @@ impl Bottom<'_, '_> {
     fn render_crs(&mut self, ui: &mut egui::Ui) {
         // TODO: The ordering is backwards here (the edit button should be specified after)
         //       Is this from the right_to_left call above?
-        if ui.button("✏").clicked() {
+        let edit_btn = ui.button("✏");
+        crate::widget_registry::register("Edit CRS", edit_btn.rect);
+        if edit_btn.clicked() {
             self.open_change_crs_window_event_writer.write_default();
         }
 

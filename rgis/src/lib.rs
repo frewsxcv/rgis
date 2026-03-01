@@ -2,6 +2,36 @@ use bevy::prelude::*;
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
 
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen]
+pub fn get_widget_rect(label: &str) -> JsValue {
+    match rgis_ui::widget_registry::get(label) {
+        Some(rect) => {
+            let arr = js_sys::Array::new();
+            for v in rect {
+                arr.push(&JsValue::from_f64(f64::from(v)));
+            }
+            arr.into()
+        }
+        None => JsValue::NULL,
+    }
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen]
+pub fn get_all_widget_rects() -> JsValue {
+    let all = rgis_ui::widget_registry::get_all();
+    let obj = js_sys::Object::new();
+    for (label, rect) in &all {
+        let arr = js_sys::Array::new();
+        for v in rect {
+            arr.push(&JsValue::from_f64(f64::from(*v)));
+        }
+        let _ = js_sys::Reflect::set(&obj, &JsValue::from_str(label), &arr);
+    }
+    obj.into()
+}
+
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
 pub fn run() {
     let mut app = App::new();

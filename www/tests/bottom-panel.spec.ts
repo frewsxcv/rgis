@@ -12,9 +12,8 @@ test.describe("bottom panel - status bar", () => {
     await appPage.clickOnCanvas(0.7, 0.5);
     await appPage.page.waitForTimeout(500);
 
-    // Click the ✏ (pencil) button next to CRS display in bottom-right
-    // It's at far right of the bottom bar, roughly x=1260, y=710 in 1280x720
-    await appPage.clickOnCanvas(0.984, 0.986);
+    // Click the CRS edit button
+    await appPage.clickWidget("Edit CRS");
     await appPage.page.waitForTimeout(500);
     await expect(appPage.page).toHaveScreenshot("change-crs-window-open.png");
   });

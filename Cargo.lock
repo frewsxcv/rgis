@@ -5084,6 +5084,7 @@ dependencies = [
  "bevy_jobs",
  "geo",
  "getrandom 0.2.17",
+ "js-sys",
  "rgis-camera",
  "rgis-camera-events",
  "rgis-cli",

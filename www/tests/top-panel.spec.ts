@@ -6,22 +6,19 @@ test.describe("top panel - menu bar", () => {
   });
 
   test("File menu opens", async ({ appPage }) => {
-    // "File" is at ~40px from left, ~11px from top in 1280x720
-    await appPage.clickOnCanvas(0.031, 0.015);
+    await appPage.clickWidget("File");
     await appPage.page.waitForTimeout(500);
     await expect(appPage.page).toHaveScreenshot("file-menu-open.png");
   });
 
   test("View menu opens", async ({ appPage }) => {
-    // "View" is at ~78px from left
-    await appPage.clickOnCanvas(0.061, 0.015);
+    await appPage.clickWidget("View");
     await appPage.page.waitForTimeout(500);
     await expect(appPage.page).toHaveScreenshot("view-menu-open.png");
   });
 
   test("Help menu opens", async ({ appPage }) => {
-    // "Help" is at ~120px from left
-    await appPage.clickOnCanvas(0.094, 0.015);
+    await appPage.clickWidget("Help");
     await appPage.page.waitForTimeout(500);
     await expect(appPage.page).toHaveScreenshot("help-menu-open.png");
   });
@@ -33,15 +30,13 @@ test.describe("top panel - tool buttons", () => {
   });
 
   test("clicking Query Tool switches active tool", async ({ appPage }) => {
-    // "Query Tool" is at ~280px from left
-    await appPage.clickOnCanvas(0.219, 0.015);
+    await appPage.clickWidget("Query Tool");
     await appPage.page.waitForTimeout(500);
     await expect(appPage.page).toHaveScreenshot("query-tool-selected.png");
   });
 
   test("clicking Measure Tool switches active tool", async ({ appPage }) => {
-    // "Measure Tool" is at ~380px from left
-    await appPage.clickOnCanvas(0.297, 0.015);
+    await appPage.clickWidget("Measure Tool");
     await appPage.page.waitForTimeout(500);
     await expect(appPage.page).toHaveScreenshot("measure-tool-selected.png");
   });
