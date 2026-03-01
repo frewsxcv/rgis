@@ -21,6 +21,16 @@ impl ChangeCrs<'_, '_> {
         egui::Window::new("Change CRS")
             .open(self.is_visible)
             .show(self.egui_ctx, |ui| {
+                ui.label("Common projections:");
+                ui.horizontal(|ui| {
+                    if ui.button("WGS 84 (4326)").clicked() {
+                        *self.text_field_value = "4326".into();
+                    }
+                    if ui.button("Web Mercator (3857)").clicked() {
+                        *self.text_field_value = "3857".into();
+                    }
+                });
+                ui.add_space(4.0);
                 ui.add(crate::widgets::crs_input::CrsInput::new(
                     self.geodesy_ctx,
                     self.crs_input_outcome,

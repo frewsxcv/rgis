@@ -7,7 +7,7 @@ pub struct AddLayer<'a, 'w> {
 
 impl egui::Widget for AddLayer<'_, '_> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
-        let button = ui.button("➕ Add Layer");
+        let button = ui.button("Add Layer...");
         crate::widget_registry::register("Add Layer", button.rect);
 
         if button.clicked() {

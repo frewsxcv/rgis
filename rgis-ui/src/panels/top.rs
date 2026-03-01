@@ -2,16 +2,19 @@ use bevy::prelude::*;
 use bevy_egui::egui;
 use bevy_egui_window as window;
 
-pub struct Top<'a, 'w, 's> {
+pub struct Top<'a, 'w> {
     pub app_exit_events: &'a mut Messages<AppExit>,
     pub egui_ctx: &'a mut bevy_egui::egui::Context,
     pub window: &'a mut Window,
     pub app_settings: &'a mut rgis_settings::RgisSettings,
     pub top_panel_height: &'a mut rgis_units::TopPanelHeight,
-    pub is_debug_window_open: &'a mut window::IsWindowOpen<crate::windows::debug::Debug<'w, 's>>,
+    pub is_debug_window_open:
+        &'a mut window::IsWindowOpen<crate::windows::debug::Debug<'static, 'static>>,
+    pub show_add_layer_window_event_writer:
+        &'a mut MessageWriter<'w, rgis_ui_events::ShowAddLayerWindow>,
 }
 
-impl Top<'_, '_, '_> {
+impl Top<'_, '_> {
     pub fn render(&mut self) {
         let inner_response = egui::TopBottomPanel::top("top_panel").show(self.egui_ctx, |ui| {
             egui::MenuBar::new().ui(ui, |ui| {
@@ -19,6 +22,11 @@ impl Top<'_, '_, '_> {
 
                 ui.label("rgis");
                 let file_response = ui.menu_button("File", |ui| {
+                    if ui.button("Add Layer...").clicked() {
+                        self.show_add_layer_window_event_writer.write_default();
+                        ui.close();
+                    }
+                    ui.separator();
                     ui.add(crate::widgets::exit::Exit {
                         app_exit_events: self.app_exit_events,
                     });
@@ -65,7 +73,7 @@ impl Top<'_, '_, '_> {
                 let pan_btn = ui
                     .add_enabled(
                         self.app_settings.current_tool != rgis_settings::Tool::Pan,
-                        egui::Button::new("🔁 Pan Tool")
+                        egui::Button::new("Pan")
                             .selected(self.app_settings.current_tool == rgis_settings::Tool::Pan),
                     );
                 crate::widget_registry::register("Pan Tool", pan_btn.rect);
@@ -77,7 +85,7 @@ impl Top<'_, '_, '_> {
                 let query_btn = ui
                     .add_enabled(
                         self.app_settings.current_tool != rgis_settings::Tool::Query,
-                        egui::Button::new("ℹ Query Tool")
+                        egui::Button::new("Query")
                             .selected(self.app_settings.current_tool == rgis_settings::Tool::Query),
                     );
                 crate::widget_registry::register("Query Tool", query_btn.rect);
@@ -89,7 +97,7 @@ impl Top<'_, '_, '_> {
                 let measure_btn = ui
                     .add_enabled(
                         self.app_settings.current_tool != rgis_settings::Tool::Measure,
-                        egui::Button::new("📏 Measure Tool")
+                        egui::Button::new("Measure")
                             .selected(self.app_settings.current_tool == rgis_settings::Tool::Measure),
                     );
                 crate::widget_registry::register("Measure Tool", measure_btn.rect);

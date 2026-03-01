@@ -1,23 +1,28 @@
 use bevy::ecs::system::SystemParam;
+use bevy::prelude::*;
 use bevy_egui::egui;
-use std::marker;
 
 #[derive(SystemParam)]
-pub struct Welcome<'w, 's> {
-    _phantom: marker::PhantomData<(&'w (), &'s ())>,
+pub struct Welcome<'w> {
+    show_add_layer_window_event_writer: MessageWriter<'w, rgis_ui_events::ShowAddLayerWindow>,
 }
 
-impl egui::Widget for Welcome<'_, '_> {
-    fn ui(self, ui: &mut egui::Ui) -> egui::Response {
+impl egui::Widget for Welcome<'_> {
+    fn ui(mut self, ui: &mut egui::Ui) -> egui::Response {
         ui.vertical_centered_justified(|ui| {
-            ui.label("Welcome to rgis!");
+            ui.heading("Welcome to rgis");
+            ui.label("A geospatial data viewer written in Rust.");
+            ui.add_space(8.0);
+            if ui.button("Add Layer...").clicked() {
+                self.show_add_layer_window_event_writer.write_default();
+            }
         })
         .response
     }
 }
 
-impl bevy_egui_window::Window for Welcome<'_, '_> {
-    type Item<'w, 's> = Welcome<'w, 's>;
+impl bevy_egui_window::Window for Welcome<'_> {
+    type Item<'w, 's> = Welcome<'w>;
     const INITIALLY_OPEN: bool = true;
 
     fn title(&self) -> &str {
@@ -25,7 +30,7 @@ impl bevy_egui_window::Window for Welcome<'_, '_> {
     }
 
     fn default_width(&self) -> f32 {
-        300.0
+        350.0
     }
 
     fn default_anchor(&self) -> (egui::Align2, [f32; 2]) {

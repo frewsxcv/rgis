@@ -13,3 +13,4 @@ pub mod stroke_color;
 pub mod exit;
 pub mod full_screen;
 pub mod scale_bar;
+pub mod zoom_buttons;
