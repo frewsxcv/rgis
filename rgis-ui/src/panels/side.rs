@@ -125,7 +125,7 @@ impl Widget for Layer<'_, '_> {
             is_move_down_enabled,
             events: _,
         } = self;
-        egui::CollapsingHeader::new(&layer.name)
+        let header = egui::CollapsingHeader::new(&layer.name)
             .id_salt(layer.id) // Instead of using the layer name as the ID (which is not unique), use the layer ID
             .show(ui, |ui| {
                 if !layer.is_active() {
@@ -136,7 +136,9 @@ impl Widget for Layer<'_, '_> {
                 ui.label(format!("Type: {}", layer.geom_type));
 
                 ui.with_layout(Layout::top_down_justified(Align::Center), |ui| {
-                    if ui.button("✏ Manage").clicked() {
+                    let manage_btn = ui.button("✏ Manage");
+                    crate::widget_registry::register("Manage", manage_btn.rect);
+                    if manage_btn.clicked() {
                         self.events
                             .show_manage_layer_window_event_writer
                             .write(ShowManageLayerWindowEvent(layer.id));
@@ -154,17 +156,21 @@ impl Widget for Layer<'_, '_> {
                         events: self.events,
                     });
 
-                    if ui.button("🔎 Zoom to extent").clicked() {
+                    let zoom_btn = ui.button("🔎 Zoom to extent");
+                    crate::widget_registry::register("Zoom to extent", zoom_btn.rect);
+                    if zoom_btn.clicked() {
                         self.events
                             .center_layer_event_writer
                             .write(CenterCameraEvent(layer.id));
                     }
 
-                    if ui.button("❌ Remove").clicked() {
+                    let remove_btn = ui.button("❌ Remove");
+                    crate::widget_registry::register("Remove", remove_btn.rect);
+                    if remove_btn.clicked() {
                         self.delete_layer(layer);
                     }
 
-                    egui::CollapsingHeader::new("⚙ Operations")
+                    let ops_header = egui::CollapsingHeader::new("⚙ Operations")
                         .id_salt(format!("{:?}-operations", layer.id)) // Instead of using the layer name as the ID (which is not unique), use the layer ID
                         .show(ui, |ui| {
                             ui.with_layout(Layout::top_down_justified(Align::LEFT), |ui| {
@@ -174,8 +180,10 @@ impl Widget for Layer<'_, '_> {
                                 });
                             });
                         });
+                    crate::widget_registry::register("Operations", ops_header.header_response.rect);
                 });
-            })
-            .header_response
+            });
+        crate::widget_registry::register(&layer.name, header.header_response.rect);
+        header.header_response
     }
 }

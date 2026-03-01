@@ -13,7 +13,7 @@ impl LibraryWidget<'_> {
         ui.vertical(|ui| {
             ui.heading("Library");
             for folder in rgis_library::get() {
-                ui.collapsing(format!("📁 {}", folder.name), |ui| {
+                let folder_header = ui.collapsing(format!("📁 {}", folder.name), |ui| {
                     for entry in &folder.entries {
                         if let Some(new_output) = (LibraryEntryWidget {
                             folder,
@@ -26,6 +26,7 @@ impl LibraryWidget<'_> {
                         }
                     }
                 });
+                crate::widget_registry::register(folder.name, folder_header.header_response.rect);
             }
         });
         output
@@ -42,7 +43,9 @@ impl LibraryEntryWidget<'_> {
     fn show(self, ui: &mut egui::Ui) -> Option<AddLayerOutput> {
         let mut output = None;
         ui.horizontal(|ui| {
-            if ui.button("➕ Add").clicked() {
+            let add_btn = ui.button("➕ Add");
+            crate::widget_registry::register(&format!("Add:{}", self.entry.name), add_btn.rect);
+            if add_btn.clicked() {
                 let mut geodesy_ctx = self.geodesy_ctx.0.write().unwrap();
                 let op_handle =
                     rgis_geodesy::epsg_code_to_geodesy_op_handle(&mut *geodesy_ctx, self.entry.crs)

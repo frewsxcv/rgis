@@ -14,6 +14,7 @@ impl egui::Widget for ToggleLayer<'_, '_> {
         } else {
             ui.button("👁 Show")
         };
+        crate::widget_registry::register("Toggle Visibility", button.rect);
 
         if button.clicked() {
             self.events

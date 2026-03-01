@@ -6,9 +6,8 @@ test.describe("change CRS window", () => {
     await appPage.clickOnCanvas(0.7, 0.5);
     await appPage.page.waitForTimeout(500);
 
-    // Click the ✏ button in bottom panel to open Change CRS window
-    // Pencil button at far right bottom: ~1260px x, ~710px y in 1280x720
-    await appPage.clickOnCanvas(0.984, 0.986);
+    // Click the CRS edit button in bottom panel
+    await appPage.clickWidget("Edit CRS");
     await appPage.page.waitForTimeout(500);
     await expect(appPage.page).toHaveScreenshot("change-crs-window.png");
   });

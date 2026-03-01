@@ -59,8 +59,7 @@ test("clicking Library option changes the view", async ({ appPage }) => {
   const before = await appPage.page.screenshot();
 
   // Click the "Library" radio button in the Add Layer panel
-  // Located at approximately (190, 105) in the 1280x720 viewport
-  await appPage.clickOnCanvas(0.148, 0.146);
+  await appPage.clickWidget("Library");
 
   const after = await appPage.page.screenshot();
   expect(Buffer.compare(before, after)).not.toBe(0);
@@ -72,14 +71,14 @@ test("add World Countries layer from library", async ({ appPage }) => {
   test.setTimeout(60000);
 
   // Click the "Library" radio button
-  await appPage.clickOnCanvas(0.148, 0.146);
+  await appPage.clickWidget("Library");
 
-  // Expand the "World" folder (click the ► arrow)
-  await appPage.clickOnCanvas(0.137, 0.424);
+  // Expand the "World" folder
+  await appPage.clickWidget("World");
   await appPage.page.waitForTimeout(500);
 
   // Click the "+ Add" button next to "Countries"
-  await appPage.clickOnCanvas(0.162, 0.454);
+  await appPage.clickWidget("Add:Countries");
 
   // Wait for the layer to load from network and render
   await appPage.page.waitForTimeout(10000);

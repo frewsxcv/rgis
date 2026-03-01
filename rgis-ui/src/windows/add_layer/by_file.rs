@@ -15,29 +15,33 @@ impl<'a> ByFile<'a> {
 
         ui.label("Format:");
 
-        ui.radio_value(
+        let geojson_radio = ui.radio_value(
             &mut self.state.selected_format,
             Some(FileFormat::GeoJson),
             "GeoJSON",
         );
+        crate::widget_registry::register("GeoJSON", geojson_radio.rect);
 
-        ui.radio_value(
+        let gpx_radio = ui.radio_value(
             &mut self.state.selected_format,
             Some(FileFormat::Gpx),
             "GPX",
         );
+        crate::widget_registry::register("GPX", gpx_radio.rect);
 
-        ui.radio_value(
+        let shapefile_radio = ui.radio_value(
             &mut self.state.selected_format,
             Some(FileFormat::Shapefile),
             "Shapefile",
         );
+        crate::widget_registry::register("Shapefile", shapefile_radio.rect);
 
-        ui.radio_value(
+        let wkt_radio = ui.radio_value(
             &mut self.state.selected_format,
             Some(FileFormat::Wkt),
             "WKT",
         );
+        crate::widget_registry::register("WKT", wkt_radio.rect);
 
         let Some(selected_format) = self.state.selected_format else {
             return None;

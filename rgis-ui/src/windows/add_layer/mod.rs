@@ -94,9 +94,12 @@ impl AddLayer<'_> {
                 .show(self.egui_ctx, |ui| {
                     ui.label("Layer source:");
 
-                    ui.radio_value(&mut self.state.selected_source, Source::Library, "Library");
-                    ui.radio_value(&mut self.state.selected_source, Source::File, "File");
-                    ui.radio_value(&mut self.state.selected_source, Source::Text, "Text");
+                    let library_radio = ui.radio_value(&mut self.state.selected_source, Source::Library, "Library");
+                    crate::widget_registry::register("Library", library_radio.rect);
+                    let file_radio = ui.radio_value(&mut self.state.selected_source, Source::File, "File");
+                    crate::widget_registry::register("File", file_radio.rect);
+                    let text_radio = ui.radio_value(&mut self.state.selected_source, Source::Text, "Text");
+                    crate::widget_registry::register("Text", text_radio.rect);
 
                     if self.state.selected_source == Source::Unselected {
                         return;

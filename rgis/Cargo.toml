@@ -37,6 +37,7 @@ rgis-cli = { path = "../rgis-cli" }
 bevy = { workspace = true }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
+js-sys = { workspace = true }
 wasm-bindgen = { workspace = true }
 bevy = { workspace = true, features = ["webgl2"] }
 getrandom = { workspace = true }

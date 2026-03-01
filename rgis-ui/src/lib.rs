@@ -2,6 +2,7 @@ use bevy::prelude::*;
 
 mod panels;
 mod systems;
+pub mod widget_registry;
 mod widgets;
 mod windows;
 
