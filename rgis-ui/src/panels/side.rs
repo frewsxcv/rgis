@@ -135,11 +135,18 @@ impl Widget for Layer<'_, '_> {
             events: _,
         } = self;
 
-        let response = ui
-            .horizontal(|ui| {
-                // Visibility checkbox
+        let header_text = if layer.is_active() {
+            layer.name.clone()
+        } else {
+            format!("{} (loading...)", layer.name)
+        };
+
+        let response = egui::CollapsingHeader::new(&header_text)
+            .id_salt(format!("{:?}", layer.id))
+            .show(ui, |ui| {
+                // Visibility toggle
                 let mut visible = layer.visible;
-                let visibility_checkbox = ui.checkbox(&mut visible, "");
+                let visibility_checkbox = ui.checkbox(&mut visible, "Visible");
                 crate::widget_registry::register("Toggle Visibility", visibility_checkbox.rect);
                 if visibility_checkbox.changed() {
                     self.events
@@ -147,95 +154,80 @@ impl Widget for Layer<'_, '_> {
                         .write(ToggleLayerVisibilityEvent(layer.id));
                 }
 
-                // Color swatch
-                let swatch_color = layer
-                    .color
-                    .fill
-                    .unwrap_or(layer.color.stroke);
+                // Color swatch with label
+                let swatch_color = layer.color.fill.unwrap_or(layer.color.stroke);
                 let egui_color = bevy_color_to_egui_color(swatch_color);
-                let (rect, _) =
-                    ui.allocate_exact_size(egui::Vec2::splat(12.0), egui::Sense::hover());
-                ui.painter()
-                    .rect_filled(rect, 2.0, egui_color);
+                ui.horizontal(|ui| {
+                    let (rect, _) =
+                        ui.allocate_exact_size(egui::Vec2::splat(12.0), egui::Sense::hover());
+                    ui.painter().rect_filled(rect, 2.0, egui_color);
+                    ui.label(format!("Type: {}", layer.geom_type));
+                });
 
-                // Layer name with spinner if loading
-                if !layer.is_active() {
-                    ui.spinner();
+                ui.separator();
+
+                let manage_btn = ui.button("Manage...");
+                crate::widget_registry::register("Manage", manage_btn.rect);
+                if manage_btn.clicked() {
+                    self.events
+                        .show_manage_layer_window_event_writer
+                        .write(ShowManageLayerWindowEvent(layer.id));
                 }
-                ui.label(&layer.name);
-            })
-            .response;
-        crate::widget_registry::register(&layer.name, response.rect);
 
-        // Right-click context menu
-        response.context_menu(|ui| {
-            ui.label(format!("Type: {}", layer.geom_type));
-            ui.separator();
+                let zoom_btn = ui.button("Zoom to Extent");
+                crate::widget_registry::register("Zoom to extent", zoom_btn.rect);
+                if zoom_btn.clicked() {
+                    self.events
+                        .center_layer_event_writer
+                        .write(CenterCameraEvent(layer.id));
+                }
 
-            let manage_btn = ui.button("Manage...");
-            crate::widget_registry::register("Manage", manage_btn.rect);
-            if manage_btn.clicked() {
-                self.events
-                    .show_manage_layer_window_event_writer
-                    .write(ShowManageLayerWindowEvent(layer.id));
-                ui.close();
-            }
+                ui.separator();
 
-            let zoom_btn = ui.button("Zoom to Extent");
-            crate::widget_registry::register("Zoom to extent", zoom_btn.rect);
-            if zoom_btn.clicked() {
-                self.events
-                    .center_layer_event_writer
-                    .write(CenterCameraEvent(layer.id));
-                ui.close();
-            }
+                ui.horizontal(|ui| {
+                    if ui
+                        .add_enabled(is_move_up_enabled, egui::Button::new("Move Up"))
+                        .clicked()
+                    {
+                        self.events
+                            .move_layer_event_writer
+                            .write(MoveLayerEvent(layer.id, MoveDirection::Up));
+                    }
 
-            ui.separator();
+                    if ui
+                        .add_enabled(is_move_down_enabled, egui::Button::new("Move Down"))
+                        .clicked()
+                    {
+                        self.events
+                            .move_layer_event_writer
+                            .write(MoveLayerEvent(layer.id, MoveDirection::Down));
+                    }
+                });
 
-            if ui
-                .add_enabled(is_move_up_enabled, egui::Button::new("Move Up"))
-                .clicked()
-            {
-                self.events
-                    .move_layer_event_writer
-                    .write(MoveLayerEvent(layer.id, MoveDirection::Up));
-                ui.close();
-            }
+                ui.separator();
 
-            if ui
-                .add_enabled(is_move_down_enabled, egui::Button::new("Move Down"))
-                .clicked()
-            {
-                self.events
-                    .move_layer_event_writer
-                    .write(MoveLayerEvent(layer.id, MoveDirection::Down));
-                ui.close();
-            }
-
-            ui.separator();
-
-            let ops_header = egui::CollapsingHeader::new("Operations")
-                .id_salt(format!("{:?}-operations", layer.id))
-                .show(ui, |ui| {
-                    ui.with_layout(Layout::top_down_justified(Align::LEFT), |ui| {
-                        ui.add(crate::widgets::operations::Operations {
-                            layer,
-                            events: self.events,
+                let ops_header = egui::CollapsingHeader::new("Operations")
+                    .id_salt(format!("{:?}-operations", layer.id))
+                    .show(ui, |ui| {
+                        ui.with_layout(Layout::top_down_justified(Align::LEFT), |ui| {
+                            ui.add(crate::widgets::operations::Operations {
+                                layer,
+                                events: self.events,
+                            });
                         });
                     });
-                });
-            crate::widget_registry::register("Operations", ops_header.header_response.rect);
+                crate::widget_registry::register("Operations", ops_header.header_response.rect);
 
-            ui.separator();
+                ui.separator();
 
-            let remove_btn = ui.button("Remove");
-            crate::widget_registry::register("Remove", remove_btn.rect);
-            if remove_btn.clicked() {
-                self.delete_layer(layer);
-                ui.close();
-            }
-        });
+                let remove_btn = ui.button("Remove");
+                crate::widget_registry::register("Remove", remove_btn.rect);
+                if remove_btn.clicked() {
+                    self.delete_layer(layer);
+                }
+            });
 
-        response
+        crate::widget_registry::register(&layer.name, response.header_response.rect);
+        response.header_response
     }
 }

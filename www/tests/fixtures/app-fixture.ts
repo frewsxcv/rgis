@@ -44,21 +44,6 @@ export class AppPage {
     await this.page.waitForTimeout(500);
   }
 
-  async rightClickWidget(label: string) {
-    const rect = await this.page.evaluate(
-      (l) => (window as any).get_widget_rect(l),
-      label,
-    );
-    if (!rect)
-      throw new Error(
-        `Widget "${label}" not found. Available: ${await this.listWidgets()}`,
-      );
-    const cx = (rect[0] + rect[2]) / 2;
-    const cy = (rect[1] + rect[3]) / 2;
-    await this.page.mouse.click(cx, cy, { button: "right" });
-    await this.page.waitForTimeout(500);
-  }
-
   async clickWidget(label: string) {
     const rect = await this.page.evaluate(
       (l) => (window as any).get_widget_rect(l),
@@ -79,6 +64,7 @@ export class AppPage {
       JSON.stringify((window as any).get_all_widget_rects()),
     );
   }
+
 
   async regionHasContent(
     xFrac: number,
