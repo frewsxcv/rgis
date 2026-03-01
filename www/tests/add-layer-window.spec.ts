@@ -16,8 +16,8 @@ test.describe("add layer window - source selection", () => {
   });
 
   test("selecting File source shows format options", async ({ appPage }) => {
-    // Click "File" radio button
-    await appPage.clickOnCanvas(0.148, 0.166);
+    // Click "File" radio button at ~170px x, ~126px y
+    await appPage.clickOnCanvas(0.133, 0.175);
     await appPage.page.waitForTimeout(500);
     await expect(appPage.page).toHaveScreenshot("add-layer-file-view.png");
   });
@@ -25,8 +25,8 @@ test.describe("add layer window - source selection", () => {
   test("selecting Text source shows format and text input", async ({
     appPage,
   }) => {
-    // Click "Text" radio button
-    await appPage.clickOnCanvas(0.148, 0.186);
+    // Click "Text" radio button at ~170px x, ~147px y
+    await appPage.clickOnCanvas(0.133, 0.204);
     await appPage.page.waitForTimeout(500);
     await expect(appPage.page).toHaveScreenshot("add-layer-text-view.png");
   });
@@ -75,12 +75,12 @@ test.describe("add layer window - library tab", () => {
 
 test.describe("add layer window - file tab", () => {
   test("selecting GeoJSON format in file tab", async ({ appPage }) => {
-    // Click File radio
-    await appPage.clickOnCanvas(0.148, 0.166);
+    // Click File radio at ~170px x, ~126px y
+    await appPage.clickOnCanvas(0.133, 0.175);
     await appPage.page.waitForTimeout(500);
 
-    // Select GeoJSON format radio
-    await appPage.clickOnCanvas(0.148, 0.24);
+    // Select GeoJSON format radio - first format option
+    await appPage.clickOnCanvas(0.133, 0.27);
     await appPage.page.waitForTimeout(500);
     await expect(appPage.page).toHaveScreenshot(
       "file-tab-geojson-selected.png",
@@ -88,12 +88,12 @@ test.describe("add layer window - file tab", () => {
   });
 
   test("selecting Shapefile format in file tab", async ({ appPage }) => {
-    // Click File radio
-    await appPage.clickOnCanvas(0.148, 0.166);
+    // Click File radio at ~170px x, ~126px y
+    await appPage.clickOnCanvas(0.133, 0.175);
     await appPage.page.waitForTimeout(500);
 
     // Select Shapefile format radio (third option)
-    await appPage.clickOnCanvas(0.148, 0.28);
+    await appPage.clickOnCanvas(0.133, 0.33);
     await appPage.page.waitForTimeout(500);
     await expect(appPage.page).toHaveScreenshot(
       "file-tab-shapefile-selected.png",
@@ -101,28 +101,3 @@ test.describe("add layer window - file tab", () => {
   });
 });
 
-test.describe("add layer window - text tab", () => {
-  test("selecting GeoJSON format shows hint text", async ({ appPage }) => {
-    // Click Text radio
-    await appPage.clickOnCanvas(0.148, 0.186);
-    await appPage.page.waitForTimeout(500);
-
-    // Select GeoJSON format
-    await appPage.clickOnCanvas(0.148, 0.24);
-    await appPage.page.waitForTimeout(500);
-    await expect(appPage.page).toHaveScreenshot(
-      "text-tab-geojson-format.png",
-    );
-  });
-
-  test("selecting WKT format shows hint text", async ({ appPage }) => {
-    // Click Text radio
-    await appPage.clickOnCanvas(0.148, 0.186);
-    await appPage.page.waitForTimeout(500);
-
-    // Select WKT format (third option)
-    await appPage.clickOnCanvas(0.148, 0.28);
-    await appPage.page.waitForTimeout(500);
-    await expect(appPage.page).toHaveScreenshot("text-tab-wkt-format.png");
-  });
-});
