@@ -56,6 +56,7 @@ test("welcome dialog is visible in center", async ({ appPage }) => {
 });
 
 test("clicking Library option changes the view", async ({ appPage }) => {
+  await appPage.openAddLayerWindow();
   const before = await appPage.page.screenshot();
 
   // Click the "Library" radio button in the Add Layer panel
@@ -69,6 +70,9 @@ test("clicking Library option changes the view", async ({ appPage }) => {
 
 test("add World Countries layer from library", async ({ appPage }) => {
   test.setTimeout(60000);
+
+  // Open the Add Layer window
+  await appPage.openAddLayerWindow();
 
   // Click the "Library" radio button
   await appPage.clickWidget("Library");

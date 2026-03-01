@@ -31,11 +31,31 @@ export class AppPage {
     return box;
   }
 
+  async openAddLayerWindow() {
+    await this.clickWidget("Add Layer");
+    await this.page.waitForTimeout(500);
+  }
+
   async clickOnCanvas(xFrac: number, yFrac: number) {
     const box = await this.canvasBoundingBox();
     const x = box.x + box.width * xFrac;
     const y = box.y + box.height * yFrac;
     await this.page.mouse.click(x, y);
+    await this.page.waitForTimeout(500);
+  }
+
+  async rightClickWidget(label: string) {
+    const rect = await this.page.evaluate(
+      (l) => (window as any).get_widget_rect(l),
+      label,
+    );
+    if (!rect)
+      throw new Error(
+        `Widget "${label}" not found. Available: ${await this.listWidgets()}`,
+      );
+    const cx = (rect[0] + rect[2]) / 2;
+    const cy = (rect[1] + rect[3]) / 2;
+    await this.page.mouse.click(cx, cy, { button: "right" });
     await this.page.waitForTimeout(500);
   }
 
