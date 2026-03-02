@@ -123,19 +123,8 @@ fn run_if_mouse_left_button_just_pressed(mouse_button: Res<ButtonInput<MouseButt
     mouse_button.just_pressed(MouseButton::Left)
 }
 
-fn current_tool_is_query(rgis_settings: Res<rgis_settings::RgisSettings>) -> bool {
-    rgis_settings.current_tool == rgis_settings::Tool::Query
-}
-
 fn current_tool_is_measure(rgis_settings: Res<rgis_settings::RgisSettings>) -> bool {
     rgis_settings.current_tool == rgis_settings::Tool::Measure
-}
-
-fn mouse_click_system(
-    mut map_clicked_event_writer: MessageWriter<rgis_map_events::MapClickedEvent>,
-    mouse_position: Res<crate::MousePos>,
-) {
-    map_clicked_event_writer.write(rgis_map_events::MapClickedEvent(mouse_position.0));
 }
 
 fn measure_click_system(
@@ -221,9 +210,6 @@ pub fn configure(app: &mut App) {
             cursor_moved_system.run_if(run_if_has_cursor_moved_events),
             recalculate_mouse_position_system.run_if(run_if_has_recalculate_mouse_position_events),
             mouse_scroll_system.run_if(run_if_has_mouse_scroll_events),
-            mouse_click_system
-                .run_if(current_tool_is_query)
-                .run_if(run_if_mouse_left_button_just_pressed),
             measure_click_system
                 .run_if(current_tool_is_measure)
                 .run_if(run_if_mouse_left_button_just_pressed),
