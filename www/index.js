@@ -16,7 +16,7 @@ async function fetchWasmWithProgress() {
         chunks.push(value);
         received += value.length;
         if (total) {
-            const pct = Math.round((received / total) * 100);
+            const pct = Math.min(100, Math.round((received / total) * 100));
             bar.style.width = pct + "%";
             text.textContent = pct + "%";
         } else {
