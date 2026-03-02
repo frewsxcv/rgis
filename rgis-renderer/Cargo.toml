@@ -18,4 +18,8 @@ rgis-crs-events = { path = "../rgis-crs-events" }
 rgis-map-events = { path = "../rgis-map-events" }
 rgis-primitives = { path = "../rgis-primitives" }
 rgis-layers = { path = "../rgis-layers" }
+rgis-settings = { path = "../rgis-settings" }
+rgis-ui-events = { path = "../rgis-ui-events" }
+bevy_egui = { workspace = true }
 bevy_jobs = { workspace = true }
+num-t = { workspace = true }

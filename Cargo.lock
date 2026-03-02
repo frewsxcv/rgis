@@ -1037,6 +1037,7 @@ dependencies = [
  "bevy_ecs",
  "bevy_input",
  "bevy_math",
+ "bevy_picking",
  "bevy_reflect",
  "bevy_window",
  "log",
@@ -1064,10 +1065,12 @@ dependencies = [
  "bevy_gizmos_render",
  "bevy_image",
  "bevy_input",
+ "bevy_input_focus",
  "bevy_log",
  "bevy_math",
  "bevy_mesh",
  "bevy_pbr",
+ "bevy_picking",
  "bevy_platform",
  "bevy_ptr",
  "bevy_reflect",
@@ -5238,7 +5241,6 @@ dependencies = [
  "geo-projected",
  "rgis-crs",
  "rgis-layer-events",
- "rgis-map-events",
  "rgis-primitives",
  "rgis-renderer-events",
  "rgis-ui-events",
@@ -5254,7 +5256,6 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "geo-features",
- "geo-projected",
  "rgis-primitives",
 ]
 
@@ -5268,7 +5269,6 @@ dependencies = [
  "geo-projected",
  "num-t",
  "rgis-camera-events",
- "rgis-map-events",
  "rgis-settings",
  "rgis-units",
 ]
@@ -5286,17 +5286,21 @@ name = "rgis-renderer"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy_egui",
  "bevy_jobs",
  "geo",
  "geo-bevy",
  "geo-geom-type",
  "geo-projected",
+ "num-t",
  "rgis-crs-events",
  "rgis-layer-events",
  "rgis-layers",
  "rgis-map-events",
  "rgis-primitives",
  "rgis-renderer-events",
+ "rgis-settings",
+ "rgis-ui-events",
 ]
 
 [[package]]
