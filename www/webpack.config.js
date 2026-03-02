@@ -26,6 +26,9 @@ module.exports = {
       }, {
         from: 'index.js',
         to: 'index.js',
+      }, {
+        from: '../rgis/pkg/rgis_bg.wasm',
+        to: 'rgis_bg.wasm',
       }]
     }),
   ],
