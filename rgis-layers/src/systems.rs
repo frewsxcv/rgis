@@ -124,24 +124,6 @@ fn handle_move_layer_events(
     }
 }
 
-fn handle_map_clicked_events(
-    mut map_clicked_event_reader: MessageReader<rgis_map_events::MapClickedEvent>,
-    mut render_message_event_writer: MessageWriter<rgis_ui_events::RenderFeaturePropertiesEvent>,
-    mut feature_clicked_event_writer: MessageWriter<rgis_map_events::FeatureSelectedEvent>,
-    layers: Res<crate::Layers>,
-) {
-    for event in map_clicked_event_reader.read() {
-        if let Some((layer, feature)) = layers.feature_from_click(event.0) {
-            render_message_event_writer.write(rgis_ui_events::RenderFeaturePropertiesEvent {
-                layer_id: layer.id,
-                properties: feature.properties.clone(),
-            });
-            feature_clicked_event_writer
-                .write(rgis_map_events::FeatureSelectedEvent(layer.id, feature.id));
-        }
-    }
-}
-
 fn handle_create_layer_events(
     mut create_layer_events: ResMut<Messages<rgis_layer_events::CreateLayerEvent>>,
     mut layer_created_event_writer: MessageWriter<rgis_layer_events::LayerCreatedEvent>,
@@ -181,7 +163,6 @@ pub fn configure(app: &mut App) {
             handle_update_point_size_events,
             handle_move_layer_events,
             handle_delete_layer_events,
-            handle_map_clicked_events,
             handle_create_layer_events,
             handle_duplicate_layer_events,
         ),

@@ -1,3 +1,4 @@
+use bevy::picking::mesh_picking::MeshPickingPlugin;
 use bevy::prelude::*;
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
@@ -49,6 +50,7 @@ pub fn run() {
             .disable::<bevy::log::LogPlugin>(),
     );
     app.add_plugins(bevy::log::LogPlugin::default());
+    app.add_plugins(MeshPickingPlugin);
     app.add_plugins(rgis_ui::Plugin);
     app.add_plugins(rgis_layers::Plugin);
     app.add_plugins(rgis_file_loader::Plugin);

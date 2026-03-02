@@ -17,7 +17,6 @@ geo-projected = { path = "../geo-projected" }
 rgis-layer-events = { path = "../rgis-layer-events" }
 rgis-renderer-events = { path = "../rgis-renderer-events" }
 rgis-ui-events = { path = "../rgis-ui-events" }
-rgis-map-events = { path = "../rgis-map-events" }
 rgis-primitives = { path = "../rgis-primitives" }
 geo = { workspace = true }
 rgis-crs = { path = "../rgis-crs" }
