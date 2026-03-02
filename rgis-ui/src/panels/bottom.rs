@@ -10,6 +10,14 @@ pub struct Bottom<'a, 'w> {
     pub bottom_panel_height: &'a mut rgis_units::BottomPanelHeight,
 }
 
+fn coordinate_precision(epsg_code: u16) -> usize {
+    if (4000..5000).contains(&epsg_code) {
+        6
+    } else {
+        2
+    }
+}
+
 impl Bottom<'_, '_> {
     pub fn render(&mut self) {
         let inner_response = egui::TopBottomPanel::bottom("bottom").show(self.egui_ctx, |ui| {
@@ -25,21 +33,19 @@ impl Bottom<'_, '_> {
     }
 
     fn render_crs(&mut self, ui: &mut egui::Ui) {
-        // TODO: The ordering is backwards here (the edit button should be specified after)
-        //       Is this from the right_to_left call above?
-        let edit_btn = ui.button("✏");
+        let edit_btn = ui.button("Edit");
         crate::widget_registry::register("Edit CRS", edit_btn.rect);
         if edit_btn.clicked() {
             self.open_change_crs_window_event_writer.write_default();
         }
 
-        ui.label(format!("🌍 CRS: EPSG:{}", self.target_crs.0.epsg_code));
+        ui.label(format!("CRS: EPSG:{}", self.target_crs.0.epsg_code));
     }
 
     fn render_mouse_position(&mut self, ui: &mut egui::Ui) {
-        ui.label(format!(
-            "🖱 XY: {}, {}",
-            self.mouse_pos.0.x, self.mouse_pos.0.y
-        ));
+        let x = self.mouse_pos.0.x.0;
+        let y = self.mouse_pos.0.y.0;
+        let prec = coordinate_precision(self.target_crs.0.epsg_code);
+        ui.label(format!("X: {x:.prec$}  Y: {y:.prec$}"));
     }
 }

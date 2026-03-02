@@ -31,6 +31,11 @@ export class AppPage {
     return box;
   }
 
+  async openAddLayerWindow() {
+    await this.clickWidget("Add Layer");
+    await this.page.waitForTimeout(500);
+  }
+
   async clickOnCanvas(xFrac: number, yFrac: number) {
     const box = await this.canvasBoundingBox();
     const x = box.x + box.width * xFrac;
@@ -59,6 +64,7 @@ export class AppPage {
       JSON.stringify((window as any).get_all_widget_rects()),
     );
   }
+
 
   async regionHasContent(
     xFrac: number,

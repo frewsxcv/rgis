@@ -86,7 +86,7 @@ struct IsVisible(pub bool);
 
 impl Default for IsVisible {
     fn default() -> Self {
-        IsVisible(true)
+        IsVisible(false)
     }
 }
 
@@ -340,6 +340,7 @@ fn render_top(
     mut is_debug_window_open: ResMut<
         bevy_egui_window::IsWindowOpen<crate::windows::debug::Debug<'static, 'static>>,
     >,
+    mut show_add_layer_window_event_writer: MessageWriter<rgis_ui_events::ShowAddLayerWindow>,
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     let Ok(mut window) = windows.single_mut() else {
@@ -353,6 +354,7 @@ fn render_top(
         app_settings: &mut app_settings,
         top_panel_height: &mut top_panel_height,
         is_debug_window_open: &mut is_debug_window_open,
+        show_add_layer_window_event_writer: &mut show_add_layer_window_event_writer,
     }
     .render();
     Ok(())
@@ -530,6 +532,7 @@ pub fn configure(app: &mut App) {
         EguiPrimaryContextPass,
         (
             crate::widgets::scale_bar::render_map_scale.in_set(RenderSystemSet::Side),
+            crate::widgets::zoom_buttons::render_zoom_buttons.in_set(RenderSystemSet::Side),
             render_message_window.in_set(RenderSystemSet::RenderingMessageWindow),
             render_top.in_set(RenderSystemSet::RenderingTopBottom),
             render_bottom.in_set(RenderSystemSet::RenderingTopBottom),
