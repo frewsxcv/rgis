@@ -12,6 +12,7 @@ bevy = { workspace = true }
 geo-features = { path = "../geo-features" }
 geo-file-loader = { path = "../geo-file-loader" }
 geo-projected = { path = "../geo-projected" }
+geo-raster = { path = "../geo-raster" }
 rgis-file-loader-events = { path = "../rgis-file-loader-events" }
 rgis-layer-events = { path = "../rgis-layer-events" }
 bevy_jobs = { workspace = true }

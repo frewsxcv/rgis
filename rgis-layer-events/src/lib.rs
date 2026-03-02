@@ -50,6 +50,13 @@ pub struct LayerReprojectedEvent(pub rgis_primitives::LayerId);
 #[derive(Message, Debug)]
 pub struct DuplicateLayerEvent(pub rgis_primitives::LayerId);
 
+#[derive(Message)]
+pub struct CreateRasterLayerEvent {
+    pub raster: geo_raster::Raster,
+    pub name: String,
+    pub source_crs: rgis_primitives::Crs,
+}
+
 pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
@@ -65,6 +72,7 @@ impl bevy::app::Plugin for Plugin {
             .add_message::<LayerZIndexUpdatedEvent>()
             .add_message::<LayerReprojectedEvent>()
             .add_message::<CreateLayerEvent>()
-            .add_message::<DuplicateLayerEvent>();
+            .add_message::<DuplicateLayerEvent>()
+            .add_message::<CreateRasterLayerEvent>();
     }
 }

@@ -53,19 +53,43 @@ fn layer_loaded(
     layers: Res<rgis_layers::Layers>,
     mut event_reader: MessageReader<rgis_layer_events::LayerReprojectedEvent>,
     mut job_spawner: bevy_jobs::JobSpawner,
+    mut commands: Commands,
+    mut images: ResMut<Assets<Image>>,
+    mut meshes_spawned_event_writer: MessageWriter<rgis_renderer_events::MeshesSpawnedEvent>,
 ) {
-    for layer in event_reader.read().flat_map(|event| layers.get(event.0)) {
-        let Some(feature_collection) = layer.projected_feature_collection() else {
+    for event in event_reader.read() {
+        let Some(layer) = layers.get(event.0) else {
             continue;
         };
 
-        job_spawner.spawn(MeshBuildingJob {
-            layer_id: layer.id,
-            geometry: geo::Geometry::GeometryCollection(
-                feature_collection.to_geometry_collection(),
-            ),
-            is_selected: false,
-        });
+        match &layer.data {
+            rgis_layers::LayerData::Raster { raster } => {
+                let Some(layer_with_index) = layers.get_with_index(event.0) else {
+                    continue;
+                };
+                crate::spawn_raster(
+                    raster,
+                    layer_with_index.0,
+                    layer_with_index.1,
+                    &mut commands,
+                    &mut images,
+                );
+                meshes_spawned_event_writer.write(event.0.into());
+            }
+            rgis_layers::LayerData::Vector {
+                projected_feature_collection: Some(feature_collection),
+                ..
+            } => {
+                job_spawner.spawn(MeshBuildingJob {
+                    layer_id: layer.id,
+                    geometry: geo::Geometry::GeometryCollection(
+                        feature_collection.to_geometry_collection(),
+                    ),
+                    is_selected: false,
+                });
+            }
+            _ => {}
+        }
     }
 }
 

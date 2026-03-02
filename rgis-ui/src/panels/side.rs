@@ -86,11 +86,13 @@ impl<'a, 'w, Op: rgis_geo_ops::OperationEntry> OperationButton<'a, 'w, Op> {
 
 impl<Op: rgis_geo_ops::OperationEntry> egui::Widget for OperationButton<'_, '_, Op> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
+        let enabled = self
+            .layer
+            .geom_type()
+            .map(|gt| Op::ALLOWED_GEOM_TYPES.contains(gt))
+            .unwrap_or(false);
         let button = ui.add_enabled(
-            self.layer
-                .geom_type()
-                .map(|gt| Op::ALLOWED_GEOM_TYPES.contains(gt))
-                .unwrap_or(false),
+            enabled,
             egui::Button::new(Op::NAME),
         );
         if button.clicked() {
@@ -166,6 +168,8 @@ impl Widget for Layer<'_, '_> {
                     ui.painter().rect_filled(rect, 2.0, egui_color);
                     if let Some(geom_type) = layer.geom_type() {
                         ui.label(format!("Type: {}", geom_type));
+                    } else {
+                        ui.label("Type: Raster");
                     }
                 });
 
@@ -211,17 +215,19 @@ impl Widget for Layer<'_, '_> {
 
                 ui.separator();
 
-                let ops_header = egui::CollapsingHeader::new("Operations")
-                    .id_salt(format!("{:?}-operations", layer.id))
-                    .show(ui, |ui| {
-                        ui.with_layout(Layout::top_down_justified(Align::LEFT), |ui| {
-                            ui.add(crate::widgets::operations::Operations {
-                                layer,
-                                events: self.events,
+                if layer.is_vector() {
+                    let ops_header = egui::CollapsingHeader::new("Operations")
+                        .id_salt(format!("{:?}-operations", layer.id))
+                        .show(ui, |ui| {
+                            ui.with_layout(Layout::top_down_justified(Align::LEFT), |ui| {
+                                ui.add(crate::widgets::operations::Operations {
+                                    layer,
+                                    events: self.events,
+                                });
                             });
                         });
-                    });
-                crate::widget_registry::register("Operations", ops_header.header_response.rect);
+                    crate::widget_registry::register("Operations", ops_header.header_response.rect);
+                }
 
                 ui.separator();
 

@@ -8,10 +8,17 @@ pub struct LoadFileJob {
     pub source_crs: rgis_primitives::Crs,
 }
 
-pub struct LoadFileJobOutcome {
-    pub feature_collection: FeatureCollection<geo_projected::UnprojectedScalar>,
-    pub name: String,
-    pub source_crs: rgis_primitives::Crs,
+pub enum LoadFileJobOutcome {
+    Vector {
+        feature_collection: FeatureCollection<geo_projected::UnprojectedScalar>,
+        name: String,
+        source_crs: rgis_primitives::Crs,
+    },
+    Raster {
+        raster: geo_raster::Raster,
+        name: String,
+        source_crs: rgis_primitives::Crs,
+    },
 }
 
 impl bevy_jobs::Job for LoadFileJob {
@@ -23,15 +30,24 @@ impl bevy_jobs::Job for LoadFileJob {
     }
 
     async fn perform(self, _: bevy_jobs::Context) -> Self::Outcome {
-        let features = geo_file_loader::load_file(self.file_format, self.bytes)?
-            .into_iter()
-            .map(geo_file_loader_feature_to_geo_features_feature)
-            .collect();
-        Ok(LoadFileJobOutcome {
-            feature_collection: FeatureCollection::from_features(features).wrap(),
-            name: self.name,
-            source_crs: self.source_crs,
-        })
+        if self.file_format.is_raster() {
+            let raster = geo_file_loader::load_raster_file(self.bytes)?;
+            Ok(LoadFileJobOutcome::Raster {
+                raster,
+                name: self.name,
+                source_crs: self.source_crs,
+            })
+        } else {
+            let features = geo_file_loader::load_file(self.file_format, self.bytes)?
+                .into_iter()
+                .map(geo_file_loader_feature_to_geo_features_feature)
+                .collect();
+            Ok(LoadFileJobOutcome::Vector {
+                feature_collection: FeatureCollection::from_features(features).wrap(),
+                name: self.name,
+                source_crs: self.source_crs,
+            })
+        }
     }
 }
 

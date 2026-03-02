@@ -187,6 +187,29 @@ impl Layers {
         layer_id
     }
 
+    pub fn add_raster(
+        &mut self,
+        raster: geo_raster::Raster,
+        name: String,
+        crs: rgis_primitives::Crs,
+    ) -> rgis_primitives::LayerId {
+        let layer_id = self.next_layer_id();
+        let layer = Layer {
+            data: LayerData::Raster { raster },
+            color: LayerColor {
+                fill: None,
+                stroke: Color::WHITE,
+            },
+            name,
+            visible: true,
+            id: layer_id,
+            crs,
+            point_size: 5.0,
+        };
+        self.data.push(layer);
+        layer_id
+    }
+
     pub fn clear_projected(&mut self) {
         for layer in self.data.iter_mut() {
             match &mut layer.data {
@@ -196,6 +219,7 @@ impl Layers {
                 } => {
                     *projected_feature_collection = None;
                 }
+                LayerData::Raster { .. } => {}
             }
         }
     }
@@ -220,6 +244,9 @@ pub enum LayerData {
             Option<geo_features::FeatureCollection<geo_projected::ProjectedScalar>>,
         geom_type: geo_geom_type::GeomType,
     },
+    Raster {
+        raster: geo_raster::Raster,
+    },
 }
 
 #[derive(Debug)]
@@ -238,9 +265,14 @@ impl Layer {
         matches!(self.data, LayerData::Vector { .. })
     }
 
+    pub fn is_raster(&self) -> bool {
+        matches!(&self.data, LayerData::Raster { .. })
+    }
+
     pub fn geom_type(&self) -> Option<geo_geom_type::GeomType> {
         match &self.data {
             LayerData::Vector { geom_type, .. } => Some(*geom_type),
+            LayerData::Raster { .. } => None,
         }
     }
 
@@ -252,6 +284,7 @@ impl Layer {
                 unprojected_feature_collection,
                 ..
             } => Some(unprojected_feature_collection),
+            LayerData::Raster { .. } => None,
         }
     }
 
@@ -263,6 +296,7 @@ impl Layer {
                 projected_feature_collection,
                 ..
             } => projected_feature_collection.as_ref(),
+            LayerData::Raster { .. } => None,
         }
     }
 
@@ -272,6 +306,14 @@ impl Layer {
                 projected_feature_collection,
                 ..
             } => projected_feature_collection.is_some(),
+            LayerData::Raster { .. } => true,
+        }
+    }
+
+    pub fn raster(&self) -> Option<&geo_raster::Raster> {
+        match &self.data {
+            LayerData::Raster { raster } => Some(raster),
+            _ => None,
         }
     }
 
@@ -293,6 +335,7 @@ impl Layer {
                     None
                 }
             },
+            LayerData::Raster { .. } => None,
         }
     }
 

@@ -3,6 +3,7 @@ members = [
     "geo-features",
     "geo-geom-type",
     "geo-projected",
+    "geo-raster",
     "rgis-camera",
     "rgis-cli",
     "rgis-file-loader",
@@ -80,7 +81,9 @@ geodesy = "0.14"
 geozero = { git = "https://github.com/georust/geozero.git", branch = "main" }
 num-t = "5"
 rfd = "0.15"
+geo-types = "0.7"
 getrandom = { version = "0.2", features = ["js"] }
+tiff = "0.9"
 js-sys = "0.3"
 wasm-bindgen = "0.2"
 

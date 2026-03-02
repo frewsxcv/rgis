@@ -16,6 +16,7 @@ pub enum FileFormat {
     Shapefile,
     Wkt,
     Gpx,
+    GeoTiff,
 }
 
 #[derive(Debug)]
@@ -23,6 +24,7 @@ pub enum Error {
     Geozero(geozero::error::GeozeroError),
     Shapefile(geozero::shp::Error),
     NoGeometry,
+    GeoTiff(geo_raster::Error),
 }
 
 impl std::fmt::Display for Error {
@@ -31,6 +33,7 @@ impl std::fmt::Display for Error {
             Error::Geozero(err) => write!(f, "{err}"),
             Error::Shapefile(err) => write!(f, "{err}"),
             Error::NoGeometry => write!(f, "No geometry found in file"),
+            Error::GeoTiff(err) => write!(f, "{err}"),
         }
     }
 }
@@ -47,6 +50,12 @@ impl From<geozero::shp::Error> for Error {
     }
 }
 
+impl From<geo_raster::Error> for Error {
+    fn from(err: geo_raster::Error) -> Self {
+        Error::GeoTiff(err)
+    }
+}
+
 impl FileFormat {
     pub const fn is_plaintext(self) -> bool {
         match self {
@@ -54,6 +63,7 @@ impl FileFormat {
             Self::Gpx => true,
             Self::Shapefile => false,
             Self::Wkt => true,
+            Self::GeoTiff => false,
         }
     }
 
@@ -63,7 +73,12 @@ impl FileFormat {
             Self::Gpx => "GPX",
             Self::Shapefile => "Shapefile",
             Self::Wkt => "WKT",
+            Self::GeoTiff => "GeoTIFF",
         }
+    }
+
+    pub const fn is_raster(self) -> bool {
+        matches!(self, Self::GeoTiff)
     }
 }
 
@@ -91,7 +106,12 @@ pub fn load_file(file_format: FileFormat, bytes: bytes::Bytes) -> Result<Feature
         FileFormat::Gpx => Ok(GpxSource::from_bytes(bytes).load()?),
         FileFormat::Shapefile => Ok(ShapefileSource::from_bytes(bytes).load()?),
         FileFormat::Wkt => Ok(WktSource::from_bytes(bytes).load()?),
+        FileFormat::GeoTiff => Err(Error::NoGeometry), // Use load_raster_file for rasters
     }
+}
+
+pub fn load_raster_file(bytes: bytes::Bytes) -> Result<geo_raster::Raster, Error> {
+    Ok(geo_raster::GeoTiffSource::from_bytes(bytes).load()?)
 }
 
 trait FileLoader {

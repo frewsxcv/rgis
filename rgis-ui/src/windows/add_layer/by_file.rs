@@ -43,6 +43,13 @@ impl<'a> ByFile<'a> {
         );
         crate::widget_registry::register("WKT", wkt_radio.rect);
 
+        let geotiff_radio = ui.radio_value(
+            &mut self.state.selected_format,
+            Some(FileFormat::GeoTiff),
+            "GeoTIFF",
+        );
+        crate::widget_registry::register("GeoTIFF", geotiff_radio.rect);
+
         let Some(selected_format) = self.state.selected_format else {
             return None;
         };

@@ -598,6 +598,11 @@ fn perform_operation(
             continue;
         };
 
+        let Some(fc) = layer.unprojected_feature_collection() else {
+            error!("Cannot perform operation on raster layer");
+            continue;
+        };
+
         let mut operation = event.operation;
 
         let Some(fc) = layer.unprojected_feature_collection() else {

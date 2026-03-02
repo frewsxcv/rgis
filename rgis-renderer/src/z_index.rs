@@ -6,7 +6,7 @@ impl ZIndex {
     // Example:
     //
     // Layer (index 0, Polygon with border):
-    //   z=0: Polygon
+    //   z=0: Polygon / Raster
     //   z=1: LineString
     //   z=2:
     //   z=3:
@@ -40,6 +40,7 @@ impl ZIndex {
             layer_index.0 * 7
                 + match entity_type {
                     RenderEntityType::Polygon => 0,
+                    RenderEntityType::Raster => 0,
                     RenderEntityType::LineString => 1,
                     RenderEntityType::PointStroke => 2,
                     RenderEntityType::PointFill => 3,

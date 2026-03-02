@@ -152,14 +152,34 @@ fn center_camera(
     let Ok(window) = windows.single() else {
         return;
     };
-    for projected_feature in event_reader
-        .read()
-        .filter_map(|event| layers.get(event.0))
-        .filter_map(|layer| layer.get_projected_feature_collection_or_log())
-    {
-        let Ok(bounding_rect) = projected_feature.bounding_rect() else {
+    for event in event_reader.read() {
+        let Some(layer) = layers.get(event.0) else {
             continue;
         };
+
+        let bounding_rect = if let Some(raster) = layer.raster() {
+            let ext = &raster.extent;
+            use geo_projected::WrapTo;
+            geo::Rect::new(
+                geo::Coord {
+                    x: ext.min().x,
+                    y: ext.min().y,
+                },
+                geo::Coord {
+                    x: ext.max().x,
+                    y: ext.max().y,
+                },
+            )
+            .wrap::<geo_projected::Projected>()
+        } else if let Some(fc) = layer.get_projected_feature_collection_or_log() {
+            match fc.bounding_rect() {
+                Ok(r) => r,
+                Err(_) => continue,
+            }
+        } else {
+            continue;
+        };
+
         let Ok(mut transform) = query.single_mut() else {
             continue;
         };
