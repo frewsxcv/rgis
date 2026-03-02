@@ -25,6 +25,34 @@
   </head>
   <body>
     <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
+    <div id="loading-overlay" style="
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: light-dark(#fff, #1a1a1a);
+      z-index: 9999;
+    ">
+      <div style="text-align: center; width: 260px;">
+        <div style="font-family: system-ui, sans-serif; font-size: 1.4rem; font-weight: 600; color: light-dark(#333, #ddd); margin-bottom: 12px;">rgis</div>
+        <div style="
+          background: light-dark(#e0e0e0, #333);
+          border-radius: 6px;
+          height: 8px;
+          overflow: hidden;
+        ">
+          <div id="loading-bar" style="
+            width: 0%;
+            height: 100%;
+            background: light-dark(#4a90d9, #6ab0f3);
+            border-radius: 6px;
+            transition: width 0.15s ease;
+          "></div>
+        </div>
+        <div id="loading-text" style="font-family: system-ui, sans-serif; font-size: 0.8rem; color: light-dark(#888, #888); margin-top: 8px;">Loading…</div>
+      </div>
+    </div>
     <canvas id="rgis"></canvas>
     <script>
       /* oncontextmenu: disable right click menu */
