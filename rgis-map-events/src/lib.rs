@@ -1,8 +1,4 @@
 use bevy::prelude::*;
-use geo_projected::ProjectedCoord;
-
-#[derive(Message)]
-pub struct MapClickedEvent(pub ProjectedCoord);
 
 #[derive(Clone, Copy, Message, Debug)]
 pub struct FeatureSelectedEvent(pub rgis_primitives::LayerId, pub geo_features::FeatureId);
@@ -14,8 +10,7 @@ pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.add_message::<MapClickedEvent>()
-            .add_message::<FeatureSelectedEvent>()
+        app.add_message::<FeatureSelectedEvent>()
             .add_message::<FeaturesDeselectedEvent>();
     }
 }

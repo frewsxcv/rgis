@@ -2,6 +2,53 @@ use bevy::prelude::*;
 
 use crate::{jobs::MeshBuildingJob, RenderEntityType};
 
+fn handle_picking_click(
+    on: On<Pointer<Click>>,
+    layer_query: Query<
+        &rgis_primitives::LayerId,
+        Or<(With<crate::Point>, With<crate::Polygon>, With<crate::LineString>)>,
+    >,
+    layers: Res<rgis_layers::Layers>,
+    settings: Res<rgis_settings::RgisSettings>,
+    mut bevy_egui_ctx: bevy_egui::EguiContexts,
+    mut feature_selected_writer: MessageWriter<rgis_map_events::FeatureSelectedEvent>,
+    mut render_props_writer: MessageWriter<rgis_ui_events::RenderFeaturePropertiesEvent>,
+) {
+    if settings.current_tool != rgis_settings::Tool::Query {
+        return;
+    }
+
+    if let Ok(ctx) = bevy_egui_ctx.ctx_mut() {
+        if ctx.is_pointer_over_area() {
+            return;
+        }
+    }
+
+    // Only handle on parent entities (which have LayerId + geometry marker)
+    let Ok(_layer_id) = layer_query.get(on.event_target()) else {
+        return;
+    };
+
+    // Get the hit position in world space (== projected coordinates)
+    let Some(hit_position) = on.event().event.hit.position else {
+        return;
+    };
+
+    let coord = geo::Coord {
+        x: num_t::Num::new(f64::from(hit_position.x)),
+        y: num_t::Num::new(f64::from(hit_position.y)),
+    };
+
+    if let Some((layer, feature)) = layers.feature_from_click(coord) {
+        render_props_writer.write(rgis_ui_events::RenderFeaturePropertiesEvent {
+            layer_id: layer.id,
+            properties: feature.properties.clone(),
+        });
+        feature_selected_writer
+            .write(rgis_map_events::FeatureSelectedEvent(layer.id, feature.id));
+    }
+}
+
 fn layer_loaded(
     layers: Res<rgis_layers::Layers>,
     mut event_reader: MessageReader<rgis_layer_events::LayerReprojectedEvent>,
@@ -341,4 +388,5 @@ pub fn configure(app: &mut App) {
             handle_feature_selected_event_spawn,
         ),
     );
+    app.add_observer(handle_picking_click);
 }
