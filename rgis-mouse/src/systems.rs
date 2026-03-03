@@ -119,19 +119,83 @@ fn clear_cursor_icon(last_cursor_icon: &mut Option<SystemCursorIcon>) {
     *last_cursor_icon = None;
 }
 
-fn run_if_mouse_left_button_just_pressed(mouse_button: Res<ButtonInput<MouseButton>>) -> bool {
-    mouse_button.just_pressed(MouseButton::Left)
-}
-
 fn current_tool_is_measure(rgis_settings: Res<rgis_settings::RgisSettings>) -> bool {
     rgis_settings.current_tool == rgis_settings::Tool::Measure
 }
 
-fn measure_click_system(
+const DRAG_HIT_RADIUS_PX: f64 = 10.0;
+
+fn measure_input_system(
+    mouse_button: Res<ButtonInput<MouseButton>>,
     mut measure_state: ResMut<crate::MeasureState>,
     mouse_position: Res<crate::MousePos>,
-) {
-    measure_state.start = Some(mouse_position.0);
+    last_cursor_screen_pos: Res<crate::LastCursorScreenPosition>,
+    camera_q: Query<&Transform, With<Camera>>,
+    windows: Query<&Window, With<PrimaryWindow>>,
+) -> Result {
+    if mouse_button.just_pressed(MouseButton::Left) {
+        if measure_state.start.is_none() {
+            // No points yet: set start
+            measure_state.start = Some(mouse_position.0);
+        } else if measure_state.end.is_none() {
+            // Start set, no end: set end
+            measure_state.end = Some(mouse_position.0);
+        } else {
+            // Both set: hit-test endpoints for dragging
+            if let Some(cursor_screen) = last_cursor_screen_pos.0 {
+                let transform = camera_q.single()?;
+                let window = windows.single()?;
+
+                let start = measure_state.start.unwrap();
+                let end = measure_state.end.unwrap();
+
+                let start_screen = rgis_units::ScreenCoord::from_projected(
+                    geo::Coord { x: start.x.0, y: start.y.0 },
+                    transform,
+                    window,
+                );
+                let end_screen = rgis_units::ScreenCoord::from_projected(
+                    geo::Coord { x: end.x.0, y: end.y.0 },
+                    transform,
+                    window,
+                );
+
+                let dist_to_start = ((cursor_screen.x - start_screen.x).powi(2)
+                    + (cursor_screen.y - start_screen.y).powi(2))
+                .sqrt();
+                let dist_to_end = ((cursor_screen.x - end_screen.x).powi(2)
+                    + (cursor_screen.y - end_screen.y).powi(2))
+                .sqrt();
+
+                if dist_to_start <= DRAG_HIT_RADIUS_PX && dist_to_start <= dist_to_end {
+                    measure_state.dragging = Some(crate::MeasureDragTarget::Start);
+                } else if dist_to_end <= DRAG_HIT_RADIUS_PX {
+                    measure_state.dragging = Some(crate::MeasureDragTarget::End);
+                }
+            }
+        }
+    }
+
+    // While dragging, update the dragged point
+    if mouse_button.pressed(MouseButton::Left) {
+        if let Some(target) = measure_state.dragging {
+            match target {
+                crate::MeasureDragTarget::Start => {
+                    measure_state.start = Some(mouse_position.0);
+                }
+                crate::MeasureDragTarget::End => {
+                    measure_state.end = Some(mouse_position.0);
+                }
+            }
+        }
+    }
+
+    // Release clears dragging
+    if mouse_button.just_released(MouseButton::Left) {
+        measure_state.dragging = None;
+    }
+
+    Ok(())
 }
 
 fn run_if_has_mouse_scroll_events(mouse_scroll_event_reader: MessageReader<MouseWheel>) -> bool {
@@ -210,9 +274,7 @@ pub fn configure(app: &mut App) {
             cursor_moved_system.run_if(run_if_has_cursor_moved_events),
             recalculate_mouse_position_system.run_if(run_if_has_recalculate_mouse_position_events),
             mouse_scroll_system.run_if(run_if_has_mouse_scroll_events),
-            measure_click_system
-                .run_if(current_tool_is_measure)
-                .run_if(run_if_mouse_left_button_just_pressed),
+            measure_input_system.run_if(current_tool_is_measure),
             mouse_motion_system.run_if(run_if_has_mouse_motion_events),
         )
             .after(bevy_egui::EguiPreUpdateSet::ProcessInput)

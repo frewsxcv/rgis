@@ -11,6 +11,21 @@ pub struct ScreenCoord {
 }
 
 impl ScreenCoord {
+    pub fn from_projected(coord: geo::Coord<f64>, transform: &Transform, window: &Window) -> Self {
+        let pos_wld = bevy::math::Vec4::new(coord.x as f32, coord.y as f32, 0.0, 1.0);
+        let inverse_matrix = transform.to_matrix().inverse();
+        let d_vec_4 = inverse_matrix * pos_wld;
+        let d_vec = d_vec_4.truncate().truncate(); // Vec2
+
+        let half_w = window.width() as f64 / 2.0;
+        let half_h = window.height() as f64 / 2.0;
+
+        ScreenCoord {
+            x: d_vec.x as f64 + half_w,
+            y: half_h - d_vec.y as f64,
+        }
+    }
+
     pub fn to_projected_geo_coord(self, transform: &Transform, window: &Window) -> ProjectedCoord {
         let size = DVec2::new(f64::from(window.width()), f64::from(window.height()));
 
