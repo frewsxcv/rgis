@@ -54,7 +54,7 @@ jobs:
         with:
           toolchain: nightly
       # https://github.com/rustwasm/wasm-bindgen/issues/4211
-      - run: cargo install --force wasm-bindgen-cli --git "https://github.com/rustwasm/wasm-bindgen"
+      - run: cargo install --force wasm-bindgen-cli --git "https://github.com/rustwasm/wasm-bindgen" --rev 561bb6a927b36cf9bf5f3e107c5528934912b20b
       - name: Install wasm Rust target
         run: rustup target add wasm32-unknown-unknown
       - name: Install system dependencies
