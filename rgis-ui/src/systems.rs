@@ -4,7 +4,7 @@ use bevy_egui::{
     EguiContexts, EguiPrimaryContextPass,
 };
 use bevy_egui_window::Window;
-use geo::{Distance, Haversine};
+use geo::{Distance, Geodesic, Haversine, Rhumb};
 
 use crate::windows::add_layer::file::{OpenFileJob, SelectedFile};
 
@@ -381,12 +381,19 @@ fn egui_color_to_bevy_color(egui_color: bevy_egui::egui::Color32) -> Color {
     Color::srgb_u8(egui_color.r(), egui_color.g(), egui_color.b())
 }
 
-fn calculate_haversine_distance(
+struct AllDistances {
+    haversine: f64,
+    geodesic: f64,
+    rhumb: f64,
+}
+
+
+fn calculate_all_distances(
     start: geo::Coord<f64>,
     end: geo::Coord<f64>,
     geodesy_ctx: &rgis_geodesy::GeodesyContext,
     target_crs: &rgis_crs::TargetCrs,
-) -> Option<f64> {
+) -> Option<AllDistances> {
     let mut geodesy_ctx_inner = geodesy_ctx.0.write().ok()?;
     let target_epsg_code = 4326; // WGS 84
 
@@ -412,12 +419,12 @@ fn calculate_haversine_distance(
         return None;
     };
 
-    // Geodesy outputs radians for angular coordinates, but geo expects degrees
-    let start_point_deg =
-        geo::Point::new(start_point.x().to_degrees(), start_point.y().to_degrees());
-    let end_point_deg = geo::Point::new(end_point.x().to_degrees(), end_point.y().to_degrees());
-
-    Some(Haversine.distance(start_point_deg, end_point_deg))
+    // geo_geodesy::Transformer::transform() already converts from radians to degrees
+    Some(AllDistances {
+        haversine: Haversine.distance(start_point, end_point),
+        geodesic: Geodesic.distance(start_point, end_point),
+        rhumb: Rhumb.distance(start_point, end_point),
+    })
 }
 fn render_measure_tool(
     mut bevy_egui_ctx: EguiContexts,
@@ -447,19 +454,16 @@ fn render_measure_tool(
     let end_screen_pos =
         project_to_screen(geo::Coord { x: end.x.0, y: end.y.0 }, transform, window);
 
-    let distance = calculate_haversine_distance(
-        geo::Coord {
-            x: start.x.0,
-            y: start.y.0,
-        },
-        geo::Coord {
-            x: end.x.0,
-            y: end.y.0,
-        },
-        &geodesy_ctx,
-        &target_crs,
-    )
-    .unwrap_or(0.0);
+    let start_coord = geo::Coord {
+        x: start.x.0,
+        y: start.y.0,
+    };
+    let end_coord = geo::Coord {
+        x: end.x.0,
+        y: end.y.0,
+    };
+
+    let all_distances = calculate_all_distances(start_coord, end_coord, &geodesy_ctx, &target_crs);
 
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     let painter = bevy_egui_ctx_mut.layer_painter(egui::LayerId::new(
@@ -472,14 +476,28 @@ fn render_measure_tool(
         egui::Stroke::new(2.0, egui::Color32::RED),
     );
 
-    let text_pos = start_screen_pos.lerp(end_screen_pos, 0.5);
-    painter.text(
-        text_pos,
-        egui::Align2::CENTER_CENTER,
-        crate::widgets::scale_bar::distance_to_readable_string(distance as f32),
-        egui::FontId::default(),
-        egui::Color32::BLACK,
-    );
+    // Distance panel with live distances for all methods
+    let entries: &[(&str, f64, &str)] = &[
+        ("Haversine", all_distances.as_ref().map_or(0.0, |d| d.haversine), "Great-circle distance using the Haversine formula"),
+        ("Geodesic", all_distances.as_ref().map_or(0.0, |d| d.geodesic), "Geodesic distance on the WGS84 ellipsoid (most accurate)"),
+        ("Rhumb", all_distances.as_ref().map_or(0.0, |d| d.rhumb), "Distance along a rhumb line (constant bearing)"),
+    ];
+    egui::Window::new("Distances")
+        .title_bar(false)
+        .anchor(egui::Align2::RIGHT_BOTTOM, [-8.0, -8.0])
+        .resizable(false)
+        .auto_sized()
+        .show(bevy_egui_ctx_mut, |ui| {
+            for &(name, dist, description) in entries {
+                let dist_str = if dist.is_finite() {
+                    crate::widgets::scale_bar::distance_to_readable_string(dist as f32)
+                } else {
+                    "N/A".to_string()
+                };
+                let label = ui.label(format!("{name}: {dist_str}")).on_hover_text(description);
+                crate::widget_registry::register(name, label.rect);
+            }
+        });
 
     Ok(())
 }
@@ -666,7 +684,7 @@ mod tests {
 
         app.update();
 
-        app.add_systems(Update, render_measure_tool);
+        app.add_systems(EguiPrimaryContextPass, render_measure_tool);
         app.update();
     }
 
@@ -697,7 +715,7 @@ mod tests {
     }
 
     #[test]
-    fn test_calculate_haversine_distance() {
+    fn test_calculate_all_distances() {
         let mut app = App::new();
         app.add_plugins(MinimalPlugins);
         app.add_plugins(rgis_geodesy::Plugin);
@@ -721,27 +739,76 @@ mod tests {
         let geodesy_ctx = app.world().resource::<rgis_geodesy::GeodesyContext>();
         let target_crs = app.world().resource::<rgis_crs::TargetCrs>();
 
-        // Geodesy works with radians internally for angular CRSes like EPSG:4326,
-        // so input coordinates must be in radians.
         // San Francisco (lon: -122.4194°, lat: 37.7749°)
         let start = geo::Coord {
-            x: -122.4194_f64.to_radians(),
-            y: 37.7749_f64.to_radians(),
+            x: -122.4194,
+            y: 37.7749,
         };
         // New York City (lon: -74.0060°, lat: 40.7128°)
         let end = geo::Coord {
-            x: -74.0060_f64.to_radians(),
-            y: 40.7128_f64.to_radians(),
+            x: -74.0060,
+            y: 40.7128,
         };
 
-        let distance =
-            super::calculate_haversine_distance(start, end, geodesy_ctx, target_crs).unwrap();
+        let distances =
+            super::calculate_all_distances(start, end, geodesy_ctx, target_crs).unwrap();
 
-        // Distance is approx 4,129 km
+        // All distances must be finite (regression: a double .to_degrees() conversion
+        // previously caused Geodesic to return NaN)
+        assert!(distances.haversine.is_finite(), "Haversine was {}", distances.haversine);
+        assert!(distances.geodesic.is_finite(), "Geodesic was {}", distances.geodesic);
+        assert!(distances.rhumb.is_finite(), "Rhumb was {}", distances.rhumb);
+
+        // Haversine distance is approx 4,129 km
         assert!(
-            distance > 4_120_000.0 && distance < 4_140_000.0,
-            "Distance was {}",
-            distance
+            distances.haversine > 4_120_000.0 && distances.haversine < 4_140_000.0,
+            "Haversine distance was {}",
+            distances.haversine
+        );
+
+        // Geodesic distance is approx 4,139 km
+        assert!(
+            distances.geodesic > 4_130_000.0 && distances.geodesic < 4_150_000.0,
+            "Geodesic distance was {}",
+            distances.geodesic
+        );
+
+        // Rhumb line distance SF-NYC is longer than great-circle, approx 4,181 km
+        assert!(
+            distances.rhumb > 4_170_000.0 && distances.rhumb < 4_200_000.0,
+            "Rhumb distance was {}",
+            distances.rhumb
+        );
+
+    }
+
+    /// Regression test: geo_geodesy::Transformer::transform() already converts
+    /// output from radians to degrees. A previous bug called .to_degrees() again,
+    /// turning valid coordinates like (-122°, 37°) into (-6692°, 2282°). This
+    /// caused Geodesic to return NaN and Rhumb to return wildly wrong values.
+    #[test]
+    fn test_double_degrees_conversion_causes_geodesic_nan() {
+        use geo::Distance;
+
+        // These are the coordinates produced by the double .to_degrees() bug:
+        // e.g. (-122.4194).to_degrees() = -6692.4
+        let start = geo::Point::new(-6692.4, 2282.0);
+        let end = geo::Point::new(-4395.1, 2552.0);
+
+        // Geodesic returns NaN for these out-of-range coordinates
+        assert!(
+            Geodesic.distance(start, end).is_nan(),
+            "Geodesic should return NaN for out-of-range coordinates"
+        );
+
+        // The correct coordinates (in degrees) should produce finite results
+        let sf = geo::Point::new(-122.4194, 37.7749);
+        let nyc = geo::Point::new(-74.0060, 40.7128);
+        let geodesic_dist = Geodesic.distance(sf, nyc);
+        assert!(
+            geodesic_dist.is_finite() && geodesic_dist > 4_000_000.0,
+            "Geodesic distance for valid coordinates was {}",
+            geodesic_dist
         );
     }
 }

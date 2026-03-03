@@ -9,6 +9,7 @@ pub enum Tool {
     Measure,
 }
 
+
 #[derive(Resource)]
 pub struct RgisSettings {
     pub current_tool: Tool,
