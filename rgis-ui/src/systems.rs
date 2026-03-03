@@ -4,7 +4,7 @@ use bevy_egui::{
     EguiContexts, EguiPrimaryContextPass,
 };
 use bevy_egui_window::Window;
-use geo::{Distance, Haversine};
+use geo::{Distance, Geodesic, Haversine, Rhumb};
 
 use crate::windows::add_layer::file::{OpenFileJob, SelectedFile};
 
@@ -381,11 +381,12 @@ fn egui_color_to_bevy_color(egui_color: bevy_egui::egui::Color32) -> Color {
     Color::srgb_u8(egui_color.r(), egui_color.g(), egui_color.b())
 }
 
-fn calculate_haversine_distance(
+fn calculate_distance(
     start: geo::Coord<f64>,
     end: geo::Coord<f64>,
     geodesy_ctx: &rgis_geodesy::GeodesyContext,
     target_crs: &rgis_crs::TargetCrs,
+    distance_method: rgis_settings::DistanceMethod,
 ) -> Option<f64> {
     let mut geodesy_ctx_inner = geodesy_ctx.0.write().ok()?;
     let target_epsg_code = 4326; // WGS 84
@@ -417,11 +418,15 @@ fn calculate_haversine_distance(
         geo::Point::new(start_point.x().to_degrees(), start_point.y().to_degrees());
     let end_point_deg = geo::Point::new(end_point.x().to_degrees(), end_point.y().to_degrees());
 
-    Some(Haversine.distance(start_point_deg, end_point_deg))
+    Some(match distance_method {
+        rgis_settings::DistanceMethod::Haversine => Haversine.distance(start_point_deg, end_point_deg),
+        rgis_settings::DistanceMethod::Geodesic => Geodesic.distance(start_point_deg, end_point_deg),
+        rgis_settings::DistanceMethod::Rhumb => Rhumb.distance(start_point_deg, end_point_deg),
+    })
 }
 fn render_measure_tool(
     mut bevy_egui_ctx: EguiContexts,
-    rgis_settings: Res<rgis_settings::RgisSettings>,
+    mut rgis_settings: ResMut<rgis_settings::RgisSettings>,
     measure_state: Res<rgis_mouse::MeasureState>,
     mouse_pos: Res<rgis_mouse::MousePos>,
     geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
@@ -447,7 +452,7 @@ fn render_measure_tool(
     let end_screen_pos =
         project_to_screen(geo::Coord { x: end.x.0, y: end.y.0 }, transform, window);
 
-    let distance = calculate_haversine_distance(
+    let distance = calculate_distance(
         geo::Coord {
             x: start.x.0,
             y: start.y.0,
@@ -458,6 +463,7 @@ fn render_measure_tool(
         },
         &geodesy_ctx,
         &target_crs,
+        rgis_settings.distance_method,
     )
     .unwrap_or(0.0);
 
@@ -480,6 +486,26 @@ fn render_measure_tool(
         egui::FontId::default(),
         egui::Color32::BLACK,
     );
+
+    // Distance method selector
+    egui::Window::new("Distance Method")
+        .title_bar(false)
+        .anchor(egui::Align2::RIGHT_BOTTOM, [-8.0, -8.0])
+        .resizable(false)
+        .show(bevy_egui_ctx_mut, |ui| {
+            for method in [
+                rgis_settings::DistanceMethod::Haversine,
+                rgis_settings::DistanceMethod::Geodesic,
+                rgis_settings::DistanceMethod::Rhumb,
+            ] {
+                let radio = ui.radio_value(
+                    &mut rgis_settings.distance_method,
+                    method,
+                    method.label(),
+                ).on_hover_text(method.description());
+                crate::widget_registry::register(method.label(), radio.rect);
+            }
+        });
 
     Ok(())
 }
@@ -543,7 +569,7 @@ pub fn configure(app: &mut App) {
             render_change_crs_window.in_set(RenderSystemSet::Windows),
             render_feature_properties_window.in_set(RenderSystemSet::Windows),
             render_operation_window.in_set(RenderSystemSet::Windows),
-            render_measure_tool.in_set(RenderSystemSet::RenderingTopBottom),
+            render_measure_tool.in_set(RenderSystemSet::Windows),
         ),
     );
 
@@ -643,6 +669,7 @@ mod tests {
         app.insert_resource(rgis_settings::RgisSettings {
             current_tool: rgis_settings::Tool::Measure,
             show_scale: true,
+            distance_method: rgis_settings::DistanceMethod::default(),
         });
 
         app.insert_resource(rgis_mouse::MeasureState {
@@ -666,7 +693,7 @@ mod tests {
 
         app.update();
 
-        app.add_systems(Update, render_measure_tool);
+        app.add_systems(EguiPrimaryContextPass, render_measure_tool);
         app.update();
     }
 
@@ -697,7 +724,7 @@ mod tests {
     }
 
     #[test]
-    fn test_calculate_haversine_distance() {
+    fn test_calculate_distance() {
         let mut app = App::new();
         app.add_plugins(MinimalPlugins);
         app.add_plugins(rgis_geodesy::Plugin);
@@ -734,14 +761,52 @@ mod tests {
             y: 40.7128_f64.to_radians(),
         };
 
-        let distance =
-            super::calculate_haversine_distance(start, end, geodesy_ctx, target_crs).unwrap();
+        let distance = super::calculate_distance(
+            start,
+            end,
+            geodesy_ctx,
+            target_crs,
+            rgis_settings::DistanceMethod::Haversine,
+        )
+        .unwrap();
 
         // Distance is approx 4,129 km
         assert!(
             distance > 4_120_000.0 && distance < 4_140_000.0,
-            "Distance was {}",
+            "Haversine distance was {}",
             distance
+        );
+
+        let geodesic_distance = super::calculate_distance(
+            start,
+            end,
+            geodesy_ctx,
+            target_crs,
+            rgis_settings::DistanceMethod::Geodesic,
+        )
+        .unwrap();
+
+        // Geodesic distance should also be in the same ballpark
+        assert!(
+            geodesic_distance > 4_120_000.0 && geodesic_distance < 4_140_000.0,
+            "Geodesic distance was {}",
+            geodesic_distance
+        );
+
+        let rhumb_distance = super::calculate_distance(
+            start,
+            end,
+            geodesy_ctx,
+            target_crs,
+            rgis_settings::DistanceMethod::Rhumb,
+        )
+        .unwrap();
+
+        // Rhumb line distance SF-NYC is longer than great-circle, approx 4,170 km
+        assert!(
+            rhumb_distance > 4_150_000.0 && rhumb_distance < 4_200_000.0,
+            "Rhumb distance was {}",
+            rhumb_distance
         );
     }
 }
