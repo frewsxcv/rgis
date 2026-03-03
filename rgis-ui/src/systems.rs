@@ -428,15 +428,11 @@ fn calculate_all_distances(
         return None;
     };
 
-    // Geodesy outputs radians for angular coordinates, but geo expects degrees
-    let start_point_deg =
-        geo::Point::new(start_point.x().to_degrees(), start_point.y().to_degrees());
-    let end_point_deg = geo::Point::new(end_point.x().to_degrees(), end_point.y().to_degrees());
-
+    // geo_geodesy::Transformer::transform() already converts from radians to degrees
     Some(AllDistances {
-        haversine: Haversine.distance(start_point_deg, end_point_deg),
-        geodesic: Geodesic.distance(start_point_deg, end_point_deg),
-        rhumb: Rhumb.distance(start_point_deg, end_point_deg),
+        haversine: Haversine.distance(start_point, end_point),
+        geodesic: Geodesic.distance(start_point, end_point),
+        rhumb: Rhumb.distance(start_point, end_point),
     })
 }
 fn render_measure_tool(
@@ -765,21 +761,25 @@ mod tests {
         let geodesy_ctx = app.world().resource::<rgis_geodesy::GeodesyContext>();
         let target_crs = app.world().resource::<rgis_crs::TargetCrs>();
 
-        // Geodesy works with radians internally for angular CRSes like EPSG:4326,
-        // so input coordinates must be in radians.
         // San Francisco (lon: -122.4194°, lat: 37.7749°)
         let start = geo::Coord {
-            x: -122.4194_f64.to_radians(),
-            y: 37.7749_f64.to_radians(),
+            x: -122.4194,
+            y: 37.7749,
         };
         // New York City (lon: -74.0060°, lat: 40.7128°)
         let end = geo::Coord {
-            x: -74.0060_f64.to_radians(),
-            y: 40.7128_f64.to_radians(),
+            x: -74.0060,
+            y: 40.7128,
         };
 
         let distances =
             super::calculate_all_distances(start, end, geodesy_ctx, target_crs).unwrap();
+
+        // All distances must be finite (regression: a double .to_degrees() conversion
+        // previously caused Geodesic to return NaN)
+        assert!(distances.haversine.is_finite(), "Haversine was {}", distances.haversine);
+        assert!(distances.geodesic.is_finite(), "Geodesic was {}", distances.geodesic);
+        assert!(distances.rhumb.is_finite(), "Rhumb was {}", distances.rhumb);
 
         // Haversine distance is approx 4,129 km
         assert!(
@@ -788,16 +788,16 @@ mod tests {
             distances.haversine
         );
 
-        // Geodesic distance should also be in the same ballpark
+        // Geodesic distance is approx 4,139 km
         assert!(
-            distances.geodesic > 4_120_000.0 && distances.geodesic < 4_140_000.0,
+            distances.geodesic > 4_130_000.0 && distances.geodesic < 4_150_000.0,
             "Geodesic distance was {}",
             distances.geodesic
         );
 
-        // Rhumb line distance SF-NYC is longer than great-circle, approx 4,170 km
+        // Rhumb line distance SF-NYC is longer than great-circle, approx 4,181 km
         assert!(
-            distances.rhumb > 4_150_000.0 && distances.rhumb < 4_200_000.0,
+            distances.rhumb > 4_170_000.0 && distances.rhumb < 4_200_000.0,
             "Rhumb distance was {}",
             distances.rhumb
         );
@@ -806,5 +806,35 @@ mod tests {
         assert_eq!(distances.get(rgis_settings::DistanceMethod::Haversine), distances.haversine);
         assert_eq!(distances.get(rgis_settings::DistanceMethod::Geodesic), distances.geodesic);
         assert_eq!(distances.get(rgis_settings::DistanceMethod::Rhumb), distances.rhumb);
+    }
+
+    /// Regression test: geo_geodesy::Transformer::transform() already converts
+    /// output from radians to degrees. A previous bug called .to_degrees() again,
+    /// turning valid coordinates like (-122°, 37°) into (-6692°, 2282°). This
+    /// caused Geodesic to return NaN and Rhumb to return wildly wrong values.
+    #[test]
+    fn test_double_degrees_conversion_causes_geodesic_nan() {
+        use geo::Distance;
+
+        // These are the coordinates produced by the double .to_degrees() bug:
+        // e.g. (-122.4194).to_degrees() = -6692.4
+        let start = geo::Point::new(-6692.4, 2282.0);
+        let end = geo::Point::new(-4395.1, 2552.0);
+
+        // Geodesic returns NaN for these out-of-range coordinates
+        assert!(
+            Geodesic.distance(start, end).is_nan(),
+            "Geodesic should return NaN for out-of-range coordinates"
+        );
+
+        // The correct coordinates (in degrees) should produce finite results
+        let sf = geo::Point::new(-122.4194, 37.7749);
+        let nyc = geo::Point::new(-74.0060, 40.7128);
+        let geodesic_dist = Geodesic.distance(sf, nyc);
+        assert!(
+            geodesic_dist.is_finite() && geodesic_dist > 4_000_000.0,
+            "Geodesic distance for valid coordinates was {}",
+            geodesic_dist
+        );
     }
 }
