@@ -49,10 +49,16 @@ test.describe("measure tool", () => {
     await appPage.page.mouse.click(sfX, sfY);
     await appPage.page.waitForTimeout(500);
 
-    // Move the mouse to New York City area
+    // Click on New York City area to lock the end point
     const nycX = box.x + box.width * 0.898;
     const nycY = box.y + box.height * 0.622;
     await appPage.page.mouse.move(nycX, nycY);
+    await appPage.page.waitForTimeout(500);
+    await appPage.page.mouse.click(nycX, nycY);
+    await appPage.page.waitForTimeout(500);
+
+    // Move mouse away so it doesn't obscure the endpoint handle
+    await appPage.page.mouse.move(box.x + box.width * 0.5, box.y + box.height * 0.3);
     await appPage.page.waitForTimeout(500);
 
     await expect(appPage.page).toHaveScreenshot("measure-tool-line.png");
