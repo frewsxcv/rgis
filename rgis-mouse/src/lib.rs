@@ -9,9 +9,17 @@ pub struct MousePos(pub geo::Coord<ProjectedScalar>);
 #[derive(Clone, Default, Resource)]
 pub struct LastCursorScreenPosition(pub Option<rgis_units::ScreenCoord>);
 
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum MeasureDragTarget {
+    Start,
+    End,
+}
+
 #[derive(Resource, Default)]
 pub struct MeasureState {
     pub start: Option<geo::Coord<ProjectedScalar>>,
+    pub end: Option<geo::Coord<ProjectedScalar>>,
+    pub dragging: Option<MeasureDragTarget>,
 }
 
 pub struct Plugin;

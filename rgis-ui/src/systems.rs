@@ -444,7 +444,8 @@ fn render_measure_tool(
         return Ok(());
     };
 
-    let end = mouse_pos.0;
+    // Use locked end point if set, otherwise follow cursor
+    let end = measure_state.end.unwrap_or(mouse_pos.0);
     let transform = camera_q.single()?;
     let window = windows.single()?;
 
@@ -475,6 +476,10 @@ fn render_measure_tool(
         [start_screen_pos, end_screen_pos],
         egui::Stroke::new(2.0, egui::Color32::RED),
     );
+
+    // Draw drag handles at endpoints: white fill with red border
+    painter.circle(start_screen_pos, 8.0, egui::Color32::WHITE, egui::Stroke::new(2.0, egui::Color32::RED));
+    painter.circle(end_screen_pos, 8.0, egui::Color32::WHITE, egui::Stroke::new(2.0, egui::Color32::RED));
 
     // Distance panel with live distances for all methods
     let entries: &[(&str, f64, &str)] = &[
@@ -507,18 +512,8 @@ fn project_to_screen(
     camera_transform: &Transform,
     window: &bevy::window::Window,
 ) -> egui::Pos2 {
-    let pos_wld = Vec4::new(projected.x as f32, projected.y as f32, 0.0, 1.0);
-    let matrix = camera_transform.to_matrix();
-    let inverse_matrix = matrix.inverse();
-    let d_vec_4 = inverse_matrix * pos_wld;
-    let d_vec = d_vec_4.truncate().truncate(); // Vec2
-
-    let half_size = Vec2::new(window.width() as f32, window.height() as f32) / 2.0;
-
-    let x = d_vec.x + half_size.x;
-    let y = half_size.y - d_vec.y;
-
-    egui::Pos2::new(x, y)
+    let sc = rgis_units::ScreenCoord::from_projected(projected, camera_transform, window);
+    egui::Pos2::new(sc.x as f32, sc.y as f32)
 }
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, SystemSet)]
@@ -668,6 +663,8 @@ mod tests {
                 x: 0.0.into(),
                 y: 0.0.into(),
             }),
+            end: None,
+            dragging: None,
         });
 
         app.insert_resource(rgis_mouse::MousePos(geo::Coord {
