@@ -133,6 +133,7 @@ impl AddLayer<'_> {
                             if let Some(new_output) = (by_file::ByFile {
                                 selected_file: self.selected_file,
                                 state: self.state,
+                                geodesy_ctx: self.geodesy_ctx,
                             })
                             .show(ui)
                             {

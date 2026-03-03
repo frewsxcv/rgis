@@ -7,6 +7,7 @@ use super::{file::SelectedFile, AddLayerOutput, State};
 pub struct ByFile<'a> {
     pub selected_file: &'a mut SelectedFile,
     pub state: &'a mut State,
+    pub geodesy_ctx: &'a rgis_geodesy::GeodesyContext,
 }
 
 impl<'a> ByFile<'a> {
@@ -64,11 +65,21 @@ impl<'a> ByFile<'a> {
             output = Some(AddLayerOutput::OpenFile);
         }
 
-        let submittable = self.selected_file.0.is_some();
+        let submittable = self.selected_file.0.is_some()
+            && matches!(self.state.crs_input_outcome, Some(Ok(_)));
 
         if let Some(loaded_file) = &self.selected_file.0 {
             ui.label(format!("Selected file: {}", loaded_file.file_name));
         }
+
+        ui.separator();
+
+        ui.label("Source CRS:");
+        ui.add(crate::widgets::crs_input::CrsInput::new(
+            self.geodesy_ctx,
+            &mut self.state.crs_input_outcome,
+            &mut self.state.crs_input,
+        ));
 
         ui.separator();
 
