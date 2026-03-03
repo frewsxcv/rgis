@@ -63,7 +63,7 @@ impl<'a> ByText<'a> {
         {
             let new = mem::take(&mut self.state.text_edit_contents);
             match selected_format {
-                FileFormat::Shapefile => {
+                FileFormat::Shapefile | FileFormat::GeoTiff => {
                     unreachable!()
                 }
                 file_format @ (FileFormat::Wkt | FileFormat::GeoJson | FileFormat::Gpx) => {
@@ -100,7 +100,7 @@ impl<'a> ByText<'a> {
 const fn hint_text(format: FileFormat) -> &'static str {
     match format {
         FileFormat::GeoJson => "{\n  \"type\": \"FeatureCollection\",\n  \"features\": []\n}",
-        FileFormat::Shapefile => panic!("Shapefiles are not textual"),
+        FileFormat::Shapefile | FileFormat::GeoTiff => panic!("Binary formats are not textual"),
         FileFormat::Wkt => "LINESTRING (30 10, 10 30, 40 40)",
         FileFormat::Gpx => "", // TODO: add example GPX
     }

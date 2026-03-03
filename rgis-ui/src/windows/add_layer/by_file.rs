@@ -7,6 +7,7 @@ use super::{file::SelectedFile, AddLayerOutput, State};
 pub struct ByFile<'a> {
     pub selected_file: &'a mut SelectedFile,
     pub state: &'a mut State,
+    pub geodesy_ctx: &'a rgis_geodesy::GeodesyContext,
 }
 
 impl<'a> ByFile<'a> {
@@ -43,6 +44,13 @@ impl<'a> ByFile<'a> {
         );
         crate::widget_registry::register("WKT", wkt_radio.rect);
 
+        let geotiff_radio = ui.radio_value(
+            &mut self.state.selected_format,
+            Some(FileFormat::GeoTiff),
+            "GeoTIFF",
+        );
+        crate::widget_registry::register("GeoTIFF", geotiff_radio.rect);
+
         let Some(selected_format) = self.state.selected_format else {
             return None;
         };
@@ -51,11 +59,14 @@ impl<'a> ByFile<'a> {
 
         ui.label("Select file:");
 
-        if ui.button("📄 Select file").clicked() {
+        let select_file_button = ui.button("📄 Select file");
+        crate::widget_registry::register("Select file", select_file_button.rect);
+        if select_file_button.clicked() {
             output = Some(AddLayerOutput::OpenFile);
         }
 
-        let submittable = self.selected_file.0.is_some();
+        let submittable = self.selected_file.0.is_some()
+            && matches!(self.state.crs_input_outcome, Some(Ok(_)));
 
         if let Some(loaded_file) = &self.selected_file.0 {
             ui.label(format!("Selected file: {}", loaded_file.file_name));
@@ -63,10 +74,18 @@ impl<'a> ByFile<'a> {
 
         ui.separator();
 
-        if ui
-            .add_enabled(submittable, egui::Button::new("Add layer"))
-            .clicked()
-        {
+        ui.label("Source CRS:");
+        ui.add(crate::widgets::crs_input::CrsInput::new(
+            self.geodesy_ctx,
+            &mut self.state.crs_input_outcome,
+            &mut self.state.crs_input,
+        ));
+
+        ui.separator();
+
+        let add_layer_button = ui.add_enabled(submittable, egui::Button::new("Add layer"));
+        crate::widget_registry::register("Add layer", add_layer_button.rect);
+        if add_layer_button.clicked() {
             match self.selected_file.0.take() {
                 Some(loaded_file) => {
                     output = Some(AddLayerOutput::LoadFromFile {

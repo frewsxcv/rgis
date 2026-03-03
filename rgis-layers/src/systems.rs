@@ -135,6 +135,17 @@ fn handle_create_layer_events(
     }
 }
 
+fn handle_create_raster_layer_events(
+    mut create_raster_layer_events: ResMut<Messages<rgis_layer_events::CreateRasterLayerEvent>>,
+    mut layer_created_event_writer: MessageWriter<rgis_layer_events::LayerCreatedEvent>,
+    mut layers: ResMut<crate::Layers>,
+) {
+    for event in create_raster_layer_events.drain() {
+        let layer_id = layers.add_raster(event.raster, event.name, event.source_crs);
+        layer_created_event_writer.write(rgis_layer_events::LayerCreatedEvent(layer_id));
+    }
+}
+
 use crate::LayerWithIndex;
 
 fn handle_duplicate_layer_events(
@@ -166,6 +177,7 @@ pub fn configure(app: &mut App) {
             handle_move_layer_events,
             handle_delete_layer_events,
             handle_create_layer_events,
+            handle_create_raster_layer_events,
             handle_duplicate_layer_events,
         ),
     );

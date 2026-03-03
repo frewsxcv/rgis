@@ -14,6 +14,7 @@ colorous = { workspace = true }
 geo-features = { path = "../geo-features" }
 geo-geom-type = { path = "../geo-geom-type" }
 geo-projected = { path = "../geo-projected" }
+geo-raster = { path = "../geo-raster" }
 rgis-layer-events = { path = "../rgis-layer-events" }
 rgis-renderer-events = { path = "../rgis-renderer-events" }
 rgis-ui-events = { path = "../rgis-ui-events" }

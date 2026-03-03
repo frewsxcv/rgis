@@ -6,11 +6,19 @@ fn handle_layer_created_events(
     target_crs: Res<rgis_crs::TargetCrs>,
     mut job_spawner: bevy_jobs::JobSpawner,
     geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
+    mut layer_reprojected_event_writer: MessageWriter<rgis_layer_events::LayerReprojectedEvent>,
 ) {
     for event in layer_created_event_reader.read() {
         let Some(layer) = layers.get(event.0) else {
             continue;
         };
+
+        // Raster layers skip reprojection — fire reprojected event directly
+        if layer.is_raster() {
+            layer_reprojected_event_writer
+                .write(rgis_layer_events::LayerReprojectedEvent(event.0));
+            continue;
+        }
 
         let Some(fc) = layer.unprojected_feature_collection() else {
             continue;
@@ -57,6 +65,7 @@ fn handle_reproject_geometry_job_completion_events(
             } => {
                 *projected_feature_collection = Some(outcome.feature_collection);
             }
+            rgis_layers::LayerData::Raster { .. } => {}
         }
 
         layer_reprojected_event_writer

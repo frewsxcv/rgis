@@ -16,6 +16,7 @@ pub enum RenderEntityType {
     SelectedPolygon,
     SelectedLineString,
     SelectedPoint,
+    Raster,
 }
 
 pub struct Plugin;
@@ -47,6 +48,78 @@ struct Fill;
 
 #[derive(Copy, Clone, Component)]
 struct Stroke;
+
+#[derive(Copy, Clone, Component)]
+pub struct RasterSprite;
+
+fn spawn_raster(
+    raster: &geo_raster::Raster,
+    layer: &rgis_layers::Layer,
+    layer_index: LayerIndex,
+    commands: &mut Commands,
+    images: &mut Assets<Image>,
+) {
+    let (bevy_format, pixel_bytes) = match raster.format {
+        geo_raster::RasterFormat::R8 => {
+            // Convert grayscale to RGBA for Bevy
+            let mut rgba = Vec::with_capacity(raster.data.len() * 4);
+            for &g in &raster.data {
+                rgba.push(g);
+                rgba.push(g);
+                rgba.push(g);
+                rgba.push(255);
+            }
+            (bevy::render::render_resource::TextureFormat::Rgba8UnormSrgb, rgba)
+        }
+        geo_raster::RasterFormat::Rgba8 => {
+            (bevy::render::render_resource::TextureFormat::Rgba8UnormSrgb, raster.data.clone())
+        }
+    };
+
+    let image = Image::new(
+        bevy::render::render_resource::Extent3d {
+            width: raster.width,
+            height: raster.height,
+            depth_or_array_layers: 1,
+        },
+        bevy::render::render_resource::TextureDimension::D2,
+        pixel_bytes,
+        bevy_format,
+        bevy::asset::RenderAssetUsages::RENDER_WORLD | bevy::asset::RenderAssetUsages::MAIN_WORLD,
+    );
+
+    let image_handle = images.add(image);
+
+    let extent = &raster.extent;
+    let center_x = (extent.min().x + extent.max().x) / 2.0;
+    let center_y = (extent.min().y + extent.max().y) / 2.0;
+    let world_width = extent.max().x - extent.min().x;
+    let world_height = extent.max().y - extent.min().y;
+
+    let scale_x = world_width as f32 / raster.width as f32;
+    let scale_y = world_height as f32 / raster.height as f32;
+
+    let z_index = ZIndex::calculate(layer_index, RenderEntityType::Raster);
+
+    let visibility = if layer.visible {
+        Visibility::Visible
+    } else {
+        Visibility::Hidden
+    };
+
+    commands.spawn((
+        Sprite {
+            image: image_handle,
+            ..Default::default()
+        },
+        Transform::from_xyz(center_x as f32, center_y as f32, z_index.0 as f32)
+            .with_scale(bevy::math::Vec3::new(scale_x, scale_y, 1.0)),
+        visibility,
+        layer.id,
+        RenderEntityType::Raster,
+        RasterSprite,
+    ));
+}
 
 fn spawn_geometry_meshes(
     geometry_mesh: geo_bevy::GeometryMesh,

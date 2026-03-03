@@ -52,15 +52,13 @@ impl ManageLayer<'_> {
                                     error!("Expected layer to have a fill color");
                                 }
                             }
-                        }
-                        ui.label("Stroke color");
-                        ui.add(crate::widgets::stroke_color::StrokeColor {
-                            layer_id,
-                            color: layer.color.stroke,
-                            color_events: self.color_events,
-                        });
-                        ui.end_row();
-                        if let Some(geom_type) = layer.geom_type() {
+                            ui.label("Stroke color");
+                            ui.add(crate::widgets::stroke_color::StrokeColor {
+                                layer_id,
+                                color: layer.color.stroke,
+                                color_events: self.color_events,
+                            });
+                            ui.end_row();
                             if geom_type.contains(geo_geom_type::GeomType::POINT)
                                 || geom_type
                                     .contains(geo_geom_type::GeomType::MULTI_POINT)
