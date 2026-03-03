@@ -38,17 +38,19 @@ impl ManageLayer<'_> {
                         ui.label("CRS");
                         ui.label(format!("EPSG {}", layer.crs.epsg_code));
                         ui.end_row();
-                        if layer.geom_type.has_fill() {
-                            if let Some(fill) = layer.color.fill {
-                                ui.label("Fill color");
-                                ui.add(crate::widgets::fill_color::FillColor {
-                                    layer_id,
-                                    color: fill,
-                                    color_events: self.color_events,
-                                });
-                                ui.end_row();
-                            } else {
-                                error!("Expected layer to have a fill color");
+                        if let Some(geom_type) = layer.geom_type() {
+                            if geom_type.has_fill() {
+                                if let Some(fill) = layer.color.fill {
+                                    ui.label("Fill color");
+                                    ui.add(crate::widgets::fill_color::FillColor {
+                                        layer_id,
+                                        color: fill,
+                                        color_events: self.color_events,
+                                    });
+                                    ui.end_row();
+                                } else {
+                                    error!("Expected layer to have a fill color");
+                                }
                             }
                         }
                         ui.label("Stroke color");
@@ -58,18 +60,19 @@ impl ManageLayer<'_> {
                             color_events: self.color_events,
                         });
                         ui.end_row();
-                        if layer.geom_type.contains(geo_geom_type::GeomType::POINT)
-                            || layer
-                                .geom_type
-                                .contains(geo_geom_type::GeomType::MULTI_POINT)
-                        {
-                            ui.label("Point size");
-                            ui.add(crate::widgets::point_size::PointSize {
-                                layer_id,
-                                size: layer.point_size,
-                                size_events: self.point_size_events,
-                            });
-                            ui.end_row();
+                        if let Some(geom_type) = layer.geom_type() {
+                            if geom_type.contains(geo_geom_type::GeomType::POINT)
+                                || geom_type
+                                    .contains(geo_geom_type::GeomType::MULTI_POINT)
+                            {
+                                ui.label("Point size");
+                                ui.add(crate::widgets::point_size::PointSize {
+                                    layer_id,
+                                    size: layer.point_size,
+                                    size_events: self.point_size_events,
+                                });
+                                ui.end_row();
+                            }
                         }
                     });
                 ui.separator();

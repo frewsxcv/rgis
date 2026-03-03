@@ -12,8 +12,12 @@ fn handle_layer_created_events(
             continue;
         };
 
+        let Some(fc) = layer.unprojected_feature_collection() else {
+            continue;
+        };
+
         job_spawner.spawn(crate::jobs::ReprojectGeometryJob {
-            feature_collection: layer.unprojected_feature_collection.clone(),
+            feature_collection: fc.clone(),
             layer_id: event.0,
             source_crs: layer.crs,
             target_crs: target_crs.0,
@@ -46,7 +50,14 @@ fn handle_reproject_geometry_job_completion_events(
             continue;
         };
 
-        layer.projected_feature_collection = Some(outcome.feature_collection);
+        match &mut layer.data {
+            rgis_layers::LayerData::Vector {
+                projected_feature_collection,
+                ..
+            } => {
+                *projected_feature_collection = Some(outcome.feature_collection);
+            }
+        }
 
         layer_reprojected_event_writer
             .write(rgis_layer_events::LayerReprojectedEvent(outcome.layer_id));
@@ -64,8 +75,11 @@ fn handle_crs_changed_events(
         layers.clear_projected();
 
         for layer in layers.iter() {
+            let Some(fc) = layer.unprojected_feature_collection() else {
+                continue;
+            };
             job_spawner.spawn(crate::jobs::ReprojectGeometryJob {
-                feature_collection: layer.unprojected_feature_collection.clone(),
+                feature_collection: fc.clone(),
                 layer_id: layer.id,
                 source_crs: layer.crs,
                 target_crs: target_crs.0,

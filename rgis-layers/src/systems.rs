@@ -144,12 +144,14 @@ fn handle_duplicate_layer_events(
 ) {
     for event in duplicate_layer_event_reader.read() {
         if let Some(LayerWithIndex(layer, _)) = layers.get_with_index(event.0) {
-            let new_name = format!("Copy of {}", layer.name);
-            create_layer_event_writer.write(rgis_layer_events::CreateLayerEvent {
-                feature_collection: layer.unprojected_feature_collection.clone(),
-                name: new_name,
-                source_crs: layer.crs,
-            });
+            if let Some(fc) = layer.unprojected_feature_collection() {
+                let new_name = format!("Copy of {}", layer.name);
+                create_layer_event_writer.write(rgis_layer_events::CreateLayerEvent {
+                    feature_collection: fc.clone(),
+                    name: new_name,
+                    source_crs: layer.crs,
+                });
+            }
         }
     }
 }

@@ -11,17 +11,18 @@ impl egui::Widget for Operations<'_, '_> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         ui.with_layout(Layout::top_down_justified(Align::LEFT), |ui| {
             if ui.button("Bounding rect").clicked() {
-                if let Ok(bounding_rect) = self.layer.unprojected_feature_collection.bounding_rect()
-                {
-                    let feature_collection =
-                        geo_features::FeatureCollection::from_geometry(bounding_rect.into());
-                    self.events
-                        .create_layer_event_writer
-                        .write(CreateLayerEvent {
-                            feature_collection,
-                            name: "Bounding rect".into(), // FIXME
-                            source_crs: self.layer.crs,
-                        });
+                if let Some(fc) = self.layer.unprojected_feature_collection() {
+                    if let Ok(bounding_rect) = fc.bounding_rect() {
+                        let feature_collection =
+                            geo_features::FeatureCollection::from_geometry(bounding_rect.into());
+                        self.events
+                            .create_layer_event_writer
+                            .write(CreateLayerEvent {
+                                feature_collection,
+                                name: "Bounding rect".into(), // FIXME
+                                source_crs: self.layer.crs,
+                            });
+                    }
                 }
             }
 

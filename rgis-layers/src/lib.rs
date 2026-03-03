@@ -52,22 +52,27 @@ impl Layers {
         coord: geo_projected::ProjectedCoord,
     ) -> impl Iterator<Item = &Layer> {
         self.iter_top_to_bottom()
-            .filter(move |layer| match layer.projected_feature_collection {
-                Some(ref projected) => projected.contains(&coord),
-                None => false,
+            .filter(move |layer| match &layer.data {
+                LayerData::Vector {
+                    projected_feature_collection: Some(projected),
+                    ..
+                } => projected.contains(&coord),
+                _ => false,
             })
     }
 
     fn feature_collections_iter(&'_ self) -> impl Iterator<Item = FeatureCollectionsIterItem<'_>> {
-        self.iter_top_to_bottom().flat_map(|layer| {
-            layer
-                .projected_feature_collection
-                .as_ref()
-                .map(|projected| FeatureCollectionsIterItem {
-                    layer,
-                    unprojected: &layer.unprojected_feature_collection,
-                    projected,
-                })
+        self.iter_top_to_bottom().filter_map(|layer| match &layer.data {
+            LayerData::Vector {
+                unprojected_feature_collection,
+                projected_feature_collection: Some(projected),
+                ..
+            } => Some(FeatureCollectionsIterItem {
+                layer,
+                unprojected: unprojected_feature_collection,
+                projected,
+            }),
+            _ => None,
         })
     }
 
@@ -156,8 +161,11 @@ impl Layers {
         let layer_id = self.next_layer_id();
         let geom_type = geo_geom_type::determine(unprojected.geometry_iter());
         let layer = Layer {
-            unprojected_feature_collection: unprojected,
-            projected_feature_collection: None,
+            data: LayerData::Vector {
+                unprojected_feature_collection: unprojected,
+                projected_feature_collection: None,
+                geom_type,
+            },
             color: if geom_type.has_fill() {
                 LayerColor {
                     fill: Some(colorous_color_to_bevy_color(next_colorous_color())),
@@ -173,7 +181,6 @@ impl Layers {
             visible: true,
             id: layer_id,
             crs,
-            geom_type,
             point_size: 5.0,
         };
         self.data.push(layer);
@@ -182,7 +189,14 @@ impl Layers {
 
     pub fn clear_projected(&mut self) {
         for layer in self.data.iter_mut() {
-            layer.projected_feature_collection = None;
+            match &mut layer.data {
+                LayerData::Vector {
+                    projected_feature_collection,
+                    ..
+                } => {
+                    *projected_feature_collection = None;
+                }
+            }
         }
     }
 
@@ -198,38 +212,87 @@ pub struct LayerColor {
 }
 
 #[derive(Debug)]
+pub enum LayerData {
+    Vector {
+        unprojected_feature_collection:
+            geo_features::FeatureCollection<geo_projected::UnprojectedScalar>,
+        projected_feature_collection:
+            Option<geo_features::FeatureCollection<geo_projected::ProjectedScalar>>,
+        geom_type: geo_geom_type::GeomType,
+    },
+}
+
+#[derive(Debug)]
 pub struct Layer {
-    pub unprojected_feature_collection:
-        geo_features::FeatureCollection<geo_projected::UnprojectedScalar>,
-    pub projected_feature_collection:
-        Option<geo_features::FeatureCollection<geo_projected::ProjectedScalar>>,
+    pub data: LayerData,
     pub color: LayerColor,
     pub id: rgis_primitives::LayerId,
     pub name: String,
     pub visible: bool,
     pub crs: rgis_primitives::Crs,
-    pub geom_type: geo_geom_type::GeomType,
     pub point_size: f32,
 }
 
 impl Layer {
+    pub fn is_vector(&self) -> bool {
+        matches!(self.data, LayerData::Vector { .. })
+    }
+
+    pub fn geom_type(&self) -> Option<geo_geom_type::GeomType> {
+        match &self.data {
+            LayerData::Vector { geom_type, .. } => Some(*geom_type),
+        }
+    }
+
+    pub fn unprojected_feature_collection(
+        &self,
+    ) -> Option<&geo_features::FeatureCollection<geo_projected::UnprojectedScalar>> {
+        match &self.data {
+            LayerData::Vector {
+                unprojected_feature_collection,
+                ..
+            } => Some(unprojected_feature_collection),
+        }
+    }
+
+    pub fn projected_feature_collection(
+        &self,
+    ) -> Option<&geo_features::FeatureCollection<geo_projected::ProjectedScalar>> {
+        match &self.data {
+            LayerData::Vector {
+                projected_feature_collection,
+                ..
+            } => projected_feature_collection.as_ref(),
+        }
+    }
+
     pub fn is_active(&self) -> bool {
-        self.projected_feature_collection.is_some()
+        match &self.data {
+            LayerData::Vector {
+                projected_feature_collection,
+                ..
+            } => projected_feature_collection.is_some(),
+        }
     }
 
     #[inline]
     pub fn get_projected_feature_collection_or_log(
         &self,
     ) -> Option<&geo_features::FeatureCollection<geo_projected::ProjectedScalar>> {
-        match self.projected_feature_collection.as_ref() {
-            Some(p) => Some(p),
-            None => {
-                bevy::log::error!(
-                    "Expected layer (id: {:?}) to have a projected feature collection",
-                    self.id
-                );
-                None
-            }
+        match &self.data {
+            LayerData::Vector {
+                projected_feature_collection,
+                ..
+            } => match projected_feature_collection.as_ref() {
+                Some(p) => Some(p),
+                None => {
+                    bevy::log::error!(
+                        "Expected layer (id: {:?}) to have a projected feature collection",
+                        self.id
+                    );
+                    None
+                }
+            },
         }
     }
 

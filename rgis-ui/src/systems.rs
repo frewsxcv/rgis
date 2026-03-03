@@ -605,18 +605,23 @@ fn perform_operation(
 
         let mut operation = event.operation;
 
+        let Some(fc) = layer.unprojected_feature_collection() else {
+            error!("Layer has no unprojected feature collection, cannot perform operation");
+            continue;
+        };
+
         match operation.next_action() {
             rgis_geo_ops::Action::RenderUi => {
                 open_operation_window_event_writer.write(
                     rgis_ui_events::OpenOperationWindowEvent {
                         operation,
-                        feature_collection: layer.unprojected_feature_collection.clone(), // TODO: clone?
+                        feature_collection: fc.clone(), // TODO: clone?
                     },
                 );
             }
             rgis_geo_ops::Action::Perform => {
                 // TODO: perform in background job
-                let outcome = operation.perform(layer.unprojected_feature_collection.clone()); // TODO: clone?
+                let outcome = operation.perform(fc.clone()); // TODO: clone?
 
                 match outcome {
                     Ok(rgis_geo_ops::Outcome::FeatureCollection(feature_collection)) => {
