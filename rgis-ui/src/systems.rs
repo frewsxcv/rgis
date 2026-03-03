@@ -387,15 +387,6 @@ struct AllDistances {
     rhumb: f64,
 }
 
-impl AllDistances {
-    fn get(&self, method: rgis_settings::DistanceMethod) -> f64 {
-        match method {
-            rgis_settings::DistanceMethod::Haversine => self.haversine,
-            rgis_settings::DistanceMethod::Geodesic => self.geodesic,
-            rgis_settings::DistanceMethod::Rhumb => self.rhumb,
-        }
-    }
-}
 
 fn calculate_all_distances(
     start: geo::Coord<f64>,
@@ -437,7 +428,7 @@ fn calculate_all_distances(
 }
 fn render_measure_tool(
     mut bevy_egui_ctx: EguiContexts,
-    mut rgis_settings: ResMut<rgis_settings::RgisSettings>,
+    rgis_settings: Res<rgis_settings::RgisSettings>,
     measure_state: Res<rgis_mouse::MeasureState>,
     mouse_pos: Res<rgis_mouse::MousePos>,
     geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
@@ -485,38 +476,26 @@ fn render_measure_tool(
         egui::Stroke::new(2.0, egui::Color32::RED),
     );
 
-    // Distance method selector with live distances
-    let methods = [
-        rgis_settings::DistanceMethod::Haversine,
-        rgis_settings::DistanceMethod::Geodesic,
-        rgis_settings::DistanceMethod::Rhumb,
+    // Distance panel with live distances for all methods
+    let entries: &[(&str, f64, &str)] = &[
+        ("Haversine", all_distances.as_ref().map_or(0.0, |d| d.haversine), "Great-circle distance using the Haversine formula"),
+        ("Geodesic", all_distances.as_ref().map_or(0.0, |d| d.geodesic), "Geodesic distance on the WGS84 ellipsoid (most accurate)"),
+        ("Rhumb", all_distances.as_ref().map_or(0.0, |d| d.rhumb), "Distance along a rhumb line (constant bearing)"),
     ];
-    egui::Window::new("Distance Method")
+    egui::Window::new("Distances")
         .title_bar(false)
         .anchor(egui::Align2::RIGHT_BOTTOM, [-8.0, -8.0])
         .resizable(false)
         .auto_sized()
         .show(bevy_egui_ctx_mut, |ui| {
-            for method in methods {
-                let dist = all_distances
-                    .as_ref()
-                    .map(|d| d.get(method))
-                    .unwrap_or(0.0);
+            for &(name, dist, description) in entries {
                 let dist_str = if dist.is_finite() {
                     crate::widgets::scale_bar::distance_to_readable_string(dist as f32)
                 } else {
                     "N/A".to_string()
                 };
-                let label = format!("{}: {}", method.label(), dist_str);
-
-                let radio = ui
-                    .radio_value(
-                        &mut rgis_settings.distance_method,
-                        method,
-                        label,
-                    )
-                    .on_hover_text(method.description());
-                crate::widget_registry::register(method.label(), radio.rect);
+                let label = ui.label(format!("{name}: {dist_str}")).on_hover_text(description);
+                crate::widget_registry::register(name, label.rect);
             }
         });
 
@@ -582,7 +561,7 @@ pub fn configure(app: &mut App) {
             render_change_crs_window.in_set(RenderSystemSet::Windows),
             render_feature_properties_window.in_set(RenderSystemSet::Windows),
             render_operation_window.in_set(RenderSystemSet::Windows),
-            render_measure_tool.in_set(RenderSystemSet::Windows),
+            render_measure_tool.in_set(RenderSystemSet::RenderingTopBottom),
         ),
     );
 
@@ -682,7 +661,6 @@ mod tests {
         app.insert_resource(rgis_settings::RgisSettings {
             current_tool: rgis_settings::Tool::Measure,
             show_scale: true,
-            distance_method: rgis_settings::DistanceMethod::default(),
         });
 
         app.insert_resource(rgis_mouse::MeasureState {
@@ -802,10 +780,6 @@ mod tests {
             distances.rhumb
         );
 
-        // Verify AllDistances::get returns the correct values
-        assert_eq!(distances.get(rgis_settings::DistanceMethod::Haversine), distances.haversine);
-        assert_eq!(distances.get(rgis_settings::DistanceMethod::Geodesic), distances.geodesic);
-        assert_eq!(distances.get(rgis_settings::DistanceMethod::Rhumb), distances.rhumb);
     }
 
     /// Regression test: geo_geodesy::Transformer::transform() already converts
