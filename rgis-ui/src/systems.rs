@@ -477,10 +477,6 @@ fn render_measure_tool(
     };
 
     let all_distances = calculate_all_distances(start_coord, end_coord, &geodesy_ctx, &target_crs);
-    let distance = all_distances
-        .as_ref()
-        .map(|d| d.get(rgis_settings.distance_method))
-        .unwrap_or(0.0);
 
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     let painter = bevy_egui_ctx_mut.layer_painter(egui::LayerId::new(
@@ -491,15 +487,6 @@ fn render_measure_tool(
     painter.line_segment(
         [start_screen_pos, end_screen_pos],
         egui::Stroke::new(2.0, egui::Color32::RED),
-    );
-
-    let text_pos = start_screen_pos.lerp(end_screen_pos, 0.5);
-    painter.text(
-        text_pos,
-        egui::Align2::CENTER_CENTER,
-        crate::widgets::scale_bar::distance_to_readable_string(distance as f32),
-        egui::FontId::default(),
-        egui::Color32::BLACK,
     );
 
     // Distance method selector with live distances
