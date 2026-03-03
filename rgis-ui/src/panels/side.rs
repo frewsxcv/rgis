@@ -87,7 +87,10 @@ impl<'a, 'w, Op: rgis_geo_ops::OperationEntry> OperationButton<'a, 'w, Op> {
 impl<Op: rgis_geo_ops::OperationEntry> egui::Widget for OperationButton<'_, '_, Op> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         let button = ui.add_enabled(
-            Op::ALLOWED_GEOM_TYPES.contains(self.layer.geom_type),
+            self.layer
+                .geom_type()
+                .map(|gt| Op::ALLOWED_GEOM_TYPES.contains(gt))
+                .unwrap_or(false),
             egui::Button::new(Op::NAME),
         );
         if button.clicked() {
@@ -161,7 +164,9 @@ impl Widget for Layer<'_, '_> {
                     let (rect, _) =
                         ui.allocate_exact_size(egui::Vec2::splat(12.0), egui::Sense::hover());
                     ui.painter().rect_filled(rect, 2.0, egui_color);
-                    ui.label(format!("Type: {}", layer.geom_type));
+                    if let Some(geom_type) = layer.geom_type() {
+                        ui.label(format!("Type: {}", geom_type));
+                    }
                 });
 
                 ui.separator();

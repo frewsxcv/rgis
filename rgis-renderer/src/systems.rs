@@ -55,7 +55,7 @@ fn layer_loaded(
     mut job_spawner: bevy_jobs::JobSpawner,
 ) {
     for layer in event_reader.read().flat_map(|event| layers.get(event.0)) {
-        let Some(feature_collection) = layer.projected_feature_collection.as_ref() else {
+        let Some(feature_collection) = layer.projected_feature_collection() else {
             continue;
         };
 
