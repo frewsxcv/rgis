@@ -58,7 +58,9 @@ impl<'a> ByFile<'a> {
 
         ui.label("Select file:");
 
-        if ui.button("📄 Select file").clicked() {
+        let select_file_button = ui.button("📄 Select file");
+        crate::widget_registry::register("Select file", select_file_button.rect);
+        if select_file_button.clicked() {
             output = Some(AddLayerOutput::OpenFile);
         }
 
@@ -70,10 +72,9 @@ impl<'a> ByFile<'a> {
 
         ui.separator();
 
-        if ui
-            .add_enabled(submittable, egui::Button::new("Add layer"))
-            .clicked()
-        {
+        let add_layer_button = ui.add_enabled(submittable, egui::Button::new("Add layer"));
+        crate::widget_registry::register("Add layer", add_layer_button.rect);
+        if add_layer_button.clicked() {
             match self.selected_file.0.take() {
                 Some(loaded_file) => {
                     output = Some(AddLayerOutput::LoadFromFile {
