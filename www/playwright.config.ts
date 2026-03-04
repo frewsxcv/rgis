@@ -1,12 +1,15 @@
 import { defineConfig, devices } from "@playwright/test";
+import os from "os";
+
+const ciWorkers = Math.max(1, os.cpus().length - 1);
 
 export default defineConfig({
   testDir: "./tests",
   snapshotPathTemplate: "{testDir}/{testFileDir}/{testFileName}-snapshots/{arg}{ext}",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 2 : undefined,
+  retries: process.env.CI ? 1 : 0,
+  workers: process.env.CI ? ciWorkers : undefined,
   reporter: "html",
 
   expect: {

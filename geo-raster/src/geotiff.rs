@@ -4,7 +4,8 @@ use async_tiff::decoder::DecoderRegistry;
 use async_tiff::error::AsyncTiffResult;
 use async_tiff::metadata::TiffMetadataReader;
 use async_tiff::reader::AsyncFileReader;
-use async_tiff::{Array, TypedArray};
+use async_tiff::tags::PlanarConfiguration;
+use async_tiff::TypedArray;
 
 use crate::{Error, Raster, RasterFormat};
 
@@ -38,14 +39,26 @@ impl GeoTiffSource {
         let width = ifd.image_width();
         let height = ifd.image_height();
 
-        // Read geo-referencing tags
-        let tiepoint = ifd.model_tiepoint().ok_or(Error::MissingGeoInfo)?;
-        let scale = ifd.model_pixel_scale().ok_or(Error::MissingGeoInfo)?;
-
-        let origin_x = *tiepoint.get(3).ok_or(Error::MissingGeoInfo)?;
-        let origin_y = *tiepoint.get(4).ok_or(Error::MissingGeoInfo)?;
-        let scale_x = *scale.first().ok_or(Error::MissingGeoInfo)?;
-        let scale_y = *scale.get(1).ok_or(Error::MissingGeoInfo)?;
+        // Read geo-referencing tags: try tiepoint+scale first, then ModelTransformationTag
+        let (origin_x, origin_y, scale_x, scale_y) =
+            if let (Some(tiepoint), Some(scale)) =
+                (ifd.model_tiepoint(), ifd.model_pixel_scale())
+            {
+                let origin_x = *tiepoint.get(3).ok_or(Error::MissingGeoInfo)?;
+                let origin_y = *tiepoint.get(4).ok_or(Error::MissingGeoInfo)?;
+                let scale_x = *scale.first().ok_or(Error::MissingGeoInfo)?;
+                let scale_y = *scale.get(1).ok_or(Error::MissingGeoInfo)?;
+                (origin_x, origin_y, scale_x, scale_y)
+            } else if let Some(matrix) = ifd.model_transformation() {
+                let scale_x = *matrix.first().ok_or(Error::MissingGeoInfo)?;
+                // Negate matrix[5] to match the positive convention used by ModelPixelScaleTag
+                let scale_y = -(*matrix.get(5).ok_or(Error::MissingGeoInfo)?);
+                let origin_x = *matrix.get(3).ok_or(Error::MissingGeoInfo)?;
+                let origin_y = *matrix.get(7).ok_or(Error::MissingGeoInfo)?;
+                (origin_x, origin_y, scale_x, scale_y)
+            } else {
+                return Err(Error::MissingGeoInfo);
+            };
 
         let min_x = origin_x;
         let max_y = origin_y;
@@ -63,23 +76,33 @@ impl GeoTiffSource {
 
         let samples_per_pixel = ifd.samples_per_pixel();
         let decoder_registry = DecoderRegistry::default();
+        let is_planar = ifd.planar_configuration() == PlanarConfiguration::Planar;
 
-        // Fetch and decode all tiles
-        let mut decoded_tiles = Vec::with_capacity(tiles_x * tiles_y);
+        // Fetch, decode, and normalize all tiles to chunky layout
+        let mut decoded_tiles: Vec<(usize, usize, TypedArray, [usize; 3])> =
+            Vec::with_capacity(tiles_x * tiles_y);
         for ty in 0..tiles_y {
             for tx in 0..tiles_x {
                 let tile = ifd.fetch_tile(tx, ty, &reader).await?;
                 let array = tile.decode(&decoder_registry)?;
-                decoded_tiles.push((tx, ty, array));
+                let (data, shape, _) = array.into_inner();
+
+                let (data, shape) = if is_planar {
+                    let [bands, h, w] = shape;
+                    (planar_to_chunky(data, bands, h, w), [h, w, bands])
+                } else {
+                    (data, shape)
+                };
+
+                decoded_tiles.push((tx, ty, data, shape));
             }
         }
 
         // Determine pixel format from first tile and stitch
-        let first_data = decoded_tiles
+        let first_data = &decoded_tiles
             .first()
             .ok_or(Error::UnsupportedColorType)?
-            .2
-            .data();
+            .2;
 
         let (data, format) = match (samples_per_pixel, first_data) {
             (1, TypedArray::UInt8(_)) => {
@@ -192,8 +215,39 @@ impl GeoTiffSource {
     }
 }
 
+/// Convert tile data from planar layout [bands, height, width] to chunky layout [height, width, bands].
+fn planar_to_chunky(data: TypedArray, bands: usize, height: usize, width: usize) -> TypedArray {
+    match data {
+        TypedArray::UInt8(planar) => {
+            let mut chunky = vec![0u8; planar.len()];
+            for b in 0..bands {
+                for h in 0..height {
+                    for w in 0..width {
+                        chunky[(h * width + w) * bands + b] =
+                            planar[b * height * width + h * width + w];
+                    }
+                }
+            }
+            TypedArray::UInt8(chunky)
+        }
+        TypedArray::UInt16(planar) => {
+            let mut chunky = vec![0u16; planar.len()];
+            for b in 0..bands {
+                for h in 0..height {
+                    for w in 0..width {
+                        chunky[(h * width + w) * bands + b] =
+                            planar[b * height * width + h * width + w];
+                    }
+                }
+            }
+            TypedArray::UInt16(chunky)
+        }
+        other => other,
+    }
+}
+
 fn stitch_tiles_u8(
-    tiles: &[(usize, usize, Array)],
+    tiles: &[(usize, usize, TypedArray, [usize; 3])],
     buf: &mut [u8],
     image_width: u32,
     image_height: u32,
@@ -201,9 +255,8 @@ fn stitch_tiles_u8(
     tile_height: u32,
     channels: u32,
 ) {
-    for (tx, ty, array) in tiles {
-        if let TypedArray::UInt8(tile_data) = array.data() {
-            let shape = array.shape();
+    for (tx, ty, data, shape) in tiles {
+        if let TypedArray::UInt8(tile_data) = data {
             let src_w = shape[1] as u32;
 
             let tile_x_offset = (*tx as u32) * tile_width;
@@ -228,7 +281,7 @@ fn stitch_tiles_u8(
 }
 
 fn stitch_tiles_u16(
-    tiles: &[(usize, usize, Array)],
+    tiles: &[(usize, usize, TypedArray, [usize; 3])],
     buf: &mut [u16],
     image_width: u32,
     image_height: u32,
@@ -236,9 +289,8 @@ fn stitch_tiles_u16(
     tile_height: u32,
     channels: u32,
 ) {
-    for (tx, ty, array) in tiles {
-        if let TypedArray::UInt16(tile_data) = array.data() {
-            let shape = array.shape();
+    for (tx, ty, data, shape) in tiles {
+        if let TypedArray::UInt16(tile_data) = data {
             let src_w = shape[1] as u32;
 
             let tile_x_offset = (*tx as u32) * tile_width;
