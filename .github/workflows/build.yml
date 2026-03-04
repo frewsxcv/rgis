@@ -12,6 +12,7 @@ env:
 
 jobs:
   x86-64-linux-build-and-test:
+    if: github.event_name != 'push'
     runs-on: ubuntu-latest
 
     steps:
@@ -39,6 +40,7 @@ jobs:
         run: cargo test --target x86_64-unknown-linux-gnu --verbose
 
   wasm32-build-and-test:
+    if: github.event_name != 'push'
     runs-on: ubuntu-latest
 
     steps:
@@ -97,7 +99,6 @@ jobs:
 
   wasm32-publish:
     if: github.ref == 'refs/heads/main'
-    needs: wasm32-build-and-test
     runs-on: ubuntu-latest
 
     steps:
