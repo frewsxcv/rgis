@@ -25,15 +25,35 @@ impl bevy_jobs::Job for ReprojectRasterExtentJob {
         let min = self.extent.min();
         let max = self.extent.max();
 
-        let corners = [
-            geo::coord! { x: min.x, y: min.y },
-            geo::coord! { x: max.x, y: min.y },
-            geo::coord! { x: max.x, y: max.y },
-            geo::coord! { x: min.x, y: max.y },
-        ];
+        // Sample points along each edge of a slightly inset extent to build a
+        // projected bounding rect. The small inset (~4% on each side) avoids
+        // projection singularities — e.g. ±90° latitude in Web Mercator maps
+        // to ±infinity. Dense interior sampling also gives a more accurate
+        // bounding rect for non-linear projections.
+        const N: usize = 21;
+        let mut sample_points = Vec::with_capacity(4 * N);
+        // Inset fraction: first sample at ~1/(N+1) from each edge
+        let inset = 1.0 / (N as f64 + 1.0);
+        let x_lo = min.x + inset * (max.x - min.x);
+        let x_hi = max.x - inset * (max.x - min.x);
+        let y_lo = min.y + inset * (max.y - min.y);
+        let y_hi = max.y - inset * (max.y - min.y);
+        for i in 0..N {
+            let t = i as f64 / (N - 1) as f64;
+            let x = x_lo + t * (x_hi - x_lo);
+            let y = y_lo + t * (y_hi - y_lo);
+            // Bottom edge (inset)
+            sample_points.push(geo::point! { x: x, y: y_lo });
+            // Top edge (inset)
+            sample_points.push(geo::point! { x: x, y: y_hi });
+            // Left edge (inset)
+            sample_points.push(geo::point! { x: x_lo, y: y });
+            // Right edge (inset)
+            sample_points.push(geo::point! { x: x_hi, y: y });
+        }
 
         let mut multi_point: geo::Geometry<f64> =
-            geo::MultiPoint::from(corners.to_vec()).into();
+            geo::MultiPoint::from(sample_points).into();
 
         let geodesy_ctx = self.geodesy_ctx.0.read().unwrap();
         let transformer = geo_geodesy::Transformer::from_geodesy(
@@ -54,6 +74,9 @@ impl bevy_jobs::Job for ReprojectRasterExtentJob {
 
         for point in transformed.0.iter() {
             let c = point.0;
+            if !c.x.is_finite() || !c.y.is_finite() {
+                continue;
+            }
             min_x = min_x.min(c.x);
             min_y = min_y.min(c.y);
             max_x = max_x.max(c.x);
