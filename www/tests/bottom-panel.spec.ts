@@ -10,11 +10,9 @@ test.describe("bottom panel - status bar", () => {
   }) => {
     // Close the welcome/add layer windows first by clicking on empty canvas area
     await appPage.clickOnCanvas(0.7, 0.5);
-    await appPage.page.waitForTimeout(500);
 
     // Click the CRS edit button
     await appPage.clickWidget("Edit CRS");
-    await appPage.page.waitForTimeout(500);
     await expect(appPage.page).toHaveScreenshot("change-crs-window-open.png");
   });
 });

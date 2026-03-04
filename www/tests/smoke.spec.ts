@@ -79,7 +79,6 @@ test("add World Countries layer from library", async ({ appPage }) => {
 
   // Expand the "World" folder
   await appPage.clickWidget("World");
-  await appPage.page.waitForTimeout(500);
 
   // Click the "+ Add" button next to "Countries"
   await appPage.clickWidget("Add:Countries");

@@ -4,7 +4,6 @@ test.describe("debug window", () => {
   test("opening debug window from Help menu", async ({ appPage }) => {
     // Click "Help" menu
     await appPage.clickWidget("Help");
-    await appPage.page.waitForTimeout(500);
 
     // Click "Debug stats" in dropdown
     await appPage.clickWidget("Debug stats");
