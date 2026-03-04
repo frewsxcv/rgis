@@ -17,8 +17,16 @@ export class AppPage {
     const canvas = this.page.locator("canvas");
     await expect(canvas).toBeVisible({ timeout: 10000 });
 
-    // Allow time for first frame to render
-    await this.page.waitForTimeout(2000);
+    // Wait until egui has rendered at least one frame with widgets
+    await this.page.waitForFunction(
+      () => {
+        const rects = (window as any).get_all_widget_rects?.();
+        return rects && Object.keys(rects).length > 0;
+      },
+      null,
+      { timeout: 10000 },
+    );
+    await this.waitForNextFrame();
   }
 
   get canvas() {
@@ -73,6 +81,26 @@ export class AppPage {
     );
   }
 
+
+  async getRenderedLayerCount(): Promise<number> {
+    return await this.page.evaluate(
+      () => (window as any).get_rendered_layer_count?.() ?? 0,
+    );
+  }
+
+  async waitForLayerRender(previousCount?: number) {
+    const baseline =
+      previousCount ?? (await this.getRenderedLayerCount());
+    await this.page.waitForFunction(
+      (base) => {
+        const count = (window as any).get_rendered_layer_count?.() ?? 0;
+        return count > base;
+      },
+      baseline,
+      { timeout: 30000 },
+    );
+    await this.waitForNextFrame();
+  }
 
   async regionHasContent(
     xFrac: number,

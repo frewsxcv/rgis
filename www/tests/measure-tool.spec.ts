@@ -12,7 +12,7 @@ test.describe("measure tool", () => {
     await appPage.clickWidget("Library");
     await appPage.clickWidget("USA");
     await appPage.clickWidget("Add:States");
-    await appPage.page.waitForTimeout(10000);
+    await appPage.waitForLayerRender();
 
     // Close the Add Layer window by clicking the canvas
     await appPage.clickOnCanvas(0.222, 0.076);
@@ -20,7 +20,7 @@ test.describe("measure tool", () => {
     // Expand the layer in the side panel and zoom to extent
     await appPage.clickWidget("USA: States");
     await appPage.clickWidget("Zoom to extent");
-    await appPage.page.waitForTimeout(1000);
+    await appPage.waitForNextFrame();
 
     // Select the Measure Tool
     await appPage.clickWidget("Measure Tool");
@@ -33,11 +33,11 @@ test.describe("measure tool", () => {
     const sfY = box.y + box.height * 0.692;
 
     await appPage.page.mouse.move(sfX, sfY);
-    await appPage.page.waitForTimeout(200);
+    await appPage.waitForNextFrame();
     await appPage.page.mouse.move(sfX + 1, sfY);
-    await appPage.page.waitForTimeout(200);
+    await appPage.waitForNextFrame();
     await appPage.page.mouse.move(sfX, sfY);
-    await appPage.page.waitForTimeout(200);
+    await appPage.waitForNextFrame();
 
     // Click to set measurement start point
     await appPage.page.mouse.click(sfX, sfY);

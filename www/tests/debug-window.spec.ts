@@ -7,7 +7,7 @@ test.describe("debug window", () => {
 
     // Click "Debug stats" in dropdown
     await appPage.clickWidget("Debug stats");
-    await appPage.page.waitForTimeout(1000);
+    await appPage.waitForNextFrame();
     await expect(appPage.page).toHaveScreenshot("debug-window-open.png");
   });
 });

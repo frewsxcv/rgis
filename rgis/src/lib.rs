@@ -20,6 +20,12 @@ pub fn get_widget_rect(label: &str) -> JsValue {
 
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
+pub fn get_rendered_layer_count() -> u32 {
+    rgis_renderer::RENDERED_LAYER_COUNT.load(std::sync::atomic::Ordering::Relaxed)
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen]
 pub fn get_all_widget_rects() -> JsValue {
     let all = rgis_ui::widget_registry::get_all();
     let obj = js_sys::Object::new();

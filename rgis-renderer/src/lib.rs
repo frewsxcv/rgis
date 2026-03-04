@@ -1,8 +1,12 @@
 use bevy::{ecs::relationship::RelatedSpawnerCommands, prelude::*};
+use std::sync::atomic::AtomicU32;
 
 mod jobs;
 mod systems;
 mod z_index;
+
+/// Counter incremented each time meshes are spawned for a layer (for test polling).
+pub static RENDERED_LAYER_COUNT: AtomicU32 = AtomicU32::new(0);
 
 use rgis_layers::LayerIndex;
 use z_index::ZIndex;
