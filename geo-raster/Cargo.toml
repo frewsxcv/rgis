@@ -10,4 +10,8 @@ workspace = true
 [dependencies]
 bytes = { workspace = true }
 geo-types = { workspace = true }
-tiff = { workspace = true }
+async-tiff = { workspace = true }
+async-trait = { workspace = true }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "rt"] }

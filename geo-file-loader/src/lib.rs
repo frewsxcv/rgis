@@ -110,8 +110,8 @@ pub fn load_file(file_format: FileFormat, bytes: bytes::Bytes) -> Result<Feature
     }
 }
 
-pub fn load_raster_file(bytes: bytes::Bytes) -> Result<geo_raster::Raster, Error> {
-    Ok(geo_raster::GeoTiffSource::from_bytes(bytes).load()?)
+pub async fn load_raster_file(bytes: bytes::Bytes) -> Result<geo_raster::Raster, Error> {
+    Ok(geo_raster::GeoTiffSource::from_bytes(bytes).load().await?)
 }
 
 trait FileLoader {

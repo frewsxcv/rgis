@@ -19,7 +19,7 @@ pub enum RasterFormat {
 
 #[derive(Debug)]
 pub enum Error {
-    Tiff(tiff::TiffError),
+    AsyncTiff(async_tiff::error::AsyncTiffError),
     UnsupportedColorType,
     MissingGeoInfo,
 }
@@ -27,16 +27,16 @@ pub enum Error {
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Error::Tiff(err) => write!(f, "TIFF error: {err}"),
+            Error::AsyncTiff(err) => write!(f, "TIFF error: {err}"),
             Error::UnsupportedColorType => write!(f, "Unsupported color type"),
             Error::MissingGeoInfo => write!(f, "Missing geo-referencing information"),
         }
     }
 }
 
-impl From<tiff::TiffError> for Error {
-    fn from(err: tiff::TiffError) -> Self {
-        Error::Tiff(err)
+impl From<async_tiff::error::AsyncTiffError> for Error {
+    fn from(err: async_tiff::error::AsyncTiffError) -> Self {
+        Error::AsyncTiff(err)
     }
 }
 
@@ -44,15 +44,18 @@ impl From<tiff::TiffError> for Error {
 mod tests {
     use super::*;
 
-    #[test]
-    fn test_load_uint8_rgb_deflate() {
+    #[tokio::test]
+    async fn test_load_uint8_rgb_deflate() {
         let bytes = bytes::Bytes::from(
             std::fs::read(
                 "../geotiff-test-data/rasterio_generated/fixtures/uint8_rgb_deflate_block64_cog.tif",
             )
             .expect("read test file"),
         );
-        let raster = GeoTiffSource::from_bytes(bytes).load().expect("load GeoTIFF");
+        let raster = GeoTiffSource::from_bytes(bytes)
+            .load()
+            .await
+            .expect("load GeoTIFF");
         assert!(raster.width > 0);
         assert!(raster.height > 0);
         assert_eq!(raster.format, RasterFormat::Rgba8);
