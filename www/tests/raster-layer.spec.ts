@@ -25,6 +25,42 @@ function snapshotName(filePath: string): string {
   return filePath.replace(/\//g, "-").replace(/\.tif$/, "") + ".png";
 }
 
+test("load eox_cloudless with Countries overlay", async ({ appPage }) => {
+  test.setTimeout(60000);
+
+  // Load the raster layer first
+  await appPage.openAddLayerWindow();
+  await appPage.clickWidget("File");
+  await appPage.clickWidget("GeoTIFF");
+
+  const fileChooserPromise = appPage.page.waitForEvent("filechooser");
+  await appPage.clickWidget("Select file");
+  const fileChooser = await fileChooserPromise;
+  await fileChooser.setFiles("./dist/geotiff-test-data/real_data/eox/eox_cloudless.tif");
+  await appPage.waitForNextFrame();
+
+  await appPage.page
+    .locator("#rfd-overlay .rfd-button", { hasText: "Ok" })
+    .click();
+  await appPage.waitForNextFrame();
+
+  const countBefore = await appPage.getRenderedLayerCount();
+  await appPage.clickWidget("Add layer");
+  await appPage.waitForLayerRender(countBefore);
+
+  // Now add the Countries library layer on top
+  await appPage.openAddLayerWindow();
+  await appPage.clickWidget("Library");
+  await appPage.clickWidget("World");
+  const countBeforeCountries = await appPage.getRenderedLayerCount();
+  await appPage.clickWidget("Add:Countries");
+  await appPage.waitForLayerRender(countBeforeCountries);
+
+  await expect(appPage.page).toHaveScreenshot(
+    "real-data-eox-eox-cloudless-with-countries.png",
+  );
+});
+
 for (const filePath of geotiffFiles) {
   test(`load GeoTIFF: ${filePath}`, async ({ appPage }) => {
     test.setTimeout(60000);

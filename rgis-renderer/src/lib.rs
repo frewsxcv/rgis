@@ -53,15 +53,15 @@ struct Fill;
 #[derive(Copy, Clone, Component)]
 struct Stroke;
 
-#[derive(Copy, Clone, Component)]
-pub struct RasterSprite;
-
 fn spawn_raster(
     raster: &geo_raster::Raster,
+    grid: &rgis_layers::ProjectedRasterGrid,
     layer: &rgis_layers::Layer,
     layer_index: LayerIndex,
     commands: &mut Commands,
     images: &mut Assets<Image>,
+    meshes: &mut Assets<Mesh>,
+    materials: &mut Assets<ColorMaterial>,
 ) {
     let (bevy_format, pixel_bytes) = match raster.format {
         geo_raster::RasterFormat::R8 => {
@@ -94,16 +94,57 @@ fn spawn_raster(
 
     let image_handle = images.add(image);
 
-    let extent = &raster.extent;
-    let center_x = (extent.min().x + extent.max().x) / 2.0;
-    let center_y = (extent.min().y + extent.max().y) / 2.0;
-    let world_width = extent.max().x - extent.min().x;
-    let world_height = extent.max().y - extent.min().y;
+    // Build a mesh from the projected grid
+    let cols = grid.cols as usize;
+    let rows = grid.rows as usize;
+    let stride = cols + 1;
 
-    let scale_x = world_width as f32 / raster.width as f32;
-    let scale_y = world_height as f32 / raster.height as f32;
+    let mut positions: Vec<[f32; 3]> = Vec::new();
+    let mut uvs: Vec<[f32; 2]> = Vec::new();
+    let mut indices: Vec<u32> = Vec::new();
 
     let z_index = ZIndex::calculate(layer_index, RenderEntityType::Raster);
+
+    // For each grid cell, emit two triangles if all four corner vertices are valid
+    for row in 0..rows {
+        for col in 0..cols {
+            let tl = row * stride + col;
+            let tr = row * stride + col + 1;
+            let bl = (row + 1) * stride + col;
+            let br = (row + 1) * stride + col + 1;
+
+            if !grid.valid[tl] || !grid.valid[tr] || !grid.valid[bl] || !grid.valid[br] {
+                continue;
+            }
+
+            let base = positions.len() as u32;
+
+            // Emit 4 vertices for this quad
+            for &idx in &[tl, tr, bl, br] {
+                let r = idx / stride;
+                let c = idx % stride;
+                let pos = grid.positions[idx];
+                positions.push([pos[0], pos[1], 0.0]);
+                uvs.push([c as f32 / cols as f32, 1.0 - r as f32 / rows as f32]);
+            }
+
+            // Two triangles: tl-bl-tr, tr-bl-br
+            indices.push(base);     // tl
+            indices.push(base + 2); // bl
+            indices.push(base + 1); // tr
+            indices.push(base + 1); // tr
+            indices.push(base + 2); // bl
+            indices.push(base + 3); // br
+        }
+    }
+
+    let mut mesh = Mesh::new(
+        bevy::mesh::PrimitiveTopology::TriangleList,
+        bevy::asset::RenderAssetUsages::RENDER_WORLD | bevy::asset::RenderAssetUsages::MAIN_WORLD,
+    );
+    mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, positions);
+    mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
+    mesh.insert_indices(bevy::mesh::Indices::U32(indices));
 
     let visibility = if layer.visible {
         Visibility::Visible
@@ -111,17 +152,18 @@ fn spawn_raster(
         Visibility::Hidden
     };
 
+    let material = materials.add(ColorMaterial {
+        texture: Some(image_handle),
+        ..Default::default()
+    });
+
     commands.spawn((
-        Sprite {
-            image: image_handle,
-            ..Default::default()
-        },
-        Transform::from_xyz(center_x as f32, center_y as f32, z_index.0 as f32)
-            .with_scale(bevy::math::Vec3::new(scale_x, scale_y, 1.0)),
+        Mesh2d(meshes.add(mesh)),
+        MeshMaterial2d(material),
+        Transform::from_xyz(0., 0., z_index.0 as f32),
         visibility,
         layer.id,
         RenderEntityType::Raster,
-        RasterSprite,
     ));
 }
 

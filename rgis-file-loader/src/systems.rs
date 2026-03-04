@@ -66,6 +66,7 @@ fn handle_load_file_job_finished_events(
     mut create_layer_event_writer: MessageWriter<rgis_layer_events::CreateLayerEvent>,
     mut create_raster_layer_event_writer: MessageWriter<rgis_layer_events::CreateRasterLayerEvent>,
     mut render_message_event_writer: MessageWriter<rgis_ui_events::RenderMessageEvent>,
+    geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
 ) {
     while let Some(outcome) = finished_jobs.take_next::<crate::jobs::LoadFileJob>() {
         match outcome {
@@ -83,8 +84,22 @@ fn handle_load_file_job_finished_events(
             Ok(crate::jobs::LoadFileJobOutcome::Raster {
                 raster,
                 name,
-                source_crs,
+                mut source_crs,
             }) => {
+                // Override source CRS with the EPSG code detected from GeoTIFF metadata
+                if let Some(detected_epsg) = raster.epsg_code {
+                    if detected_epsg != source_crs.epsg_code {
+                        let mut ctx = geodesy_ctx.0.write().unwrap();
+                        if let Ok(op_handle) =
+                            rgis_geodesy::epsg_code_to_geodesy_op_handle(&mut *ctx, detected_epsg)
+                        {
+                            source_crs = Crs {
+                                epsg_code: detected_epsg,
+                                op_handle,
+                            };
+                        }
+                    }
+                }
                 create_raster_layer_event_writer.write(
                     rgis_layer_events::CreateRasterLayerEvent {
                         raster,

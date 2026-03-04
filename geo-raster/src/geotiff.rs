@@ -70,6 +70,8 @@ impl GeoTiffSource {
             geo_types::coord! { x: max_x, y: max_y },
         );
 
+        let epsg_code = ifd.geo_key_directory().and_then(|gkd| gkd.epsg_code());
+
         let tile_width = ifd.tile_width().ok_or(Error::UnsupportedColorType)?;
         let tile_height = ifd.tile_height().ok_or(Error::UnsupportedColorType)?;
         let (tiles_x, tiles_y) = ifd.tile_count().ok_or(Error::UnsupportedColorType)?;
@@ -270,6 +272,7 @@ impl GeoTiffSource {
             data,
             format,
             extent,
+            epsg_code,
         })
     }
 }

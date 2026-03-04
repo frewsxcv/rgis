@@ -10,6 +10,15 @@ pub struct LayerIndex(pub usize);
 #[derive(Debug, Copy, Clone)]
 pub struct LayerWithIndex<'a>(pub &'a Layer, pub LayerIndex);
 
+#[derive(Debug)]
+pub struct ProjectedRasterGrid {
+    pub cols: u32,
+    pub rows: u32,
+    pub positions: Vec<[f32; 2]>,
+    pub valid: Vec<bool>,
+    pub extent: geo::Rect<f64>,
+}
+
 #[derive(Debug, Resource)]
 pub struct Layers {
     // Ordered from bottom to top
@@ -195,7 +204,7 @@ impl Layers {
     ) -> rgis_primitives::LayerId {
         let layer_id = self.next_layer_id();
         let layer = Layer {
-            data: LayerData::Raster { raster },
+            data: LayerData::Raster { raster, projected_grid: None },
             color: LayerColor {
                 fill: None,
                 stroke: Color::WHITE,
@@ -219,7 +228,9 @@ impl Layers {
                 } => {
                     *projected_feature_collection = None;
                 }
-                LayerData::Raster { .. } => {}
+                LayerData::Raster { projected_grid, .. } => {
+                    *projected_grid = None;
+                }
             }
         }
     }
@@ -246,6 +257,7 @@ pub enum LayerData {
     },
     Raster {
         raster: geo_raster::Raster,
+        projected_grid: Option<ProjectedRasterGrid>,
     },
 }
 
@@ -306,13 +318,13 @@ impl Layer {
                 projected_feature_collection,
                 ..
             } => projected_feature_collection.is_some(),
-            LayerData::Raster { .. } => true,
+            LayerData::Raster { projected_grid, .. } => projected_grid.is_some(),
         }
     }
 
     pub fn raster(&self) -> Option<&geo_raster::Raster> {
         match &self.data {
-            LayerData::Raster { raster } => Some(raster),
+            LayerData::Raster { raster, .. } => Some(raster),
             _ => None,
         }
     }
