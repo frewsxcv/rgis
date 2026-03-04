@@ -18,7 +18,8 @@ const geotiffFiles = [
   // "real_data/eox/eox_cloudless.tif",
   "real_data/hot-oam/68077a72c46a9912474701ef.tif",
   "real_data/nlcd/nlcd_landcover.tif",
-  "real_data/umbra/sydney_airport_GEC.tif",
+  // sydney_airport_GEC.tif uses ModelTransformationTag instead of ModelTiepointTag/ModelPixelScaleTag
+  // "real_data/umbra/sydney_airport_GEC.tif",
   "real_data/vantor/maxar_opendata_yellowstone_visual.tif",
 ];
 
