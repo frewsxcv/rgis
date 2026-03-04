@@ -31,7 +31,7 @@ impl bevy_jobs::Job for LoadFileJob {
 
     async fn perform(self, _: bevy_jobs::Context) -> Self::Outcome {
         if self.file_format.is_raster() {
-            let raster = geo_file_loader::load_raster_file(self.bytes)?;
+            let raster = geo_file_loader::load_raster_file(self.bytes).await?;
             Ok(LoadFileJobOutcome::Raster {
                 raster,
                 name: self.name,

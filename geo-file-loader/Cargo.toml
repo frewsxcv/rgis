@@ -12,4 +12,3 @@ bytes = { workspace = true }
 geo = { workspace = true }
 geo-raster = { path = "../geo-raster" }
 geozero = { workspace = true, features = ["with-wkt", "with-gpx", "with-shp"] }
-tiff = { workspace = true }
