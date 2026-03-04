@@ -195,7 +195,7 @@ impl Layers {
     ) -> rgis_primitives::LayerId {
         let layer_id = self.next_layer_id();
         let layer = Layer {
-            data: LayerData::Raster { raster },
+            data: LayerData::Raster { raster, projected_extent: None },
             color: LayerColor {
                 fill: None,
                 stroke: Color::WHITE,
@@ -219,7 +219,9 @@ impl Layers {
                 } => {
                     *projected_feature_collection = None;
                 }
-                LayerData::Raster { .. } => {}
+                LayerData::Raster { projected_extent, .. } => {
+                    *projected_extent = None;
+                }
             }
         }
     }
@@ -246,6 +248,7 @@ pub enum LayerData {
     },
     Raster {
         raster: geo_raster::Raster,
+        projected_extent: Option<geo::Rect<f64>>,
     },
 }
 
@@ -306,13 +309,13 @@ impl Layer {
                 projected_feature_collection,
                 ..
             } => projected_feature_collection.is_some(),
-            LayerData::Raster { .. } => true,
+            LayerData::Raster { projected_extent, .. } => projected_extent.is_some(),
         }
     }
 
     pub fn raster(&self) -> Option<&geo_raster::Raster> {
         match &self.data {
-            LayerData::Raster { raster } => Some(raster),
+            LayerData::Raster { raster, .. } => Some(raster),
             _ => None,
         }
     }

@@ -63,12 +63,13 @@ fn layer_loaded(
         };
 
         match &layer.data {
-            rgis_layers::LayerData::Raster { raster } => {
+            rgis_layers::LayerData::Raster { raster, projected_extent: Some(projected_extent) } => {
                 let Some(layer_with_index) = layers.get_with_index(event.0) else {
                     continue;
                 };
                 crate::spawn_raster(
                     raster,
+                    projected_extent,
                     layer_with_index.0,
                     layer_with_index.1,
                     &mut commands,

@@ -157,8 +157,7 @@ fn center_camera(
             continue;
         };
 
-        let bounding_rect = if let Some(raster) = layer.raster() {
-            let ext = &raster.extent;
+        let bounding_rect = if let rgis_layers::LayerData::Raster { projected_extent: Some(ext), .. } = &layer.data {
             use geo_projected::WrapTo;
             geo::Rect::new(
                 geo::Coord {

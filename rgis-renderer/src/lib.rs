@@ -58,6 +58,7 @@ pub struct RasterSprite;
 
 fn spawn_raster(
     raster: &geo_raster::Raster,
+    projected_extent: &geo::Rect<f64>,
     layer: &rgis_layers::Layer,
     layer_index: LayerIndex,
     commands: &mut Commands,
@@ -94,11 +95,10 @@ fn spawn_raster(
 
     let image_handle = images.add(image);
 
-    let extent = &raster.extent;
-    let center_x = (extent.min().x + extent.max().x) / 2.0;
-    let center_y = (extent.min().y + extent.max().y) / 2.0;
-    let world_width = extent.max().x - extent.min().x;
-    let world_height = extent.max().y - extent.min().y;
+    let center_x = (projected_extent.min().x + projected_extent.max().x) / 2.0;
+    let center_y = (projected_extent.min().y + projected_extent.max().y) / 2.0;
+    let world_width = projected_extent.max().x - projected_extent.min().x;
+    let world_height = projected_extent.max().y - projected_extent.min().y;
 
     let scale_x = world_width as f32 / raster.width as f32;
     let scale_y = world_height as f32 / raster.height as f32;
