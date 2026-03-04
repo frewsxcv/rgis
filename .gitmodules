@@ -1,0 +1,3 @@
+[submodule "geotiff-test-data"]
+	path = geotiff-test-data
+	url = https://github.com/developmentseed/geotiff-test-data.git

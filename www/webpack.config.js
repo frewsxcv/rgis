@@ -30,8 +30,8 @@ module.exports = {
         from: '../rgis/pkg/rgis_bg.wasm',
         to: 'rgis_bg.wasm',
       }, {
-        from: 'test-data',
-        to: 'test-data',
+        from: 'geotiff-test-data',
+        to: 'geotiff-test-data',
         context: '..'
       }]
     }),
