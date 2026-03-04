@@ -124,7 +124,7 @@ fn spawn_raster(
                 let r = idx / stride;
                 let c = idx % stride;
                 let pos = grid.positions[idx];
-                positions.push([pos[0], pos[1], z_index.0 as f32]);
+                positions.push([pos[0], pos[1], 0.0]);
                 uvs.push([c as f32 / cols as f32, 1.0 - r as f32 / rows as f32]);
             }
 
@@ -160,7 +160,7 @@ fn spawn_raster(
     commands.spawn((
         Mesh2d(meshes.add(mesh)),
         MeshMaterial2d(material),
-        Transform::default(),
+        Transform::from_xyz(0., 0., z_index.0 as f32),
         visibility,
         layer.id,
         RenderEntityType::Raster,
