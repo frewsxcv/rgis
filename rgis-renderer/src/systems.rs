@@ -55,6 +55,8 @@ fn layer_loaded(
     mut job_spawner: bevy_jobs::JobSpawner,
     mut commands: Commands,
     mut images: ResMut<Assets<Image>>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
     mut meshes_spawned_event_writer: MessageWriter<rgis_renderer_events::MeshesSpawnedEvent>,
 ) {
     for event in event_reader.read() {
@@ -63,17 +65,19 @@ fn layer_loaded(
         };
 
         match &layer.data {
-            rgis_layers::LayerData::Raster { raster, projected_extent: Some(projected_extent) } => {
+            rgis_layers::LayerData::Raster { raster, projected_grid: Some(grid) } => {
                 let Some(layer_with_index) = layers.get_with_index(event.0) else {
                     continue;
                 };
                 crate::spawn_raster(
                     raster,
-                    projected_extent,
+                    grid,
                     layer_with_index.0,
                     layer_with_index.1,
                     &mut commands,
                     &mut images,
+                    &mut meshes,
+                    &mut materials,
                 );
                 meshes_spawned_event_writer.write(event.0.into());
                 crate::RENDERED_LAYER_COUNT.fetch_add(1, std::sync::atomic::Ordering::Relaxed);

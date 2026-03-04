@@ -99,8 +99,8 @@ fn handle_reproject_raster_extent_job_completion_events(
         };
 
         match &mut layer.data {
-            rgis_layers::LayerData::Raster { projected_extent, .. } => {
-                *projected_extent = Some(outcome.projected_extent);
+            rgis_layers::LayerData::Raster { projected_grid, .. } => {
+                *projected_grid = Some(outcome.projected_grid);
             }
             rgis_layers::LayerData::Vector { .. } => {}
         }

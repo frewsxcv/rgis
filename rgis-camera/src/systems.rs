@@ -157,16 +157,16 @@ fn center_camera(
             continue;
         };
 
-        let bounding_rect = if let rgis_layers::LayerData::Raster { projected_extent: Some(ext), .. } = &layer.data {
+        let bounding_rect = if let rgis_layers::LayerData::Raster { projected_grid: Some(grid), .. } = &layer.data {
             use geo_projected::WrapTo;
             geo::Rect::new(
                 geo::Coord {
-                    x: ext.min().x,
-                    y: ext.min().y,
+                    x: grid.extent.min().x,
+                    y: grid.extent.min().y,
                 },
                 geo::Coord {
-                    x: ext.max().x,
-                    y: ext.max().y,
+                    x: grid.extent.max().x,
+                    y: grid.extent.max().y,
                 },
             )
             .wrap::<geo_projected::Projected>()
