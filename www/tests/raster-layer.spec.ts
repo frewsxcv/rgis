@@ -2,7 +2,8 @@ import { test, expect } from "./fixtures/app-fixture";
 
 const geotiffFiles = [
   "rasterio_generated/fixtures/antimeridian.tif",
-  "rasterio_generated/fixtures/cog_uint8_rgb_mask.tif",
+  // Internal mask IFD not supported by async-tiff
+  // "rasterio_generated/fixtures/cog_uint8_rgb_mask.tif",
   "rasterio_generated/fixtures/cog_uint8_rgb_nodata.tif",
   "rasterio_generated/fixtures/cog_uint8_rgba.tif",
   "rasterio_generated/fixtures/custom_crs.tif",
