@@ -31,9 +31,17 @@ export class AppPage {
     return box;
   }
 
+  async waitForNextFrame() {
+    await this.page.evaluate(
+      () =>
+        new Promise<void>((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+        ),
+    );
+  }
+
   async openAddLayerWindow() {
     await this.clickWidget("Add Layer");
-    await this.page.waitForTimeout(500);
   }
 
   async clickOnCanvas(xFrac: number, yFrac: number) {
@@ -41,7 +49,7 @@ export class AppPage {
     const x = box.x + box.width * xFrac;
     const y = box.y + box.height * yFrac;
     await this.page.mouse.click(x, y);
-    await this.page.waitForTimeout(500);
+    await this.waitForNextFrame();
   }
 
   async clickWidget(label: string) {
@@ -56,7 +64,7 @@ export class AppPage {
     const cx = (rect[0] + rect[2]) / 2;
     const cy = (rect[1] + rect[3]) / 2;
     await this.page.mouse.click(cx, cy);
-    await this.page.waitForTimeout(500);
+    await this.waitForNextFrame();
   }
 
   async listWidgets(): Promise<string> {

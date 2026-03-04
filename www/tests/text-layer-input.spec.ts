@@ -4,7 +4,6 @@ test.describe("text layer input", () => {
   test("selecting Text source shows format options", async ({ appPage }) => {
     await appPage.openAddLayerWindow();
     await appPage.clickWidget("Text");
-    await appPage.page.waitForTimeout(500);
     await expect(appPage.page).toHaveScreenshot("text-tab-selected.png");
   });
 
@@ -13,10 +12,8 @@ test.describe("text layer input", () => {
   }) => {
     await appPage.openAddLayerWindow();
     await appPage.clickWidget("Text");
-    await appPage.page.waitForTimeout(500);
 
     await appPage.clickWidget("GeoJSON");
-    await appPage.page.waitForTimeout(500);
     await expect(appPage.page).toHaveScreenshot(
       "text-tab-geojson-textarea.png",
     );
@@ -27,10 +24,8 @@ test.describe("text layer input", () => {
   }) => {
     await appPage.openAddLayerWindow();
     await appPage.clickWidget("Text");
-    await appPage.page.waitForTimeout(500);
 
     await appPage.clickWidget("WKT");
-    await appPage.page.waitForTimeout(500);
     await expect(appPage.page).toHaveScreenshot("text-tab-wkt-textarea.png");
   });
 });
