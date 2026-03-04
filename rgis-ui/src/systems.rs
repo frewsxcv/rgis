@@ -578,7 +578,7 @@ pub fn configure(app: &mut App) {
     );
     app.add_systems(
         EguiPrimaryContextPass,
-        bevy_egui_window::render_window_system::<crate::windows::welcome::Welcome>
+        crate::windows::welcome::render_welcome_window_system
             .run_if(bevy_egui_window::run_if_is_window_open::<crate::windows::welcome::Welcome>),
     );
 }

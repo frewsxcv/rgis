@@ -1,6 +1,7 @@
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::*;
 use bevy_egui::egui;
+use bevy_egui_window::Window as _;
 
 #[derive(SystemParam)]
 pub struct Welcome<'w> {
@@ -36,4 +37,37 @@ impl bevy_egui_window::Window for Welcome<'_> {
     fn default_anchor(&self) -> (egui::Align2, [f32; 2]) {
         (egui::Align2::CENTER_CENTER, [0., 0.])
     }
+}
+
+pub fn render_welcome_window_system(
+    window: Welcome<'_>,
+    mut bevy_egui_ctx: bevy_egui::EguiContexts,
+    mut is_window_open: ResMut<bevy_egui_window::IsWindowOpen<Welcome<'static>>>,
+) -> Result {
+    let ctx = bevy_egui_ctx.ctx_mut()?;
+
+    let (anchor_align, anchor_offset) = window.default_anchor();
+
+    let response = egui::Window::new(window.title())
+        .default_width(window.default_width())
+        .open(&mut is_window_open.0)
+        .resizable(false)
+        .anchor(anchor_align, anchor_offset)
+        .show(ctx, |ui| {
+            ui.add(window);
+        });
+
+    if let Some(response) = response {
+        let clicked_outside = ctx.input(|i| {
+            i.pointer.any_click()
+                && i.pointer
+                    .interact_pos()
+                    .is_some_and(|pos| !response.response.rect.contains(pos))
+        });
+        if clicked_outside {
+            is_window_open.0 = false;
+        }
+    }
+
+    Ok(())
 }
