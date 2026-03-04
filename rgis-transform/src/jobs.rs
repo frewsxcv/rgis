@@ -25,35 +25,21 @@ impl bevy_jobs::Job for ReprojectRasterExtentJob {
         let min = self.extent.min();
         let max = self.extent.max();
 
-        // Sample points along each edge of a slightly inset extent to build a
-        // projected bounding rect. The small inset (~4% on each side) avoids
-        // projection singularities — e.g. ±90° latitude in Web Mercator maps
-        // to ±infinity. Dense interior sampling also gives a more accurate
-        // bounding rect for non-linear projections.
+        // Sample points densely along each edge of the extent. Each point is
+        // transformed individually so that projection singularities (e.g. ±90°
+        // latitude in Web Mercator) cause that single point to be skipped
+        // rather than failing the entire batch.
         const N: usize = 21;
         let mut sample_points = Vec::with_capacity(4 * N);
-        // Inset fraction: first sample at ~1/(N+1) from each edge
-        let inset = 1.0 / (N as f64 + 1.0);
-        let x_lo = min.x + inset * (max.x - min.x);
-        let x_hi = max.x - inset * (max.x - min.x);
-        let y_lo = min.y + inset * (max.y - min.y);
-        let y_hi = max.y - inset * (max.y - min.y);
         for i in 0..N {
             let t = i as f64 / (N - 1) as f64;
-            let x = x_lo + t * (x_hi - x_lo);
-            let y = y_lo + t * (y_hi - y_lo);
-            // Bottom edge (inset)
-            sample_points.push(geo::point! { x: x, y: y_lo });
-            // Top edge (inset)
-            sample_points.push(geo::point! { x: x, y: y_hi });
-            // Left edge (inset)
-            sample_points.push(geo::point! { x: x_lo, y: y });
-            // Right edge (inset)
-            sample_points.push(geo::point! { x: x_hi, y: y });
+            let x = min.x + t * (max.x - min.x);
+            let y = min.y + t * (max.y - min.y);
+            sample_points.push(geo::coord! { x: x, y: min.y }); // bottom
+            sample_points.push(geo::coord! { x: x, y: max.y }); // top
+            sample_points.push(geo::coord! { x: min.x, y: y }); // left
+            sample_points.push(geo::coord! { x: max.x, y: y }); // right
         }
-
-        let mut multi_point: geo::Geometry<f64> =
-            geo::MultiPoint::from(sample_points).into();
 
         let geodesy_ctx = self.geodesy_ctx.0.read().unwrap();
         let transformer = geo_geodesy::Transformer::from_geodesy(
@@ -61,28 +47,29 @@ impl bevy_jobs::Job for ReprojectRasterExtentJob {
             self.source_crs.op_handle,
             self.target_crs.op_handle,
         )?;
-        transformer.transform(&mut multi_point)?;
 
-        let geo::Geometry::MultiPoint(transformed) = multi_point else {
-            unreachable!()
-        };
+        let mut xs = Vec::with_capacity(sample_points.len());
+        let mut ys = Vec::with_capacity(sample_points.len());
 
-        let mut min_x = f64::INFINITY;
-        let mut min_y = f64::INFINITY;
-        let mut max_x = f64::NEG_INFINITY;
-        let mut max_y = f64::NEG_INFINITY;
-
-        for point in transformed.0.iter() {
-            let c = point.0;
-            if !c.x.is_finite() || !c.y.is_finite() {
+        for coord in &sample_points {
+            let mut geom: geo::Geometry<f64> = geo::Point::from(*coord).into();
+            if transformer.transform(&mut geom).is_err() {
                 continue;
             }
-            min_x = min_x.min(c.x);
-            min_y = min_y.min(c.y);
-            max_x = max_x.max(c.x);
-            max_y = max_y.max(c.y);
+            let geo::Geometry::Point(p) = geom else {
+                continue;
+            };
+            let c = p.0;
+            if c.x.is_finite() && c.y.is_finite() {
+                xs.push(c.x);
+                ys.push(c.y);
+            }
         }
 
+        // Use densest-cluster analysis to exclude outliers caused by
+        // projection singularities (e.g. near-polar Mercator Y values).
+        let (min_x, max_x) = robust_range(&mut xs);
+        let (min_y, max_y) = robust_range(&mut ys);
         let projected_extent = geo::Rect::new(
             geo::coord! { x: min_x, y: min_y },
             geo::coord! { x: max_x, y: max_y },
@@ -148,4 +135,55 @@ impl bevy_jobs::Job for ReprojectGeometryJob {
             target_crs: self.target_crs,
         })
     }
+}
+
+/// Return a robust (min, max) range by finding the densest cluster of values
+/// and expanding it, filtering out extreme outliers caused by projection
+/// singularities (e.g. near-polar Mercator Y values).
+///
+/// When extreme outliers make up a large fraction of the data (even >50%),
+/// this finds the shortest interval containing 40% of values, then expands
+/// it to capture the full inlier range.
+fn robust_range(values: &mut [f64]) -> (f64, f64) {
+    values.sort_unstable_by(|a, b| a.partial_cmp(b).unwrap());
+    let n = values.len();
+    if n < 4 {
+        return (values[0], values[n - 1]);
+    }
+
+    // Find the shortest interval containing 40% of values (the densest cluster).
+    let window = (n * 2 / 5).max(2);
+    let mut best_start = 0;
+    let mut best_width = f64::INFINITY;
+    for start in 0..=(n - window) {
+        let width = values[start + window - 1] - values[start];
+        if width < best_width {
+            best_width = width;
+            best_start = start;
+        }
+    }
+
+    let full_range = values[n - 1] - values[0];
+
+    // If the densest cluster spans a reasonable fraction of the full range,
+    // there are no extreme outliers — use the full range.
+    if full_range <= 0.0 || best_width >= full_range * 0.1 {
+        return (values[0], values[n - 1]);
+    }
+
+    // Extreme outliers detected. Expand the dense cluster with 100% padding
+    // to capture the full inlier range without including outliers.
+    let center = (values[best_start] + values[best_start + window - 1]) / 2.0;
+    let expanded_half = best_width; // 100% padding = full width on each side
+    let lo = center - expanded_half;
+    let hi = center + expanded_half;
+
+    let min = values.iter().copied().find(|&v| v >= lo).unwrap_or(values[0]);
+    let max = values
+        .iter()
+        .copied()
+        .rev()
+        .find(|&v| v <= hi)
+        .unwrap_or(values[n - 1]);
+    (min, max)
 }
