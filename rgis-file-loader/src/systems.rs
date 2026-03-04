@@ -7,6 +7,7 @@ struct SourceCrs(Crs);
 fn handle_network_fetch_finished_jobs(
     mut load_event_reader: ResMut<Messages<rgis_file_loader_events::LoadFileEvent>>,
     mut finished_jobs: bevy_jobs::FinishedJobs,
+    mut render_message_event_writer: MessageWriter<rgis_ui_events::RenderMessageEvent>,
 ) {
     while let Some(outcome) =
         finished_jobs.take_next::<bevy_jobs_fetch::NetworkFetchJob<SourceCrs>>()
@@ -21,7 +22,10 @@ fn handle_network_fetch_finished_jobs(
                 });
             }
             Err(e) => {
-                error!("Could not fetch file: {:?}", e);
+                let msg = format!("Could not fetch file: {e}");
+                error!("{msg}");
+                render_message_event_writer
+                    .write(rgis_ui_events::RenderMessageEvent(msg));
             }
         }
     }
@@ -61,6 +65,7 @@ fn handle_load_file_job_finished_events(
     mut finished_jobs: bevy_jobs::FinishedJobs,
     mut create_layer_event_writer: MessageWriter<rgis_layer_events::CreateLayerEvent>,
     mut create_raster_layer_event_writer: MessageWriter<rgis_layer_events::CreateRasterLayerEvent>,
+    mut render_message_event_writer: MessageWriter<rgis_ui_events::RenderMessageEvent>,
 ) {
     while let Some(outcome) = finished_jobs.take_next::<crate::jobs::LoadFileJob>() {
         match outcome {
@@ -89,7 +94,10 @@ fn handle_load_file_job_finished_events(
                 );
             }
             Err(e) => {
-                error!("Encountered error when loading file: {:?}", e);
+                let msg = format!("Error loading file: {e}");
+                error!("{msg}");
+                render_message_event_writer
+                    .write(rgis_ui_events::RenderMessageEvent(msg));
             }
         }
     }
