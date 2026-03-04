@@ -11,14 +11,12 @@ test.describe("add layer window - source selection", () => {
   }) => {
     await appPage.openAddLayerWindow();
     await appPage.clickWidget("Library");
-    await appPage.page.waitForTimeout(500);
     await expect(appPage.page).toHaveScreenshot("add-layer-library-view.png");
   });
 
   test("selecting File source shows format options", async ({ appPage }) => {
     await appPage.openAddLayerWindow();
     await appPage.clickWidget("File");
-    await appPage.page.waitForTimeout(500);
     await expect(appPage.page).toHaveScreenshot("add-layer-file-view.png");
   });
 
@@ -27,7 +25,6 @@ test.describe("add layer window - source selection", () => {
   }) => {
     await appPage.openAddLayerWindow();
     await appPage.clickWidget("Text");
-    await appPage.page.waitForTimeout(500);
     await expect(appPage.page).toHaveScreenshot("add-layer-text-view.png");
   });
 });
@@ -36,10 +33,8 @@ test.describe("add layer window - library tab", () => {
   test("expanding Russia folder shows Country entry", async ({ appPage }) => {
     await appPage.openAddLayerWindow();
     await appPage.clickWidget("Library");
-    await appPage.page.waitForTimeout(500);
 
     await appPage.clickWidget("Russia");
-    await appPage.page.waitForTimeout(500);
     await expect(appPage.page).toHaveScreenshot(
       "library-russia-folder-expanded.png",
     );
@@ -48,10 +43,8 @@ test.describe("add layer window - library tab", () => {
   test("expanding USA folder shows States entry", async ({ appPage }) => {
     await appPage.openAddLayerWindow();
     await appPage.clickWidget("Library");
-    await appPage.page.waitForTimeout(500);
 
     await appPage.clickWidget("USA");
-    await appPage.page.waitForTimeout(500);
     await expect(appPage.page).toHaveScreenshot(
       "library-usa-folder-expanded.png",
     );
@@ -60,10 +53,8 @@ test.describe("add layer window - library tab", () => {
   test("expanding World folder shows entries", async ({ appPage }) => {
     await appPage.openAddLayerWindow();
     await appPage.clickWidget("Library");
-    await appPage.page.waitForTimeout(500);
 
     await appPage.clickWidget("World");
-    await appPage.page.waitForTimeout(500);
     await expect(appPage.page).toHaveScreenshot(
       "library-world-folder-expanded.png",
     );
@@ -74,10 +65,8 @@ test.describe("add layer window - file tab", () => {
   test("selecting GeoJSON format in file tab", async ({ appPage }) => {
     await appPage.openAddLayerWindow();
     await appPage.clickWidget("File");
-    await appPage.page.waitForTimeout(500);
 
     await appPage.clickWidget("GeoJSON");
-    await appPage.page.waitForTimeout(500);
     await expect(appPage.page).toHaveScreenshot(
       "file-tab-geojson-selected.png",
     );
@@ -86,10 +75,8 @@ test.describe("add layer window - file tab", () => {
   test("selecting Shapefile format in file tab", async ({ appPage }) => {
     await appPage.openAddLayerWindow();
     await appPage.clickWidget("File");
-    await appPage.page.waitForTimeout(500);
 
     await appPage.clickWidget("Shapefile");
-    await appPage.page.waitForTimeout(500);
     await expect(appPage.page).toHaveScreenshot(
       "file-tab-shapefile-selected.png",
     );

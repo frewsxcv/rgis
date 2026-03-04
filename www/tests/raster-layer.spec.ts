@@ -36,7 +36,7 @@ for (const filePath of geotiffFiles) {
     await appPage.clickWidget("Select file");
     const fileChooser = await fileChooserPromise;
     await fileChooser.setFiles(`./dist/geotiff-test-data/${filePath}`);
-    await appPage.page.waitForTimeout(500);
+    await appPage.waitForNextFrame();
 
     await appPage.page
       .locator("#rfd-overlay .rfd-button", { hasText: "Ok" })

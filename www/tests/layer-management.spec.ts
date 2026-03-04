@@ -9,11 +9,9 @@ test.describe("layer management", () => {
 
     // Load World Countries from library
     await appPage.clickWidget("Library");
-    await appPage.page.waitForTimeout(500);
 
     // Expand World folder
     await appPage.clickWidget("World");
-    await appPage.page.waitForTimeout(500);
 
     // Click "+ Add" button next to Countries
     await appPage.clickWidget("Add:Countries");
@@ -23,7 +21,6 @@ test.describe("layer management", () => {
 
     // Close the Add Layer window by clicking its X button
     await appPage.clickOnCanvas(0.222, 0.076);
-    await appPage.page.waitForTimeout(500);
   });
 
   test("loaded layer appears in side panel with collapsing header", async ({
@@ -39,25 +36,21 @@ test.describe("layer management", () => {
   }) => {
     // Click the ▶ toggle arrow on the "World: Countries" collapsing header
     await appPage.clickWidget("World: Countries");
-    await appPage.page.waitForTimeout(500);
     await expect(appPage.page).toHaveScreenshot("layer-details-expanded.png");
   });
 
   test("clicking Manage opens manage layer window", async ({ appPage }) => {
     // Expand the layer header
     await appPage.clickWidget("World: Countries");
-    await appPage.page.waitForTimeout(500);
 
     // Click "Manage..." button
     await appPage.clickWidget("Manage");
-    await appPage.page.waitForTimeout(500);
     await expect(appPage.page).toHaveScreenshot("manage-layer-window.png");
   });
 
   test("layer visibility toggle hides the layer", async ({ appPage }) => {
     // Expand the layer header
     await appPage.clickWidget("World: Countries");
-    await appPage.page.waitForTimeout(500);
 
     // Click "Visible" checkbox
     await appPage.clickWidget("Toggle Visibility");
@@ -68,7 +61,6 @@ test.describe("layer management", () => {
   test("zoom to extent centers the map on the layer", async ({ appPage }) => {
     // Expand the layer header
     await appPage.clickWidget("World: Countries");
-    await appPage.page.waitForTimeout(500);
 
     // Click "Zoom to Extent" button
     await appPage.clickWidget("Zoom to extent");
@@ -81,11 +73,9 @@ test.describe("layer management", () => {
   }) => {
     // Expand the layer header
     await appPage.clickWidget("World: Countries");
-    await appPage.page.waitForTimeout(500);
 
     // Click "Operations" collapsing header
     await appPage.clickWidget("Operations");
-    await appPage.page.waitForTimeout(500);
     await expect(appPage.page).toHaveScreenshot("operations-expanded.png");
   });
 });
