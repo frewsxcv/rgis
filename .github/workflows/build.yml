@@ -66,6 +66,11 @@ jobs:
           export DEBIAN_FRONTEND=noninteractive
           sudo apt-get clean && sudo apt-get update
           sudo apt-get install -y pkg-config libudev-dev libxcb-shape0-dev libxcb-xfixes0-dev libxcb1-dev
+      - name: Cache npm dependencies
+        uses: actions/cache@v3
+        with:
+          path: www/node_modules
+          key: npm-${{ runner.os }}-${{ hashFiles('www/package-lock.json') }}
       - name: Install node dependencies
         run: (cd www && npm install)
       - name: Build

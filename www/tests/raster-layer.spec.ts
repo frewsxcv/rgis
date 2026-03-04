@@ -42,10 +42,11 @@ for (const filePath of geotiffFiles) {
     await appPage.page
       .locator("#rfd-overlay .rfd-button", { hasText: "Ok" })
       .click();
-    await appPage.page.waitForTimeout(1000);
+    await appPage.waitForNextFrame();
 
+    const countBefore = await appPage.getRenderedLayerCount();
     await appPage.clickWidget("Add layer");
-    await appPage.page.waitForTimeout(5000);
+    await appPage.waitForLayerRender(countBefore);
 
     await expect(appPage.page).toHaveScreenshot(snapshotName(filePath));
   });

@@ -17,7 +17,7 @@ test.describe("layer management", () => {
     await appPage.clickWidget("Add:Countries");
 
     // Wait for layer to load
-    await appPage.page.waitForTimeout(10000);
+    await appPage.waitForLayerRender();
 
     // Close the Add Layer window by clicking its X button
     await appPage.clickOnCanvas(0.222, 0.076);
@@ -54,7 +54,7 @@ test.describe("layer management", () => {
 
     // Click "Visible" checkbox
     await appPage.clickWidget("Toggle Visibility");
-    await appPage.page.waitForTimeout(1000);
+    await appPage.waitForNextFrame();
     await expect(appPage.page).toHaveScreenshot("layer-hidden.png");
   });
 
@@ -64,7 +64,7 @@ test.describe("layer management", () => {
 
     // Click "Zoom to Extent" button
     await appPage.clickWidget("Zoom to extent");
-    await appPage.page.waitForTimeout(1000);
+    await appPage.waitForNextFrame();
     await expect(appPage.page).toHaveScreenshot("zoom-to-extent.png");
   });
 

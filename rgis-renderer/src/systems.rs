@@ -75,6 +75,7 @@ fn layer_loaded(
                     &mut images,
                 );
                 meshes_spawned_event_writer.write(event.0.into());
+                crate::RENDERED_LAYER_COUNT.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
             }
             rgis_layers::LayerData::Vector {
                 projected_feature_collection: Some(feature_collection),
@@ -129,6 +130,7 @@ fn handle_mesh_building_job_outcome(
         );
 
         meshes_spawned_event_writer.write(layer_id.into());
+        crate::RENDERED_LAYER_COUNT.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
     }
 }
 

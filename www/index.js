@@ -1,4 +1,4 @@
-import init, { run, get_widget_rect, get_all_widget_rects } from "rgis-pkg/rgis.js";
+import init, { run, get_widget_rect, get_all_widget_rects, get_rendered_layer_count } from "rgis-pkg/rgis.js";
 
 async function fetchWasmWithProgress() {
     const bar = document.getElementById("loading-bar");
@@ -46,6 +46,7 @@ async function main() {
     // Expose widget position functions for Playwright tests
     window.get_widget_rect = get_widget_rect;
     window.get_all_widget_rects = get_all_widget_rects;
+    window.get_rendered_layer_count = get_rendered_layer_count;
     // Signal that WASM has loaded and initialized
     document.title = "rgis - ready";
     // Call the run function

@@ -84,7 +84,7 @@ test("add World Countries layer from library", async ({ appPage }) => {
   await appPage.clickWidget("Add:Countries");
 
   // Wait for the layer to load from network and render
-  await appPage.page.waitForTimeout(10000);
+  await appPage.waitForLayerRender();
 
   await expect(appPage.page).toHaveScreenshot("world-countries-rendered.png");
 });
