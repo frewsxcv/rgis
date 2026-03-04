@@ -2933,7 +2933,7 @@ dependencies = [
  "geo",
  "geo-raster",
  "geozero",
- "tiff 0.9.1",
+ "tiff",
 ]
 
 [[package]]
@@ -2970,7 +2970,7 @@ version = "0.1.0"
 dependencies = [
  "bytes",
  "geo-types",
- "tiff 0.9.1",
+ "tiff",
 ]
 
 [[package]]
@@ -3648,7 +3648,7 @@ dependencies = [
  "moxcms",
  "num-traits",
  "png",
- "tiff 0.10.3",
+ "tiff",
 ]
 
 [[package]]
@@ -3773,12 +3773,6 @@ dependencies = [
  "getrandom 0.3.4",
  "libc",
 ]
-
-[[package]]
-name = "jpeg-decoder"
-version = "0.3.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "00810f1d8b74be64b13dbf3db89ac67740615d6c891f0e7b6179326533011a07"
 
 [[package]]
 name = "js-sys"
@@ -6076,17 +6070,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f60246a4944f24f6e018aa17cdeffb7818b76356965d03b07d6a9886e8962185"
 dependencies = [
  "cfg-if",
-]
-
-[[package]]
-name = "tiff"
-version = "0.9.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ba1310fcea54c6a9a4fd1aad794ecc02c31682f6bfbecdf460bf19533eed1e3e"
-dependencies = [
- "flate2",
- "jpeg-decoder",
- "weezl",
 ]
 
 [[package]]

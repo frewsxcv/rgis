@@ -83,7 +83,7 @@ num-t = "5"
 rfd = "0.15"
 geo-types = "0.7"
 getrandom = { version = "0.2", features = ["js"] }
-tiff = "0.9"
+tiff = "0.10"
 js-sys = "0.3"
 wasm-bindgen = "0.2"
 

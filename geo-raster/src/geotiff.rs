@@ -47,7 +47,14 @@ impl GeoTiffSource {
                 let data: Vec<u8> = buf.iter().map(|v| (v >> 8) as u8).collect();
                 (data, RasterFormat::R8)
             }
-            (ColorType::RGB(8), DecodingResult::U8(buf)) => {
+            (ColorType::RGB(8), DecodingResult::U8(buf))
+            | (
+                ColorType::Multiband {
+                    bit_depth: 8,
+                    num_samples: 3,
+                },
+                DecodingResult::U8(buf),
+            ) => {
                 // Convert RGB to RGBA
                 let pixel_count = (width * height) as usize;
                 let mut rgba = Vec::with_capacity(pixel_count * 4);
@@ -63,6 +70,56 @@ impl GeoTiffSource {
                     }
                 }
                 (rgba, RasterFormat::Rgba8)
+            }
+            (
+                ColorType::Multiband {
+                    bit_depth: 16,
+                    num_samples: 3,
+                },
+                DecodingResult::U16(buf),
+            ) => {
+                // Downscale 16-bit RGB to 8-bit RGBA
+                let pixel_count = (width * height) as usize;
+                let mut rgba = Vec::with_capacity(pixel_count * 4);
+                for i in 0..pixel_count {
+                    let base = i * 3;
+                    if let (Some(&r), Some(&g), Some(&b)) =
+                        (buf.get(base), buf.get(base + 1), buf.get(base + 2))
+                    {
+                        rgba.push((r >> 8) as u8);
+                        rgba.push((g >> 8) as u8);
+                        rgba.push((b >> 8) as u8);
+                        rgba.push(255);
+                    }
+                }
+                (rgba, RasterFormat::Rgba8)
+            }
+            (
+                ColorType::Multiband {
+                    bit_depth: 8,
+                    num_samples: _,
+                },
+                DecodingResult::U8(buf),
+            ) => {
+                // Take first band as grayscale
+                let pixel_count = (width * height) as usize;
+                let num_samples = buf.len() / pixel_count;
+                let data: Vec<u8> = (0..pixel_count).map(|i| buf[i * num_samples]).collect();
+                (data, RasterFormat::R8)
+            }
+            (
+                ColorType::Multiband {
+                    bit_depth: 16,
+                    num_samples: _,
+                },
+                DecodingResult::U16(buf),
+            ) => {
+                // Downscale first band to 8-bit grayscale
+                let pixel_count = (width * height) as usize;
+                let num_samples = buf.len() / pixel_count;
+                let data: Vec<u8> =
+                    (0..pixel_count).map(|i| (buf[i * num_samples] >> 8) as u8).collect();
+                (data, RasterFormat::R8)
             }
             (ColorType::RGBA(8), DecodingResult::U8(buf)) => {
                 (buf, RasterFormat::Rgba8)
