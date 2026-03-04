@@ -5313,6 +5313,7 @@ dependencies = [
  "rgis-file-loader-events",
  "rgis-layer-events",
  "rgis-primitives",
+ "rgis-ui-events",
 ]
 
 [[package]]
