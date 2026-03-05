@@ -667,7 +667,7 @@ mod tests {
         app.add_plugins(bevy_egui::EguiPlugin::default());
         app.add_plugins(rgis_geodesy::Plugin);
         app.add_plugins(rgis_crs_messages::Plugin);
-        app.add_plugins(rgis_crs::Plugin);
+        app.add_plugins(rgis_crs::Plugin::default());
 
         app.insert_resource(rgis_settings::RgisSettings {
             current_tool: rgis_settings::Tool::Measure,
@@ -734,7 +734,7 @@ mod tests {
         app.add_plugins(MinimalPlugins);
         app.add_plugins(rgis_geodesy::Plugin);
         app.add_plugins(rgis_crs_messages::Plugin);
-        app.add_plugins(rgis_crs::Plugin);
+        app.add_plugins(rgis_crs::Plugin::default());
 
         app.update();
 
