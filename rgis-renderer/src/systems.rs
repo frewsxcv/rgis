@@ -9,12 +9,12 @@ fn handle_picking_click(
         Or<(With<crate::Point>, With<crate::Polygon>, With<crate::LineString>)>,
     >,
     layers: Res<rgis_layers::Layers>,
-    settings: Res<rgis_settings::RgisSettings>,
+    current_tool: Res<State<rgis_settings::Tool>>,
     mut bevy_egui_ctx: bevy_egui::EguiContexts,
     mut feature_selected_writer: MessageWriter<rgis_map_messages::FeatureSelectedMessage>,
     mut render_props_writer: MessageWriter<rgis_ui_messages::RenderFeaturePropertiesMessage>,
 ) {
-    if settings.current_tool != rgis_settings::Tool::Query {
+    if *current_tool.get() != rgis_settings::Tool::Query {
         return;
     }
 
