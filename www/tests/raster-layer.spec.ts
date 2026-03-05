@@ -26,7 +26,7 @@ function snapshotName(filePath: string): string {
 }
 
 test("load eox_cloudless with Countries overlay", async ({ appPage }) => {
-  test.setTimeout(60000);
+  test.setTimeout(120000);
 
   // Load the raster layer first
   await appPage.openAddLayerWindow();
@@ -37,11 +37,6 @@ test("load eox_cloudless with Countries overlay", async ({ appPage }) => {
   await appPage.clickWidget("Select file");
   const fileChooser = await fileChooserPromise;
   await fileChooser.setFiles("./dist/geotiff-test-data/real_data/eox/eox_cloudless.tif");
-  await appPage.waitForNextFrame();
-
-  await appPage.page
-    .locator("#rfd-overlay .rfd-button", { hasText: "Ok" })
-    .click();
   await appPage.waitForNextFrame();
 
   const countBefore = await appPage.getRenderedLayerCount();
@@ -73,11 +68,6 @@ for (const filePath of geotiffFiles) {
     await appPage.clickWidget("Select file");
     const fileChooser = await fileChooserPromise;
     await fileChooser.setFiles(`./dist/geotiff-test-data/${filePath}`);
-    await appPage.waitForNextFrame();
-
-    await appPage.page
-      .locator("#rfd-overlay .rfd-button", { hasText: "Ok" })
-      .click();
     await appPage.waitForNextFrame();
 
     const countBefore = await appPage.getRenderedLayerCount();

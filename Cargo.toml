@@ -71,7 +71,7 @@ clap = { version = "4", default-features = false, features = [
     "wrap_help",
 ] }
 colorous = "1"
-crs-definitions = "0.3"
+crs-definitions = "0.4"
 dark-light = "2.0"
 egui_plot = "0.34"
 geo = "0.32"
@@ -80,7 +80,7 @@ geo-geodesy = "6"
 geodesy = "0.14"
 geozero = { git = "https://github.com/georust/geozero.git", branch = "main" }
 num-t = "5"
-rfd = "0.15"
+rfd = "0.17"
 geo-types = "0.7"
 getrandom = { version = "0.2", features = ["js"] }
 async-tiff = { git = "https://github.com/developmentseed/async-tiff", default-features = false, features = ["lzma"] }
