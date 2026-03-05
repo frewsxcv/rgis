@@ -341,6 +341,7 @@ fn render_top(
         bevy_egui_window::IsWindowOpen<crate::windows::debug::Debug<'static, 'static>>,
     >,
     mut show_add_layer_window_event_writer: MessageWriter<rgis_ui_messages::ShowAddLayerWindowMessage>,
+    mut clear_color: ResMut<ClearColor>,
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     let Ok(mut window) = windows.single_mut() else {
@@ -355,20 +356,23 @@ fn render_top(
         top_panel_height: &mut top_panel_height,
         is_debug_window_open: &mut is_debug_window_open,
         show_add_layer_window_event_writer: &mut show_add_layer_window_event_writer,
+        clear_color: &mut clear_color,
     }
     .render();
     Ok(())
 }
 
-fn set_egui_theme(mut bevy_egui_ctx: EguiContexts, mut clear_color: ResMut<ClearColor>) -> Result {
+fn set_egui_theme(
+    mut bevy_egui_ctx: EguiContexts,
+    mut clear_color: ResMut<ClearColor>,
+    app_settings: Res<rgis_settings::RgisSettings>,
+) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
-    let egui_visuals = match dark_light::detect() {
-        Ok(dark_light::Mode::Dark) => egui::Visuals::dark(),
-        Ok(dark_light::Mode::Light | dark_light::Mode::Unspecified) => egui::Visuals::light(),
-        Err(e) => {
-            error!("Error detecting dark/light mode: {:?}", e);
-            egui::Visuals::light()
-        }
+    let dark_mode = app_settings.dark_mode;
+    let egui_visuals = if dark_mode {
+        egui::Visuals::dark()
+    } else {
+        egui::Visuals::light()
     };
     // Set the background color of the map
     clear_color.0 = egui_color_to_bevy_color(egui_visuals.extreme_bg_color);
@@ -377,7 +381,7 @@ fn set_egui_theme(mut bevy_egui_ctx: EguiContexts, mut clear_color: ResMut<Clear
     Ok(())
 }
 
-fn egui_color_to_bevy_color(egui_color: bevy_egui::egui::Color32) -> Color {
+pub fn egui_color_to_bevy_color(egui_color: bevy_egui::egui::Color32) -> Color {
     Color::srgb_u8(egui_color.r(), egui_color.g(), egui_color.b())
 }
 
@@ -666,6 +670,7 @@ mod tests {
         app.insert_resource(rgis_settings::RgisSettings {
             current_tool: rgis_settings::Tool::Measure,
             show_scale: true,
+            dark_mode: false,
         });
 
         app.insert_resource(rgis_mouse::MeasureState {

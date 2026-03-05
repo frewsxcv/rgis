@@ -5456,6 +5456,7 @@ name = "rgis-settings"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "dark-light",
  "rgis-map-messages",
 ]
 
