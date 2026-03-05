@@ -176,9 +176,14 @@ pub fn configure(app: &mut App) {
             handle_update_point_size_events,
             handle_move_layer_events,
             handle_delete_layer_events,
-            handle_create_layer_events,
+            // handle_duplicate_layer_events writes CreateLayerMessage events,
+            // so it must run before handle_create_layer_events which drains them
+            (
+                handle_duplicate_layer_events,
+                handle_create_layer_events,
+            )
+                .chain(),
             handle_create_raster_layer_events,
-            handle_duplicate_layer_events,
         ),
     );
 }
