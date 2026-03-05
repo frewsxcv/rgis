@@ -88,7 +88,7 @@ export class AppPage {
     );
   }
 
-  async waitForLayerRender(previousCount?: number) {
+  async waitForLayerRender(previousCount?: number, timeout?: number) {
     const baseline =
       previousCount ?? (await this.getRenderedLayerCount());
     await this.page.waitForFunction(
@@ -97,7 +97,7 @@ export class AppPage {
         return count > base;
       },
       baseline,
-      { timeout: 30000 },
+      { timeout: timeout ?? 30000 },
     );
     await this.waitForNextFrame();
   }
