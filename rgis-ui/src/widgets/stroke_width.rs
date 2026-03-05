@@ -11,7 +11,7 @@ pub struct StrokeWidth<'a> {
 impl egui::Widget for StrokeWidth<'_> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         let mut new_width = self.width;
-        let response = ui.add(egui::Slider::new(&mut new_width, 0.1..=100.0).logarithmic(true));
+        let response = ui.add(egui::Slider::new(&mut new_width, 1.0..=10_000_000.0).logarithmic(true));
         if response.changed() {
             self.width_events
                 .write(UpdateLayerStrokeWidthMessage(self.layer_id, new_width));

@@ -3,7 +3,14 @@ use bevy::mesh::Indices;
 
 /// Converts a `LineList` mesh (1px hardware lines) into a `TriangleList` mesh
 /// where each line segment becomes a quad with the given `width` in world units.
+///
+/// When `width` is at or below the default (1.0), the original mesh is returned
+/// unchanged so that hardware 1px lines are preserved.
 pub fn thicken_line_mesh(mesh: Mesh, width: f32) -> Mesh {
+    if width <= 1.0 {
+        return mesh;
+    }
+
     let Some(positions) = mesh
         .attribute(Mesh::ATTRIBUTE_POSITION)
         .and_then(|attr| attr.as_float3())
