@@ -5270,24 +5270,24 @@ dependencies = [
  "getrandom 0.2.17",
  "js-sys",
  "rgis-camera",
- "rgis-camera-events",
+ "rgis-camera-messages",
  "rgis-cli",
  "rgis-crs",
- "rgis-crs-events",
+ "rgis-crs-messages",
  "rgis-file-loader",
- "rgis-file-loader-events",
+ "rgis-file-loader-messages",
  "rgis-geodesy",
  "rgis-keyboard",
- "rgis-layer-events",
+ "rgis-layer-messages",
  "rgis-layers",
- "rgis-map-events",
+ "rgis-map-messages",
  "rgis-mouse",
  "rgis-renderer",
- "rgis-renderer-events",
+ "rgis-renderer-messages",
  "rgis-settings",
  "rgis-transform",
  "rgis-ui",
- "rgis-ui-events",
+ "rgis-ui-messages",
  "wasm-bindgen",
 ]
 
@@ -5299,16 +5299,16 @@ dependencies = [
  "geo",
  "geo-geodesy",
  "geo-projected",
- "rgis-camera-events",
- "rgis-crs-events",
+ "rgis-camera-messages",
+ "rgis-crs-messages",
  "rgis-geodesy",
  "rgis-layers",
- "rgis-renderer-events",
+ "rgis-renderer-messages",
  "rgis-units",
 ]
 
 [[package]]
-name = "rgis-camera-events"
+name = "rgis-camera-messages"
 version = "0.1.0"
 dependencies = [
  "bevy",
@@ -5332,13 +5332,13 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "geodesy",
- "rgis-crs-events",
+ "rgis-crs-messages",
  "rgis-geodesy",
  "rgis-primitives",
 ]
 
 [[package]]
-name = "rgis-crs-events"
+name = "rgis-crs-messages"
 version = "0.1.0"
 dependencies = [
  "bevy",
@@ -5357,15 +5357,15 @@ dependencies = [
  "geo-file-loader",
  "geo-projected",
  "geo-raster",
- "rgis-file-loader-events",
+ "rgis-file-loader-messages",
  "rgis-geodesy",
- "rgis-layer-events",
+ "rgis-layer-messages",
  "rgis-primitives",
- "rgis-ui-events",
+ "rgis-ui-messages",
 ]
 
 [[package]]
-name = "rgis-file-loader-events"
+name = "rgis-file-loader-messages"
 version = "0.1.0"
 dependencies = [
  "bevy",
@@ -5400,11 +5400,11 @@ name = "rgis-keyboard"
 version = "0.1.0"
 dependencies = [
  "bevy",
- "rgis-camera-events",
+ "rgis-camera-messages",
 ]
 
 [[package]]
-name = "rgis-layer-events"
+name = "rgis-layer-messages"
 version = "0.1.0"
 dependencies = [
  "bevy",
@@ -5426,10 +5426,10 @@ dependencies = [
  "geo-projected",
  "geo-raster",
  "rgis-crs",
- "rgis-layer-events",
+ "rgis-layer-messages",
  "rgis-primitives",
- "rgis-renderer-events",
- "rgis-ui-events",
+ "rgis-renderer-messages",
+ "rgis-ui-messages",
 ]
 
 [[package]]
@@ -5437,7 +5437,7 @@ name = "rgis-library"
 version = "0.1.0"
 
 [[package]]
-name = "rgis-map-events"
+name = "rgis-map-messages"
 version = "0.1.0"
 dependencies = [
  "bevy",
@@ -5454,7 +5454,7 @@ dependencies = [
  "geo",
  "geo-projected",
  "num-t",
- "rgis-camera-events",
+ "rgis-camera-messages",
  "rgis-settings",
  "rgis-units",
 ]
@@ -5480,18 +5480,18 @@ dependencies = [
  "geo-projected",
  "geo-raster",
  "num-t",
- "rgis-crs-events",
- "rgis-layer-events",
+ "rgis-crs-messages",
+ "rgis-layer-messages",
  "rgis-layers",
- "rgis-map-events",
+ "rgis-map-messages",
  "rgis-primitives",
- "rgis-renderer-events",
+ "rgis-renderer-messages",
  "rgis-settings",
- "rgis-ui-events",
+ "rgis-ui-messages",
 ]
 
 [[package]]
-name = "rgis-renderer-events"
+name = "rgis-renderer-messages"
 version = "0.1.0"
 dependencies = [
  "bevy",
@@ -5503,7 +5503,8 @@ name = "rgis-settings"
 version = "0.1.0"
 dependencies = [
  "bevy",
- "rgis-map-events",
+ "dark-light",
+ "rgis-map-messages",
 ]
 
 [[package]]
@@ -5520,9 +5521,9 @@ dependencies = [
  "geodesy",
  "num-t",
  "rgis-crs",
- "rgis-crs-events",
+ "rgis-crs-messages",
  "rgis-geodesy",
- "rgis-layer-events",
+ "rgis-layer-messages",
  "rgis-layers",
  "rgis-primitives",
  "rgis-settings",
@@ -5546,25 +5547,25 @@ dependencies = [
  "geo-projected",
  "geodesy",
  "rfd",
- "rgis-camera-events",
+ "rgis-camera-messages",
  "rgis-crs",
- "rgis-crs-events",
- "rgis-file-loader-events",
+ "rgis-crs-messages",
+ "rgis-file-loader-messages",
  "rgis-geo-ops",
  "rgis-geodesy",
- "rgis-layer-events",
+ "rgis-layer-messages",
  "rgis-layers",
  "rgis-library",
- "rgis-map-events",
+ "rgis-map-messages",
  "rgis-mouse",
  "rgis-primitives",
  "rgis-settings",
- "rgis-ui-events",
+ "rgis-ui-messages",
  "rgis-units",
 ]
 
 [[package]]
-name = "rgis-ui-events"
+name = "rgis-ui-messages"
 version = "0.1.0"
 dependencies = [
  "bevy",

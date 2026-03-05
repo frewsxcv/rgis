@@ -5,16 +5,16 @@ use rgis_primitives::Crs;
 struct SourceCrs(Crs);
 
 fn handle_network_fetch_finished_jobs(
-    mut load_event_reader: ResMut<Messages<rgis_file_loader_events::LoadFileEvent>>,
+    mut load_event_reader: ResMut<Messages<rgis_file_loader_messages::LoadFileMessage>>,
     mut finished_jobs: bevy_jobs::FinishedJobs,
-    mut render_message_event_writer: MessageWriter<rgis_ui_events::RenderMessageEvent>,
+    mut render_message_event_writer: MessageWriter<rgis_ui_messages::RenderTextMessage>,
 ) {
     while let Some(outcome) =
         finished_jobs.take_next::<bevy_jobs_fetch::NetworkFetchJob<SourceCrs>>()
     {
         match outcome {
             Ok(fetched) => {
-                load_event_reader.write(rgis_file_loader_events::LoadFileEvent::FromBytes {
+                load_event_reader.write(rgis_file_loader_messages::LoadFileMessage::FromBytes {
                     file_format: geo_file_loader::FileFormat::GeoJson,
                     bytes: fetched.bytes,
                     file_name: fetched.name,
@@ -25,19 +25,19 @@ fn handle_network_fetch_finished_jobs(
                 let msg = format!("Could not fetch file: {e}");
                 error!("{msg}");
                 render_message_event_writer
-                    .write(rgis_ui_events::RenderMessageEvent(msg));
+                    .write(rgis_ui_messages::RenderTextMessage(msg));
             }
         }
     }
 }
 
 fn handle_load_file_events(
-    mut load_event_reader: ResMut<Messages<rgis_file_loader_events::LoadFileEvent>>,
+    mut load_event_reader: ResMut<Messages<rgis_file_loader_messages::LoadFileMessage>>,
     mut job_spawner: bevy_jobs::JobSpawner,
 ) {
     for event in load_event_reader.drain() {
         match event {
-            rgis_file_loader_events::LoadFileEvent::FromNetwork {
+            rgis_file_loader_messages::LoadFileMessage::FromNetwork {
                 url,
                 name,
                 source_crs,
@@ -46,7 +46,7 @@ fn handle_load_file_events(
                 user_data: SourceCrs(source_crs),
                 name,
             }),
-            rgis_file_loader_events::LoadFileEvent::FromBytes {
+            rgis_file_loader_messages::LoadFileMessage::FromBytes {
                 file_name,
                 bytes,
                 file_format,
@@ -63,9 +63,9 @@ fn handle_load_file_events(
 
 fn handle_load_file_job_finished_events(
     mut finished_jobs: bevy_jobs::FinishedJobs,
-    mut create_layer_event_writer: MessageWriter<rgis_layer_events::CreateLayerEvent>,
-    mut create_raster_layer_event_writer: MessageWriter<rgis_layer_events::CreateRasterLayerEvent>,
-    mut render_message_event_writer: MessageWriter<rgis_ui_events::RenderMessageEvent>,
+    mut create_layer_event_writer: MessageWriter<rgis_layer_messages::CreateLayerMessage>,
+    mut create_raster_layer_event_writer: MessageWriter<rgis_layer_messages::CreateRasterLayerMessage>,
+    mut render_message_event_writer: MessageWriter<rgis_ui_messages::RenderTextMessage>,
     geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
 ) {
     while let Some(outcome) = finished_jobs.take_next::<crate::jobs::LoadFileJob>() {
@@ -75,7 +75,7 @@ fn handle_load_file_job_finished_events(
                 name,
                 source_crs,
             }) => {
-                create_layer_event_writer.write(rgis_layer_events::CreateLayerEvent {
+                create_layer_event_writer.write(rgis_layer_messages::CreateLayerMessage {
                     name,
                     feature_collection,
                     source_crs,
@@ -101,7 +101,7 @@ fn handle_load_file_job_finished_events(
                     }
                 }
                 create_raster_layer_event_writer.write(
-                    rgis_layer_events::CreateRasterLayerEvent {
+                    rgis_layer_messages::CreateRasterLayerMessage {
                         raster,
                         name,
                         source_crs,
@@ -112,7 +112,7 @@ fn handle_load_file_job_finished_events(
                 let msg = format!("Error loading file: {e}");
                 error!("{msg}");
                 render_message_event_writer
-                    .write(rgis_ui_events::RenderMessageEvent(msg));
+                    .write(rgis_ui_messages::RenderTextMessage(msg));
             }
         }
     }

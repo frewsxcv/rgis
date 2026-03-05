@@ -1,6 +1,6 @@
 use crate::panels::side::{Events, OperationButton};
 use bevy_egui::egui::{self, Align, Layout};
-use rgis_layer_events::CreateLayerEvent;
+use rgis_layer_messages::CreateLayerMessage;
 
 pub struct Operations<'a, 'w> {
     pub layer: &'a rgis_layers::Layer,
@@ -17,7 +17,7 @@ impl egui::Widget for Operations<'_, '_> {
                             geo_features::FeatureCollection::from_geometry(bounding_rect.into());
                         self.events
                             .create_layer_event_writer
-                            .write(CreateLayerEvent {
+                            .write(CreateLayerMessage {
                                 feature_collection,
                                 name: "Bounding rect".into(), // FIXME
                                 source_crs: self.layer.crs,
