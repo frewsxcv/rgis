@@ -17,8 +17,8 @@ fn handle_layer_created_events(
                 job_spawner.spawn(crate::jobs::ReprojectRasterExtentJob {
                     extent: raster.extent,
                     layer_id: event.0,
-                    source_crs: layer.crs,
-                    target_crs: target_crs.0,
+                    source_crs: layer.crs.clone(),
+                    target_crs: target_crs.0.clone(),
                     geodesy_ctx: geodesy_ctx.clone(),
                 });
             }
@@ -26,8 +26,8 @@ fn handle_layer_created_events(
                 job_spawner.spawn(crate::jobs::ReprojectGeometryJob {
                     feature_collection: unprojected_feature_collection.clone(),
                     layer_id: event.0,
-                    source_crs: layer.crs,
-                    target_crs: target_crs.0,
+                    source_crs: layer.crs.clone(),
+                    target_crs: target_crs.0.clone(),
                     geodesy_ctx: geodesy_ctx.clone(),
                 });
             }
@@ -126,8 +126,8 @@ fn handle_crs_changed_events(
                     job_spawner.spawn(crate::jobs::ReprojectRasterExtentJob {
                         extent: raster.extent,
                         layer_id: layer.id,
-                        source_crs: layer.crs,
-                        target_crs: target_crs.0,
+                        source_crs: layer.crs.clone(),
+                        target_crs: target_crs.0.clone(),
                         geodesy_ctx: geodesy_ctx.clone(),
                     });
                 }
@@ -135,8 +135,8 @@ fn handle_crs_changed_events(
                     job_spawner.spawn(crate::jobs::ReprojectGeometryJob {
                         feature_collection: unprojected_feature_collection.clone(),
                         layer_id: layer.id,
-                        source_crs: layer.crs,
-                        target_crs: target_crs.0,
+                        source_crs: layer.crs.clone(),
+                        target_crs: target_crs.0.clone(),
                         geodesy_ctx: geodesy_ctx.clone(),
                     });
                 }

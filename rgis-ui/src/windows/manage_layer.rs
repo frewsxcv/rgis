@@ -36,7 +36,10 @@ impl ManageLayer<'_> {
                         ui.label(&layer.name);
                         ui.end_row();
                         ui.label("CRS");
-                        ui.label(format!("EPSG {}", layer.crs.epsg_code));
+                        match layer.crs.epsg_code {
+                            Some(code) => ui.label(format!("EPSG {code}")),
+                            None => ui.label("Custom PROJ"),
+                        };
                         ui.end_row();
                         if let Some(geom_type) = layer.geom_type() {
                             if geom_type.has_fill() {

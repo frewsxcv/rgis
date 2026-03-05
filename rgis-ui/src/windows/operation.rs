@@ -29,7 +29,7 @@ impl Operation<'_> {
             rgis_geo_ops::Action::Perform => {
                 // TODO: perform in background job
                 let outcome = operation.perform(feature_collection.clone());
-                let source_crs = match self.state.source_crs {
+                let source_crs = match self.state.source_crs.clone() {
                     Some(crs) => crs,
                     None => {
                         bevy::log::error!("Source CRS is not set for the operation");

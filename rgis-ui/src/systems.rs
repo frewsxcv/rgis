@@ -192,6 +192,7 @@ fn render_change_crs_window(
     target_crs: Res<rgis_crs::TargetCrs>,
     mut bevy_egui_ctx: EguiContexts,
     mut text_field_value: Local<String>,
+    mut crs_input_mode: Local<crate::widgets::crs_input::CrsInputMode>,
     mut change_crs_event_writer: MessageWriter<rgis_crs_messages::ChangeCrsMessage>,
     mut crs_input_outcome: Local<Option<crate::widgets::crs_input::Outcome>>,
     geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
@@ -201,8 +202,9 @@ fn render_change_crs_window(
         is_visible: &mut state.is_visible,
         egui_ctx: bevy_egui_ctx_mut,
         text_field_value: &mut text_field_value,
+        crs_input_mode: &mut crs_input_mode,
         change_crs_event_writer: &mut change_crs_event_writer,
-        target_crs: *target_crs,
+        target_crs: (*target_crs).clone(),
         crs_input_outcome: &mut crs_input_outcome,
         geodesy_ctx: &geodesy_ctx,
     }
@@ -632,7 +634,7 @@ fn perform_operation(
                         create_layer_event_writer.write(rgis_layer_messages::CreateLayerMessage {
                             feature_collection,
                             name: "foo".into(), // TODO
-                            source_crs: layer.crs,
+                            source_crs: layer.crs.clone(),
                         });
                     }
                     Ok(rgis_geo_ops::Outcome::Text(text)) => {
@@ -744,7 +746,8 @@ mod tests {
         };
 
         app.insert_resource(rgis_crs::TargetCrs(rgis_primitives::Crs {
-            epsg_code: 4326,
+            epsg_code: Some(4326),
+            proj_string: None,
             op_handle,
         }));
 

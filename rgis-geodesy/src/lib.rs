@@ -24,6 +24,15 @@ pub fn epsg_code_to_geodesy_op_handle<C: geodesy::ctx::Context>(
     Ok(source_op_handle)
 }
 
+pub fn proj_string_to_geodesy_op_handle<C: geodesy::ctx::Context>(
+    ctx: &mut C,
+    proj_string: &str,
+) -> Result<geodesy::ctx::OpHandle, Error> {
+    let geodesy_string = geodesy::authoring::parse_proj(proj_string)?;
+    let op_handle = ctx.op(&geodesy_string)?;
+    Ok(op_handle)
+}
+
 #[derive(Debug)]
 pub enum Error {
     Geodesy(geodesy::Error),

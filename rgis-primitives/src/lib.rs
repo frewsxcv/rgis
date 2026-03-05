@@ -25,8 +25,9 @@ fn new_id() -> num::NonZeroU16 {
     unsafe { num::NonZeroU16::new_unchecked(NEXT_ID.fetch_add(1, sync::atomic::Ordering::SeqCst)) }
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Crs {
-    pub epsg_code: u16,
+    pub epsg_code: Option<u16>,
+    pub proj_string: Option<String>,
     pub op_handle: geodesy::ctx::OpHandle,
 }

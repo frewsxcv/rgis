@@ -67,26 +67,20 @@ impl<'a> ByText<'a> {
                     unreachable!()
                 }
                 file_format @ (FileFormat::Wkt | FileFormat::GeoJson | FileFormat::Gpx) => {
+                    let outcome = self
+                        .state
+                        .crs_input_outcome
+                        .as_ref()
+                        .unwrap()
+                        .as_ref()
+                        .unwrap();
                     output = Some(AddLayerOutput::LoadFromText {
                         text: new,
                         file_format,
                         source_crs: rgis_primitives::Crs {
-                            epsg_code: self
-                                .state
-                                .crs_input_outcome
-                                .as_ref()
-                                .unwrap()
-                                .as_ref()
-                                .unwrap()
-                                .1,
-                            op_handle: self
-                                .state
-                                .crs_input_outcome
-                                .as_ref()
-                                .unwrap()
-                                .as_ref()
-                                .unwrap()
-                                .0,
+                            epsg_code: outcome.1,
+                            proj_string: outcome.2.clone(),
+                            op_handle: outcome.0,
                         },
                     });
                 }
