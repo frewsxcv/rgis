@@ -6,6 +6,11 @@ mod systems;
 mod z_index;
 
 /// Counter incremented each time meshes are spawned for a layer (for test polling).
+///
+/// This must remain a global static (rather than an ECS Resource) because it is
+/// read from the `#[wasm_bindgen]` FFI function `get_rendered_layer_count` in
+/// `rgis/src/lib.rs`, which executes outside of Bevy's ECS schedule and cannot
+/// access `Res<T>`.
 pub static RENDERED_LAYER_COUNT: AtomicU32 = AtomicU32::new(0);
 
 use rgis_layers::LayerIndex;
