@@ -12,6 +12,7 @@ pub struct Top<'a, 'w> {
         &'a mut window::IsWindowOpen<crate::windows::debug::Debug<'static, 'static>>,
     pub show_add_layer_window_event_writer:
         &'a mut MessageWriter<'w, rgis_ui_messages::ShowAddLayerWindowMessage>,
+    pub clear_color: &'a mut ClearColor,
 }
 
 impl Top<'_, '_> {
@@ -48,6 +49,17 @@ impl Top<'_, '_> {
                         .clicked()
                     {
                         self.app_settings.show_scale = !self.app_settings.show_scale;
+                    }
+                    if ui.button("Toggle dark mode").clicked() {
+                        self.app_settings.dark_mode = !self.app_settings.dark_mode;
+                        let visuals = if self.app_settings.dark_mode {
+                            egui::Visuals::dark()
+                        } else {
+                            egui::Visuals::light()
+                        };
+                        self.clear_color.0 = crate::systems::egui_color_to_bevy_color(visuals.extreme_bg_color);
+                        self.egui_ctx.set_visuals(visuals);
+                        ui.close();
                     }
                 });
                 crate::widget_registry::register("View", view_response.response.rect);
