@@ -223,17 +223,47 @@ fn handle_layer_became_visible_event(
     }
 }
 
-fn handle_layer_color_updated_event(
+fn handle_point_color_updated_event(
     mut event_reader: MessageReader<rgis_layer_messages::LayerColorUpdatedMessage>,
     layers: Res<rgis_layers::Layers>,
     mut point_layer_query: Query<(&rgis_primitives::LayerId, &Children), With<crate::Point>>,
-    mut polygon_layer_query: Query<(&rgis_primitives::LayerId, &Children), With<crate::Polygon>>,
+    mut sprite_fill_query: Query<&mut Sprite, (With<crate::Fill>, Without<crate::Stroke>)>,
+    mut sprite_stroke_query: Query<&mut Sprite, (With<crate::Stroke>, Without<crate::Fill>)>,
+) {
+    for event in event_reader.read() {
+        let (layer_id, is_fill) = match event {
+            rgis_layer_messages::LayerColorUpdatedMessage::Fill(layer_id) => (layer_id, true),
+            rgis_layer_messages::LayerColorUpdatedMessage::Stroke(layer_id) => (layer_id, false),
+        };
+        let Some(layer) = layers.get(*layer_id) else {
+            continue;
+        };
+
+        for child in point_layer_query
+            .iter_mut()
+            .filter(|(i, _children)| **i == layer.id)
+            .flat_map(|(_, children)| children.iter())
+        {
+            if is_fill {
+                if let Ok(mut sprite) = sprite_fill_query.get_mut(child) {
+                    sprite.color = layer.color.fill.unwrap();
+                }
+            } else {
+                if let Ok(mut sprite) = sprite_stroke_query.get_mut(child) {
+                    sprite.color = layer.color.stroke;
+                }
+            }
+        }
+    }
+}
+
+fn handle_line_string_color_updated_event(
+    mut event_reader: MessageReader<rgis_layer_messages::LayerColorUpdatedMessage>,
+    layers: Res<rgis_layers::Layers>,
     mut line_string_layer_query: Query<
         (&rgis_primitives::LayerId, &Children),
         With<crate::LineString>,
     >,
-    mut sprite_fill_query: Query<&mut Sprite, (With<crate::Fill>, Without<crate::Stroke>)>,
-    mut sprite_stroke_query: Query<&mut Sprite, (With<crate::Stroke>, Without<crate::Fill>)>,
     mut material_fill_query: Query<
         &mut MeshMaterial2d<ColorMaterial>,
         (With<crate::Fill>, Without<crate::Stroke>),
@@ -253,24 +283,6 @@ fn handle_layer_color_updated_event(
             continue;
         };
 
-        // Update the point sprites
-        for child in point_layer_query
-            .iter_mut()
-            .filter(|(i, _children)| **i == layer.id)
-            .flat_map(|(_, children)| children.iter())
-        {
-            if is_fill {
-                if let Ok(mut sprite) = sprite_fill_query.get_mut(child) {
-                    sprite.color = layer.color.fill.unwrap();
-                }
-            } else {
-                if let Ok(mut sprite) = sprite_stroke_query.get_mut(child) {
-                    sprite.color = layer.color.stroke;
-                }
-            }
-        }
-
-        // Update the line string materials
         for child in line_string_layer_query
             .iter_mut()
             .filter(|(i, _children)| **i == layer.id)
@@ -287,8 +299,32 @@ fn handle_layer_color_updated_event(
                 }
             }
         }
+    }
+}
 
-        // Update the polygon materials
+fn handle_polygon_color_updated_event(
+    mut event_reader: MessageReader<rgis_layer_messages::LayerColorUpdatedMessage>,
+    layers: Res<rgis_layers::Layers>,
+    mut polygon_layer_query: Query<(&rgis_primitives::LayerId, &Children), With<crate::Polygon>>,
+    mut material_fill_query: Query<
+        &mut MeshMaterial2d<ColorMaterial>,
+        (With<crate::Fill>, Without<crate::Stroke>),
+    >,
+    mut material_stroke_query: Query<
+        &mut MeshMaterial2d<ColorMaterial>,
+        (With<crate::Stroke>, Without<crate::Fill>),
+    >,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+) {
+    for event in event_reader.read() {
+        let (layer_id, is_fill) = match event {
+            rgis_layer_messages::LayerColorUpdatedMessage::Fill(layer_id) => (layer_id, true),
+            rgis_layer_messages::LayerColorUpdatedMessage::Stroke(layer_id) => (layer_id, false),
+        };
+        let Some(layer) = layers.get(*layer_id) else {
+            continue;
+        };
+
         for child in polygon_layer_query
             .iter_mut()
             .filter(|(i, _children)| **i == layer.id)
@@ -398,7 +434,9 @@ pub fn configure(app: &mut App) {
         Update,
         (
             layer_loaded,
-            handle_layer_color_updated_event,
+            handle_point_color_updated_event,
+            handle_line_string_color_updated_event,
+            handle_polygon_color_updated_event,
             handle_layer_point_size_updated_event,
             handle_layer_z_index_updated_event,
             handle_mesh_building_job_outcome,
