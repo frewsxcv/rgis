@@ -10,4 +10,4 @@ workspace = true
 
 [dependencies]
 bevy = { workspace = true }
-rgis-camera-events = { path = "../rgis-camera-events" }
+rgis-camera-messages = { path = "../rgis-camera-messages" }

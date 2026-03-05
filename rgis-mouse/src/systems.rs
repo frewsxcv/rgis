@@ -42,7 +42,7 @@ fn run_if_has_mouse_motion_events(mouse_motion_event_reader: MessageReader<Mouse
 fn mouse_motion_system(
     mut mouse_motion_event_reader: MessageReader<MouseMotion>,
     mouse_button: Res<ButtonInput<MouseButton>>,
-    mut pan_camera_events: MessageWriter<rgis_camera_events::PanCameraEvent>,
+    mut pan_camera_events: MessageWriter<rgis_camera_messages::PanCameraMessage>,
     mut windows: Query<&mut Window, With<PrimaryWindow>>,
     mut bevy_egui_ctx: bevy_egui::EguiContexts,
     rgis_settings: Res<rgis_settings::RgisSettings>,
@@ -89,7 +89,7 @@ fn mouse_motion_system(
             y_sum += event.delta.y;
         }
         if x_sum != 0. || y_sum != 0. {
-            pan_camera_events.write(rgis_camera_events::PanCameraEvent { x: x_sum, y: y_sum });
+            pan_camera_events.write(rgis_camera_messages::PanCameraMessage { x: x_sum, y: y_sum });
         }
         return Ok(());
     }
@@ -204,7 +204,7 @@ fn run_if_has_mouse_scroll_events(mouse_scroll_event_reader: MessageReader<Mouse
 
 fn mouse_scroll_system(
     mut mouse_scroll_event_reader: MessageReader<MouseWheel>,
-    mut zoom_camera_events: MessageWriter<rgis_camera_events::ZoomCameraEvent>,
+    mut zoom_camera_events: MessageWriter<rgis_camera_messages::ZoomCameraMessage>,
     mouse_position: Res<crate::MousePos>,
     mut bevy_egui_ctx: bevy_egui::EguiContexts,
 ) -> Result {
@@ -229,7 +229,7 @@ fn mouse_scroll_system(
         })
         .sum();
     if y_amount != 0. {
-        zoom_camera_events.write(rgis_camera_events::ZoomCameraEvent::new(
+        zoom_camera_events.write(rgis_camera_messages::ZoomCameraMessage::new(
             y_amount,
             mouse_position.0,
         ));
@@ -239,7 +239,7 @@ fn mouse_scroll_system(
 
 fn run_if_has_recalculate_mouse_position_events(
     recalculate_mouse_position_event_reader: MessageReader<
-        rgis_camera_events::RecalculateMousePositionEvent,
+        rgis_camera_messages::RecalculateMousePositionMessage,
     >,
 ) -> bool {
     !recalculate_mouse_position_event_reader.is_empty()
@@ -247,7 +247,7 @@ fn run_if_has_recalculate_mouse_position_events(
 
 fn recalculate_mouse_position_system(
     mut recalculate_mouse_position_event_reader: MessageReader<
-        rgis_camera_events::RecalculateMousePositionEvent,
+        rgis_camera_messages::RecalculateMousePositionMessage,
     >,
     mut mouse_position: ResMut<crate::MousePos>,
     last_cursor_screen_position: Res<crate::LastCursorScreenPosition>,

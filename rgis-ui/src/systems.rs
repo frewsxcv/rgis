@@ -12,7 +12,7 @@ fn render_bottom(
     mut bevy_egui_ctx: EguiContexts,
     mouse_pos: Res<rgis_mouse::MousePos>,
     target_crs: Res<rgis_crs::TargetCrs>,
-    mut open_change_crs_window_event_writer: MessageWriter<rgis_ui_events::OpenChangeCrsWindow>,
+    mut open_change_crs_window_event_writer: MessageWriter<rgis_ui_messages::OpenChangeCrsWindowMessage>,
     mut bottom_panel_height: ResMut<rgis_units::BottomPanelHeight>,
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
@@ -57,12 +57,12 @@ fn render_manage_layer_window(
     mut state: Local<crate::ManageLayerWindowState>,
     mut bevy_egui_ctx: EguiContexts,
     layers: Res<rgis_layers::Layers>,
-    mut color_events: ResMut<Messages<rgis_ui_events::UpdateLayerColorEvent>>,
-    mut point_size_events: ResMut<Messages<rgis_ui_events::UpdateLayerPointSizeEvent>>,
+    mut color_events: ResMut<Messages<rgis_ui_messages::UpdateLayerColorMessage>>,
+    mut point_size_events: ResMut<Messages<rgis_ui_messages::UpdateLayerPointSizeMessage>>,
     mut show_manage_layer_window_event_reader: MessageReader<
-        rgis_ui_events::ShowManageLayerWindowEvent,
+        rgis_ui_messages::ShowManageLayerWindowMessage,
     >,
-    mut duplicate_layer_events: ResMut<Messages<rgis_layer_events::DuplicateLayerEvent>>,
+    mut duplicate_layer_events: ResMut<Messages<rgis_layer_messages::DuplicateLayerMessage>>,
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     if let Some(event) = show_manage_layer_window_event_reader.read().last() {
@@ -127,7 +127,7 @@ fn render_add_layer_window(
                 source_crs,
             } => {
                 events.load_file_event_writer.write(
-                    rgis_file_loader_events::LoadFileEvent::FromBytes {
+                    rgis_file_loader_messages::LoadFileMessage::FromBytes {
                         file_name: "Inputted file".into(),
                         file_format,
                         bytes: text.into(),
@@ -144,7 +144,7 @@ fn render_add_layer_window(
                 source_crs,
             } => {
                 events.load_file_event_writer.write(
-                    rgis_file_loader_events::LoadFileEvent::FromBytes {
+                    rgis_file_loader_messages::LoadFileMessage::FromBytes {
                         file_name,
                         file_format,
                         bytes: bytes.into(),
@@ -160,7 +160,7 @@ fn render_add_layer_window(
                 source_crs,
             } => {
                 events.load_file_event_writer.write(
-                    rgis_file_loader_events::LoadFileEvent::FromNetwork {
+                    rgis_file_loader_messages::LoadFileMessage::FromNetwork {
                         name,
                         url,
                         source_crs,
@@ -179,7 +179,7 @@ fn render_add_layer_window(
 }
 
 fn handle_open_change_crs_window_event(
-    mut events: MessageReader<rgis_ui_events::OpenChangeCrsWindow>,
+    mut events: MessageReader<rgis_ui_messages::OpenChangeCrsWindowMessage>,
     mut state: ResMut<crate::ChangeCrsWindowState>,
 ) {
     if events.read().next().is_some() {
@@ -192,7 +192,7 @@ fn render_change_crs_window(
     target_crs: Res<rgis_crs::TargetCrs>,
     mut bevy_egui_ctx: EguiContexts,
     mut text_field_value: Local<String>,
-    mut change_crs_event_writer: MessageWriter<rgis_crs_events::ChangeCrsEvent>,
+    mut change_crs_event_writer: MessageWriter<rgis_crs_messages::ChangeCrsMessage>,
     mut crs_input_outcome: Local<Option<crate::widgets::crs_input::Outcome>>,
     geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
 ) -> Result {
@@ -214,7 +214,7 @@ fn render_feature_properties_window(
     mut state: Local<crate::FeaturePropertiesWindowState>,
     mut bevy_egui_ctx: EguiContexts,
     layers: Res<rgis_layers::Layers>,
-    mut render_message_events: ResMut<Messages<rgis_ui_events::RenderFeaturePropertiesEvent>>,
+    mut render_message_events: ResMut<Messages<rgis_ui_messages::RenderFeaturePropertiesMessage>>,
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     if let Some(event) = render_message_events.drain().last() {
@@ -239,7 +239,7 @@ fn render_feature_properties_window(
 fn render_message_window(
     mut state: Local<crate::MessageWindowState>,
     mut bevy_egui_ctx: EguiContexts,
-    mut render_message_events: ResMut<Messages<rgis_ui_events::RenderMessageEvent>>,
+    mut render_message_events: ResMut<Messages<rgis_ui_messages::RenderTextMessage>>,
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     if let Some(event) = render_message_events.drain().last() {
@@ -257,10 +257,10 @@ fn render_message_window(
 
 fn render_operation_window(
     mut state: Local<crate::OperationWindowState>,
-    mut events: ResMut<Messages<rgis_ui_events::OpenOperationWindowEvent>>,
+    mut events: ResMut<Messages<rgis_ui_messages::OpenOperationWindowMessage>>,
     mut bevy_egui_ctx: EguiContexts,
-    create_layer_event_writer: MessageWriter<rgis_layer_events::CreateLayerEvent>,
-    render_message_event_writer: MessageWriter<rgis_ui_events::RenderMessageEvent>,
+    create_layer_event_writer: MessageWriter<rgis_layer_messages::CreateLayerMessage>,
+    render_message_event_writer: MessageWriter<rgis_ui_messages::RenderTextMessage>,
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     if let Some(event) = events.drain().last() {
@@ -340,7 +340,7 @@ fn render_top(
     mut is_debug_window_open: ResMut<
         bevy_egui_window::IsWindowOpen<crate::windows::debug::Debug<'static, 'static>>,
     >,
-    mut show_add_layer_window_event_writer: MessageWriter<rgis_ui_events::ShowAddLayerWindow>,
+    mut show_add_layer_window_event_writer: MessageWriter<rgis_ui_messages::ShowAddLayerWindowMessage>,
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     let Ok(mut window) = windows.single_mut() else {
@@ -586,11 +586,11 @@ pub fn configure(app: &mut App) {
 #[allow(clippy::too_many_arguments)]
 fn perform_operation(
     _commands: Commands,
-    mut events: ResMut<Messages<rgis_ui_events::PerformOperationEvent>>,
+    mut events: ResMut<Messages<rgis_ui_messages::PerformOperationMessage>>,
     layers: Res<rgis_layers::Layers>,
-    mut open_operation_window_event_writer: MessageWriter<rgis_ui_events::OpenOperationWindowEvent>,
-    mut create_layer_event_writer: MessageWriter<rgis_layer_events::CreateLayerEvent>,
-    mut render_message_event_writer: MessageWriter<rgis_ui_events::RenderMessageEvent>,
+    mut open_operation_window_event_writer: MessageWriter<rgis_ui_messages::OpenOperationWindowMessage>,
+    mut create_layer_event_writer: MessageWriter<rgis_layer_messages::CreateLayerMessage>,
+    mut render_message_event_writer: MessageWriter<rgis_ui_messages::RenderTextMessage>,
 ) {
     for event in events.drain() {
         let Some(layer) = layers.get(event.layer_id) else {
@@ -613,7 +613,7 @@ fn perform_operation(
         match operation.next_action() {
             rgis_geo_ops::Action::RenderUi => {
                 open_operation_window_event_writer.write(
-                    rgis_ui_events::OpenOperationWindowEvent {
+                    rgis_ui_messages::OpenOperationWindowMessage {
                         operation,
                         feature_collection: fc.clone(), // TODO: clone?
                     },
@@ -625,14 +625,14 @@ fn perform_operation(
 
                 match outcome {
                     Ok(rgis_geo_ops::Outcome::FeatureCollection(feature_collection)) => {
-                        create_layer_event_writer.write(rgis_layer_events::CreateLayerEvent {
+                        create_layer_event_writer.write(rgis_layer_messages::CreateLayerMessage {
                             feature_collection,
                             name: "foo".into(), // TODO
                             source_crs: layer.crs,
                         });
                     }
                     Ok(rgis_geo_ops::Outcome::Text(text)) => {
-                        render_message_event_writer.write(rgis_ui_events::RenderMessageEvent(text));
+                        render_message_event_writer.write(rgis_ui_messages::RenderTextMessage(text));
                     }
                     Err(e) => {
                         error!("Encountered an error during the operation: {}", e);
@@ -660,7 +660,7 @@ mod tests {
 
         app.add_plugins(bevy_egui::EguiPlugin::default());
         app.add_plugins(rgis_geodesy::Plugin);
-        app.add_plugins(rgis_crs_events::Plugin);
+        app.add_plugins(rgis_crs_messages::Plugin);
         app.add_plugins(rgis_crs::Plugin);
 
         app.insert_resource(rgis_settings::RgisSettings {
@@ -726,7 +726,7 @@ mod tests {
         let mut app = App::new();
         app.add_plugins(MinimalPlugins);
         app.add_plugins(rgis_geodesy::Plugin);
-        app.add_plugins(rgis_crs_events::Plugin);
+        app.add_plugins(rgis_crs_messages::Plugin);
         app.add_plugins(rgis_crs::Plugin);
 
         app.update();

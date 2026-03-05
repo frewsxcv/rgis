@@ -13,11 +13,11 @@ geo-features = { path = "../geo-features" }
 geo-file-loader = { path = "../geo-file-loader" }
 geo-projected = { path = "../geo-projected" }
 geo-raster = { path = "../geo-raster" }
-rgis-file-loader-events = { path = "../rgis-file-loader-events" }
-rgis-layer-events = { path = "../rgis-layer-events" }
+rgis-file-loader-messages = { path = "../rgis-file-loader-messages" }
+rgis-layer-messages = { path = "../rgis-layer-messages" }
 bevy_jobs = { workspace = true }
 bevy_jobs_fetch = { workspace = true }
 bytes = { workspace = true }
 rgis-geodesy = { path = "../rgis-geodesy" }
 rgis-primitives = { path = "../rgis-primitives" }
-rgis-ui-events = { path = "../rgis-ui-events" }
+rgis-ui-messages = { path = "../rgis-ui-messages" }
