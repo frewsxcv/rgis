@@ -18,4 +18,6 @@ rgis-layer-events = { path = "../rgis-layer-events" }
 bevy_jobs = { workspace = true }
 bevy_jobs_fetch = { workspace = true }
 bytes = { workspace = true }
+rgis-geodesy = { path = "../rgis-geodesy" }
 rgis-primitives = { path = "../rgis-primitives" }
+rgis-ui-events = { path = "../rgis-ui-events" }
