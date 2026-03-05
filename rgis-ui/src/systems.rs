@@ -30,14 +30,45 @@ fn render_bottom(
 
 fn render_side(
     mut bevy_egui_ctx: EguiContexts,
-    layers: Res<rgis_layers::Layers>,
+    layer_order: Res<rgis_layers::LayerOrder>,
+    layer_query: Query<(
+        Entity,
+        &rgis_primitives::LayerId,
+        &rgis_layers::LayerName,
+        &rgis_layers::LayerVisible,
+        &rgis_layers::LayerColor,
+        &rgis_layers::LayerPointSize,
+        &rgis_layers::LayerData,
+        &rgis_layers::LayerCrs,
+    )>,
     mut events: crate::panels::side::Events,
     mut side_panel_width: ResMut<rgis_units::SidePanelWidth>,
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
+
+    // Build snapshots in top-to-bottom order to avoid passing Query across lifetime boundaries
+    let snapshots: Vec<crate::panels::side::LayerSnapshot> = layer_order
+        .iter_top_to_bottom()
+        .filter_map(|entity| {
+            let (_entity, layer_id, name, visible, color, _point_size, data, crs) =
+                layer_query.get(entity).ok()?;
+            Some(crate::panels::side::LayerSnapshot {
+                layer_id: *layer_id,
+                name: name.0.clone(),
+                visible: visible.0,
+                color: color.clone(),
+                is_vector: data.is_vector(),
+                is_active: data.is_active(),
+                geom_type: data.geom_type(),
+                crs: crs.clone(),
+                unprojected_fc: data.unprojected_feature_collection().cloned(),
+            })
+        })
+        .collect();
+
     crate::panels::side::Side {
         egui_ctx: bevy_egui_ctx_mut,
-        layers: &layers,
+        snapshots,
         events: &mut events,
         side_panel_width: &mut side_panel_width,
     }
@@ -57,7 +88,14 @@ fn handle_open_file_job(
 fn render_manage_layer_window(
     mut state: Local<crate::ManageLayerWindowState>,
     mut bevy_egui_ctx: EguiContexts,
-    layers: Res<rgis_layers::Layers>,
+    id_map: Res<rgis_layers::LayerIdToEntity>,
+    layer_query: Query<(
+        &rgis_layers::LayerName,
+        &rgis_layers::LayerColor,
+        &rgis_layers::LayerPointSize,
+        &rgis_layers::LayerData,
+        &rgis_layers::LayerCrs,
+    )>,
     mut color_events: ResMut<Messages<rgis_ui_messages::UpdateLayerColorMessage>>,
     mut point_size_events: ResMut<Messages<rgis_ui_messages::UpdateLayerPointSizeMessage>>,
     mut show_manage_layer_window_event_reader: MessageReader<
@@ -70,9 +108,27 @@ fn render_manage_layer_window(
         *state = Some(event.0);
     }
 
+    let Some(layer_id) = *state else {
+        return Ok(());
+    };
+
+    let Some(entity) = id_map.get(layer_id) else {
+        *state = None;
+        return Ok(());
+    };
+    let Ok((name, color, point_size, data, crs)) = layer_query.get(entity) else {
+        *state = None;
+        return Ok(());
+    };
+
     crate::windows::manage_layer::ManageLayer {
         state: &mut state,
-        layers: &layers,
+        layer_id,
+        name,
+        color,
+        point_size,
+        data,
+        crs,
         egui_ctx: bevy_egui_ctx_mut,
         color_events: &mut color_events,
         point_size_events: &mut point_size_events,
@@ -218,7 +274,8 @@ fn render_change_crs_window(
 fn render_feature_properties_window(
     mut state: Local<crate::FeaturePropertiesWindowState>,
     mut bevy_egui_ctx: EguiContexts,
-    layers: Res<rgis_layers::Layers>,
+    id_map: Res<rgis_layers::LayerIdToEntity>,
+    layer_name_query: Query<&rgis_layers::LayerName>,
     mut render_message_events: ResMut<Messages<rgis_ui_messages::RenderFeaturePropertiesMessage>>,
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
@@ -233,13 +290,16 @@ fn render_feature_properties_window(
         return Ok(());
     };
 
-    let Some(layer) = layers.get(data.layer_id) else {
+    let Some(entity) = id_map.get(data.layer_id) else {
+        return Ok(());
+    };
+    let Ok(layer_name) = layer_name_query.get(entity) else {
         return Ok(());
     };
 
     crate::windows::feature_properties::FeatureProperties {
         state: &mut state,
-        layer,
+        layer_name: &layer_name.0,
         egui_ctx: bevy_egui_ctx_mut,
     }
     .render();
@@ -643,25 +703,30 @@ fn handle_debug_window_close_request(
 
 fn perform_operation(
     mut events: ResMut<Messages<rgis_ui_messages::PerformOperationMessage>>,
-    layers: Res<rgis_layers::Layers>,
+    id_map: Res<rgis_layers::LayerIdToEntity>,
+    layer_query: Query<(&rgis_layers::LayerData, &rgis_layers::LayerCrs)>,
     mut open_operation_window_event_writer: MessageWriter<rgis_ui_messages::OpenOperationWindowMessage>,
     mut create_layer_event_writer: MessageWriter<rgis_layer_messages::CreateLayerMessage>,
     mut render_message_event_writer: MessageWriter<rgis_ui_messages::RenderTextMessage>,
 ) {
     for event in events.drain() {
-        let Some(layer) = layers.get(event.layer_id) else {
+        let Some(entity) = id_map.get(event.layer_id) else {
+            error!("Layer not found, cannot perform operation");
+            continue;
+        };
+        let Ok((data, crs)) = layer_query.get(entity) else {
             error!("Layer not found, cannot perform operation");
             continue;
         };
 
-        let Some(_) = layer.unprojected_feature_collection() else {
+        let Some(_) = data.unprojected_feature_collection() else {
             error!("Cannot perform operation on raster layer");
             continue;
         };
 
         let mut operation = event.operation;
 
-        let Some(fc) = layer.unprojected_feature_collection() else {
+        let Some(fc) = data.unprojected_feature_collection() else {
             error!("Layer has no unprojected feature collection, cannot perform operation");
             continue;
         };
@@ -684,7 +749,7 @@ fn perform_operation(
                         create_layer_event_writer.write(rgis_layer_messages::CreateLayerMessage {
                             feature_collection: Arc::new(feature_collection),
                             name: "foo".into(), // TODO
-                            source_crs: layer.crs.clone(),
+                            source_crs: crs.0.clone(),
                         });
                     }
                     Ok(rgis_geo_ops::Outcome::Text(text)) => {
@@ -805,12 +870,12 @@ mod tests {
         let geodesy_ctx = app.world().resource::<rgis_geodesy::GeodesyContext>();
         let target_crs = app.world().resource::<rgis_crs::TargetCrs>();
 
-        // San Francisco (lon: -122.4194°, lat: 37.7749°)
+        // San Francisco (lon: -122.4194, lat: 37.7749)
         let start = geo::Coord {
             x: -122.4194,
             y: 37.7749,
         };
-        // New York City (lon: -74.0060°, lat: 40.7128°)
+        // New York City (lon: -74.0060, lat: 40.7128)
         let end = geo::Coord {
             x: -74.0060,
             y: 40.7128,
@@ -850,7 +915,7 @@ mod tests {
 
     /// Regression test: geo_geodesy::Transformer::transform() already converts
     /// output from radians to degrees. A previous bug called .to_degrees() again,
-    /// turning valid coordinates like (-122°, 37°) into (-6692°, 2282°). This
+    /// turning valid coordinates like (-122, 37) into (-6692, 2282). This
     /// caused Geodesic to return NaN and Rhumb to return wildly wrong values.
     #[test]
     fn test_double_degrees_conversion_causes_geodesic_nan() {

@@ -8,7 +8,8 @@ fn handle_picking_click(
         &rgis_primitives::LayerId,
         Or<(With<crate::Point>, With<crate::Polygon>, With<crate::LineString>)>,
     >,
-    layers: Res<rgis_layers::Layers>,
+    layer_order: Res<rgis_layers::LayerOrder>,
+    layer_data_query: Query<(&rgis_primitives::LayerId, &rgis_layers::LayerData)>,
     current_tool: Res<State<rgis_settings::Tool>>,
     mut bevy_egui_ctx: bevy_egui::EguiContexts,
     mut feature_selected_writer: MessageWriter<rgis_map_messages::FeatureSelectedMessage>,
@@ -39,18 +40,32 @@ fn handle_picking_click(
         y: num_t::Num::new(f64::from(hit_position.y)),
     };
 
-    if let Some((layer, feature)) = layers.feature_from_click(coord) {
+    // Build an iterator of (LayerId, &LayerData) in top-to-bottom order
+    let layers_iter = layer_order.iter_top_to_bottom().filter_map(|entity| {
+        layer_data_query.get(entity).ok()
+    });
+    let layers_vec: Vec<_> = layers_iter.map(|(id, data)| (*id, data)).collect();
+
+    if let Some((layer_id, feature)) = rgis_layers::feature_from_click(coord, layers_vec.into_iter()) {
         render_props_writer.write(rgis_ui_messages::RenderFeaturePropertiesMessage {
-            layer_id: layer.id,
+            layer_id,
             properties: feature.properties.clone(),
         });
         feature_selected_writer
-            .write(rgis_map_messages::FeatureSelectedMessage(layer.id, feature.id));
+            .write(rgis_map_messages::FeatureSelectedMessage(layer_id, feature.id));
     }
 }
 
 fn layer_loaded(
-    layers: Res<rgis_layers::Layers>,
+    id_map: Res<rgis_layers::LayerIdToEntity>,
+    layer_order: Res<rgis_layers::LayerOrder>,
+    layer_query: Query<(
+        &rgis_primitives::LayerId,
+        &rgis_layers::LayerVisible,
+        &rgis_layers::LayerColor,
+        &rgis_layers::LayerPointSize,
+        &rgis_layers::LayerData,
+    )>,
     mut event_reader: MessageReader<rgis_layer_messages::LayerReprojectedMessage>,
     mut job_spawner: bevy_jobs::JobSpawner,
     mut commands: Commands,
@@ -60,20 +75,25 @@ fn layer_loaded(
     mut meshes_spawned_event_writer: MessageWriter<rgis_renderer_messages::MeshesSpawnedMessage>,
 ) {
     for event in event_reader.read() {
-        let Some(layer) = layers.get(event.0) else {
+        let Some(entity) = id_map.get(event.0) else {
             continue;
         };
+        let Ok((layer_id, visible, _color, _point_size, data)) = layer_query.get(entity) else {
+            continue;
+        };
+        let layer_index = layer_order
+            .index_of(entity)
+            .map(rgis_layers::LayerIndex)
+            .unwrap_or(rgis_layers::LayerIndex(0));
 
-        match &layer.data {
+        match data {
             rgis_layers::LayerData::Raster { raster, projected_grid: Some(grid) } => {
-                let Some(layer_with_index) = layers.get_with_index(event.0) else {
-                    continue;
-                };
                 crate::spawn_raster(
                     raster,
                     grid,
-                    layer_with_index.0,
-                    layer_with_index.1,
+                    *layer_id,
+                    visible.0,
+                    layer_index,
                     &mut commands,
                     &mut images,
                     &mut meshes,
@@ -87,7 +107,7 @@ fn layer_loaded(
                 ..
             } => {
                 job_spawner.spawn(MeshBuildingJob {
-                    layer_id: layer.id,
+                    layer_id: *layer_id,
                     geometry: geo::Geometry::GeometryCollection(
                         feature_collection.to_geometry_collection(),
                     ),
@@ -103,7 +123,13 @@ fn handle_mesh_building_job_outcome(
     mut commands: Commands,
     mut assets_meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
-    layers: Res<rgis_layers::Layers>,
+    id_map: Res<rgis_layers::LayerIdToEntity>,
+    layer_order: Res<rgis_layers::LayerOrder>,
+    layer_query: Query<(
+        &rgis_layers::LayerVisible,
+        &rgis_layers::LayerColor,
+        &rgis_layers::LayerPointSize,
+    )>,
     mut meshes_spawned_event_writer: MessageWriter<rgis_renderer_messages::MeshesSpawnedMessage>,
     mut finished_jobs: bevy_jobs::FinishedJobs,
     asset_server: Res<AssetServer>,
@@ -120,14 +146,25 @@ fn handle_mesh_building_job_outcome(
                 continue;
             }
         };
-        let Some(layer_with_index) = layers.get_with_index(layer_id) else {
+        let Some(entity) = id_map.get(layer_id) else {
             continue;
         };
+        let Ok((visible, color, point_size)) = layer_query.get(entity) else {
+            continue;
+        };
+        let layer_index = layer_order
+            .index_of(entity)
+            .map(rgis_layers::LayerIndex)
+            .unwrap_or(rgis_layers::LayerIndex(0));
 
         crate::spawn_geometry_meshes(
             geometry_mesh,
             &mut materials,
-            layer_with_index,
+            layer_id,
+            visible.0,
+            color,
+            point_size.0,
+            layer_index,
             &mut commands,
             &mut assets_meshes,
             &asset_server,
@@ -143,17 +180,22 @@ fn handle_mesh_building_job_outcome(
 fn handle_layer_z_index_updated_event(
     mut layer_z_index_updated_event_reader: MessageReader<rgis_layer_messages::LayerZIndexUpdatedMessage>,
     mut query: Query<(&mut Transform, &RenderEntityType)>,
-    layers: Res<rgis_layers::Layers>,
+    id_map: Res<rgis_layers::LayerIdToEntity>,
+    layer_order: Res<rgis_layers::LayerOrder>,
     index: Res<RenderEntityIndex>,
 ) {
     for event in layer_z_index_updated_event_reader.read() {
-        let Some(layer_with_index) = layers.get_with_index(event.0) else {
+        let Some(entity) = id_map.get(event.0) else {
             continue;
         };
+        let layer_index = layer_order
+            .index_of(entity)
+            .map(rgis_layers::LayerIndex)
+            .unwrap_or(rgis_layers::LayerIndex(0));
 
         for &entity in index.get(event.0) {
             if let Ok((mut transform, render_entity)) = query.get_mut(entity) {
-                let z_index = crate::ZIndex::calculate(layer_with_index.1, *render_entity);
+                let z_index = crate::ZIndex::calculate(layer_index, *render_entity);
                 transform.translation.z = z_index.0 as f32;
             }
         }
@@ -162,7 +204,8 @@ fn handle_layer_z_index_updated_event(
 
 fn handle_layer_point_size_updated_event(
     mut events: MessageReader<rgis_layer_messages::LayerPointSizeUpdatedMessage>,
-    layers: Res<rgis_layers::Layers>,
+    id_map: Res<rgis_layers::LayerIdToEntity>,
+    point_size_query: Query<&rgis_layers::LayerPointSize>,
     mut sprite_query: Query<(&mut Sprite, &crate::PointSprite)>,
     camera_query: Query<&GlobalTransform, With<Camera>>,
     index: Res<RenderEntityIndex>,
@@ -178,13 +221,16 @@ fn handle_layer_point_size_updated_event(
     let (camera_scale, _, _) = camera_transform.to_scale_rotation_translation();
 
     for layer_id in changed_layers {
-        let Some(layer) = layers.get(layer_id) else {
+        let Some(entity) = id_map.get(layer_id) else {
+            continue;
+        };
+        let Ok(point_size) = point_size_query.get(entity) else {
             continue;
         };
         for &entity in index.get(layer_id) {
             if let Ok((mut sprite, point_sprite)) = sprite_query.get_mut(entity) {
                 sprite.custom_size = Some(
-                    camera_scale.truncate() * layer.point_size * point_sprite.relative_scale,
+                    camera_scale.truncate() * point_size.0 * point_sprite.relative_scale,
                 );
             }
         }
@@ -227,7 +273,8 @@ fn handle_layer_became_visible_event(
 
 fn handle_point_color_updated_event(
     mut event_reader: MessageReader<rgis_layer_messages::LayerColorUpdatedMessage>,
-    layers: Res<rgis_layers::Layers>,
+    id_map: Res<rgis_layers::LayerIdToEntity>,
+    color_query: Query<&rgis_layers::LayerColor>,
     point_layer_query: Query<&Children, With<crate::Point>>,
     mut sprite_fill_query: Query<&mut Sprite, (With<crate::Fill>, Without<crate::Stroke>)>,
     mut sprite_stroke_query: Query<&mut Sprite, (With<crate::Stroke>, Without<crate::Fill>)>,
@@ -238,20 +285,23 @@ fn handle_point_color_updated_event(
             rgis_layer_messages::LayerColorUpdatedMessage::Fill(layer_id) => (layer_id, true),
             rgis_layer_messages::LayerColorUpdatedMessage::Stroke(layer_id) => (layer_id, false),
         };
-        let Some(layer) = layers.get(*layer_id) else {
+        let Some(entity) = id_map.get(*layer_id) else {
+            continue;
+        };
+        let Ok(layer_color) = color_query.get(entity) else {
             continue;
         };
 
-        for &entity in index.get(layer.id) {
+        for &entity in index.get(*layer_id) {
             if let Ok(children) = point_layer_query.get(entity) {
                 for child in children.iter() {
                     if is_fill {
                         if let Ok(mut sprite) = sprite_fill_query.get_mut(child) {
-                            sprite.color = layer.color.fill.unwrap();
+                            sprite.color = layer_color.fill.unwrap();
                         }
                     } else {
                         if let Ok(mut sprite) = sprite_stroke_query.get_mut(child) {
-                            sprite.color = layer.color.stroke;
+                            sprite.color = layer_color.stroke;
                         }
                     }
                 }
@@ -262,7 +312,8 @@ fn handle_point_color_updated_event(
 
 fn handle_line_string_color_updated_event(
     mut event_reader: MessageReader<rgis_layer_messages::LayerColorUpdatedMessage>,
-    layers: Res<rgis_layers::Layers>,
+    id_map: Res<rgis_layers::LayerIdToEntity>,
+    color_query: Query<&rgis_layers::LayerColor>,
     line_string_layer_query: Query<&Children, With<crate::LineString>>,
     mut material_fill_query: Query<
         &mut MeshMaterial2d<ColorMaterial>,
@@ -280,22 +331,25 @@ fn handle_line_string_color_updated_event(
             rgis_layer_messages::LayerColorUpdatedMessage::Fill(layer_id) => (layer_id, true),
             rgis_layer_messages::LayerColorUpdatedMessage::Stroke(layer_id) => (layer_id, false),
         };
-        let Some(layer) = layers.get(*layer_id) else {
+        let Some(entity) = id_map.get(*layer_id) else {
+            continue;
+        };
+        let Ok(layer_color) = color_query.get(entity) else {
             continue;
         };
 
-        for &entity in index.get(layer.id) {
+        for &entity in index.get(*layer_id) {
             if let Ok(children) = line_string_layer_query.get(entity) {
                 for child in children.iter() {
                     if is_fill {
                         if let Ok(mut color_material) = material_fill_query.get_mut(child) {
                             materials.get_mut(&mut color_material.0).unwrap().color =
-                                layer.color.fill.unwrap();
+                                layer_color.fill.unwrap();
                         }
                     } else {
                         if let Ok(mut color_material) = material_stroke_query.get_mut(child) {
                             materials.get_mut(&mut color_material.0).unwrap().color =
-                                layer.color.stroke;
+                                layer_color.stroke;
                         }
                     }
                 }
@@ -306,7 +360,8 @@ fn handle_line_string_color_updated_event(
 
 fn handle_polygon_color_updated_event(
     mut event_reader: MessageReader<rgis_layer_messages::LayerColorUpdatedMessage>,
-    layers: Res<rgis_layers::Layers>,
+    id_map: Res<rgis_layers::LayerIdToEntity>,
+    color_query: Query<&rgis_layers::LayerColor>,
     polygon_layer_query: Query<&Children, With<crate::Polygon>>,
     mut material_fill_query: Query<
         &mut MeshMaterial2d<ColorMaterial>,
@@ -324,22 +379,25 @@ fn handle_polygon_color_updated_event(
             rgis_layer_messages::LayerColorUpdatedMessage::Fill(layer_id) => (layer_id, true),
             rgis_layer_messages::LayerColorUpdatedMessage::Stroke(layer_id) => (layer_id, false),
         };
-        let Some(layer) = layers.get(*layer_id) else {
+        let Some(entity) = id_map.get(*layer_id) else {
+            continue;
+        };
+        let Ok(layer_color) = color_query.get(entity) else {
             continue;
         };
 
-        for &entity in index.get(layer.id) {
+        for &entity in index.get(*layer_id) {
             if let Ok(children) = polygon_layer_query.get(entity) {
                 for child in children.iter() {
                     if is_fill {
                         if let Ok(mut color_material) = material_fill_query.get_mut(child) {
                             materials.get_mut(&mut color_material.0).unwrap().color =
-                                layer.color.fill.unwrap();
+                                layer_color.fill.unwrap();
                         }
                     } else {
                         if let Ok(mut color_material) = material_stroke_query.get_mut(child) {
                             materials.get_mut(&mut color_material.0).unwrap().color =
-                                layer.color.stroke;
+                                layer_color.stroke;
                         }
                     }
                 }
@@ -371,16 +429,19 @@ fn handle_camera_scale_changed_event(
         &rgis_primitives::LayerId,
         &crate::PointSprite,
     )>,
-    layers: Res<rgis_layers::Layers>,
+    id_map: Res<rgis_layers::LayerIdToEntity>,
+    point_size_query: Query<&rgis_layers::LayerPointSize>,
 ) {
     if let Ok(camera_global_transform) = query.single() {
         let (scale, _, _) = camera_global_transform.to_scale_rotation_translation();
 
         for (mut sprite, layer_id, point_sprite) in &mut sprite_query {
-            if let Some(layer) = layers.get(*layer_id) {
-                sprite.custom_size = Some(
-                    scale.truncate() * layer.point_size * point_sprite.relative_scale,
-                );
+            if let Some(entity) = id_map.get(*layer_id) {
+                if let Ok(point_size) = point_size_query.get(entity) {
+                    sprite.custom_size = Some(
+                        scale.truncate() * point_size.0 * point_sprite.relative_scale,
+                    );
+                }
             }
         }
     }
@@ -412,14 +473,18 @@ fn handle_feature_selected_event_despawn(
 
 fn handle_feature_selected_event_spawn(
     mut event_reader: MessageReader<rgis_map_messages::FeatureSelectedMessage>,
-    layers: Res<rgis_layers::Layers>,
+    id_map: Res<rgis_layers::LayerIdToEntity>,
+    layer_data_query: Query<&rgis_layers::LayerData>,
     mut job_spawner: bevy_jobs::JobSpawner,
 ) {
     for event in event_reader.read() {
-        let Some(layer) = layers.get(event.0) else {
+        let Some(entity) = id_map.get(event.0) else {
             return;
         };
-        let Some(feature) = layer.get_projected_feature(event.1) else {
+        let Ok(data) = layer_data_query.get(entity) else {
+            return;
+        };
+        let Some(feature) = data.get_projected_feature(event.0, event.1) else {
             return;
         };
         let Some(geometry) = feature.geometry.as_ref() else {

@@ -3,22 +3,26 @@ use bevy::prelude::*;
 
 fn handle_layer_created_events(
     mut layer_created_event_reader: MessageReader<rgis_layer_messages::LayerCreatedMessage>,
-    layers: Res<rgis_layers::Layers>,
+    id_map: Res<rgis_layers::LayerIdToEntity>,
+    layer_query: Query<(&rgis_layers::LayerCrs, &rgis_layers::LayerData)>,
     target_crs: Res<rgis_crs::TargetCrs>,
     mut job_spawner: bevy_jobs::JobSpawner,
     geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
 ) {
     for event in layer_created_event_reader.read() {
-        let Some(layer) = layers.get(event.0) else {
+        let Some(entity) = id_map.get(event.0) else {
+            continue;
+        };
+        let Ok((crs, data)) = layer_query.get(entity) else {
             continue;
         };
 
-        match &layer.data {
+        match data {
             rgis_layers::LayerData::Raster { raster, .. } => {
                 job_spawner.spawn(crate::jobs::ReprojectRasterExtentJob {
                     extent: raster.extent,
                     layer_id: event.0,
-                    source_crs: layer.crs.clone(),
+                    source_crs: crs.0.clone(),
                     target_crs: target_crs.0.clone(),
                     geodesy_ctx: geodesy_ctx.clone_for_async(),
                 });
@@ -27,7 +31,7 @@ fn handle_layer_created_events(
                 job_spawner.spawn(crate::jobs::ReprojectGeometryJob {
                     feature_collection: Arc::clone(unprojected_feature_collection),
                     layer_id: event.0,
-                    source_crs: layer.crs.clone(),
+                    source_crs: crs.0.clone(),
                     target_crs: target_crs.0.clone(),
                     geodesy_ctx: geodesy_ctx.clone_for_async(),
                 });
@@ -38,7 +42,8 @@ fn handle_layer_created_events(
 
 fn handle_reproject_geometry_job_completion_events(
     mut finished_jobs: bevy_jobs::FinishedJobs,
-    mut layers: ResMut<rgis_layers::Layers>,
+    id_map: Res<rgis_layers::LayerIdToEntity>,
+    mut layer_query: Query<&mut rgis_layers::LayerData>,
     mut layer_reprojected_event_writer: MessageWriter<rgis_layer_messages::LayerReprojectedMessage>,
     target_crs: Res<rgis_crs::TargetCrs>,
 ) {
@@ -56,11 +61,14 @@ fn handle_reproject_geometry_job_completion_events(
             continue;
         }
 
-        let Some(layer) = layers.get_mut(outcome.layer_id) else {
+        let Some(entity) = id_map.get(outcome.layer_id) else {
+            continue;
+        };
+        let Ok(mut data) = layer_query.get_mut(entity) else {
             continue;
         };
 
-        match &mut layer.data {
+        match data.as_mut() {
             rgis_layers::LayerData::Vector {
                 projected_feature_collection,
                 ..
@@ -77,7 +85,8 @@ fn handle_reproject_geometry_job_completion_events(
 
 fn handle_reproject_raster_extent_job_completion_events(
     mut finished_jobs: bevy_jobs::FinishedJobs,
-    mut layers: ResMut<rgis_layers::Layers>,
+    id_map: Res<rgis_layers::LayerIdToEntity>,
+    mut layer_query: Query<&mut rgis_layers::LayerData>,
     mut layer_reprojected_event_writer: MessageWriter<rgis_layer_messages::LayerReprojectedMessage>,
     target_crs: Res<rgis_crs::TargetCrs>,
 ) {
@@ -95,11 +104,14 @@ fn handle_reproject_raster_extent_job_completion_events(
             continue;
         }
 
-        let Some(layer) = layers.get_mut(outcome.layer_id) else {
+        let Some(entity) = id_map.get(outcome.layer_id) else {
+            continue;
+        };
+        let Ok(mut data) = layer_query.get_mut(entity) else {
             continue;
         };
 
-        match &mut layer.data {
+        match data.as_mut() {
             rgis_layers::LayerData::Raster { projected_grid, .. } => {
                 *projected_grid = Some(outcome.projected_grid);
             }
@@ -113,20 +125,20 @@ fn handle_reproject_raster_extent_job_completion_events(
 
 fn handle_crs_changed_events(
     _event: On<rgis_crs_messages::CrsChangedEvent>,
-    mut layers: ResMut<rgis_layers::Layers>,
+    mut layer_query: Query<(&rgis_primitives::LayerId, &rgis_layers::LayerCrs, &mut rgis_layers::LayerData)>,
     target_crs: Res<rgis_crs::TargetCrs>,
     mut job_spawner: bevy_jobs::JobSpawner,
     geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
 ) {
-    layers.clear_projected();
+    for (layer_id, crs, mut data) in layer_query.iter_mut() {
+        data.clear_projected();
 
-    for layer in layers.iter() {
-        match &layer.data {
+        match data.as_ref() {
             rgis_layers::LayerData::Raster { raster, .. } => {
                 job_spawner.spawn(crate::jobs::ReprojectRasterExtentJob {
                     extent: raster.extent,
-                    layer_id: layer.id,
-                    source_crs: layer.crs.clone(),
+                    layer_id: *layer_id,
+                    source_crs: crs.0.clone(),
                     target_crs: target_crs.0.clone(),
                     geodesy_ctx: geodesy_ctx.clone_for_async(),
                 });
@@ -134,8 +146,8 @@ fn handle_crs_changed_events(
             rgis_layers::LayerData::Vector { unprojected_feature_collection, .. } => {
                 job_spawner.spawn(crate::jobs::ReprojectGeometryJob {
                     feature_collection: Arc::clone(unprojected_feature_collection),
-                    layer_id: layer.id,
-                    source_crs: layer.crs.clone(),
+                    layer_id: *layer_id,
+                    source_crs: crs.0.clone(),
                     target_crs: target_crs.0.clone(),
                     geodesy_ctx: geodesy_ctx.clone_for_async(),
                 });

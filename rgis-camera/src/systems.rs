@@ -140,7 +140,8 @@ fn handle_meshes_spawned_events(
 }
 
 fn center_camera(
-    layers: Res<rgis_layers::Layers>,
+    id_map: Res<rgis_layers::LayerIdToEntity>,
+    layer_query: Query<&rgis_layers::LayerData>,
     mut event_reader: MessageReader<rgis_camera_messages::CenterCameraMessage>,
     mut query: Query<&mut Transform, With<Camera>>,
     windows: Query<&Window, With<PrimaryWindow>>,
@@ -150,11 +151,14 @@ fn center_camera(
         return;
     };
     for event in event_reader.read() {
-        let Some(layer) = layers.get(event.0) else {
+        let Some(entity) = id_map.get(event.0) else {
+            continue;
+        };
+        let Ok(data) = layer_query.get(entity) else {
             continue;
         };
 
-        let bounding_rect = if let rgis_layers::LayerData::Raster { projected_grid: Some(grid), .. } = &layer.data {
+        let bounding_rect = if let rgis_layers::LayerData::Raster { projected_grid: Some(grid), .. } = data {
             use geo_projected::WrapTo;
             geo::Rect::new(
                 geo::Coord {
@@ -167,7 +171,7 @@ fn center_camera(
                 },
             )
             .wrap::<geo_projected::Projected>()
-        } else if let Some(fc) = layer.get_projected_feature_collection_or_log() {
+        } else if let Some(fc) = data.get_projected_feature_collection_or_log(event.0) {
             match fc.bounding_rect() {
                 Ok(r) => r,
                 Err(_) => continue,

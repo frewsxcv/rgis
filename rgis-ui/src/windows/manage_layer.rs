@@ -5,7 +5,12 @@ use rgis_ui_messages::{UpdateLayerColorMessage, UpdateLayerPointSizeMessage};
 
 pub struct ManageLayer<'a> {
     pub state: &'a mut crate::ManageLayerWindowState,
-    pub layers: &'a rgis_layers::Layers,
+    pub layer_id: rgis_primitives::LayerId,
+    pub name: &'a rgis_layers::LayerName,
+    pub color: &'a rgis_layers::LayerColor,
+    pub point_size: &'a rgis_layers::LayerPointSize,
+    pub data: &'a rgis_layers::LayerData,
+    pub crs: &'a rgis_layers::LayerCrs,
     pub egui_ctx: &'a mut bevy_egui::egui::Context,
     pub color_events: &'a mut Messages<UpdateLayerColorMessage>,
     pub point_size_events: &'a mut Messages<UpdateLayerPointSizeMessage>,
@@ -14,17 +19,7 @@ pub struct ManageLayer<'a> {
 
 impl ManageLayer<'_> {
     pub fn render(&mut self) {
-        let Some(layer_id) = *self.state else {
-            return;
-        };
-        let Some(layer) = self.layers.get(layer_id) else {
-            warn!(
-                "Could not find layer with ID {:?}, closing manage layer window",
-                layer_id
-            );
-            *self.state = None;
-            return;
-        };
+        let layer_id = self.layer_id;
         let mut is_open = true;
         egui::Window::new("Manage Layer")
             .open(&mut is_open)
@@ -34,17 +29,17 @@ impl ManageLayer<'_> {
                     .striped(true)
                     .show(ui, |ui| {
                         ui.label("Name");
-                        ui.label(&layer.name);
+                        ui.label(&self.name.0);
                         ui.end_row();
                         ui.label("CRS");
-                        match layer.crs.epsg_code {
+                        match self.crs.0.epsg_code {
                             Some(code) => ui.label(format!("EPSG {code}")),
                             None => ui.label("Custom PROJ"),
                         };
                         ui.end_row();
-                        if let Some(geom_type) = layer.geom_type() {
+                        if let Some(geom_type) = self.data.geom_type() {
                             if geom_type.has_fill() {
-                                if let Some(fill) = layer.color.fill {
+                                if let Some(fill) = self.color.fill {
                                     ui.label("Fill color");
                                     ui.add(crate::widgets::fill_color::FillColor {
                                         layer_id,
@@ -59,7 +54,7 @@ impl ManageLayer<'_> {
                             ui.label("Stroke color");
                             ui.add(crate::widgets::stroke_color::StrokeColor {
                                 layer_id,
-                                color: layer.color.stroke,
+                                color: self.color.stroke,
                                 color_events: self.color_events,
                             });
                             ui.end_row();
@@ -70,7 +65,7 @@ impl ManageLayer<'_> {
                                 ui.label("Point size");
                                 ui.add(crate::widgets::point_size::PointSize {
                                     layer_id,
-                                    size: layer.point_size,
+                                    size: self.point_size.0,
                                     size_events: self.point_size_events,
                                 });
                                 ui.end_row();
