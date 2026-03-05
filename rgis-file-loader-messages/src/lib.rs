@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 #[derive(Message, Debug)]
-pub enum LoadFileEvent {
+pub enum LoadFileMessage {
     FromNetwork {
         name: String,
         url: String,
@@ -19,6 +19,6 @@ pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.add_message::<LoadFileEvent>();
+        app.add_message::<LoadFileMessage>();
     }
 }

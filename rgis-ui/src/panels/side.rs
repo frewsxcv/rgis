@@ -1,25 +1,25 @@
 use bevy::{ecs::system::SystemParam, prelude::*};
 use bevy_egui::egui::{self, Align, Layout, Widget};
-use rgis_camera_events::CenterCameraEvent;
-use rgis_layer_events::{
-    CreateLayerEvent, DeleteLayerEvent, MoveDirection, MoveLayerEvent,
-    ToggleLayerVisibilityEvent,
+use rgis_camera_messages::CenterCameraMessage;
+use rgis_layer_messages::{
+    CreateLayerMessage, DeleteLayerMessage, MoveDirection, MoveLayerMessage,
+    ToggleLayerVisibilityMessage,
 };
-use rgis_ui_events::{ShowAddLayerWindow, ShowManageLayerWindowEvent};
+use rgis_ui_messages::{ShowAddLayerWindowMessage, ShowManageLayerWindowMessage};
 use std::marker;
 
 // const MAX_SIDE_PANEL_WIDTH: f32 = 200.0f32;
 
 #[derive(SystemParam)]
 pub struct Events<'w> {
-    pub toggle_layer_visibility_event_writer: MessageWriter<'w, ToggleLayerVisibilityEvent>,
-    pub center_layer_event_writer: MessageWriter<'w, CenterCameraEvent>,
-    pub delete_layer_event_writer: MessageWriter<'w, DeleteLayerEvent>,
-    pub move_layer_event_writer: MessageWriter<'w, MoveLayerEvent>,
-    pub create_layer_event_writer: MessageWriter<'w, CreateLayerEvent>,
-    pub show_add_layer_window_event_writer: MessageWriter<'w, ShowAddLayerWindow>,
-    pub show_manage_layer_window_event_writer: MessageWriter<'w, ShowManageLayerWindowEvent>,
-    pub perform_operation_event_writer: MessageWriter<'w, rgis_ui_events::PerformOperationEvent>,
+    pub toggle_layer_visibility_event_writer: MessageWriter<'w, ToggleLayerVisibilityMessage>,
+    pub center_layer_event_writer: MessageWriter<'w, CenterCameraMessage>,
+    pub delete_layer_event_writer: MessageWriter<'w, DeleteLayerMessage>,
+    pub move_layer_event_writer: MessageWriter<'w, MoveLayerMessage>,
+    pub create_layer_event_writer: MessageWriter<'w, CreateLayerMessage>,
+    pub show_add_layer_window_event_writer: MessageWriter<'w, ShowAddLayerWindowMessage>,
+    pub show_manage_layer_window_event_writer: MessageWriter<'w, ShowManageLayerWindowMessage>,
+    pub perform_operation_event_writer: MessageWriter<'w, rgis_ui_messages::PerformOperationMessage>,
 }
 
 pub struct Side<'a, 'w> {
@@ -97,7 +97,7 @@ impl<Op: rgis_geo_ops::OperationEntry> egui::Widget for OperationButton<'_, '_, 
         );
         if button.clicked() {
             self.events.perform_operation_event_writer.write(
-                rgis_ui_events::PerformOperationEvent {
+                rgis_ui_messages::PerformOperationMessage {
                     operation: Box::new(Op::build()),
                     layer_id: self.layer.id,
                 },
@@ -118,7 +118,7 @@ impl Layer<'_, '_> {
     fn delete_layer(&mut self, layer: &rgis_layers::Layer) {
         self.events
             .delete_layer_event_writer
-            .write(DeleteLayerEvent(layer.id));
+            .write(DeleteLayerMessage(layer.id));
     }
 }
 
@@ -156,7 +156,7 @@ impl Widget for Layer<'_, '_> {
                 if visibility_checkbox.changed() {
                     self.events
                         .toggle_layer_visibility_event_writer
-                        .write(ToggleLayerVisibilityEvent(layer.id));
+                        .write(ToggleLayerVisibilityMessage(layer.id));
                 }
 
                 // Color swatch with label
@@ -180,7 +180,7 @@ impl Widget for Layer<'_, '_> {
                 if manage_btn.clicked() {
                     self.events
                         .show_manage_layer_window_event_writer
-                        .write(ShowManageLayerWindowEvent(layer.id));
+                        .write(ShowManageLayerWindowMessage(layer.id));
                 }
 
                 let zoom_btn = ui.button("Zoom to Extent");
@@ -188,7 +188,7 @@ impl Widget for Layer<'_, '_> {
                 if zoom_btn.clicked() {
                     self.events
                         .center_layer_event_writer
-                        .write(CenterCameraEvent(layer.id));
+                        .write(CenterCameraMessage(layer.id));
                 }
 
                 ui.separator();
@@ -200,7 +200,7 @@ impl Widget for Layer<'_, '_> {
                     {
                         self.events
                             .move_layer_event_writer
-                            .write(MoveLayerEvent(layer.id, MoveDirection::Up));
+                            .write(MoveLayerMessage(layer.id, MoveDirection::Up));
                     }
 
                     if ui
@@ -209,7 +209,7 @@ impl Widget for Layer<'_, '_> {
                     {
                         self.events
                             .move_layer_event_writer
-                            .write(MoveLayerEvent(layer.id, MoveDirection::Down));
+                            .write(MoveLayerMessage(layer.id, MoveDirection::Down));
                     }
                 });
 

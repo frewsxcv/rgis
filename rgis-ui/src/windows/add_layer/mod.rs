@@ -1,8 +1,8 @@
 use bevy::{ecs::system::SystemParam, prelude::*};
 use bevy_egui::egui;
 use geo_file_loader::FileFormat;
-use rgis_file_loader_events::LoadFileEvent;
-use rgis_ui_events::{HideAddLayerWindow, ShowAddLayerWindow};
+use rgis_file_loader_messages::LoadFileMessage;
+use rgis_ui_messages::{HideAddLayerWindowMessage, ShowAddLayerWindowMessage};
 
 pub mod by_file;
 pub mod by_text;
@@ -11,9 +11,9 @@ pub mod library;
 
 #[derive(SystemParam)]
 pub struct Events<'w, 's> {
-    pub load_file_event_writer: MessageWriter<'w, LoadFileEvent>,
-    pub show_add_layer_window_event_reader: MessageReader<'w, 's, ShowAddLayerWindow>,
-    pub hide_add_layer_window_events: ResMut<'w, bevy::prelude::Messages<HideAddLayerWindow>>,
+    pub load_file_event_writer: MessageWriter<'w, LoadFileMessage>,
+    pub show_add_layer_window_event_reader: MessageReader<'w, 's, ShowAddLayerWindowMessage>,
+    pub hide_add_layer_window_events: ResMut<'w, bevy::prelude::Messages<HideAddLayerWindowMessage>>,
 }
 
 pub struct AddLayer<'a> {

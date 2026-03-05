@@ -1,15 +1,15 @@
 use bevy::prelude::*;
 use bevy_egui::egui;
-use rgis_layer_events::DuplicateLayerEvent;
-use rgis_ui_events::{UpdateLayerColorEvent, UpdateLayerPointSizeEvent};
+use rgis_layer_messages::DuplicateLayerMessage;
+use rgis_ui_messages::{UpdateLayerColorMessage, UpdateLayerPointSizeMessage};
 
 pub struct ManageLayer<'a> {
     pub state: &'a mut crate::ManageLayerWindowState,
     pub layers: &'a rgis_layers::Layers,
     pub egui_ctx: &'a mut bevy_egui::egui::Context,
-    pub color_events: &'a mut Messages<UpdateLayerColorEvent>,
-    pub point_size_events: &'a mut Messages<UpdateLayerPointSizeEvent>,
-    pub duplicate_layer_events: &'a mut Messages<DuplicateLayerEvent>,
+    pub color_events: &'a mut Messages<UpdateLayerColorMessage>,
+    pub point_size_events: &'a mut Messages<UpdateLayerPointSizeMessage>,
+    pub duplicate_layer_events: &'a mut Messages<DuplicateLayerMessage>,
 }
 
 impl ManageLayer<'_> {
@@ -79,7 +79,7 @@ impl ManageLayer<'_> {
                 ui.separator();
                 if ui.button("Duplicate").clicked() {
                     self.duplicate_layer_events
-                        .write(DuplicateLayerEvent(layer_id));
+                        .write(DuplicateLayerMessage(layer_id));
                 }
             });
     }

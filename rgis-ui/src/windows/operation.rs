@@ -1,12 +1,12 @@
 use bevy_egui::egui;
-use rgis_layer_events::CreateLayerEvent;
-use rgis_ui_events::RenderMessageEvent;
+use rgis_layer_messages::CreateLayerMessage;
+use rgis_ui_messages::RenderTextMessage;
 
 pub struct Operation<'w> {
     pub egui_ctx: &'w mut bevy_egui::egui::Context,
     pub state: &'w mut crate::OperationWindowState,
-    pub create_layer_event_writer: bevy::ecs::message::MessageWriter<'w, CreateLayerEvent>,
-    pub render_message_event_writer: bevy::ecs::message::MessageWriter<'w, RenderMessageEvent>,
+    pub create_layer_event_writer: bevy::ecs::message::MessageWriter<'w, CreateLayerMessage>,
+    pub render_message_event_writer: bevy::ecs::message::MessageWriter<'w, RenderTextMessage>,
 }
 
 impl Operation<'_> {
@@ -39,7 +39,7 @@ impl Operation<'_> {
                 match outcome {
                     Ok(rgis_geo_ops::Outcome::FeatureCollection(feature_collection)) => {
                         self.create_layer_event_writer
-                            .write(CreateLayerEvent {
+                            .write(CreateLayerMessage {
                                 feature_collection,
                                 name: "FOOOOO".into(), // FIXME
                                 source_crs,
@@ -47,7 +47,7 @@ impl Operation<'_> {
                     }
                     Ok(rgis_geo_ops::Outcome::Text(text)) => {
                         self.render_message_event_writer
-                            .write(RenderMessageEvent(text));
+                            .write(RenderTextMessage(text));
                     }
                     Err(e) => {
                         bevy::log::error!("Encountered an error during the operation: {}", e);

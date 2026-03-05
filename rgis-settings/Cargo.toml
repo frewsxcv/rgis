@@ -8,4 +8,5 @@ workspace = true
 
 [dependencies]
 bevy = { workspace = true }
-rgis-map-events = { path = "../rgis-map-events" }
+dark-light = { workspace = true }
+rgis-map-messages = { path = "../rgis-map-messages" }
