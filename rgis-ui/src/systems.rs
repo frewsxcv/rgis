@@ -590,9 +590,7 @@ pub fn configure(app: &mut App) {
     );
 }
 
-#[allow(clippy::too_many_arguments)]
 fn perform_operation(
-    _commands: Commands,
     mut events: ResMut<Messages<rgis_ui_messages::PerformOperationMessage>>,
     layers: Res<rgis_layers::Layers>,
     mut open_operation_window_event_writer: MessageWriter<rgis_ui_messages::OpenOperationWindowMessage>,

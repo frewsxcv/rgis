@@ -10,8 +10,8 @@ fn run_if_has_cursor_moved_events(cursor_moved_event_reader: MessageReader<Curso
 
 fn cursor_moved_system(
     mut cursor_moved_event_reader: MessageReader<CursorMoved>,
-    mut windows: Query<&mut Window, With<PrimaryWindow>>,
-    query: Query<&mut Transform, With<Camera>>,
+    windows: Query<&Window, With<PrimaryWindow>>,
+    query: Query<&Transform, With<Camera>>,
     mut mouse_position: ResMut<crate::MousePos>,
     mut last_cursor_screen_position: ResMut<crate::LastCursorScreenPosition>,
     mut bevy_egui_ctx: bevy_egui::EguiContexts,
@@ -21,7 +21,7 @@ fn cursor_moved_system(
         cursor_moved_event_reader.clear();
         return Ok(());
     }
-    let window = windows.single_mut()?;
+    let window = windows.single()?;
     let transform = query.single()?;
     if let Some(event) = cursor_moved_event_reader.read().last() {
         let screen_coord = rgis_units::ScreenCoord {
@@ -247,8 +247,8 @@ fn recalculate_mouse_position_system(
     >,
     mut mouse_position: ResMut<crate::MousePos>,
     last_cursor_screen_position: Res<crate::LastCursorScreenPosition>,
-    windows: Query<&mut Window, With<PrimaryWindow>>,
-    query: Query<&mut Transform, With<Camera>>,
+    windows: Query<&Window, With<PrimaryWindow>>,
+    query: Query<&Transform, With<Camera>>,
 ) -> Result {
     recalculate_mouse_position_event_reader.clear();
 
