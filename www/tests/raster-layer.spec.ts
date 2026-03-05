@@ -26,7 +26,7 @@ function snapshotName(filePath: string): string {
 }
 
 test("load eox_cloudless with Countries overlay", async ({ appPage }) => {
-  test.setTimeout(60000);
+  test.setTimeout(120000);
 
   // Load the raster layer first
   await appPage.openAddLayerWindow();

@@ -5513,7 +5513,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_jobs",
- "crs-definitions",
+ "crs-definitions 0.4.0",
  "geo",
  "geo-features",
  "geo-geodesy",
