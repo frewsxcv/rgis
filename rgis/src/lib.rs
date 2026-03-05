@@ -49,7 +49,6 @@ pub fn run() {
                 primary_window: Some(Window {
                     title: "rgis".to_string(),
                     canvas: Some("#rgis".into()),
-                    prevent_default_event_handling: false,
                     ..Default::default()
                 }),
                 ..Default::default()
