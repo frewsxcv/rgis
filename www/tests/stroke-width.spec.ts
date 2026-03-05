@@ -7,19 +7,19 @@ test.describe("stroke width", () => {
     // Open the Add Layer window
     await appPage.openAddLayerWindow();
 
-    // Load Tectonic Plate Boundaries from library (line geometry)
+    // Load World Countries from library
     await appPage.clickWidget("Library");
     await appPage.clickWidget("World");
-    await appPage.clickWidget("Add:Tectonic Plate Boundaries");
+    await appPage.clickWidget("Add:Countries");
 
-    // Wait for layer to load (remote dataset may take longer)
-    await appPage.waitForLayerRender(undefined, 50000);
+    // Wait for layer to load
+    await appPage.waitForLayerRender();
 
     // Close the Add Layer window
     await appPage.clickOnCanvas(0.222, 0.076);
 
     // Expand the layer header
-    await appPage.clickWidget("World: Tectonic Plate Boundaries");
+    await appPage.clickWidget("World: Countries");
   });
 
   test("manage layer window shows stroke width slider", async ({
