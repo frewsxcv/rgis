@@ -66,8 +66,7 @@ fn render_manage_layer_window(
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     if let Some(event) = show_manage_layer_window_event_reader.read().last() {
-        state.is_visible = true;
-        state.layer_id = Some(event.0);
+        *state = Some(event.0);
     }
 
     crate::windows::manage_layer::ManageLayer {
@@ -82,16 +81,8 @@ fn render_manage_layer_window(
     Ok(())
 }
 
-struct IsVisible(pub bool);
-
-impl Default for IsVisible {
-    fn default() -> Self {
-        IsVisible(false)
-    }
-}
-
 fn render_add_layer_window(
-    mut is_visible: Local<IsVisible>,
+    mut is_visible: Local<bool>,
     mut selected_file: ResMut<SelectedFile>,
     mut bevy_egui_ctx: EguiContexts,
     mut job_spawner: bevy_jobs::JobSpawner,
@@ -101,18 +92,18 @@ fn render_add_layer_window(
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     if !events.show_add_layer_window_event_reader.is_empty() {
-        (*is_visible).0 = true;
+        *is_visible = true;
     }
 
     if !events.hide_add_layer_window_events.is_empty() {
         state.reset();
-        (*is_visible).0 = false;
+        *is_visible = false;
     }
 
     let output = crate::windows::add_layer::AddLayer {
         state: &mut state,
         selected_file: &mut selected_file,
-        is_visible: &mut (*is_visible).0,
+        is_visible: &mut is_visible,
         egui_ctx: bevy_egui_ctx_mut,
         geodesy_ctx: &geodesy_ctx,
     }
@@ -180,15 +171,15 @@ fn render_add_layer_window(
 
 fn handle_open_change_crs_window_event(
     mut events: MessageReader<rgis_ui_messages::OpenChangeCrsWindowMessage>,
-    mut state: ResMut<crate::ChangeCrsWindowState>,
+    mut is_visible: ResMut<crate::ChangeCrsWindowVisible>,
 ) {
     if events.read().next().is_some() {
-        state.is_visible = true;
+        is_visible.0 = true;
     }
 }
 
 fn render_change_crs_window(
-    mut state: ResMut<crate::ChangeCrsWindowState>,
+    mut is_visible: ResMut<crate::ChangeCrsWindowVisible>,
     target_crs: Res<rgis_crs::TargetCrs>,
     mut bevy_egui_ctx: EguiContexts,
     mut text_field_value: Local<String>,
@@ -199,7 +190,7 @@ fn render_change_crs_window(
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     crate::windows::change_crs::ChangeCrs {
-        is_visible: &mut state.is_visible,
+        is_visible: &mut is_visible.0,
         egui_ctx: bevy_egui_ctx_mut,
         text_field_value: &mut text_field_value,
         crs_input_mode: &mut crs_input_mode,
@@ -220,12 +211,17 @@ fn render_feature_properties_window(
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     if let Some(event) = render_message_events.drain().last() {
-        state.is_visible = true;
-        state.layer_id = Some(event.layer_id);
-        state.properties = Some(event.properties);
+        *state = Some(crate::FeaturePropertiesWindowData {
+            layer_id: event.layer_id,
+            properties: event.properties,
+        });
     }
 
-    let Some(layer) = state.layer_id.and_then(|id| layers.get(id)) else {
+    let Some(ref data) = *state else {
+        return Ok(());
+    };
+
+    let Some(layer) = layers.get(data.layer_id) else {
         return Ok(());
     };
 
@@ -245,8 +241,7 @@ fn render_message_window(
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     if let Some(event) = render_message_events.drain().last() {
-        state.message = Some(event.0);
-        state.is_visible = true;
+        *state = Some(event.0);
     }
 
     crate::windows::message::Message {
@@ -266,9 +261,11 @@ fn render_operation_window(
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     if let Some(event) = events.drain().last() {
-        state.is_visible = true;
-        state.operation = Some(event.operation);
-        state.feature_collection = Some(event.feature_collection);
+        *state = Some(crate::OperationWindowData {
+            operation: event.operation,
+            feature_collection: event.feature_collection,
+            source_crs: None,
+        });
     }
 
     crate::windows::operation::Operation {
