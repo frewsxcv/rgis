@@ -39,11 +39,6 @@ test("load eox_cloudless with Countries overlay", async ({ appPage }) => {
   await fileChooser.setFiles("./dist/geotiff-test-data/real_data/eox/eox_cloudless.tif");
   await appPage.waitForNextFrame();
 
-  await appPage.page
-    .locator("#rfd-overlay .rfd-button", { hasText: "Ok" })
-    .click();
-  await appPage.waitForNextFrame();
-
   const countBefore = await appPage.getRenderedLayerCount();
   await appPage.clickWidget("Add layer");
   await appPage.waitForLayerRender(countBefore);
