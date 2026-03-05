@@ -8,37 +8,34 @@ mod windows;
 
 pub struct Plugin;
 
-#[derive(Default, Resource)]
-pub struct MessageWindowState {
-    is_visible: bool,
-    message: Option<String>,
+/// Window state for displaying a message. `Some(message)` means visible.
+type MessageWindowState = Option<String>;
+
+/// Window state for managing a layer. `Some(layer_id)` means visible.
+type ManageLayerWindowState = Option<rgis_primitives::LayerId>;
+
+/// Data displayed in the feature properties window.
+pub struct FeaturePropertiesWindowData {
+    layer_id: rgis_primitives::LayerId,
+    properties: geo_features::Properties,
 }
 
-#[derive(Default, Resource)]
-pub struct ManageLayerWindowState {
-    layer_id: Option<rgis_primitives::LayerId>,
-    is_visible: bool,
-}
+/// Window state for feature properties. `Some(data)` means visible.
+type FeaturePropertiesWindowState = Option<FeaturePropertiesWindowData>;
 
-#[derive(Default)]
-pub struct FeaturePropertiesWindowState {
-    layer_id: Option<rgis_primitives::LayerId>,
-    properties: Option<geo_features::Properties>,
-    is_visible: bool,
-}
-
+/// Whether the Change CRS window is visible.
 #[derive(Resource, Default)]
-pub struct ChangeCrsWindowState {
-    pub is_visible: bool,
-}
+pub struct ChangeCrsWindowVisible(pub bool);
 
-#[derive(Default)]
-struct OperationWindowState {
-    is_visible: bool,
-    operation: Option<Box<dyn Send + Sync + rgis_geo_ops::Operation>>,
-    feature_collection: Option<geo_features::FeatureCollection<geo_projected::UnprojectedScalar>>,
+/// Data displayed in the operation window.
+struct OperationWindowData {
+    operation: Box<dyn Send + Sync + rgis_geo_ops::Operation>,
+    feature_collection: geo_features::FeatureCollection<geo_projected::UnprojectedScalar>,
     source_crs: Option<rgis_primitives::Crs>,
 }
+
+/// Window state for operations. `Some(data)` means visible.
+type OperationWindowState = Option<OperationWindowData>;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
@@ -47,7 +44,7 @@ impl bevy::app::Plugin for Plugin {
             .insert_resource(rgis_units::TopPanelHeight(0.))
             .insert_resource(rgis_units::BottomPanelHeight(0.))
             .insert_resource(rgis_units::SidePanelWidth(0.))
-            .insert_resource(ChangeCrsWindowState::default())
+            .insert_resource(ChangeCrsWindowVisible::default())
             .insert_resource(ClearColor::default());
 
         systems::configure(app);

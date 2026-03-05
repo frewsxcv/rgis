@@ -11,25 +11,15 @@ pub struct Operation<'w> {
 
 impl Operation<'_> {
     pub fn render(&mut self) {
-        if !self.state.is_visible {
-            self.state.operation = None;
-            return;
-        }
-        let Some(ref mut operation) = self.state.operation else {
+        let Some(ref mut data) = *self.state else {
             return;
         };
-        let feature_collection = match self.state.feature_collection {
-            Some(ref fc) => fc,
-            None => {
-                bevy::log::error!("Feature collection is not set for the operation");
-                return;
-            }
-        };
-        match operation.next_action() {
+
+        match data.operation.next_action() {
             rgis_geo_ops::Action::Perform => {
                 // TODO: perform in background job
-                let outcome = operation.perform(feature_collection.clone());
-                let source_crs = match self.state.source_crs.clone() {
+                let outcome = data.operation.perform(data.feature_collection.clone());
+                let source_crs = match data.source_crs.clone() {
                     Some(crs) => crs,
                     None => {
                         bevy::log::error!("Source CRS is not set for the operation");
@@ -53,14 +43,19 @@ impl Operation<'_> {
                         bevy::log::error!("Encountered an error during the operation: {}", e);
                     }
                 }
-                self.state.is_visible = false;
+                *self.state = None;
             }
             rgis_geo_ops::Action::RenderUi => {
+                let mut is_open = true;
                 egui::Window::new("Operation")
-                    .open(&mut self.state.is_visible)
+                    .open(&mut is_open)
                     .show(self.egui_ctx, |ui| {
-                        operation.ui(ui, feature_collection);
+                        data.operation.ui(ui, &data.feature_collection);
                     });
+
+                if !is_open {
+                    *self.state = None;
+                }
             }
         }
     }

@@ -14,7 +14,7 @@ pub struct ManageLayer<'a> {
 
 impl ManageLayer<'_> {
     pub fn render(&mut self) {
-        let (true, Some(layer_id)) = (self.state.is_visible, self.state.layer_id) else {
+        let Some(layer_id) = *self.state else {
             return;
         };
         let Some(layer) = self.layers.get(layer_id) else {
@@ -22,11 +22,12 @@ impl ManageLayer<'_> {
                 "Could not find layer with ID {:?}, closing manage layer window",
                 layer_id
             );
-            self.state.is_visible = false;
+            *self.state = None;
             return;
         };
+        let mut is_open = true;
         egui::Window::new("Manage Layer")
-            .open(&mut self.state.is_visible)
+            .open(&mut is_open)
             .show(self.egui_ctx, |ui| {
                 egui::Grid::new("manage_layer_window_grid")
                     .num_columns(2)
@@ -82,5 +83,9 @@ impl ManageLayer<'_> {
                         .write(DuplicateLayerMessage(layer_id));
                 }
             });
+
+        if !is_open {
+            *self.state = None;
+        }
     }
 }

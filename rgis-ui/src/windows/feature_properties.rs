@@ -8,17 +8,24 @@ pub struct FeatureProperties<'a> {
 
 impl FeatureProperties<'_> {
     pub fn render(&mut self) {
-        let Some(ref properties) = self.state.properties else {
+        let Some(ref data) = *self.state else {
             return;
         };
+
+        let properties = &data.properties;
+        let mut is_open = true;
         egui::Window::new("Layer Feature Properties")
             .id(egui::Id::new("Layer Feature Properties Window"))
-            .open(&mut self.state.is_visible)
+            .open(&mut is_open)
             .show(self.egui_ctx, |ui| {
                 ui.label(format!("Layer: {}", self.layer.name));
                 ui.add(
                     crate::widgets::feature_properties_table::FeaturePropertiesTable { properties },
                 )
             });
+
+        if !is_open {
+            *self.state = None;
+        }
     }
 }
