@@ -7,6 +7,8 @@ pub struct Top<'a, 'w> {
     pub egui_ctx: &'a mut bevy_egui::egui::Context,
     pub window: &'a mut Window,
     pub app_settings: &'a mut rgis_settings::RgisSettings,
+    pub current_tool: &'a rgis_settings::Tool,
+    pub next_tool: &'a mut NextState<rgis_settings::Tool>,
     pub top_panel_height: &'a mut rgis_units::TopPanelHeight,
     pub is_debug_window_open:
         &'a mut window::IsWindowOpen<crate::windows::debug::Debug<'static, 'static>>,
@@ -17,9 +19,10 @@ pub struct Top<'a, 'w> {
 
 impl Top<'_, '_> {
     pub fn render(&mut self) {
+        let current_tool = *self.current_tool;
         let inner_response = egui::TopBottomPanel::top("top_panel").show(self.egui_ctx, |ui| {
             egui::MenuBar::new().ui(ui, |ui| {
-                let prev_current_tool = self.app_settings.current_tool;
+                let mut new_tool = current_tool;
 
                 ui.label("rgis");
                 let file_response = ui.menu_button("File", |ui| {
@@ -84,44 +87,48 @@ impl Top<'_, '_> {
 
                 let pan_btn = ui
                     .add_enabled(
-                        self.app_settings.current_tool != rgis_settings::Tool::Pan,
+                        current_tool != rgis_settings::Tool::Pan,
                         egui::Button::new("Pan")
-                            .selected(self.app_settings.current_tool == rgis_settings::Tool::Pan),
+                            .selected(current_tool == rgis_settings::Tool::Pan),
                     );
                 crate::widget_registry::register("Pan Tool", pan_btn.rect);
                 if pan_btn.clicked()
                 {
-                    self.app_settings.current_tool = rgis_settings::Tool::Pan;
+                    new_tool = rgis_settings::Tool::Pan;
                 }
 
                 let query_btn = ui
                     .add_enabled(
-                        self.app_settings.current_tool != rgis_settings::Tool::Query,
+                        current_tool != rgis_settings::Tool::Query,
                         egui::Button::new("Query")
-                            .selected(self.app_settings.current_tool == rgis_settings::Tool::Query),
+                            .selected(current_tool == rgis_settings::Tool::Query),
                     );
                 crate::widget_registry::register("Query Tool", query_btn.rect);
                 if query_btn.clicked()
                 {
-                    self.app_settings.current_tool = rgis_settings::Tool::Query;
+                    new_tool = rgis_settings::Tool::Query;
                 }
 
                 let measure_btn = ui
                     .add_enabled(
-                        self.app_settings.current_tool != rgis_settings::Tool::Measure,
+                        current_tool != rgis_settings::Tool::Measure,
                         egui::Button::new("Measure")
-                            .selected(self.app_settings.current_tool == rgis_settings::Tool::Measure),
+                            .selected(current_tool == rgis_settings::Tool::Measure),
                     );
                 crate::widget_registry::register("Measure Tool", measure_btn.rect);
                 if measure_btn.clicked()
                 {
-                    self.app_settings.current_tool = rgis_settings::Tool::Measure;
+                    new_tool = rgis_settings::Tool::Measure;
                 }
 
-                if prev_current_tool == rgis_settings::Tool::Query
-                    && self.app_settings.current_tool != rgis_settings::Tool::Query
+                if current_tool == rgis_settings::Tool::Query
+                    && new_tool != rgis_settings::Tool::Query
                 {
                     // send DeselectAllFeatures event
+                }
+
+                if new_tool != current_tool {
+                    self.next_tool.set(new_tool);
                 }
             });
         });

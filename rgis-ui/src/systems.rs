@@ -338,6 +338,8 @@ fn render_top(
     mut app_exit_events: ResMut<Messages<AppExit>>,
     mut windows: Query<&mut bevy::window::Window, With<PrimaryWindow>>,
     mut app_settings: ResMut<rgis_settings::RgisSettings>,
+    current_tool: Res<State<rgis_settings::Tool>>,
+    mut next_tool: ResMut<NextState<rgis_settings::Tool>>,
     mut top_panel_height: ResMut<rgis_units::TopPanelHeight>,
     mut is_debug_window_open: ResMut<
         bevy_egui_window::IsWindowOpen<crate::windows::debug::Debug<'static, 'static>>,
@@ -355,6 +357,8 @@ fn render_top(
         app_exit_events: &mut app_exit_events,
         window: &mut window,
         app_settings: &mut app_settings,
+        current_tool: current_tool.get(),
+        next_tool: &mut next_tool,
         top_panel_height: &mut top_panel_height,
         is_debug_window_open: &mut is_debug_window_open,
         show_add_layer_window_event_writer: &mut show_add_layer_window_event_writer,
@@ -434,7 +438,7 @@ fn calculate_all_distances(
 }
 fn render_measure_tool(
     mut bevy_egui_ctx: EguiContexts,
-    rgis_settings: Res<rgis_settings::RgisSettings>,
+    current_tool: Res<State<rgis_settings::Tool>>,
     measure_state: Res<rgis_mouse::MeasureState>,
     mouse_pos: Res<rgis_mouse::MousePos>,
     geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
@@ -442,7 +446,7 @@ fn render_measure_tool(
     camera_q: Query<&Transform, With<Camera>>,
     windows: Query<&bevy::window::Window, With<PrimaryWindow>>,
 ) -> Result {
-    if rgis_settings.current_tool != rgis_settings::Tool::Measure {
+    if *current_tool.get() != rgis_settings::Tool::Measure {
         return Ok(());
     }
 
@@ -669,8 +673,8 @@ mod tests {
         app.add_plugins(rgis_crs_messages::Plugin);
         app.add_plugins(rgis_crs::Plugin);
 
+        app.insert_state(rgis_settings::Tool::Measure);
         app.insert_resource(rgis_settings::RgisSettings {
-            current_tool: rgis_settings::Tool::Measure,
             show_scale: true,
             dark_mode: false,
         });
