@@ -314,6 +314,17 @@ fn handle_layer_color_updated_event(
     }
 }
 
+fn handle_layer_stroke_width_updated_event(
+    mut events: MessageReader<rgis_layer_messages::LayerStrokeWidthUpdatedMessage>,
+    mut despawn_writer: MessageWriter<rgis_renderer_messages::DespawnMeshesMessage>,
+    mut reprojected_writer: MessageWriter<rgis_layer_messages::LayerReprojectedMessage>,
+) {
+    for event in events.read() {
+        despawn_writer.write(rgis_renderer_messages::DespawnMeshesMessage(event.0));
+        reprojected_writer.write(rgis_layer_messages::LayerReprojectedMessage(event.0));
+    }
+}
+
 fn handle_crs_changed_events(
     mut crs_changed_event_reader: MessageReader<rgis_crs_messages::CrsChangedMessage>,
     query: Query<(&rgis_primitives::LayerId, Entity), With<MeshMaterial2d<ColorMaterial>>>,
@@ -410,6 +421,7 @@ pub fn configure(app: &mut App) {
             handle_layer_became_visible_event,
             handle_layer_color_updated_event,
             handle_layer_point_size_updated_event,
+            handle_layer_stroke_width_updated_event,
             handle_layer_z_index_updated_event,
             handle_despawn_meshes_event,
             handle_mesh_building_job_outcome,

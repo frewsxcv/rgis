@@ -68,6 +68,27 @@ test.describe("layer management", () => {
     await expect(appPage.page).toHaveScreenshot("zoom-to-extent.png");
   });
 
+  test("manage layer window shows stroke width control", async ({
+    appPage,
+  }) => {
+    // Expand the layer header
+    await appPage.clickWidget("World: Countries");
+
+    // Click "Manage..." button
+    await appPage.clickWidget("Manage");
+
+    // Verify the stroke width label is present
+    const rect = await appPage.page.evaluate(
+      (l) => (window as any).get_widget_rect(l),
+      "Stroke width",
+    );
+    expect(rect).toBeTruthy();
+
+    await expect(appPage.page).toHaveScreenshot(
+      "manage-layer-stroke-width.png",
+    );
+  });
+
   test("expanding Operations section shows available operations", async ({
     appPage,
   }) => {

@@ -67,6 +67,21 @@ fn handle_update_point_size_events(
     }
 }
 
+fn handle_update_stroke_width_events(
+    mut update_events: MessageReader<rgis_ui_messages::UpdateLayerStrokeWidthMessage>,
+    mut updated_events: MessageWriter<rgis_layer_messages::LayerStrokeWidthUpdatedMessage>,
+    mut layers: ResMut<crate::Layers>,
+) {
+    for rgis_ui_messages::UpdateLayerStrokeWidthMessage(layer_id, stroke_width) in update_events.read() {
+        let Some(layer) = layers.get_mut(*layer_id) else {
+            warn!("Could not find layer");
+            continue;
+        };
+        layer.stroke_width = *stroke_width;
+        updated_events.write(rgis_layer_messages::LayerStrokeWidthUpdatedMessage(*layer_id));
+    }
+}
+
 fn handle_delete_layer_events(
     mut delete_layer_event_reader: MessageReader<rgis_layer_messages::DeleteLayerMessage>,
     mut despawn_meshes_event_writer: MessageWriter<rgis_renderer_messages::DespawnMeshesMessage>,
@@ -174,6 +189,7 @@ pub fn configure(app: &mut App) {
             handle_toggle_layer_visibility_events,
             handle_update_color_events,
             handle_update_point_size_events,
+            handle_update_stroke_width_events,
             handle_move_layer_events,
             handle_delete_layer_events,
             handle_create_layer_events,

@@ -23,6 +23,9 @@ pub enum LayerColorUpdatedMessage {
 #[derive(Message, Debug)]
 pub struct LayerPointSizeUpdatedMessage(pub rgis_primitives::LayerId);
 
+#[derive(Message, Debug)]
+pub struct LayerStrokeWidthUpdatedMessage(pub rgis_primitives::LayerId);
+
 #[derive(Message)]
 pub struct DeleteLayerMessage(pub rgis_primitives::LayerId);
 
@@ -67,6 +70,7 @@ impl bevy::app::Plugin for Plugin {
             .add_message::<LayerBecameVisibleMessage>()
             .add_message::<LayerColorUpdatedMessage>()
             .add_message::<LayerPointSizeUpdatedMessage>()
+            .add_message::<LayerStrokeWidthUpdatedMessage>()
             .add_message::<DeleteLayerMessage>()
             .add_message::<MoveLayerMessage>()
             .add_message::<LayerZIndexUpdatedMessage>()

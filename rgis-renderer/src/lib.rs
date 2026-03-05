@@ -3,6 +3,7 @@ use std::sync::atomic::AtomicU32;
 
 mod jobs;
 mod systems;
+mod thicken;
 mod z_index;
 
 /// Counter incremented each time meshes are spawned for a layer (for test polling).
@@ -243,6 +244,7 @@ fn spawn_linestring_geometry(
     } else {
         RenderEntityType::LineString
     };
+    let mesh = thicken::thicken_line_mesh(line_string_mesh, layer.stroke_width);
     spawn_helper(
         materials,
         if is_selected {
@@ -251,7 +253,7 @@ fn spawn_linestring_geometry(
             layer.color.stroke
         },
         layer_index,
-        line_string_mesh,
+        mesh,
         commands,
         assets_meshes,
         entity_type,
@@ -304,7 +306,7 @@ fn spawn_polygon_geometry(
         materials,
         layer.color.stroke,
         layer_index,
-        polygon_mesh.exterior_mesh,
+        thicken::thicken_line_mesh(polygon_mesh.exterior_mesh, layer.stroke_width),
         commands,
         assets_meshes,
         line_string_entity_type,
@@ -316,7 +318,7 @@ fn spawn_polygon_geometry(
             materials,
             layer.color.stroke,
             layer_index,
-            mesh,
+            thicken::thicken_line_mesh(mesh, layer.stroke_width),
             commands,
             assets_meshes,
             line_string_entity_type,
