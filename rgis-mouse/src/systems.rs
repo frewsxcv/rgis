@@ -45,7 +45,7 @@ fn mouse_motion_system(
     mut pan_camera_events: MessageWriter<rgis_camera_messages::PanCameraMessage>,
     mut windows: Query<&mut Window, With<PrimaryWindow>>,
     mut bevy_egui_ctx: bevy_egui::EguiContexts,
-    rgis_settings: Res<rgis_settings::RgisSettings>,
+    current_tool: Res<State<rgis_settings::Tool>>,
     mut last_cursor_icon: Local<Option<SystemCursorIcon>>,
 ) -> Result {
     let mut window = windows.single_mut()?;
@@ -66,7 +66,7 @@ fn mouse_motion_system(
     }
 
     // Handle panning
-    if rgis_settings.current_tool == rgis_settings::Tool::Pan
+    if *current_tool.get() == rgis_settings::Tool::Pan
         && mouse_button.pressed(MouseButton::Left)
         || mouse_button.pressed(MouseButton::Right)
     {
@@ -95,7 +95,7 @@ fn mouse_motion_system(
     }
 
     mouse_motion_event_reader.clear();
-    let cursor_icon = match rgis_settings.current_tool {
+    let cursor_icon = match *current_tool.get() {
         rgis_settings::Tool::Pan => SystemCursorIcon::Grab,
         rgis_settings::Tool::Query => SystemCursorIcon::Crosshair,
         rgis_settings::Tool::Measure => SystemCursorIcon::Crosshair,
@@ -117,10 +117,6 @@ fn set_cursor_icon(
 
 fn clear_cursor_icon(last_cursor_icon: &mut Option<SystemCursorIcon>) {
     *last_cursor_icon = None;
-}
-
-fn current_tool_is_measure(rgis_settings: Res<rgis_settings::RgisSettings>) -> bool {
-    rgis_settings.current_tool == rgis_settings::Tool::Measure
 }
 
 const DRAG_HIT_RADIUS_PX: f64 = 10.0;
@@ -274,7 +270,7 @@ pub fn configure(app: &mut App) {
             cursor_moved_system.run_if(run_if_has_cursor_moved_events),
             recalculate_mouse_position_system.run_if(run_if_has_recalculate_mouse_position_events),
             mouse_scroll_system.run_if(run_if_has_mouse_scroll_events),
-            measure_input_system.run_if(current_tool_is_measure),
+            measure_input_system.run_if(in_state(rgis_settings::Tool::Measure)),
             mouse_motion_system.run_if(run_if_has_mouse_motion_events),
         )
             .after(bevy_egui::EguiPreUpdateSet::ProcessInput)
