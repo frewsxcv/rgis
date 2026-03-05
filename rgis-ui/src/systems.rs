@@ -672,6 +672,7 @@ mod tests {
         app.add_plugins(rgis_geodesy::Plugin);
         app.add_plugins(rgis_crs_messages::Plugin);
         app.add_plugins(rgis_crs::Plugin);
+        app.add_plugins(bevy::state::app::StatesPlugin);
 
         app.insert_state(rgis_settings::Tool::Measure);
         app.insert_resource(rgis_settings::RgisSettings {
