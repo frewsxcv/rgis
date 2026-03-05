@@ -19,7 +19,7 @@ fn handle_layer_created_events(
                     layer_id: event.0,
                     source_crs: layer.crs.clone(),
                     target_crs: target_crs.0.clone(),
-                    geodesy_ctx: geodesy_ctx.clone(),
+                    geodesy_ctx: geodesy_ctx.clone_for_async(),
                 });
             }
             rgis_layers::LayerData::Vector { unprojected_feature_collection, .. } => {
@@ -28,7 +28,7 @@ fn handle_layer_created_events(
                     layer_id: event.0,
                     source_crs: layer.crs.clone(),
                     target_crs: target_crs.0.clone(),
-                    geodesy_ctx: geodesy_ctx.clone(),
+                    geodesy_ctx: geodesy_ctx.clone_for_async(),
                 });
             }
         }
@@ -127,7 +127,7 @@ fn handle_crs_changed_events(
                     layer_id: layer.id,
                     source_crs: layer.crs.clone(),
                     target_crs: target_crs.0.clone(),
-                    geodesy_ctx: geodesy_ctx.clone(),
+                    geodesy_ctx: geodesy_ctx.clone_for_async(),
                 });
             }
             rgis_layers::LayerData::Vector { unprojected_feature_collection, .. } => {
@@ -136,7 +136,7 @@ fn handle_crs_changed_events(
                     layer_id: layer.id,
                     source_crs: layer.crs.clone(),
                     target_crs: target_crs.0.clone(),
-                    geodesy_ctx: geodesy_ctx.clone(),
+                    geodesy_ctx: geodesy_ctx.clone_for_async(),
                 });
             }
         }

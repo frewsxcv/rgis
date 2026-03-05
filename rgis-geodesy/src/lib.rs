@@ -2,8 +2,52 @@ use std::sync::Arc;
 
 use bevy::prelude::*;
 
-#[derive(Resource, Clone)]
-pub struct GeodesyContext(pub Arc<std::sync::RwLock<geodesy::ctx::Minimal>>);
+/// Shared geodesy context for coordinate reference system operations.
+///
+/// This resource wraps `geodesy::ctx::Minimal` in an `Arc<RwLock>` because
+/// it must be cloned into background jobs (which run on `AsyncComputeTaskPool`
+/// threads). Use [`Self::clone_for_async`] to obtain a clone for background
+/// work, and [`Self::read`] / [`Self::write`] for synchronous system access.
+#[derive(Resource)]
+pub struct GeodesyContext(Arc<std::sync::RwLock<geodesy::ctx::Minimal>>);
+
+impl GeodesyContext {
+    /// Clone the context handle for use in a background job.
+    ///
+    /// This is the only way to obtain a second handle, making the
+    /// `Arc` cloning explicit rather than implicit via `Clone`.
+    pub fn clone_for_async(&self) -> Self {
+        GeodesyContext(Arc::clone(&self.0))
+    }
+
+    /// Acquire a read lock on the inner geodesy context.
+    pub fn read(
+        &self,
+    ) -> Result<std::sync::RwLockReadGuard<'_, geodesy::ctx::Minimal>, GeodesyContextLockError>
+    {
+        self.0.read().map_err(|_| GeodesyContextLockError)
+    }
+
+    /// Acquire a write lock on the inner geodesy context.
+    pub fn write(
+        &self,
+    ) -> Result<std::sync::RwLockWriteGuard<'_, geodesy::ctx::Minimal>, GeodesyContextLockError>
+    {
+        self.0.write().map_err(|_| GeodesyContextLockError)
+    }
+}
+
+/// Error returned when the `GeodesyContext` lock is poisoned.
+#[derive(Debug)]
+pub struct GeodesyContextLockError;
+
+impl std::fmt::Display for GeodesyContextLockError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "GeodesyContext lock poisoned")
+    }
+}
+
+impl std::error::Error for GeodesyContextLockError {}
 
 pub struct Plugin;
 

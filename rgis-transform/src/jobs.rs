@@ -54,7 +54,7 @@ impl bevy_jobs::Job for ReprojectRasterExtentJob {
         let mut min = self.extent.min();
         let mut max = self.extent.max();
 
-        let geodesy_ctx = self.geodesy_ctx.0.read().unwrap();
+        let geodesy_ctx = self.geodesy_ctx.read().unwrap();
 
         // Determine if the source CRS is geographic (degrees) or projected (meters).
         // Geographic CRS inputs need degree-to-radian conversion; projected do not.
@@ -225,7 +225,7 @@ impl bevy_jobs::Job for ReprojectGeometryJob {
         for (i, feature) in feature_collection.features.iter_mut().enumerate() {
             let _ = progress_sender.send_progress((100 * i / total) as u8).await;
 
-            let geodesy_ctx = self.geodesy_ctx.0.read().unwrap();
+            let geodesy_ctx = self.geodesy_ctx.read().unwrap();
 
             let transformer = geo_geodesy::Transformer::from_geodesy(
                 &*geodesy_ctx,
