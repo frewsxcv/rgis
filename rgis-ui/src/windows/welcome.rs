@@ -5,7 +5,7 @@ use bevy_egui_window::Window as _;
 
 #[derive(SystemParam)]
 pub struct Welcome<'w> {
-    show_add_layer_window_event_writer: MessageWriter<'w, rgis_ui_events::ShowAddLayerWindow>,
+    show_add_layer_window_event_writer: MessageWriter<'w, rgis_ui_messages::ShowAddLayerWindowMessage>,
 }
 
 impl egui::Widget for Welcome<'_> {

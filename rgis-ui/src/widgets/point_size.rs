@@ -1,11 +1,11 @@
 use bevy::prelude::*;
 use bevy_egui::egui;
-use rgis_ui_events::UpdateLayerPointSizeEvent;
+use rgis_ui_messages::UpdateLayerPointSizeMessage;
 
 pub struct PointSize<'a> {
     pub layer_id: rgis_primitives::LayerId,
     pub size: f32,
-    pub size_events: &'a mut Messages<UpdateLayerPointSizeEvent>,
+    pub size_events: &'a mut Messages<UpdateLayerPointSizeMessage>,
 }
 
 impl egui::Widget for PointSize<'_> {
@@ -14,7 +14,7 @@ impl egui::Widget for PointSize<'_> {
         let response = ui.add(egui::Slider::new(&mut new_size, 1.0..=50.0));
         if response.changed() {
             self.size_events
-                .write(UpdateLayerPointSizeEvent(self.layer_id, new_size));
+                .write(UpdateLayerPointSizeMessage(self.layer_id, new_size));
         }
         response
     }

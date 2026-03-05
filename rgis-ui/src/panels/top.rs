@@ -11,7 +11,7 @@ pub struct Top<'a, 'w> {
     pub is_debug_window_open:
         &'a mut window::IsWindowOpen<crate::windows::debug::Debug<'static, 'static>>,
     pub show_add_layer_window_event_writer:
-        &'a mut MessageWriter<'w, rgis_ui_events::ShowAddLayerWindow>,
+        &'a mut MessageWriter<'w, rgis_ui_messages::ShowAddLayerWindowMessage>,
 }
 
 impl Top<'_, '_> {
