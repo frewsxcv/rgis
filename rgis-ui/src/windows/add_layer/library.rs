@@ -54,7 +54,8 @@ impl LibraryEntryWidget<'_> {
                     name: format!("{}: {}", self.folder.name, self.entry.name),
                     url: self.entry.url.into(),
                     source_crs: rgis_primitives::Crs {
-                        epsg_code: self.entry.crs,
+                        epsg_code: Some(self.entry.crs),
+                        proj_string: None,
                         op_handle,
                     },
                 });

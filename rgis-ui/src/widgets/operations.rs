@@ -20,7 +20,7 @@ impl egui::Widget for Operations<'_, '_> {
                             .write(CreateLayerEvent {
                                 feature_collection,
                                 name: "Bounding rect".into(), // FIXME
-                                source_crs: self.layer.crs,
+                                source_crs: self.layer.crs.clone(),
                             });
                     }
                 }

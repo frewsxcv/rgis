@@ -2,9 +2,22 @@ use bevy_egui::egui;
 use geodesy::ctx::Context;
 use std::str::FromStr;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CrsInputMode {
+    Epsg,
+    Proj,
+}
+
+impl Default for CrsInputMode {
+    fn default() -> Self {
+        CrsInputMode::Epsg
+    }
+}
+
 pub struct CrsInput<'a> {
     pub geodesy_ctx: &'a rgis_geodesy::GeodesyContext,
     pub text_field_value: &'a mut String,
+    pub input_mode: &'a mut CrsInputMode,
     outcome: &'a mut Option<Outcome>,
 }
 
@@ -13,30 +26,48 @@ impl<'a> CrsInput<'a> {
         geodesy_ctx: &'a rgis_geodesy::GeodesyContext,
         outcome: &'a mut Option<Outcome>,
         text_field_value: &'a mut String,
+        input_mode: &'a mut CrsInputMode,
     ) -> Self {
         Self {
             geodesy_ctx,
             outcome,
             text_field_value,
+            input_mode,
         }
     }
 }
 
-pub type Outcome = Result<(geodesy::ctx::OpHandle, u16), Error>;
+pub type Outcome = Result<(geodesy::ctx::OpHandle, Option<u16>, Option<String>), Error>;
 
 impl egui::Widget for CrsInput<'_> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         ui.vertical(|ui| {
-            ui.add(EpsgCodeInputFieldWidget::new(
-                self.geodesy_ctx,
-                self.text_field_value,
-                self.outcome,
-            ));
+            ui.horizontal(|ui| {
+                ui.radio_value(self.input_mode, CrsInputMode::Epsg, "EPSG Code");
+                ui.radio_value(self.input_mode, CrsInputMode::Proj, "PROJ String");
+            });
+
+            match self.input_mode {
+                CrsInputMode::Epsg => {
+                    ui.add(EpsgCodeInputFieldWidget::new(
+                        self.geodesy_ctx,
+                        self.text_field_value,
+                        self.outcome,
+                    ));
+                }
+                CrsInputMode::Proj => {
+                    ui.add(ProjStringInputFieldWidget::new(
+                        self.geodesy_ctx,
+                        self.text_field_value,
+                        self.outcome,
+                    ));
+                }
+            }
 
             let Some(outcome) = self.outcome else { return };
 
             match outcome {
-                Ok((op_handle, _)) => {
+                Ok((op_handle, _, _)) => {
                     ui.vertical(|ui| {
                         let geodesy_ctx = self.geodesy_ctx.0.read().unwrap();
                         let Ok(steps) = geodesy_ctx.steps(*op_handle) else {
@@ -109,6 +140,56 @@ impl egui::Widget for EpsgCodeInputFieldWidget<'_> {
     }
 }
 
+struct ProjStringInputFieldWidget<'a> {
+    geodesy_ctx: &'a rgis_geodesy::GeodesyContext,
+    text_field_value: &'a mut String,
+    outcome: &'a mut Option<Outcome>,
+}
+
+impl<'a> ProjStringInputFieldWidget<'a> {
+    pub fn new(
+        geodesy_ctx: &'a rgis_geodesy::GeodesyContext,
+        text_field_value: &'a mut String,
+        outcome: &'a mut Option<Outcome>,
+    ) -> Self {
+        Self {
+            geodesy_ctx,
+            text_field_value,
+            outcome,
+        }
+    }
+}
+
+impl egui::Widget for ProjStringInputFieldWidget<'_> {
+    fn ui(self, ui: &mut egui::Ui) -> egui::Response {
+        ui.horizontal(|ui| {
+            ui.label("PROJ:");
+            let edit_field = ui.text_edit_singleline(self.text_field_value);
+
+            *self.outcome = if edit_field.changed()
+                || (!self.text_field_value.is_empty() && self.outcome.is_none())
+            {
+                ui.add(ValidIconWidget);
+                Some(parse_proj_input_value(
+                    self.geodesy_ctx,
+                    self.text_field_value,
+                ))
+            } else if let Some(n) = self.outcome.take() {
+                if n.is_ok() {
+                    ui.add(ValidIconWidget);
+                } else {
+                    ui.add(InvalidIconWidget);
+                }
+                Some(n)
+            } else {
+                ui.add(InvalidIconWidget);
+                None
+            };
+        })
+        .response
+    }
+}
+
 #[derive(Debug)]
 pub enum Error {
     ParseIntError(std::num::ParseIntError),
@@ -149,7 +230,17 @@ fn parse_epsg_input_value(
     let parsed = parsed?;
     let outcome = rgis_geodesy::epsg_code_to_geodesy_op_handle(&mut *geodesy_ctx, parsed)
         .map_err(Error::Geodesy)?;
-    Ok((outcome, parsed))
+    Ok((outcome, Some(parsed), None))
+}
+
+fn parse_proj_input_value(
+    geodesy_ctx: &rgis_geodesy::GeodesyContext,
+    input: &str,
+) -> Outcome {
+    let mut geodesy_ctx = geodesy_ctx.0.write().unwrap();
+    let op_handle = rgis_geodesy::proj_string_to_geodesy_op_handle(&mut *geodesy_ctx, input)
+        .map_err(Error::Geodesy)?;
+    Ok((op_handle, None, Some(input.to_string())))
 }
 
 struct ValidIconWidget;

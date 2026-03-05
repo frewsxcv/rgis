@@ -35,6 +35,7 @@ enum Source {
 pub struct State {
     pub text_edit_contents: String,
     pub crs_input: String,
+    pub crs_input_mode: crate::widgets::crs_input::CrsInputMode,
     selected_source: Source,
     pub selected_format: Option<FileFormat>,
     pub crs_input_outcome: Option<crate::widgets::crs_input::Outcome>,
@@ -47,6 +48,7 @@ impl Default for State {
         State {
             text_edit_contents: "".into(),
             crs_input: DEFAULT_CRS_INPUT.into(),
+            crs_input_mode: Default::default(),
             crs_input_outcome: None,
             selected_format: None,
             selected_source: Source::Unselected,
@@ -58,6 +60,7 @@ impl State {
     pub fn reset(&mut self) {
         self.text_edit_contents = String::new();
         self.crs_input = DEFAULT_CRS_INPUT.into();
+        self.crs_input_mode = Default::default();
         self.selected_source = Source::Unselected;
         self.selected_format = None;
     }

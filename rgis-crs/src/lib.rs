@@ -3,7 +3,7 @@ use rgis_primitives::Crs;
 
 static DEFAULT_TARGET_CRS: u16 = 3857;
 
-#[derive(Resource, Clone, Copy)]
+#[derive(Resource, Clone)]
 pub struct TargetCrs(pub Crs);
 
 pub struct Plugin;
@@ -28,7 +28,8 @@ fn insert_target_crs(
     let op_handle =
         rgis_geodesy::epsg_code_to_geodesy_op_handle(&mut *geodesy_ctx, DEFAULT_TARGET_CRS)?;
     commands.insert_resource(TargetCrs(Crs {
-        epsg_code: DEFAULT_TARGET_CRS,
+        epsg_code: Some(DEFAULT_TARGET_CRS),
+        proj_string: None,
         op_handle,
     }));
     Ok(())
@@ -40,10 +41,10 @@ fn handle_crs_changed_events(
     mut target_crs: ResMut<TargetCrs>,
 ) {
     if let Some(event) = change_crs_event_reader.read().last() {
-        target_crs.0 = event.new;
+        target_crs.0 = event.new.clone();
         crs_changed_event_writer.write(rgis_crs_events::CrsChangedEvent {
-            old: event.old,
-            new: event.new,
+            old: event.old.clone(),
+            new: event.new.clone(),
         });
     }
 }

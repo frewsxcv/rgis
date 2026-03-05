@@ -160,7 +160,7 @@ fn handle_duplicate_layer_events(
                 create_layer_event_writer.write(rgis_layer_events::CreateLayerEvent {
                     feature_collection: fc.clone(),
                     name: new_name,
-                    source_crs: layer.crs,
+                    source_crs: layer.crs.clone(),
                 });
             }
         }
