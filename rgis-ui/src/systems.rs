@@ -173,7 +173,7 @@ fn handle_open_change_crs_window_event(
     mut events: MessageReader<rgis_ui_messages::OpenChangeCrsWindowMessage>,
     mut is_visible: ResMut<crate::ChangeCrsWindowVisible>,
 ) {
-    if events.read().next().is_some() {
+    if events.read().last().is_some() {
         is_visible.0 = true;
     }
 }
