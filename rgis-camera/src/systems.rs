@@ -9,9 +9,9 @@ pub fn configure(app: &mut App) {
             pan_camera_system,
             handle_meshes_spawned_events,
             zoom_camera_system,
-            handle_change_crs_event,
         ),
     );
+    app.add_observer(handle_change_crs_event);
 }
 
 fn init_camera(mut commands: Commands) {
@@ -19,15 +19,12 @@ fn init_camera(mut commands: Commands) {
 }
 
 fn handle_change_crs_event(
-    mut change_crs_event_reader: MessageReader<rgis_crs_messages::CrsChangedMessage>,
+    event: On<rgis_crs_messages::CrsChangedMessage>,
     mut query: Query<&mut Transform, With<Camera>>,
     windows: Query<&Window, With<PrimaryWindow>>,
     ui_margins: rgis_units::UiMargins,
     geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
 ) -> Result {
-    let Some(event) = change_crs_event_reader.read().last() else {
-        return Ok(());
-    };
     let window = windows.single()?;
     let Ok(mut transform) = query.single_mut() else {
         return Ok(());

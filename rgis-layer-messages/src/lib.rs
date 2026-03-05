@@ -7,10 +7,10 @@ pub struct LayerCreatedMessage(pub rgis_primitives::LayerId);
 #[derive(Message, Debug)]
 pub struct ToggleLayerVisibilityMessage(pub rgis_primitives::LayerId);
 
-#[derive(Message, Debug)]
+#[derive(Event, Debug)]
 pub struct LayerBecameHiddenMessage(pub rgis_primitives::LayerId);
 
-#[derive(Message, Debug)]
+#[derive(Event, Debug)]
 pub struct LayerBecameVisibleMessage(pub rgis_primitives::LayerId);
 
 /// After a `Layer`'s color is changed
@@ -63,8 +63,6 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_message::<LayerCreatedMessage>()
             .add_message::<ToggleLayerVisibilityMessage>()
-            .add_message::<LayerBecameHiddenMessage>()
-            .add_message::<LayerBecameVisibleMessage>()
             .add_message::<LayerColorUpdatedMessage>()
             .add_message::<LayerPointSizeUpdatedMessage>()
             .add_message::<DeleteLayerMessage>()
