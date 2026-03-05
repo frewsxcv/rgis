@@ -39,11 +39,6 @@ for (const filePath of geotiffFiles) {
     await fileChooser.setFiles(`./dist/geotiff-test-data/${filePath}`);
     await appPage.waitForNextFrame();
 
-    await appPage.page
-      .locator("#rfd-overlay .rfd-button", { hasText: "Ok" })
-      .click();
-    await appPage.waitForNextFrame();
-
     const countBefore = await appPage.getRenderedLayerCount();
     await appPage.clickWidget("Add layer");
     await appPage.waitForLayerRender(countBefore);
