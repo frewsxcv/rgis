@@ -8,10 +8,10 @@ pub struct LayerCreatedMessage(pub rgis_primitives::LayerId);
 pub struct ToggleLayerVisibilityMessage(pub rgis_primitives::LayerId);
 
 #[derive(Event, Debug)]
-pub struct LayerBecameHiddenMessage(pub rgis_primitives::LayerId);
+pub struct LayerBecameHiddenEvent(pub rgis_primitives::LayerId);
 
 #[derive(Event, Debug)]
-pub struct LayerBecameVisibleMessage(pub rgis_primitives::LayerId);
+pub struct LayerBecameVisibleEvent(pub rgis_primitives::LayerId);
 
 /// After a `Layer`'s color is changed
 #[derive(Clone, Copy, Message)]

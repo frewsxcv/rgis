@@ -7,7 +7,7 @@ pub struct ChangeCrsMessage {
 }
 
 #[derive(Event)]
-pub struct CrsChangedMessage {
+pub struct CrsChangedEvent {
     pub old: rgis_primitives::Crs,
     pub new: rgis_primitives::Crs,
 }

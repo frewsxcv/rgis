@@ -14,9 +14,9 @@ fn handle_toggle_layer_visibility_events(
         };
         layer.visible = !layer.visible;
         if layer.visible {
-            commands.trigger(rgis_layer_messages::LayerBecameVisibleMessage(event.0));
+            commands.trigger(rgis_layer_messages::LayerBecameVisibleEvent(event.0));
         } else {
-            commands.trigger(rgis_layer_messages::LayerBecameHiddenMessage(event.0));
+            commands.trigger(rgis_layer_messages::LayerBecameHiddenEvent(event.0));
         }
     }
 }
@@ -71,7 +71,7 @@ fn handle_delete_layer_events(
 ) {
     for event in delete_layer_event_reader.read() {
         layers.remove(event.0);
-        commands.trigger(rgis_renderer_messages::DespawnMeshesMessage(event.0));
+        commands.trigger(rgis_renderer_messages::DespawnMeshesEvent(event.0));
     }
 }
 

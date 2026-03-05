@@ -111,7 +111,7 @@ fn handle_reproject_raster_extent_job_completion_events(
 }
 
 fn handle_crs_changed_events(
-    _event: On<rgis_crs_messages::CrsChangedMessage>,
+    _event: On<rgis_crs_messages::CrsChangedEvent>,
     mut layers: ResMut<rgis_layers::Layers>,
     target_crs: Res<rgis_crs::TargetCrs>,
     mut job_spawner: bevy_jobs::JobSpawner,

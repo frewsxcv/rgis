@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 #[derive(Event)]
-pub struct DespawnMeshesMessage(pub rgis_primitives::LayerId);
+pub struct DespawnMeshesEvent(pub rgis_primitives::LayerId);
 
 #[derive(Message)]
 pub struct MeshesSpawnedMessage(pub rgis_primitives::LayerId);

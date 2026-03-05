@@ -42,7 +42,7 @@ fn handle_crs_changed_events(
 ) {
     if let Some(event) = change_crs_event_reader.read().last() {
         target_crs.0 = event.new.clone();
-        commands.trigger(rgis_crs_messages::CrsChangedMessage {
+        commands.trigger(rgis_crs_messages::CrsChangedEvent {
             old: event.old.clone(),
             new: event.new.clone(),
         });

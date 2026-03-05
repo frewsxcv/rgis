@@ -19,7 +19,7 @@ fn init_camera(mut commands: Commands) {
 }
 
 fn handle_change_crs_event(
-    event: On<rgis_crs_messages::CrsChangedMessage>,
+    event: On<rgis_crs_messages::CrsChangedEvent>,
     mut query: Query<&mut Transform, With<Camera>>,
     windows: Query<&Window, With<PrimaryWindow>>,
     ui_margins: rgis_units::UiMargins,

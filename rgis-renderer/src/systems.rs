@@ -194,7 +194,7 @@ type LayerEntitiesQuery<'world, 'state, 'a> =
     Query<'world, 'state, (&'a rgis_primitives::LayerId, Entity)>;
 
 fn handle_despawn_meshes_event(
-    event: On<rgis_renderer_messages::DespawnMeshesMessage>,
+    event: On<rgis_renderer_messages::DespawnMeshesEvent>,
     mut commands: Commands,
     query: LayerEntitiesQuery,
 ) {
@@ -206,7 +206,7 @@ fn handle_despawn_meshes_event(
 }
 
 fn handle_layer_became_hidden_event(
-    event: On<rgis_layer_messages::LayerBecameHiddenMessage>,
+    event: On<rgis_layer_messages::LayerBecameHiddenEvent>,
     mut query: Query<(&rgis_primitives::LayerId, &mut Visibility)>,
 ) {
     for (_, mut visibility) in query.iter_mut().filter(|(i, _)| **i == event.0) {
@@ -215,7 +215,7 @@ fn handle_layer_became_hidden_event(
 }
 
 fn handle_layer_became_visible_event(
-    event: On<rgis_layer_messages::LayerBecameVisibleMessage>,
+    event: On<rgis_layer_messages::LayerBecameVisibleEvent>,
     mut query: Query<(&rgis_primitives::LayerId, &mut Visibility)>,
 ) {
     for (_, mut visibility) in query.iter_mut().filter(|(i, _)| **i == event.0) {
@@ -309,7 +309,7 @@ fn handle_layer_color_updated_event(
 }
 
 fn handle_crs_changed_events(
-    _event: On<rgis_crs_messages::CrsChangedMessage>,
+    _event: On<rgis_crs_messages::CrsChangedEvent>,
     query: Query<(&rgis_primitives::LayerId, Entity), With<MeshMaterial2d<ColorMaterial>>>,
     mut commands: Commands,
 ) {
