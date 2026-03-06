@@ -1,7 +1,7 @@
 use bevy::{ecs::query::QueryIter, prelude::*, window::PrimaryWindow};
 use bevy_egui::{
     egui::{self, Widget},
-    EguiContexts, EguiPrimaryContextPass,
+    EguiContexts, EguiPrimaryContextPass, EguiTextureHandle,
 };
 use bevy_egui_window::Window;
 use geo::{Distance, Geodesic, Haversine, Rhumb};
@@ -330,6 +330,12 @@ impl Widget for InProgressJobWidget<'_> {
     }
 }
 
+#[derive(Default)]
+struct LogoTextures {
+    light: Option<(Handle<Image>, egui::TextureId)>,
+    dark: Option<(Handle<Image>, egui::TextureId)>,
+}
+
 fn render_top(
     mut bevy_egui_ctx: EguiContexts,
     mut app_exit_events: ResMut<Messages<AppExit>>,
@@ -343,7 +349,28 @@ fn render_top(
     >,
     mut show_add_layer_window_event_writer: MessageWriter<rgis_ui_messages::ShowAddLayerWindowMessage>,
     mut clear_color: ResMut<ClearColor>,
+    asset_server: Res<AssetServer>,
+    mut logo_textures: Local<LogoTextures>,
 ) -> Result {
+    if logo_textures.light.is_none() {
+        let handle: Handle<Image> = asset_server.load("logo-black.png");
+        let texture_id = bevy_egui_ctx.add_image(EguiTextureHandle::Strong(handle.clone()));
+        logo_textures.light = Some((handle, texture_id));
+    }
+    if logo_textures.dark.is_none() {
+        let handle: Handle<Image> = asset_server.load("logo-white.png");
+        let texture_id = bevy_egui_ctx.add_image(EguiTextureHandle::Strong(handle.clone()));
+        logo_textures.dark = Some((handle, texture_id));
+    }
+
+    let logo_texture_id = if app_settings.dark_mode {
+        logo_textures.dark.as_ref()
+    } else {
+        logo_textures.light.as_ref()
+    }
+    .filter(|(handle, _)| asset_server.is_loaded_with_dependencies(handle))
+    .map(|(_, id)| *id);
+
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     let Ok(mut window) = windows.single_mut() else {
         return Ok(());
@@ -360,6 +387,7 @@ fn render_top(
         is_debug_window_open: &mut is_debug_window_open,
         show_add_layer_window_event_writer: &mut show_add_layer_window_event_writer,
         clear_color: &mut clear_color,
+        logo_texture_id,
     }
     .render();
     Ok(())
