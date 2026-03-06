@@ -19,13 +19,14 @@ test.describe("layer management", () => {
     // Wait for layer to load
     await appPage.waitForLayerRender();
 
-    // Close the Add Layer window by clicking its X button
-    await appPage.clickOnCanvas(0.222, 0.076);
+    // Close the Add Layer window
+    await appPage.closeWindow("Add Layer");
   });
 
   test("loaded layer appears in side panel with collapsing header", async ({
     appPage,
   }) => {
+    await appPage.stabilizeForScreenshot();
     await expect(appPage.page).toHaveScreenshot(
       "layer-loaded-in-side-panel.png",
     );
@@ -36,6 +37,7 @@ test.describe("layer management", () => {
   }) => {
     // Click the ▶ toggle arrow on the "World: Countries" collapsing header
     await appPage.clickWidget("World: Countries");
+    await appPage.stabilizeForScreenshot();
     await expect(appPage.page).toHaveScreenshot("layer-details-expanded.png");
   });
 
@@ -45,6 +47,7 @@ test.describe("layer management", () => {
 
     // Click "Manage..." button
     await appPage.clickWidget("Manage");
+    await appPage.stabilizeForScreenshot();
     await expect(appPage.page).toHaveScreenshot("manage-layer-window.png");
   });
 
@@ -55,6 +58,7 @@ test.describe("layer management", () => {
     // Click "Visible" checkbox
     await appPage.clickWidget("Toggle Visibility");
     await appPage.waitForNextFrame();
+    await appPage.stabilizeForScreenshot();
     await expect(appPage.page).toHaveScreenshot("layer-hidden.png");
   });
 
@@ -65,6 +69,7 @@ test.describe("layer management", () => {
     // Click "Zoom to Extent" button
     await appPage.clickWidget("Zoom to extent");
     await appPage.waitForNextFrame();
+    await appPage.stabilizeForScreenshot();
     await expect(appPage.page).toHaveScreenshot("zoom-to-extent.png");
   });
 
@@ -76,6 +81,7 @@ test.describe("layer management", () => {
 
     // Click "Operations" collapsing header
     await appPage.clickWidget("Operations");
+    await appPage.stabilizeForScreenshot();
     await expect(appPage.page).toHaveScreenshot("operations-expanded.png");
   });
 });

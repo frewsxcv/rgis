@@ -26,6 +26,16 @@ export class AppPage {
       null,
       { timeout: 10000 },
     );
+
+    // Wait for logo image asset to load and render
+    await this.page.waitForFunction(
+      () => {
+        const rect = (window as any).get_widget_rect?.("Logo");
+        return !!rect;
+      },
+      null,
+      { timeout: 10000 },
+    );
     await this.waitForNextFrame();
   }
 
@@ -50,6 +60,16 @@ export class AppPage {
 
   async openAddLayerWindow() {
     await this.clickWidget("Add Layer");
+  }
+
+  async closeWindow(title: string) {
+    await this.page.evaluate((t) => (window as any).close_window(t), title);
+    await this.waitForNextFrame();
+  }
+
+  async stabilizeForScreenshot() {
+    await this.page.mouse.move(0, 0);
+    await this.waitForNextFrame();
   }
 
   async clickOnCanvas(xFrac: number, yFrac: number) {

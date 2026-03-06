@@ -4,8 +4,8 @@ test.describe("measure tool", () => {
   test("measure from San Francisco to New York City", async ({ appPage }) => {
     test.setTimeout(60000);
 
-    // Close the Welcome dialog by clicking its X button
-    await appPage.clickOnCanvas(0.626, 0.443);
+    // Close the Welcome dialog
+    await appPage.closeWindow("Welcome");
 
     // Load the USA States layer from the built-in library
     await appPage.openAddLayerWindow();
@@ -14,8 +14,8 @@ test.describe("measure tool", () => {
     await appPage.clickWidget("Add:States");
     await appPage.waitForLayerRender();
 
-    // Close the Add Layer window by clicking the canvas
-    await appPage.clickOnCanvas(0.222, 0.076);
+    // Close the Add Layer window
+    await appPage.closeWindow("Add Layer");
 
     // Expand the layer in the side panel and zoom to extent
     await appPage.clickWidget("USA: States");

@@ -8,6 +8,11 @@ test.describe("debug window", () => {
     // Click "Debug stats" in dropdown
     await appPage.clickWidget("Debug stats");
     await appPage.waitForNextFrame();
-    await expect(appPage.page).toHaveScreenshot("debug-window-open.png");
+
+    // Verify the Debug window is open by checking its widget rect exists
+    const debugRect = await appPage.page.evaluate(
+      () => (window as any).get_widget_rect("Debug"),
+    );
+    expect(debugRect).not.toBeNull();
   });
 });

@@ -48,7 +48,9 @@ impl egui::Widget for Debug<'_, '_> {
         }
 
         self.render_debug_table(ui);
-        self.render_fps_plot(ui)
+        let response = self.render_fps_plot(ui);
+        crate::widget_registry::register("Debug", response.rect);
+        response
     }
 }
 
