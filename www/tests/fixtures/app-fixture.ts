@@ -122,6 +122,15 @@ export class AppPage {
     await this.waitForNextFrame();
   }
 
+  async addLibraryLayer(folder: string, entry: string) {
+    await this.openAddLayerWindow();
+    await this.clickWidget("Library");
+    await this.clickWidget(folder);
+    const countBefore = await this.getRenderedLayerCount();
+    await this.clickWidget(`Add:${entry}`);
+    await this.waitForLayerRender(countBefore);
+  }
+
   async regionHasContent(
     xFrac: number,
     yFrac: number,

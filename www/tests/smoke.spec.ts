@@ -71,20 +71,7 @@ test("clicking Library option changes the view", async ({ appPage }) => {
 test("add World Countries layer from library", async ({ appPage }) => {
   test.setTimeout(60000);
 
-  // Open the Add Layer window
-  await appPage.openAddLayerWindow();
-
-  // Click the "Library" radio button
-  await appPage.clickWidget("Library");
-
-  // Expand the "World" folder
-  await appPage.clickWidget("World");
-
-  // Click the "+ Add" button next to "Countries"
-  await appPage.clickWidget("Add:Countries");
-
-  // Wait for the layer to load from network and render
-  await appPage.waitForLayerRender();
+  await appPage.addLibraryLayer("World", "Countries");
 
   await expect(appPage.page).toHaveScreenshot("world-countries-rendered.png");
 });
