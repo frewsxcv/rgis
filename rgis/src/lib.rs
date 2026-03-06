@@ -70,12 +70,7 @@ pub fn run() {
     app.add_plugins(rgis_mouse::Plugin);
     app.add_plugins(rgis_camera::Plugin::default());
     app.add_plugins(rgis_ui_messages::Plugin);
-    app.add_plugins(rgis_camera_messages::Plugin);
-    app.add_plugins(rgis_layer_messages::Plugin);
-    app.add_plugins(rgis_map_messages::Plugin);
-    app.add_plugins(rgis_file_loader_messages::Plugin);
-    app.add_plugins(rgis_crs_messages::Plugin);
-    app.add_plugins(rgis_renderer_messages::Plugin);
+    app.add_plugins(rgis_events::RgisEventsPlugin);
     app.add_plugins(bevy_jobs::Plugin);
     app.add_plugins(rgis_transform::Plugin);
     app.add_plugins(rgis_settings::Plugin);

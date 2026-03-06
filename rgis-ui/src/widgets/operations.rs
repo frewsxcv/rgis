@@ -1,6 +1,6 @@
 use crate::panels::side::{Events, OperationButton};
 use bevy_egui::egui::{self, Align, Layout};
-use rgis_layer_messages::CreateLayerMessage;
+use rgis_events::CreateLayerMessage;
 
 pub struct Operations<'a, 'w> {
     pub layer: &'a rgis_layers::Layer,

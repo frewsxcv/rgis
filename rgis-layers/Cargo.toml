@@ -15,8 +15,7 @@ geo-features = { path = "../geo-features" }
 geo-geom-type = { path = "../geo-geom-type" }
 geo-projected = { path = "../geo-projected" }
 geo-raster = { path = "../geo-raster" }
-rgis-layer-messages = { path = "../rgis-layer-messages" }
-rgis-renderer-messages = { path = "../rgis-renderer-messages" }
+rgis-events = { path = "../rgis-events" }
 rgis-ui-messages = { path = "../rgis-ui-messages" }
 rgis-primitives = { path = "../rgis-primitives" }
 geo = { workspace = true }

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_egui::egui;
-use rgis_crs_messages::ChangeCrsMessage;
+use rgis_events::ChangeCrsMessage;
 
 pub struct ChangeCrs<'a, 'w> {
     pub is_visible: &'a mut bool,
