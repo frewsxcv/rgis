@@ -18,6 +18,6 @@ rgis-layer-messages = { path = "../rgis-layer-messages" }
 bevy_jobs = { workspace = true }
 bevy_jobs_fetch = { workspace = true }
 bytes = { workspace = true }
-rgis-geodesy = { path = "../rgis-geodesy" }
+rgis-crs = { path = "../rgis-crs" }
 rgis-primitives = { path = "../rgis-primitives" }
 rgis-ui-messages = { path = "../rgis-ui-messages" }

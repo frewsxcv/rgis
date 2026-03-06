@@ -19,7 +19,6 @@ rgis-crs = { path = "../rgis-crs" }
 rgis-crs-messages = { path = "../rgis-crs-messages" }
 rgis-file-loader = { path = "../rgis-file-loader" }
 rgis-file-loader-messages = { path = "../rgis-file-loader-messages" }
-rgis-geodesy = { path = "../rgis-geodesy" }
 rgis-layer-messages = { path = "../rgis-layer-messages" }
 rgis-layers = { path = "../rgis-layers" }
 rgis-map-messages = { path = "../rgis-map-messages" }

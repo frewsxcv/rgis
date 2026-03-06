@@ -5289,7 +5289,6 @@ dependencies = [
  "rgis-crs-messages",
  "rgis-file-loader",
  "rgis-file-loader-messages",
- "rgis-geodesy",
  "rgis-keyboard",
  "rgis-layer-messages",
  "rgis-layers",
@@ -5313,8 +5312,8 @@ dependencies = [
  "geo-geodesy",
  "geo-projected",
  "rgis-camera-messages",
+ "rgis-crs",
  "rgis-crs-messages",
- "rgis-geodesy",
  "rgis-layers",
  "rgis-renderer-messages",
  "rgis-units",
@@ -5344,9 +5343,9 @@ name = "rgis-crs"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "crs-definitions",
  "geodesy",
  "rgis-crs-messages",
- "rgis-geodesy",
  "rgis-primitives",
 ]
 
@@ -5370,8 +5369,8 @@ dependencies = [
  "geo-file-loader",
  "geo-projected",
  "geo-raster",
+ "rgis-crs",
  "rgis-file-loader-messages",
- "rgis-geodesy",
  "rgis-layer-messages",
  "rgis-primitives",
  "rgis-ui-messages",
@@ -5397,15 +5396,6 @@ dependencies = [
  "geo-geom-type",
  "geo-projected",
  "num-t",
-]
-
-[[package]]
-name = "rgis-geodesy"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "crs-definitions",
- "geodesy",
 ]
 
 [[package]]
@@ -5535,7 +5525,6 @@ dependencies = [
  "num-t",
  "rgis-crs",
  "rgis-crs-messages",
- "rgis-geodesy",
  "rgis-layer-messages",
  "rgis-layers",
  "rgis-primitives",
@@ -5565,7 +5554,6 @@ dependencies = [
  "rgis-crs-messages",
  "rgis-file-loader-messages",
  "rgis-geo-ops",
- "rgis-geodesy",
  "rgis-layer-messages",
  "rgis-layers",
  "rgis-library",

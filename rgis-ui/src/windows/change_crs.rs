@@ -10,7 +10,7 @@ pub struct ChangeCrs<'a, 'w> {
     pub change_crs_event_writer: &'a mut MessageWriter<'w, ChangeCrsMessage>,
     pub target_crs: rgis_crs::TargetCrs,
     pub crs_input_outcome: &'a mut Option<crate::widgets::crs_input::Outcome>,
-    pub geodesy_ctx: &'a rgis_geodesy::GeodesyContext,
+    pub geodesy_ctx: &'a rgis_crs::GeodesyContext,
 }
 
 impl ChangeCrs<'_, '_> {

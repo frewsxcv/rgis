@@ -21,7 +21,7 @@ pub struct AddLayer<'a> {
     pub is_visible: &'a mut bool,
     pub selected_file: &'a mut file::SelectedFile,
     pub egui_ctx: &'a mut bevy_egui::egui::Context,
-    pub geodesy_ctx: &'a rgis_geodesy::GeodesyContext,
+    pub geodesy_ctx: &'a rgis_crs::GeodesyContext,
 }
 
 #[derive(PartialEq, Eq)]

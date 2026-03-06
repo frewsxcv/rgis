@@ -23,7 +23,7 @@ fn handle_change_crs_event(
     mut query: Query<&mut Transform, With<Camera>>,
     windows: Query<&Window, With<PrimaryWindow>>,
     ui_margins: rgis_units::UiMargins,
-    geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
+    geodesy_ctx: Res<rgis_crs::GeodesyContext>,
 ) -> Result {
     let window = windows.single()?;
     let Ok(mut transform) = query.single_mut() else {

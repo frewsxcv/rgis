@@ -22,4 +22,3 @@ geo-geodesy = { workspace = true }
 geodesy = { workspace = true }
 num-t = { workspace = true }
 rgis-crs = { path = "../rgis-crs" }
-rgis-geodesy = { path = "../rgis-geodesy" }

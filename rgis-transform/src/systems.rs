@@ -6,7 +6,7 @@ fn handle_layer_created_events(
     layers: Res<rgis_layers::Layers>,
     target_crs: Res<rgis_crs::TargetCrs>,
     mut job_spawner: bevy_jobs::JobSpawner,
-    geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
+    geodesy_ctx: Res<rgis_crs::GeodesyContext>,
 ) {
     for event in layer_created_event_reader.read() {
         let Some(layer) = layers.get(event.0) else {
@@ -116,7 +116,7 @@ fn handle_crs_changed_events(
     mut layers: ResMut<rgis_layers::Layers>,
     target_crs: Res<rgis_crs::TargetCrs>,
     mut job_spawner: bevy_jobs::JobSpawner,
-    geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
+    geodesy_ctx: Res<rgis_crs::GeodesyContext>,
 ) {
     layers.clear_projected();
 

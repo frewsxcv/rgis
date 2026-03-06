@@ -25,7 +25,6 @@ members = [
     "rgis",
     "rgis-crs",
     "rgis-primitives",
-    "rgis-geodesy",
     "bevy_egui_window",
 ]
 resolver = "2"
