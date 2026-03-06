@@ -34,7 +34,7 @@ fn insert_target_crs(
     default_target_crs: Res<DefaultTargetCrs>,
 ) -> Result {
     let default_crs = default_target_crs.0;
-    let mut geodesy_ctx = match geodesy_ctx.0.write() {
+    let mut geodesy_ctx = match geodesy_ctx.write() {
         Ok(ctx) => ctx,
         Err(_) => {
             return Err("Failed to acquire geodesy context write lock".into());

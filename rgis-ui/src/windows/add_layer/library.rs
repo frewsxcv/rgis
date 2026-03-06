@@ -46,7 +46,7 @@ impl LibraryEntryWidget<'_> {
             let add_btn = ui.button("Add");
             crate::widget_registry::register(&format!("Add:{}", self.entry.name), add_btn.rect);
             if add_btn.clicked() {
-                let mut geodesy_ctx = self.geodesy_ctx.0.write().unwrap();
+                let mut geodesy_ctx = self.geodesy_ctx.write().unwrap();
                 let op_handle =
                     rgis_geodesy::epsg_code_to_geodesy_op_handle(&mut *geodesy_ctx, self.entry.crs)
                         .unwrap();
