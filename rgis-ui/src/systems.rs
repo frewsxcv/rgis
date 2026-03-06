@@ -90,6 +90,12 @@ fn render_add_layer_window(
     mut events: crate::windows::add_layer::Events,
     geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
 ) -> Result {
+    if crate::widget_registry::take_close_request("Add Layer") {
+        state.reset();
+        *is_visible = false;
+        return Ok(());
+    }
+
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     if !events.show_add_layer_window_event_reader.is_empty() {
         *is_visible = true;
@@ -188,6 +194,11 @@ fn render_change_crs_window(
     mut crs_input_outcome: Local<Option<crate::widgets::crs_input::Outcome>>,
     geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
 ) -> Result {
+    if crate::widget_registry::take_close_request("Change CRS") {
+        is_visible.0 = false;
+        return Ok(());
+    }
+
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     crate::windows::change_crs::ChangeCrs {
         is_visible: &mut is_visible.0,
@@ -601,6 +612,7 @@ pub fn configure(app: &mut App) {
             handle_open_change_crs_window_event,
             handle_open_file_job,
             perform_operation,
+            handle_debug_window_close_request,
         ),
     );
 
@@ -616,6 +628,16 @@ pub fn configure(app: &mut App) {
         crate::windows::welcome::render_welcome_window_system
             .run_if(bevy_egui_window::run_if_is_window_open::<crate::windows::welcome::Welcome>),
     );
+}
+
+fn handle_debug_window_close_request(
+    mut is_window_open: ResMut<
+        bevy_egui_window::IsWindowOpen<crate::windows::debug::Debug<'static, 'static>>,
+    >,
+) {
+    if crate::widget_registry::take_close_request("Debug") {
+        is_window_open.0 = false;
+    }
 }
 
 fn perform_operation(

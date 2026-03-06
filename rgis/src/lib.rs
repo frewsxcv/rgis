@@ -26,6 +26,12 @@ pub fn get_rendered_layer_count() -> u32 {
 
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
+pub fn close_window(title: &str) {
+    rgis_ui::widget_registry::request_close(title);
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen]
 pub fn get_all_widget_rects() -> JsValue {
     let all = rgis_ui::widget_registry::get_all();
     let obj = js_sys::Object::new();
