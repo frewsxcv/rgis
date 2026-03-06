@@ -89,7 +89,7 @@ fn handle_load_file_job_finished_events(
                 // Override source CRS with the EPSG code detected from GeoTIFF metadata
                 if let Some(detected_epsg) = raster.epsg_code {
                     if Some(detected_epsg) != source_crs.epsg_code {
-                        let mut ctx = geodesy_ctx.0.write().unwrap();
+                        let mut ctx = geodesy_ctx.write().unwrap();
                         if let Ok(op_handle) =
                             rgis_geodesy::epsg_code_to_geodesy_op_handle(&mut *ctx, detected_epsg)
                         {

@@ -440,7 +440,7 @@ fn calculate_all_distances(
     geodesy_ctx: &rgis_geodesy::GeodesyContext,
     target_crs: &rgis_crs::TargetCrs,
 ) -> Option<AllDistances> {
-    let mut geodesy_ctx_inner = geodesy_ctx.0.write().ok()?;
+    let mut geodesy_ctx_inner = geodesy_ctx.write().ok()?;
     let target_epsg_code = 4326; // WGS 84
 
     let target_op_handle =
@@ -791,7 +791,7 @@ mod tests {
         // Manually set TargetCrs to 4326 (WGS84) to simplify test and verify logic without projection issues
         let op_handle = {
             let geodesy_ctx = app.world().resource::<rgis_geodesy::GeodesyContext>();
-            let mut geodesy_ctx_inner = geodesy_ctx.0.write().unwrap();
+            let mut geodesy_ctx_inner = geodesy_ctx.write().unwrap();
             rgis_geodesy::epsg_code_to_geodesy_op_handle(&mut *geodesy_ctx_inner, 4326).unwrap()
         };
 
