@@ -1,12 +1,13 @@
-use bevy::prelude::*;
 use bevy_egui::egui;
-use rgis_ui_messages::OpenChangeCrsWindowMessage;
 
-pub struct Bottom<'a, 'w> {
+pub enum BottomPanelAction {
+    OpenChangeCrsWindow,
+}
+
+pub struct Bottom<'a> {
     pub egui_ctx: &'a egui::Context,
     pub mouse_pos: &'a rgis_mouse::MousePos,
     pub target_crs: &'a rgis_crs::TargetCrs,
-    pub open_change_crs_window_event_writer: &'a mut MessageWriter<'w, OpenChangeCrsWindowMessage>,
     pub bottom_panel_height: &'a mut rgis_units::BottomPanelHeight,
 }
 
@@ -17,25 +18,27 @@ fn coordinate_precision(epsg_code: Option<u16>) -> usize {
     }
 }
 
-impl Bottom<'_, '_> {
-    pub fn render(&mut self) {
+impl Bottom<'_> {
+    pub fn render(&mut self) -> Option<BottomPanelAction> {
+        let mut action = None;
         let inner_response = egui::TopBottomPanel::bottom("bottom").show(self.egui_ctx, |ui| {
             egui::MenuBar::new().ui(ui, |ui| {
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                    self.render_crs(ui);
+                    self.render_crs(ui, &mut action);
                     ui.separator();
                     self.render_mouse_position(ui);
                 });
             });
         });
         self.bottom_panel_height.0 = inner_response.response.rect.height();
+        action
     }
 
-    fn render_crs(&mut self, ui: &mut egui::Ui) {
+    fn render_crs(&mut self, ui: &mut egui::Ui, action: &mut Option<BottomPanelAction>) {
         let edit_btn = ui.button("Edit");
         crate::widget_registry::register("Edit CRS", edit_btn.rect);
         if edit_btn.clicked() {
-            self.open_change_crs_window_event_writer.write_default();
+            *action = Some(BottomPanelAction::OpenChangeCrsWindow);
         }
 
         match self.target_crs.0.epsg_code {

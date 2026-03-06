@@ -1,25 +1,27 @@
-use bevy::prelude::*;
 use bevy_egui::egui;
-use bevy_egui_window as window;
 
-pub struct Top<'a, 'w> {
-    pub app_exit_events: &'a mut Messages<AppExit>,
-    pub egui_ctx: &'a mut bevy_egui::egui::Context,
-    pub window: &'a mut Window,
-    pub app_settings: &'a mut rgis_settings::RgisSettings,
-    pub current_tool: &'a rgis_settings::Tool,
-    pub next_tool: &'a mut NextState<rgis_settings::Tool>,
-    pub top_panel_height: &'a mut rgis_units::TopPanelHeight,
-    pub is_debug_window_open:
-        &'a mut window::IsWindowOpen<crate::windows::debug::Debug<'static, 'static>>,
-    pub show_add_layer_window_event_writer:
-        &'a mut MessageWriter<'w, rgis_ui_messages::ShowAddLayerWindowMessage>,
-    pub clear_color: &'a mut ClearColor,
+pub enum TopPanelAction {
+    ShowAddLayerWindow,
+    Exit,
+    ToggleFullScreen,
+    ToggleShowScale,
+    ToggleDarkMode,
+    OpenDebugWindow,
+    OpenSourceCode,
+    SetTool(rgis_settings::Tool),
 }
 
-impl Top<'_, '_> {
-    pub fn render(&mut self) {
-        let current_tool = *self.current_tool;
+pub struct Top<'a> {
+    pub egui_ctx: &'a mut bevy_egui::egui::Context,
+    pub current_tool: rgis_settings::Tool,
+    pub show_scale: bool,
+    pub top_panel_height: &'a mut rgis_units::TopPanelHeight,
+}
+
+impl Top<'_> {
+    pub fn render(&mut self) -> Vec<TopPanelAction> {
+        let mut actions = vec![];
+        let current_tool = self.current_tool;
         let inner_response = egui::TopBottomPanel::top("top_panel").show(self.egui_ctx, |ui| {
             egui::MenuBar::new().ui(ui, |ui| {
                 let mut new_tool = current_tool;
@@ -27,41 +29,39 @@ impl Top<'_, '_> {
                 ui.label("rgis");
                 let file_response = ui.menu_button("File", |ui| {
                     if ui.button("Add Layer...").clicked() {
-                        self.show_add_layer_window_event_writer.write_default();
+                        actions.push(TopPanelAction::ShowAddLayerWindow);
                         ui.close();
                     }
                     ui.separator();
-                    ui.add(crate::widgets::exit::Exit {
-                        app_exit_events: self.app_exit_events,
-                    });
+                    if ui
+                        .add_enabled(cfg!(not(target_arch = "wasm32")), egui::Button::new("Exit"))
+                        .clicked()
+                    {
+                        actions.push(TopPanelAction::Exit);
+                    }
                 });
                 crate::widget_registry::register("File", file_response.response.rect);
                 let view_response = ui.menu_button("View", |ui| {
-                    ui.add(crate::widgets::full_screen::FullScreen {
-                        window: self.window,
-                    });
+                    if ui
+                        .add_enabled(
+                            cfg!(not(target_arch = "wasm32")),
+                            egui::Button::new("Full screen"),
+                        )
+                        .clicked()
+                    {
+                        actions.push(TopPanelAction::ToggleFullScreen);
+                    }
                     if ui
                         .button(format!(
                             "{} scale",
-                            if self.app_settings.show_scale {
-                                "Hide"
-                            } else {
-                                "Show"
-                            }
+                            if self.show_scale { "Hide" } else { "Show" }
                         ))
                         .clicked()
                     {
-                        self.app_settings.show_scale = !self.app_settings.show_scale;
+                        actions.push(TopPanelAction::ToggleShowScale);
                     }
                     if ui.button("Toggle dark mode").clicked() {
-                        self.app_settings.dark_mode = !self.app_settings.dark_mode;
-                        let visuals = if self.app_settings.dark_mode {
-                            egui::Visuals::dark()
-                        } else {
-                            egui::Visuals::light()
-                        };
-                        self.clear_color.0 = crate::systems::egui_color_to_bevy_color(visuals.extreme_bg_color);
-                        self.egui_ctx.set_visuals(visuals);
+                        actions.push(TopPanelAction::ToggleDarkMode);
                         ui.close();
                     }
                 });
@@ -70,69 +70,55 @@ impl Top<'_, '_> {
                     let debug_btn = ui.button("Debug stats");
                     crate::widget_registry::register("Debug stats", debug_btn.rect);
                     if debug_btn.clicked() {
-                        self.is_debug_window_open.0 = true;
+                        actions.push(TopPanelAction::OpenDebugWindow);
                     }
                     let source_btn = ui.button("Source code");
                     crate::widget_registry::register("Source code", source_btn.rect);
                     if source_btn.clicked() {
-                        ui.ctx().open_url(egui::OpenUrl {
-                            url: String::from("https://github.com/frewsxcv/rgis"),
-                            new_tab: true,
-                        });
+                        actions.push(TopPanelAction::OpenSourceCode);
                     }
                 });
                 crate::widget_registry::register("Help", help_response.response.rect);
 
                 ui.separator();
 
-                let pan_btn = ui
-                    .add_enabled(
-                        current_tool != rgis_settings::Tool::Pan,
-                        egui::Button::new("Pan")
-                            .selected(current_tool == rgis_settings::Tool::Pan),
-                    );
+                let pan_btn = ui.add_enabled(
+                    current_tool != rgis_settings::Tool::Pan,
+                    egui::Button::new("Pan")
+                        .selected(current_tool == rgis_settings::Tool::Pan),
+                );
                 crate::widget_registry::register("Pan Tool", pan_btn.rect);
-                if pan_btn.clicked()
-                {
+                if pan_btn.clicked() {
                     new_tool = rgis_settings::Tool::Pan;
                 }
 
-                let query_btn = ui
-                    .add_enabled(
-                        current_tool != rgis_settings::Tool::Query,
-                        egui::Button::new("Query")
-                            .selected(current_tool == rgis_settings::Tool::Query),
-                    );
+                let query_btn = ui.add_enabled(
+                    current_tool != rgis_settings::Tool::Query,
+                    egui::Button::new("Query")
+                        .selected(current_tool == rgis_settings::Tool::Query),
+                );
                 crate::widget_registry::register("Query Tool", query_btn.rect);
-                if query_btn.clicked()
-                {
+                if query_btn.clicked() {
                     new_tool = rgis_settings::Tool::Query;
                 }
 
-                let measure_btn = ui
-                    .add_enabled(
-                        current_tool != rgis_settings::Tool::Measure,
-                        egui::Button::new("Measure")
-                            .selected(current_tool == rgis_settings::Tool::Measure),
-                    );
+                let measure_btn = ui.add_enabled(
+                    current_tool != rgis_settings::Tool::Measure,
+                    egui::Button::new("Measure")
+                        .selected(current_tool == rgis_settings::Tool::Measure),
+                );
                 crate::widget_registry::register("Measure Tool", measure_btn.rect);
-                if measure_btn.clicked()
-                {
+                if measure_btn.clicked() {
                     new_tool = rgis_settings::Tool::Measure;
                 }
 
-                if current_tool == rgis_settings::Tool::Query
-                    && new_tool != rgis_settings::Tool::Query
-                {
-                    // send DeselectAllFeatures event
-                }
-
                 if new_tool != current_tool {
-                    self.next_tool.set(new_tool);
+                    actions.push(TopPanelAction::SetTool(new_tool));
                 }
             });
         });
 
         self.top_panel_height.0 = inner_response.response.rect.height();
+        actions
     }
 }

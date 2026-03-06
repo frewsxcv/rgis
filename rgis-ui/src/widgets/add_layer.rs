@@ -1,21 +1,11 @@
-use crate::panels::side::Events;
 use bevy_egui::egui;
 
-pub struct AddLayer<'a, 'w> {
-    pub events: &'a mut Events<'w>,
-}
+pub struct AddLayer;
 
-impl egui::Widget for AddLayer<'_, '_> {
+impl egui::Widget for AddLayer {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         let button = ui.button("Add Layer...");
         crate::widget_registry::register("Add Layer", button.rect);
-
-        if button.clicked() {
-            self.events
-                .show_add_layer_window_event_writer
-                .write_default();
-        }
-
         button
     }
 }

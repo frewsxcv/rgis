@@ -1,128 +1,102 @@
-use bevy::{ecs::system::SystemParam, prelude::*};
-use bevy_egui::egui::{self, Align, Layout, Widget};
-use rgis_camera_messages::CenterCameraMessage;
-use rgis_layer_messages::{
-    CreateLayerMessage, DeleteLayerMessage, MoveDirection, MoveLayerMessage,
-    ToggleLayerVisibilityMessage,
-};
-use rgis_ui_messages::{ShowAddLayerWindowMessage, ShowManageLayerWindowMessage};
+use bevy_egui::egui::{self, Align, Layout};
+use rgis_layer_messages::MoveDirection;
 use std::marker;
 
-// const MAX_SIDE_PANEL_WIDTH: f32 = 200.0f32;
-
-#[derive(SystemParam)]
-pub struct Events<'w> {
-    pub toggle_layer_visibility_event_writer: MessageWriter<'w, ToggleLayerVisibilityMessage>,
-    pub center_layer_event_writer: MessageWriter<'w, CenterCameraMessage>,
-    pub delete_layer_event_writer: MessageWriter<'w, DeleteLayerMessage>,
-    pub move_layer_event_writer: MessageWriter<'w, MoveLayerMessage>,
-    pub create_layer_event_writer: MessageWriter<'w, CreateLayerMessage>,
-    pub show_add_layer_window_event_writer: MessageWriter<'w, ShowAddLayerWindowMessage>,
-    pub show_manage_layer_window_event_writer: MessageWriter<'w, ShowManageLayerWindowMessage>,
-    pub perform_operation_event_writer: MessageWriter<'w, rgis_ui_messages::PerformOperationMessage>,
+pub enum SidePanelAction {
+    ToggleLayerVisibility(rgis_primitives::LayerId),
+    DeleteLayer(rgis_primitives::LayerId),
+    MoveLayer(rgis_primitives::LayerId, MoveDirection),
+    CenterCamera(rgis_primitives::LayerId),
+    ShowAddLayerWindow,
+    ShowManageLayerWindow(rgis_primitives::LayerId),
+    PerformOperation {
+        operation: Box<dyn Send + Sync + rgis_geo_ops::Operation>,
+        layer_id: rgis_primitives::LayerId,
+    },
+    CreateLayer {
+        feature_collection:
+            geo_features::FeatureCollection<geo_projected::UnprojectedScalar>,
+        name: String,
+        source_crs: rgis_primitives::Crs,
+    },
 }
 
-pub struct Side<'a, 'w> {
+pub struct Side<'a> {
     pub egui_ctx: &'a egui::Context,
     pub layers: &'a rgis_layers::Layers,
-    pub events: &'a mut Events<'w>,
     pub side_panel_width: &'a mut rgis_units::SidePanelWidth,
 }
 
-impl Side<'_, '_> {
-    pub fn render(&mut self) {
+impl Side<'_> {
+    pub fn render(&mut self) -> Vec<SidePanelAction> {
+        let mut actions = vec![];
         let side_panel = egui::SidePanel::left("left-side-panel").resizable(true);
 
         let inner_response = side_panel.show(self.egui_ctx, |ui| {
-            self.render_layers_window(ui);
+            self.render_layers_window(ui, &mut actions);
         });
 
         self.side_panel_width.0 = inner_response.response.rect.width();
+        actions
     }
 
-    fn render_layers_window(&mut self, ui: &mut egui::Ui) {
+    fn render_layers_window(&mut self, ui: &mut egui::Ui, actions: &mut Vec<SidePanelAction>) {
         ui.vertical_centered_justified(|ui| {
             egui::ScrollArea::vertical().show(ui, |ui| {
-                self.render_layers_heading(ui);
-                ui.add(crate::widgets::add_layer::AddLayer {
-                    events: self.events,
-                });
-                self.render_layers(ui);
+                ui.heading("Layers");
+                let add_layer_btn = ui.add(crate::widgets::add_layer::AddLayer);
+                if add_layer_btn.clicked() {
+                    actions.push(SidePanelAction::ShowAddLayerWindow);
+                }
+                self.render_layers(ui, actions);
             });
         });
     }
 
-    fn render_layers_heading(&mut self, ui: &mut egui::Ui) {
-        ui.heading("Layers");
-    }
-
-    fn render_layers(&mut self, ui: &mut egui::Ui) {
+    fn render_layers(&mut self, ui: &mut egui::Ui, actions: &mut Vec<SidePanelAction>) {
         for (i, layer) in self.layers.iter_top_to_bottom().enumerate() {
-            ui.add(Layer {
+            Layer {
                 is_move_down_enabled: i < self.layers.count() - 1,
                 is_move_up_enabled: i > 0,
                 layer,
-                events: self.events,
-            });
+            }
+            .show(ui, actions);
         }
     }
 }
 
-pub(crate) struct OperationButton<'a, 'w, Op: rgis_geo_ops::OperationEntry> {
-    events: &'a mut Events<'w>,
+pub(crate) struct OperationButton<'a, Op: rgis_geo_ops::OperationEntry> {
     layer: &'a rgis_layers::Layer,
     operation: marker::PhantomData<Op>,
 }
 
-impl<'a, 'w, Op: rgis_geo_ops::OperationEntry> OperationButton<'a, 'w, Op> {
-    pub(crate) fn new(events: &'a mut Events<'w>, layer: &'a rgis_layers::Layer) -> Self {
+impl<'a, Op: rgis_geo_ops::OperationEntry> OperationButton<'a, Op> {
+    pub(crate) fn new(layer: &'a rgis_layers::Layer) -> Self {
         OperationButton {
-            events,
             layer,
             operation: Default::default(),
         }
     }
 }
 
-impl<Op: rgis_geo_ops::OperationEntry> egui::Widget for OperationButton<'_, '_, Op> {
+impl<Op: rgis_geo_ops::OperationEntry> egui::Widget for OperationButton<'_, Op> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         let enabled = self
             .layer
             .geom_type()
             .map(|gt| Op::ALLOWED_GEOM_TYPES.contains(gt))
             .unwrap_or(false);
-        let button = ui.add_enabled(
-            enabled,
-            egui::Button::new(Op::NAME),
-        );
-        if button.clicked() {
-            self.events.perform_operation_event_writer.write(
-                rgis_ui_messages::PerformOperationMessage {
-                    operation: Box::new(Op::build()),
-                    layer_id: self.layer.id,
-                },
-            );
-        }
-        button
+        ui.add_enabled(enabled, egui::Button::new(Op::NAME))
     }
 }
 
-struct Layer<'a, 'w> {
+struct Layer<'a> {
     layer: &'a rgis_layers::Layer,
     is_move_up_enabled: bool,
     is_move_down_enabled: bool,
-    events: &'a mut Events<'w>,
 }
 
-impl Layer<'_, '_> {
-    fn delete_layer(&mut self, layer: &rgis_layers::Layer) {
-        self.events
-            .delete_layer_event_writer
-            .write(DeleteLayerMessage(layer.id));
-    }
-}
-
-fn bevy_color_to_egui_color(color: Color) -> egui::Color32 {
+fn bevy_color_to_egui_color(color: bevy::prelude::Color) -> egui::Color32 {
     let srgba: bevy::color::Srgba = color.into();
     egui::Color32::from_rgb(
         (srgba.red * 255.0) as u8,
@@ -131,13 +105,12 @@ fn bevy_color_to_egui_color(color: Color) -> egui::Color32 {
     )
 }
 
-impl Widget for Layer<'_, '_> {
-    fn ui(mut self, ui: &mut egui::Ui) -> egui::Response {
+impl Layer<'_> {
+    fn show(self, ui: &mut egui::Ui, actions: &mut Vec<SidePanelAction>) -> egui::Response {
         let Layer {
             layer,
             is_move_up_enabled,
             is_move_down_enabled,
-            events: _,
         } = self;
 
         let header_text = if layer.is_active() {
@@ -154,9 +127,7 @@ impl Widget for Layer<'_, '_> {
                 let visibility_checkbox = ui.checkbox(&mut visible, "Visible");
                 crate::widget_registry::register("Toggle Visibility", visibility_checkbox.rect);
                 if visibility_checkbox.changed() {
-                    self.events
-                        .toggle_layer_visibility_event_writer
-                        .write(ToggleLayerVisibilityMessage(layer.id));
+                    actions.push(SidePanelAction::ToggleLayerVisibility(layer.id));
                 }
 
                 // Color swatch with label
@@ -178,17 +149,13 @@ impl Widget for Layer<'_, '_> {
                 let manage_btn = ui.button("Manage...");
                 crate::widget_registry::register("Manage", manage_btn.rect);
                 if manage_btn.clicked() {
-                    self.events
-                        .show_manage_layer_window_event_writer
-                        .write(ShowManageLayerWindowMessage(layer.id));
+                    actions.push(SidePanelAction::ShowManageLayerWindow(layer.id));
                 }
 
                 let zoom_btn = ui.button("Zoom to Extent");
                 crate::widget_registry::register("Zoom to extent", zoom_btn.rect);
                 if zoom_btn.clicked() {
-                    self.events
-                        .center_layer_event_writer
-                        .write(CenterCameraMessage(layer.id));
+                    actions.push(SidePanelAction::CenterCamera(layer.id));
                 }
 
                 ui.separator();
@@ -198,18 +165,14 @@ impl Widget for Layer<'_, '_> {
                         .add_enabled(is_move_up_enabled, egui::Button::new("Move Up"))
                         .clicked()
                     {
-                        self.events
-                            .move_layer_event_writer
-                            .write(MoveLayerMessage(layer.id, MoveDirection::Up));
+                        actions.push(SidePanelAction::MoveLayer(layer.id, MoveDirection::Up));
                     }
 
                     if ui
                         .add_enabled(is_move_down_enabled, egui::Button::new("Move Down"))
                         .clicked()
                     {
-                        self.events
-                            .move_layer_event_writer
-                            .write(MoveLayerMessage(layer.id, MoveDirection::Down));
+                        actions.push(SidePanelAction::MoveLayer(layer.id, MoveDirection::Down));
                     }
                 });
 
@@ -220,13 +183,14 @@ impl Widget for Layer<'_, '_> {
                         .id_salt(format!("{:?}-operations", layer.id))
                         .show(ui, |ui| {
                             ui.with_layout(Layout::top_down_justified(Align::LEFT), |ui| {
-                                ui.add(crate::widgets::operations::Operations {
-                                    layer,
-                                    events: self.events,
-                                });
+                                crate::widgets::operations::Operations { layer }
+                                    .show(ui, actions);
                             });
                         });
-                    crate::widget_registry::register("Operations", ops_header.header_response.rect);
+                    crate::widget_registry::register(
+                        "Operations",
+                        ops_header.header_response.rect,
+                    );
                 }
 
                 ui.separator();
@@ -234,7 +198,7 @@ impl Widget for Layer<'_, '_> {
                 let remove_btn = ui.button("Remove");
                 crate::widget_registry::register("Remove", remove_btn.rect);
                 if remove_btn.clicked() {
-                    self.delete_layer(layer);
+                    actions.push(SidePanelAction::DeleteLayer(layer.id));
                 }
             });
 

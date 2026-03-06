@@ -16,31 +16,100 @@ fn render_bottom(
     mut bottom_panel_height: ResMut<rgis_units::BottomPanelHeight>,
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
-    crate::panels::bottom::Bottom {
+    let action = crate::panels::bottom::Bottom {
         egui_ctx: bevy_egui_ctx_mut,
         mouse_pos: &mouse_pos,
         target_crs: &target_crs,
-        open_change_crs_window_event_writer: &mut open_change_crs_window_event_writer,
         bottom_panel_height: &mut bottom_panel_height,
     }
     .render();
+
+    if let Some(action) = action {
+        use crate::panels::bottom::BottomPanelAction;
+        match action {
+            BottomPanelAction::OpenChangeCrsWindow => {
+                open_change_crs_window_event_writer.write_default();
+            }
+        }
+    }
     Ok(())
 }
 
 fn render_side(
     mut bevy_egui_ctx: EguiContexts,
     layers: Res<rgis_layers::Layers>,
-    mut events: crate::panels::side::Events,
+    mut toggle_layer_visibility_event_writer: MessageWriter<
+        rgis_layer_messages::ToggleLayerVisibilityMessage,
+    >,
+    mut center_layer_event_writer: MessageWriter<rgis_camera_messages::CenterCameraMessage>,
+    mut delete_layer_event_writer: MessageWriter<rgis_layer_messages::DeleteLayerMessage>,
+    mut move_layer_event_writer: MessageWriter<rgis_layer_messages::MoveLayerMessage>,
+    mut create_layer_event_writer: MessageWriter<rgis_layer_messages::CreateLayerMessage>,
+    mut show_add_layer_window_event_writer: MessageWriter<
+        rgis_ui_messages::ShowAddLayerWindowMessage,
+    >,
+    mut show_manage_layer_window_event_writer: MessageWriter<
+        rgis_ui_messages::ShowManageLayerWindowMessage,
+    >,
+    mut perform_operation_event_writer: MessageWriter<
+        rgis_ui_messages::PerformOperationMessage,
+    >,
     mut side_panel_width: ResMut<rgis_units::SidePanelWidth>,
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
-    crate::panels::side::Side {
+    let actions = crate::panels::side::Side {
         egui_ctx: bevy_egui_ctx_mut,
         layers: &layers,
-        events: &mut events,
         side_panel_width: &mut side_panel_width,
     }
     .render();
+
+    for action in actions {
+        use crate::panels::side::SidePanelAction;
+        match action {
+            SidePanelAction::ToggleLayerVisibility(id) => {
+                toggle_layer_visibility_event_writer
+                    .write(rgis_layer_messages::ToggleLayerVisibilityMessage(id));
+            }
+            SidePanelAction::DeleteLayer(id) => {
+                delete_layer_event_writer.write(rgis_layer_messages::DeleteLayerMessage(id));
+            }
+            SidePanelAction::MoveLayer(id, direction) => {
+                move_layer_event_writer
+                    .write(rgis_layer_messages::MoveLayerMessage(id, direction));
+            }
+            SidePanelAction::CenterCamera(id) => {
+                center_layer_event_writer
+                    .write(rgis_camera_messages::CenterCameraMessage(id));
+            }
+            SidePanelAction::ShowAddLayerWindow => {
+                show_add_layer_window_event_writer.write_default();
+            }
+            SidePanelAction::ShowManageLayerWindow(id) => {
+                show_manage_layer_window_event_writer
+                    .write(rgis_ui_messages::ShowManageLayerWindowMessage(id));
+            }
+            SidePanelAction::PerformOperation { operation, layer_id } => {
+                perform_operation_event_writer.write(
+                    rgis_ui_messages::PerformOperationMessage {
+                        operation,
+                        layer_id,
+                    },
+                );
+            }
+            SidePanelAction::CreateLayer {
+                feature_collection,
+                name,
+                source_crs,
+            } => {
+                create_layer_event_writer.write(rgis_layer_messages::CreateLayerMessage {
+                    feature_collection,
+                    name,
+                    source_crs,
+                });
+            }
+        }
+    }
     Ok(())
 }
 
@@ -69,15 +138,63 @@ fn render_manage_layer_window(
         *state = Some(event.0);
     }
 
-    crate::windows::manage_layer::ManageLayer {
-        state: &mut state,
-        layers: &layers,
-        egui_ctx: bevy_egui_ctx_mut,
-        color_events: &mut color_events,
-        point_size_events: &mut point_size_events,
-        duplicate_layer_events: &mut duplicate_layer_events,
+    let Some(layer_id) = *state else {
+        return Ok(());
+    };
+    let Some(layer) = layers.get(layer_id) else {
+        warn!(
+            "Could not find layer with ID {:?}, closing manage layer window",
+            layer_id
+        );
+        *state = None;
+        return Ok(());
+    };
+
+    let data = crate::windows::manage_layer::ManageLayerData {
+        layer_id,
+        name: &layer.name,
+        epsg_code: layer.crs.epsg_code,
+        geom_type: layer.geom_type(),
+        fill_color: layer.color.fill.map(|c| c.to_linear().to_f32_array()),
+        stroke_color: layer.color.stroke.to_linear().to_f32_array(),
+        point_size: layer.point_size,
+    };
+
+    let mut is_open = true;
+    let mut actions = vec![];
+    egui::Window::new("Manage Layer")
+        .open(&mut is_open)
+        .show(bevy_egui_ctx_mut, |ui| {
+            actions = crate::windows::manage_layer::ManageLayerContent { data }.show(ui);
+        });
+
+    for action in actions {
+        use crate::windows::manage_layer::ManageLayerAction;
+        match action {
+            ManageLayerAction::UpdateFillColor(id, color) => {
+                color_events.write(rgis_ui_messages::UpdateLayerColorMessage::Fill(
+                    id,
+                    Color::linear_rgba(color[0], color[1], color[2], color[3]),
+                ));
+            }
+            ManageLayerAction::UpdateStrokeColor(id, color) => {
+                color_events.write(rgis_ui_messages::UpdateLayerColorMessage::Stroke(
+                    id,
+                    Color::linear_rgba(color[0], color[1], color[2], color[3]),
+                ));
+            }
+            ManageLayerAction::UpdatePointSize(id, size) => {
+                point_size_events.write(rgis_ui_messages::UpdateLayerPointSizeMessage(id, size));
+            }
+            ManageLayerAction::DuplicateLayer(id) => {
+                duplicate_layer_events.write(rgis_layer_messages::DuplicateLayerMessage(id));
+            }
+        }
     }
-    .render();
+
+    if !is_open {
+        *state = None;
+    }
     Ok(())
 }
 
@@ -189,17 +306,23 @@ fn render_change_crs_window(
     geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
-    crate::windows::change_crs::ChangeCrs {
+    let action = crate::windows::change_crs::ChangeCrs {
         is_visible: &mut is_visible.0,
         egui_ctx: bevy_egui_ctx_mut,
         text_field_value: &mut text_field_value,
         crs_input_mode: &mut crs_input_mode,
-        change_crs_event_writer: &mut change_crs_event_writer,
         target_crs: (*target_crs).clone(),
         crs_input_outcome: &mut crs_input_outcome,
         geodesy_ctx: &geodesy_ctx,
     }
     .render();
+
+    if let Some(action) = action {
+        change_crs_event_writer.write(rgis_crs_messages::ChangeCrsMessage {
+            old: action.old,
+            new: action.new,
+        });
+    }
     Ok(())
 }
 
@@ -225,12 +348,22 @@ fn render_feature_properties_window(
         return Ok(());
     };
 
-    crate::windows::feature_properties::FeatureProperties {
-        state: &mut state,
-        layer,
-        egui_ctx: bevy_egui_ctx_mut,
+    let mut is_open = true;
+    egui::Window::new("Layer Feature Properties")
+        .id(egui::Id::new("Layer Feature Properties Window"))
+        .open(&mut is_open)
+        .show(bevy_egui_ctx_mut, |ui| {
+            ui.add(
+                crate::windows::feature_properties::FeaturePropertiesContent {
+                    layer_name: &layer.name,
+                    properties: &data.properties,
+                },
+            );
+        });
+
+    if !is_open {
+        *state = None;
     }
-    .render();
     Ok(())
 }
 
@@ -244,11 +377,22 @@ fn render_message_window(
         *state = Some(event.0);
     }
 
-    crate::windows::message::Message {
-        state: &mut state,
-        egui_ctx: bevy_egui_ctx_mut,
+    let Some(ref message) = *state else {
+        return Ok(());
+    };
+
+    let mut is_open = true;
+    egui::Window::new("Message Window")
+        .id(egui::Id::new("Message window"))
+        .open(&mut is_open)
+        .anchor(egui::Align2::CENTER_CENTER, [0., 0.])
+        .show(bevy_egui_ctx_mut, |ui| {
+            ui.add(crate::windows::message::MessageWindowContent { message });
+        });
+
+    if !is_open {
+        *state = None;
     }
-    .render();
     Ok(())
 }
 
@@ -256,8 +400,8 @@ fn render_operation_window(
     mut state: Local<crate::OperationWindowState>,
     mut events: ResMut<Messages<rgis_ui_messages::OpenOperationWindowMessage>>,
     mut bevy_egui_ctx: EguiContexts,
-    create_layer_event_writer: MessageWriter<rgis_layer_messages::CreateLayerMessage>,
-    render_message_event_writer: MessageWriter<rgis_ui_messages::RenderTextMessage>,
+    mut create_layer_event_writer: MessageWriter<rgis_layer_messages::CreateLayerMessage>,
+    mut render_message_event_writer: MessageWriter<rgis_ui_messages::RenderTextMessage>,
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     if let Some(event) = events.drain().last() {
@@ -268,13 +412,31 @@ fn render_operation_window(
         });
     }
 
-    crate::windows::operation::Operation {
+    let action = crate::windows::operation::Operation {
         egui_ctx: bevy_egui_ctx_mut,
         state: &mut state,
-        create_layer_event_writer,
-        render_message_event_writer,
     }
     .render();
+
+    if let Some(action) = action {
+        use crate::windows::operation::OperationAction;
+        match action {
+            OperationAction::CreateLayer {
+                feature_collection,
+                name,
+                source_crs,
+            } => {
+                create_layer_event_writer.write(rgis_layer_messages::CreateLayerMessage {
+                    feature_collection,
+                    name,
+                    source_crs,
+                });
+            }
+            OperationAction::RenderMessage(text) => {
+                render_message_event_writer.write(rgis_ui_messages::RenderTextMessage(text));
+            }
+        }
+    }
     Ok(())
 }
 
@@ -344,24 +506,71 @@ fn render_top(
     mut show_add_layer_window_event_writer: MessageWriter<rgis_ui_messages::ShowAddLayerWindowMessage>,
     mut clear_color: ResMut<ClearColor>,
 ) -> Result {
-    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
-    let Ok(mut window) = windows.single_mut() else {
-        return Ok(());
+    let actions = {
+        let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
+        crate::panels::top::Top {
+            egui_ctx: bevy_egui_ctx_mut,
+            current_tool: *current_tool.get(),
+            show_scale: app_settings.show_scale,
+            top_panel_height: &mut top_panel_height,
+        }
+        .render()
     };
 
-    crate::panels::top::Top {
-        egui_ctx: bevy_egui_ctx_mut,
-        app_exit_events: &mut app_exit_events,
-        window: &mut window,
-        app_settings: &mut app_settings,
-        current_tool: current_tool.get(),
-        next_tool: &mut next_tool,
-        top_panel_height: &mut top_panel_height,
-        is_debug_window_open: &mut is_debug_window_open,
-        show_add_layer_window_event_writer: &mut show_add_layer_window_event_writer,
-        clear_color: &mut clear_color,
+    for action in actions {
+        use crate::panels::top::TopPanelAction;
+        match action {
+            TopPanelAction::ShowAddLayerWindow => {
+                show_add_layer_window_event_writer.write_default();
+            }
+            TopPanelAction::Exit => {
+                app_exit_events.write(AppExit::Success);
+            }
+            TopPanelAction::ToggleFullScreen => {
+                if let Ok(mut window) = windows.single_mut() {
+                    use bevy::window::WindowMode;
+                    window.mode =
+                        if matches!(window.mode, WindowMode::Fullscreen(_, _)) {
+                            WindowMode::Windowed
+                        } else {
+                            WindowMode::Fullscreen(
+                                bevy::window::MonitorSelection::Current,
+                                bevy::window::VideoModeSelection::Current,
+                            )
+                        };
+                }
+            }
+            TopPanelAction::ToggleShowScale => {
+                app_settings.show_scale = !app_settings.show_scale;
+            }
+            TopPanelAction::ToggleDarkMode => {
+                app_settings.dark_mode = !app_settings.dark_mode;
+                let visuals = if app_settings.dark_mode {
+                    egui::Visuals::dark()
+                } else {
+                    egui::Visuals::light()
+                };
+                clear_color.0 = egui_color_to_bevy_color(visuals.extreme_bg_color);
+                if let Ok(ctx) = bevy_egui_ctx.ctx_mut() {
+                    ctx.set_visuals(visuals);
+                }
+            }
+            TopPanelAction::OpenDebugWindow => {
+                is_debug_window_open.0 = true;
+            }
+            TopPanelAction::OpenSourceCode => {
+                if let Ok(ctx) = bevy_egui_ctx.ctx_mut() {
+                    ctx.open_url(egui::OpenUrl {
+                        url: String::from("https://github.com/frewsxcv/rgis"),
+                        new_tab: true,
+                    });
+                }
+            }
+            TopPanelAction::SetTool(tool) => {
+                next_tool.set(tool);
+            }
+        }
     }
-    .render();
     Ok(())
 }
 

@@ -1,24 +1,27 @@
-use bevy::prelude::*;
 use bevy_egui::egui;
-use rgis_crs_messages::ChangeCrsMessage;
 
-pub struct ChangeCrs<'a, 'w> {
+pub struct ChangeCrsAction {
+    pub old: rgis_primitives::Crs,
+    pub new: rgis_primitives::Crs,
+}
+
+pub struct ChangeCrs<'a> {
     pub is_visible: &'a mut bool,
     pub egui_ctx: &'a mut bevy_egui::egui::Context,
     pub text_field_value: &'a mut String,
     pub crs_input_mode: &'a mut crate::widgets::crs_input::CrsInputMode,
-    pub change_crs_event_writer: &'a mut MessageWriter<'w, ChangeCrsMessage>,
     pub target_crs: rgis_crs::TargetCrs,
     pub crs_input_outcome: &'a mut Option<crate::widgets::crs_input::Outcome>,
     pub geodesy_ctx: &'a rgis_geodesy::GeodesyContext,
 }
 
-impl ChangeCrs<'_, '_> {
-    pub fn render(&mut self) {
+impl ChangeCrs<'_> {
+    pub fn render(&mut self) -> Option<ChangeCrsAction> {
         if !*self.is_visible {
-            return;
+            return None;
         }
 
+        let mut action = None;
         egui::Window::new("Change CRS")
             .open(self.is_visible)
             .show(self.egui_ctx, |ui| {
@@ -42,7 +45,7 @@ impl ChangeCrs<'_, '_> {
                 match self.crs_input_outcome {
                     Some(Ok((op_handle, epsg_code, proj_string))) => {
                         if ui.add_enabled(true, button).clicked() {
-                            self.change_crs_event_writer.write(ChangeCrsMessage {
+                            action = Some(ChangeCrsAction {
                                 old: self.target_crs.0.clone(),
                                 new: rgis_primitives::Crs {
                                     epsg_code: *epsg_code,
@@ -57,5 +60,6 @@ impl ChangeCrs<'_, '_> {
                     }
                 };
             });
+        action
     }
 }

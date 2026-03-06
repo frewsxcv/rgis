@@ -1,60 +1,47 @@
-use crate::panels::side::{Events, OperationButton};
+use crate::panels::side::{OperationButton, SidePanelAction};
 use bevy_egui::egui::{self, Align, Layout};
-use rgis_layer_messages::CreateLayerMessage;
 
-pub struct Operations<'a, 'w> {
+pub struct Operations<'a> {
     pub layer: &'a rgis_layers::Layer,
-    pub events: &'a mut Events<'w>,
 }
 
-impl egui::Widget for Operations<'_, '_> {
-    fn ui(self, ui: &mut egui::Ui) -> egui::Response {
+impl Operations<'_> {
+    pub fn show(self, ui: &mut egui::Ui, actions: &mut Vec<SidePanelAction>) {
         ui.with_layout(Layout::top_down_justified(Align::LEFT), |ui| {
             if ui.button("Bounding rect").clicked() {
                 if let Some(fc) = self.layer.unprojected_feature_collection() {
                     if let Ok(bounding_rect) = fc.bounding_rect() {
                         let feature_collection =
                             geo_features::FeatureCollection::from_geometry(bounding_rect.into());
-                        self.events
-                            .create_layer_event_writer
-                            .write(CreateLayerMessage {
-                                feature_collection,
-                                name: "Bounding rect".into(), // FIXME
-                                source_crs: self.layer.crs.clone(),
-                            });
+                        actions.push(SidePanelAction::CreateLayer {
+                            feature_collection,
+                            name: "Bounding rect".into(),
+                            source_crs: self.layer.crs.clone(),
+                        });
                     }
                 }
             }
 
-            ui.add(OperationButton::<rgis_geo_ops::ConvexHull>::new(
-                self.events,
-                self.layer,
-            ));
-            ui.add(OperationButton::<rgis_geo_ops::Outliers>::new(
-                self.events,
-                self.layer,
-            ));
-            ui.add(OperationButton::<rgis_geo_ops::Rotate>::new(
-                self.events,
-                self.layer,
-            ));
-            ui.add(OperationButton::<rgis_geo_ops::Simplify>::new(
-                self.events,
-                self.layer,
-            ));
-            ui.add(OperationButton::<rgis_geo_ops::Smoothing>::new(
-                self.events,
-                self.layer,
-            ));
-            ui.add(OperationButton::<rgis_geo_ops::Triangulate>::new(
-                self.events,
-                self.layer,
-            ));
-            ui.add(OperationButton::<rgis_geo_ops::UnsignedArea>::new(
-                self.events,
-                self.layer,
-            ));
-        })
-        .response
+            add_operation_button::<rgis_geo_ops::ConvexHull>(ui, self.layer, actions);
+            add_operation_button::<rgis_geo_ops::Outliers>(ui, self.layer, actions);
+            add_operation_button::<rgis_geo_ops::Rotate>(ui, self.layer, actions);
+            add_operation_button::<rgis_geo_ops::Simplify>(ui, self.layer, actions);
+            add_operation_button::<rgis_geo_ops::Smoothing>(ui, self.layer, actions);
+            add_operation_button::<rgis_geo_ops::Triangulate>(ui, self.layer, actions);
+            add_operation_button::<rgis_geo_ops::UnsignedArea>(ui, self.layer, actions);
+        });
+    }
+}
+
+fn add_operation_button<Op: rgis_geo_ops::OperationEntry>(
+    ui: &mut egui::Ui,
+    layer: &rgis_layers::Layer,
+    actions: &mut Vec<SidePanelAction>,
+) {
+    if ui.add(OperationButton::<Op>::new(layer)).clicked() {
+        actions.push(SidePanelAction::PerformOperation {
+            operation: Box::new(Op::build()),
+            layer_id: layer.id,
+        });
     }
 }

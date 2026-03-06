@@ -1,18 +1,24 @@
 use bevy_egui::egui;
-use rgis_layer_messages::CreateLayerMessage;
-use rgis_ui_messages::RenderTextMessage;
 
-pub struct Operation<'w> {
-    pub egui_ctx: &'w mut bevy_egui::egui::Context,
-    pub state: &'w mut crate::OperationWindowState,
-    pub create_layer_event_writer: bevy::ecs::message::MessageWriter<'w, CreateLayerMessage>,
-    pub render_message_event_writer: bevy::ecs::message::MessageWriter<'w, RenderTextMessage>,
+pub enum OperationAction {
+    CreateLayer {
+        feature_collection:
+            geo_features::FeatureCollection<geo_projected::UnprojectedScalar>,
+        name: String,
+        source_crs: rgis_primitives::Crs,
+    },
+    RenderMessage(String),
+}
+
+pub struct Operation<'a> {
+    pub egui_ctx: &'a mut bevy_egui::egui::Context,
+    pub state: &'a mut crate::OperationWindowState,
 }
 
 impl Operation<'_> {
-    pub fn render(&mut self) {
+    pub fn render(&mut self) -> Option<OperationAction> {
         let Some(ref mut data) = *self.state else {
-            return;
+            return None;
         };
 
         match data.operation.next_action() {
@@ -23,27 +29,30 @@ impl Operation<'_> {
                     Some(crs) => crs,
                     None => {
                         bevy::log::error!("Source CRS is not set for the operation");
-                        return;
+                        return None;
                     }
                 };
-                match outcome {
+                let action = match outcome {
                     Ok(rgis_geo_ops::Outcome::FeatureCollection(feature_collection)) => {
-                        self.create_layer_event_writer
-                            .write(CreateLayerMessage {
-                                feature_collection,
-                                name: "FOOOOO".into(), // FIXME
-                                source_crs,
-                            });
+                        Some(OperationAction::CreateLayer {
+                            feature_collection,
+                            name: "FOOOOO".into(), // FIXME
+                            source_crs,
+                        })
                     }
                     Ok(rgis_geo_ops::Outcome::Text(text)) => {
-                        self.render_message_event_writer
-                            .write(RenderTextMessage(text));
+                        Some(OperationAction::RenderMessage(text))
                     }
                     Err(e) => {
-                        bevy::log::error!("Encountered an error during the operation: {}", e);
+                        bevy::log::error!(
+                            "Encountered an error during the operation: {}",
+                            e
+                        );
+                        None
                     }
-                }
+                };
                 *self.state = None;
+                action
             }
             rgis_geo_ops::Action::RenderUi => {
                 let mut is_open = true;
@@ -56,6 +65,7 @@ impl Operation<'_> {
                 if !is_open {
                     *self.state = None;
                 }
+                None
             }
         }
     }

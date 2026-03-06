@@ -30,6 +30,57 @@ impl Default for DebugStatsWindowState {
     }
 }
 
+pub struct DebugContent<'a> {
+    pub last: &'a LastDebugStats,
+    pub history: &'a collections::VecDeque<f64>,
+}
+
+const FPS_MAX: f64 = 100.;
+
+impl egui::Widget for DebugContent<'_> {
+    fn ui(self, ui: &mut egui::Ui) -> egui::Response {
+        self.render_debug_table(ui);
+        self.render_fps_plot(ui)
+    }
+}
+
+impl DebugContent<'_> {
+    fn render_debug_table(&self, ui: &mut egui::Ui) {
+        ui.vertical(|ui| {
+            ui.add(crate::widgets::debug_table::DebugTable { last: self.last });
+        });
+    }
+
+    fn render_fps_plot(&self, ui: &mut egui::Ui) -> egui::Response {
+        let sin = self
+            .history
+            .iter()
+            .enumerate()
+            .map(|(x, y)| egui_plot::PlotPoint::new(x as f64, y.min(FPS_MAX)))
+            .collect::<Vec<_>>();
+
+        ui.vertical(|ui| {
+            let line = Line::new("fps", PlotPoints::Owned(sin));
+            Plot::new("fps_plot")
+                .allow_drag(false)
+                .allow_boxed_zoom(false)
+                .allow_scroll(false)
+                .allow_zoom(false)
+                .set_margin_fraction((0., 0.).into())
+                .show_x(false)
+                .x_axis_formatter(|_, _| "".into())
+                .y_axis_formatter(|n, _| format!("{n:?}"))
+                .include_x(0.)
+                .include_x(DEBUG_STATS_HISTORY_LEN as f64)
+                .include_y(0.)
+                .include_y(FPS_MAX)
+                .view_aspect(2.) // Width is twice as big as height
+                .show(ui, |plot_ui| plot_ui.line(line));
+        })
+        .response
+    }
+}
+
 #[derive(SystemParam)]
 pub struct Debug<'w, 's> {
     diagnostics: Res<'w, DiagnosticsStore>,
@@ -38,8 +89,6 @@ pub struct Debug<'w, 's> {
     last: Local<'s, LastDebugStats>,
 }
 
-const FPS_MAX: f64 = 100.;
-
 impl egui::Widget for Debug<'_, '_> {
     fn ui(mut self, ui: &mut egui::Ui) -> egui::Response {
         if self.state.history.is_empty() || self.state.timer.tick(self.time.delta()).just_finished()
@@ -47,8 +96,10 @@ impl egui::Widget for Debug<'_, '_> {
             self.update_stats();
         }
 
-        self.render_debug_table(ui);
-        self.render_fps_plot(ui)
+        ui.add(DebugContent {
+            last: &self.last,
+            history: &self.state.history,
+        })
     }
 }
 
@@ -84,42 +135,6 @@ impl Debug<'_, '_> {
         if self.state.history.len() >= DEBUG_STATS_HISTORY_LEN {
             let _ = self.state.history.pop_front();
         }
-    }
-
-    fn render_debug_table(&self, ui: &mut egui::Ui) {
-        ui.vertical(|ui| {
-            ui.add(crate::widgets::debug_table::DebugTable { last: &self.last });
-        });
-    }
-
-    fn render_fps_plot(&self, ui: &mut egui::Ui) -> egui::Response {
-        let sin = self
-            .state
-            .history
-            .iter()
-            .enumerate()
-            .map(|(x, y)| egui_plot::PlotPoint::new(x as f64, y.min(FPS_MAX)))
-            .collect::<Vec<_>>();
-
-        ui.vertical(|ui| {
-            let line = Line::new("fps", PlotPoints::Owned(sin));
-            Plot::new("fps_plot")
-                .allow_drag(false)
-                .allow_boxed_zoom(false)
-                .allow_scroll(false)
-                .allow_zoom(false)
-                .set_margin_fraction((0., 0.).into())
-                .show_x(false)
-                .x_axis_formatter(|_, _| "".into())
-                .y_axis_formatter(|n, _| format!("{n:?}"))
-                .include_x(0.)
-                .include_x(DEBUG_STATS_HISTORY_LEN as f64)
-                .include_y(0.)
-                .include_y(FPS_MAX)
-                .view_aspect(2.) // Width is twice as big as height
-                .show(ui, |plot_ui| plot_ui.line(line));
-        })
-        .response
     }
 }
 
