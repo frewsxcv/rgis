@@ -2,10 +2,18 @@ use bevy::{ecs::relationship::RelatedSpawnerCommands, prelude::*};
 use std::sync::atomic::AtomicU32;
 
 mod jobs;
+mod render_entity_index;
 mod systems;
 mod z_index;
 
+pub use render_entity_index::RenderEntityIndex;
+
 /// Counter incremented each time meshes are spawned for a layer (for test polling).
+///
+/// This must remain a global static (rather than an ECS Resource) because it is
+/// read from the `#[wasm_bindgen]` FFI function `get_rendered_layer_count` in
+/// `rgis/src/lib.rs`, which executes outside of Bevy's ECS schedule and cannot
+/// access `Res<T>`.
 pub static RENDERED_LAYER_COUNT: AtomicU32 = AtomicU32::new(0);
 
 use rgis_layers::LayerIndex;
@@ -27,6 +35,9 @@ pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
+        app.init_resource::<RenderEntityIndex>();
+        app.add_observer(render_entity_index::on_add_layer_id);
+        app.add_observer(render_entity_index::on_remove_layer_id);
         systems::configure(app);
     }
 }
