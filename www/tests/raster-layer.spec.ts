@@ -29,19 +29,7 @@ test("load eox_cloudless with Countries overlay", async ({ appPage }) => {
   test.setTimeout(120000);
 
   // Load the raster layer first
-  await appPage.openAddLayerWindow();
-  await appPage.clickWidget("File");
-  await appPage.clickWidget("GeoTIFF");
-
-  const fileChooserPromise = appPage.page.waitForEvent("filechooser");
-  await appPage.clickWidget("Select file");
-  const fileChooser = await fileChooserPromise;
-  await fileChooser.setFiles("./dist/geotiff-test-data/real_data/eox/eox_cloudless.tif");
-  await appPage.waitForNextFrame();
-
-  const countBefore = await appPage.getRenderedLayerCount();
-  await appPage.clickWidget("Add layer");
-  await appPage.waitForLayerRender(countBefore);
+  await appPage.loadGeoTIFFFile("./dist/geotiff-test-data/real_data/eox/eox_cloudless.tif");
 
   // Now add the Countries library layer on top
   await appPage.openAddLayerWindow();
@@ -60,19 +48,7 @@ for (const filePath of geotiffFiles) {
   test(`load GeoTIFF: ${filePath}`, async ({ appPage }) => {
     test.setTimeout(60000);
 
-    await appPage.openAddLayerWindow();
-    await appPage.clickWidget("File");
-    await appPage.clickWidget("GeoTIFF");
-
-    const fileChooserPromise = appPage.page.waitForEvent("filechooser");
-    await appPage.clickWidget("Select file");
-    const fileChooser = await fileChooserPromise;
-    await fileChooser.setFiles(`./dist/geotiff-test-data/${filePath}`);
-    await appPage.waitForNextFrame();
-
-    const countBefore = await appPage.getRenderedLayerCount();
-    await appPage.clickWidget("Add layer");
-    await appPage.waitForLayerRender(countBefore);
+    await appPage.loadGeoTIFFFile(`./dist/geotiff-test-data/${filePath}`);
 
     await expect(appPage.page).toHaveScreenshot(snapshotName(filePath));
   });

@@ -102,6 +102,20 @@ export class AppPage {
   }
 
 
+  async loadGeoTIFFFile(filePath: string) {
+    await this.openAddLayerWindow();
+    await this.clickWidget("File");
+    await this.clickWidget("GeoTIFF");
+    const fileChooserPromise = this.page.waitForEvent("filechooser");
+    await this.clickWidget("Select file");
+    const fileChooser = await fileChooserPromise;
+    await fileChooser.setFiles(filePath);
+    await this.waitForNextFrame();
+    const countBefore = await this.getRenderedLayerCount();
+    await this.clickWidget("Add layer");
+    await this.waitForLayerRender(countBefore);
+  }
+
   async getRenderedLayerCount(): Promise<number> {
     return await this.page.evaluate(
       () => (window as any).get_rendered_layer_count?.() ?? 0,
