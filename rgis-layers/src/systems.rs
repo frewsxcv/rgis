@@ -4,8 +4,7 @@ fn handle_toggle_layer_visibility_events(
     mut toggle_layer_visibility_event_reader: MessageReader<
         rgis_layer_messages::ToggleLayerVisibilityMessage,
     >,
-    mut layer_became_visible_event_writer: MessageWriter<rgis_layer_messages::LayerBecameVisibleMessage>,
-    mut layer_became_hidden_event_writer: MessageWriter<rgis_layer_messages::LayerBecameHiddenMessage>,
+    mut commands: Commands,
     mut layers: ResMut<crate::Layers>,
 ) {
     for event in toggle_layer_visibility_event_reader.read() {
@@ -15,11 +14,9 @@ fn handle_toggle_layer_visibility_events(
         };
         layer.visible = !layer.visible;
         if layer.visible {
-            layer_became_visible_event_writer
-                .write(rgis_layer_messages::LayerBecameVisibleMessage(event.0));
+            commands.trigger(rgis_layer_messages::LayerBecameVisibleEvent(event.0));
         } else {
-            layer_became_hidden_event_writer
-                .write(rgis_layer_messages::LayerBecameHiddenMessage(event.0));
+            commands.trigger(rgis_layer_messages::LayerBecameHiddenEvent(event.0));
         }
     }
 }
@@ -69,12 +66,12 @@ fn handle_update_point_size_events(
 
 fn handle_delete_layer_events(
     mut delete_layer_event_reader: MessageReader<rgis_layer_messages::DeleteLayerMessage>,
-    mut despawn_meshes_event_writer: MessageWriter<rgis_renderer_messages::DespawnMeshesMessage>,
+    mut commands: Commands,
     mut layers: ResMut<crate::Layers>,
 ) {
     for event in delete_layer_event_reader.read() {
         layers.remove(event.0);
-        despawn_meshes_event_writer.write(rgis_renderer_messages::DespawnMeshesMessage(event.0));
+        commands.trigger(rgis_renderer_messages::DespawnMeshesEvent(event.0));
     }
 }
 
@@ -176,9 +173,14 @@ pub fn configure(app: &mut App) {
             handle_update_point_size_events,
             handle_move_layer_events,
             handle_delete_layer_events,
-            handle_create_layer_events,
+            // handle_duplicate_layer_events writes CreateLayerMessage events,
+            // so it must run before handle_create_layer_events which drains them
+            (
+                handle_duplicate_layer_events,
+                handle_create_layer_events,
+            )
+                .chain(),
             handle_create_raster_layer_events,
-            handle_duplicate_layer_events,
         ),
     );
 }

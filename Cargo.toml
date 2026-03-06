@@ -46,6 +46,7 @@ publish = false
 
 [workspace.dependencies]
 bevy = { version = "0.18", default-features = false, features = [
+    "bevy_state",
     "bevy_winit",
     "bevy_core_pipeline",
     "bevy_log",

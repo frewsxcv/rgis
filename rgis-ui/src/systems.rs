@@ -1,7 +1,7 @@
 use bevy::{ecs::query::QueryIter, prelude::*, window::PrimaryWindow};
 use bevy_egui::{
     egui::{self, Widget},
-    EguiContexts, EguiPrimaryContextPass,
+    EguiContexts, EguiPrimaryContextPass, EguiTextureHandle,
 };
 use bevy_egui_window::Window;
 use geo::{Distance, Geodesic, Haversine, Rhumb};
@@ -66,8 +66,7 @@ fn render_manage_layer_window(
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     if let Some(event) = show_manage_layer_window_event_reader.read().last() {
-        state.is_visible = true;
-        state.layer_id = Some(event.0);
+        *state = Some(event.0);
     }
 
     crate::windows::manage_layer::ManageLayer {
@@ -82,16 +81,8 @@ fn render_manage_layer_window(
     Ok(())
 }
 
-struct IsVisible(pub bool);
-
-impl Default for IsVisible {
-    fn default() -> Self {
-        IsVisible(false)
-    }
-}
-
 fn render_add_layer_window(
-    mut is_visible: Local<IsVisible>,
+    mut is_visible: Local<bool>,
     mut selected_file: ResMut<SelectedFile>,
     mut bevy_egui_ctx: EguiContexts,
     mut job_spawner: bevy_jobs::JobSpawner,
@@ -101,18 +92,18 @@ fn render_add_layer_window(
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     if !events.show_add_layer_window_event_reader.is_empty() {
-        (*is_visible).0 = true;
+        *is_visible = true;
     }
 
     if !events.hide_add_layer_window_events.is_empty() {
         state.reset();
-        (*is_visible).0 = false;
+        *is_visible = false;
     }
 
     let output = crate::windows::add_layer::AddLayer {
         state: &mut state,
         selected_file: &mut selected_file,
-        is_visible: &mut (*is_visible).0,
+        is_visible: &mut is_visible,
         egui_ctx: bevy_egui_ctx_mut,
         geodesy_ctx: &geodesy_ctx,
     }
@@ -180,15 +171,15 @@ fn render_add_layer_window(
 
 fn handle_open_change_crs_window_event(
     mut events: MessageReader<rgis_ui_messages::OpenChangeCrsWindowMessage>,
-    mut state: ResMut<crate::ChangeCrsWindowState>,
+    mut is_visible: ResMut<crate::ChangeCrsWindowVisible>,
 ) {
     if events.read().next().is_some() {
-        state.is_visible = true;
+        is_visible.0 = true;
     }
 }
 
 fn render_change_crs_window(
-    mut state: ResMut<crate::ChangeCrsWindowState>,
+    mut is_visible: ResMut<crate::ChangeCrsWindowVisible>,
     target_crs: Res<rgis_crs::TargetCrs>,
     mut bevy_egui_ctx: EguiContexts,
     mut text_field_value: Local<String>,
@@ -199,7 +190,7 @@ fn render_change_crs_window(
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     crate::windows::change_crs::ChangeCrs {
-        is_visible: &mut state.is_visible,
+        is_visible: &mut is_visible.0,
         egui_ctx: bevy_egui_ctx_mut,
         text_field_value: &mut text_field_value,
         crs_input_mode: &mut crs_input_mode,
@@ -220,12 +211,17 @@ fn render_feature_properties_window(
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     if let Some(event) = render_message_events.drain().last() {
-        state.is_visible = true;
-        state.layer_id = Some(event.layer_id);
-        state.properties = Some(event.properties);
+        *state = Some(crate::FeaturePropertiesWindowData {
+            layer_id: event.layer_id,
+            properties: event.properties,
+        });
     }
 
-    let Some(layer) = state.layer_id.and_then(|id| layers.get(id)) else {
+    let Some(ref data) = *state else {
+        return Ok(());
+    };
+
+    let Some(layer) = layers.get(data.layer_id) else {
         return Ok(());
     };
 
@@ -245,8 +241,7 @@ fn render_message_window(
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     if let Some(event) = render_message_events.drain().last() {
-        state.message = Some(event.0);
-        state.is_visible = true;
+        *state = Some(event.0);
     }
 
     crate::windows::message::Message {
@@ -266,9 +261,11 @@ fn render_operation_window(
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     if let Some(event) = events.drain().last() {
-        state.is_visible = true;
-        state.operation = Some(event.operation);
-        state.feature_collection = Some(event.feature_collection);
+        *state = Some(crate::OperationWindowData {
+            operation: event.operation,
+            feature_collection: event.feature_collection,
+            source_crs: None,
+        });
     }
 
     crate::windows::operation::Operation {
@@ -333,18 +330,47 @@ impl Widget for InProgressJobWidget<'_> {
     }
 }
 
+#[derive(Default)]
+struct LogoTextures {
+    light: Option<(Handle<Image>, egui::TextureId)>,
+    dark: Option<(Handle<Image>, egui::TextureId)>,
+}
+
 fn render_top(
     mut bevy_egui_ctx: EguiContexts,
     mut app_exit_events: ResMut<Messages<AppExit>>,
     mut windows: Query<&mut bevy::window::Window, With<PrimaryWindow>>,
     mut app_settings: ResMut<rgis_settings::RgisSettings>,
+    current_tool: Res<State<rgis_settings::Tool>>,
+    mut next_tool: ResMut<NextState<rgis_settings::Tool>>,
     mut top_panel_height: ResMut<rgis_units::TopPanelHeight>,
     mut is_debug_window_open: ResMut<
         bevy_egui_window::IsWindowOpen<crate::windows::debug::Debug<'static, 'static>>,
     >,
     mut show_add_layer_window_event_writer: MessageWriter<rgis_ui_messages::ShowAddLayerWindowMessage>,
     mut clear_color: ResMut<ClearColor>,
+    asset_server: Res<AssetServer>,
+    mut logo_textures: Local<LogoTextures>,
 ) -> Result {
+    if logo_textures.light.is_none() {
+        let handle: Handle<Image> = asset_server.load("logo-black.png");
+        let texture_id = bevy_egui_ctx.add_image(EguiTextureHandle::Strong(handle.clone()));
+        logo_textures.light = Some((handle, texture_id));
+    }
+    if logo_textures.dark.is_none() {
+        let handle: Handle<Image> = asset_server.load("logo-white.png");
+        let texture_id = bevy_egui_ctx.add_image(EguiTextureHandle::Strong(handle.clone()));
+        logo_textures.dark = Some((handle, texture_id));
+    }
+
+    let logo_texture_id = if app_settings.dark_mode {
+        logo_textures.dark.as_ref()
+    } else {
+        logo_textures.light.as_ref()
+    }
+    .filter(|(handle, _)| asset_server.is_loaded_with_dependencies(handle))
+    .map(|(_, id)| *id);
+
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     let Ok(mut window) = windows.single_mut() else {
         return Ok(());
@@ -355,10 +381,13 @@ fn render_top(
         app_exit_events: &mut app_exit_events,
         window: &mut window,
         app_settings: &mut app_settings,
+        current_tool: current_tool.get(),
+        next_tool: &mut next_tool,
         top_panel_height: &mut top_panel_height,
         is_debug_window_open: &mut is_debug_window_open,
         show_add_layer_window_event_writer: &mut show_add_layer_window_event_writer,
         clear_color: &mut clear_color,
+        logo_texture_id,
     }
     .render();
     Ok(())
@@ -434,7 +463,7 @@ fn calculate_all_distances(
 }
 fn render_measure_tool(
     mut bevy_egui_ctx: EguiContexts,
-    rgis_settings: Res<rgis_settings::RgisSettings>,
+    current_tool: Res<State<rgis_settings::Tool>>,
     measure_state: Res<rgis_mouse::MeasureState>,
     mouse_pos: Res<rgis_mouse::MousePos>,
     geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
@@ -442,7 +471,7 @@ fn render_measure_tool(
     camera_q: Query<&Transform, With<Camera>>,
     windows: Query<&bevy::window::Window, With<PrimaryWindow>>,
 ) -> Result {
-    if rgis_settings.current_tool != rgis_settings::Tool::Measure {
+    if *current_tool.get() != rgis_settings::Tool::Measure {
         return Ok(());
     }
 
@@ -589,9 +618,7 @@ pub fn configure(app: &mut App) {
     );
 }
 
-#[allow(clippy::too_many_arguments)]
 fn perform_operation(
-    _commands: Commands,
     mut events: ResMut<Messages<rgis_ui_messages::PerformOperationMessage>>,
     layers: Res<rgis_layers::Layers>,
     mut open_operation_window_event_writer: MessageWriter<rgis_ui_messages::OpenOperationWindowMessage>,
@@ -667,10 +694,11 @@ mod tests {
         app.add_plugins(bevy_egui::EguiPlugin::default());
         app.add_plugins(rgis_geodesy::Plugin);
         app.add_plugins(rgis_crs_messages::Plugin);
-        app.add_plugins(rgis_crs::Plugin);
+        app.add_plugins(rgis_crs::Plugin::default());
+        app.add_plugins(bevy::state::app::StatesPlugin);
 
+        app.insert_state(rgis_settings::Tool::Measure);
         app.insert_resource(rgis_settings::RgisSettings {
-            current_tool: rgis_settings::Tool::Measure,
             show_scale: true,
             dark_mode: false,
         });
@@ -734,7 +762,7 @@ mod tests {
         app.add_plugins(MinimalPlugins);
         app.add_plugins(rgis_geodesy::Plugin);
         app.add_plugins(rgis_crs_messages::Plugin);
-        app.add_plugins(rgis_crs::Plugin);
+        app.add_plugins(rgis_crs::Plugin::default());
 
         app.update();
 

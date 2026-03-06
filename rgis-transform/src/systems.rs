@@ -111,35 +111,33 @@ fn handle_reproject_raster_extent_job_completion_events(
 }
 
 fn handle_crs_changed_events(
-    mut crs_changed_event_reader: MessageReader<rgis_crs_messages::CrsChangedMessage>,
+    _event: On<rgis_crs_messages::CrsChangedEvent>,
     mut layers: ResMut<rgis_layers::Layers>,
     target_crs: Res<rgis_crs::TargetCrs>,
     mut job_spawner: bevy_jobs::JobSpawner,
     geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
 ) {
-    if crs_changed_event_reader.read().next().is_some() {
-        layers.clear_projected();
+    layers.clear_projected();
 
-        for layer in layers.iter() {
-            match &layer.data {
-                rgis_layers::LayerData::Raster { raster, .. } => {
-                    job_spawner.spawn(crate::jobs::ReprojectRasterExtentJob {
-                        extent: raster.extent,
-                        layer_id: layer.id,
-                        source_crs: layer.crs.clone(),
-                        target_crs: target_crs.0.clone(),
-                        geodesy_ctx: geodesy_ctx.clone(),
-                    });
-                }
-                rgis_layers::LayerData::Vector { unprojected_feature_collection, .. } => {
-                    job_spawner.spawn(crate::jobs::ReprojectGeometryJob {
-                        feature_collection: unprojected_feature_collection.clone(),
-                        layer_id: layer.id,
-                        source_crs: layer.crs.clone(),
-                        target_crs: target_crs.0.clone(),
-                        geodesy_ctx: geodesy_ctx.clone(),
-                    });
-                }
+    for layer in layers.iter() {
+        match &layer.data {
+            rgis_layers::LayerData::Raster { raster, .. } => {
+                job_spawner.spawn(crate::jobs::ReprojectRasterExtentJob {
+                    extent: raster.extent,
+                    layer_id: layer.id,
+                    source_crs: layer.crs.clone(),
+                    target_crs: target_crs.0.clone(),
+                    geodesy_ctx: geodesy_ctx.clone(),
+                });
+            }
+            rgis_layers::LayerData::Vector { unprojected_feature_collection, .. } => {
+                job_spawner.spawn(crate::jobs::ReprojectGeometryJob {
+                    feature_collection: unprojected_feature_collection.clone(),
+                    layer_id: layer.id,
+                    source_crs: layer.crs.clone(),
+                    target_crs: target_crs.0.clone(),
+                    geodesy_ctx: geodesy_ctx.clone(),
+                });
             }
         }
     }
@@ -152,7 +150,7 @@ pub fn configure(app: &mut App) {
             handle_layer_created_events,
             handle_reproject_geometry_job_completion_events,
             handle_reproject_raster_extent_job_completion_events,
-            handle_crs_changed_events,
         ),
     );
+    app.add_observer(handle_crs_changed_events);
 }

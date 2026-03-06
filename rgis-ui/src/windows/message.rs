@@ -7,17 +7,21 @@ pub struct Message<'a> {
 
 impl Message<'_> {
     pub fn render(&mut self) {
-        if !self.state.is_visible && self.state.message.is_some() {
-            self.state.message = None;
-        }
-        if let Some(ref message) = self.state.message {
-            egui::Window::new("Message Window")
-                .id(egui::Id::new("Message window"))
-                .open(&mut self.state.is_visible)
-                .anchor(egui::Align2::CENTER_CENTER, [0., 0.])
-                .show(self.egui_ctx, |ui| {
-                    ui.label(message);
-                });
+        let Some(ref message) = *self.state else {
+            return;
+        };
+
+        let mut is_open = true;
+        egui::Window::new("Message Window")
+            .id(egui::Id::new("Message window"))
+            .open(&mut is_open)
+            .anchor(egui::Align2::CENTER_CENTER, [0., 0.])
+            .show(self.egui_ctx, |ui| {
+                ui.label(message);
+            });
+
+        if !is_open {
+            *self.state = None;
         }
     }
 }

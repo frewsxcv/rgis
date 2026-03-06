@@ -26,6 +26,16 @@ export class AppPage {
       null,
       { timeout: 10000 },
     );
+
+    // Wait for logo image asset to load and render
+    await this.page.waitForFunction(
+      () => {
+        const rect = (window as any).get_widget_rect?.("Logo");
+        return !!rect;
+      },
+      null,
+      { timeout: 10000 },
+    );
     await this.waitForNextFrame();
   }
 

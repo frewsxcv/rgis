@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 use geo::contains::Contains;
-use std::sync;
 
 mod systems;
 
@@ -25,6 +24,10 @@ pub struct Layers {
     data: Vec<Layer>,
     // ID of the currently selected Layer
     pub selected_layer_id: Option<rgis_primitives::LayerId>,
+    // Counter for cycling through layer colors
+    color_counter: usize,
+    // Counter for generating unique LayerIds
+    next_layer_id_value: u16,
 }
 
 impl Default for Layers {
@@ -38,6 +41,9 @@ impl Layers {
         Layers {
             data: vec![],
             selected_layer_id: None,
+            color_counter: 0,
+            // Starting at 1 so we can use NonZeroU16
+            next_layer_id_value: 1,
         }
     }
 
@@ -157,8 +163,10 @@ impl Layers {
             .and_then(|layer_id| self.get(layer_id))
     }
 
-    fn next_layer_id(&self) -> rgis_primitives::LayerId {
-        rgis_primitives::LayerId::new()
+    fn next_layer_id(&mut self) -> rgis_primitives::LayerId {
+        let value = self.next_layer_id_value;
+        self.next_layer_id_value += 1;
+        rgis_primitives::LayerId::from_u16(value)
     }
 
     fn add(
@@ -169,6 +177,7 @@ impl Layers {
     ) -> rgis_primitives::LayerId {
         let layer_id = self.next_layer_id();
         let geom_type = geo_geom_type::determine(unprojected.geometry_iter());
+        let color = next_colorous_color(&mut self.color_counter);
         let layer = Layer {
             data: LayerData::Vector {
                 unprojected_feature_collection: unprojected,
@@ -177,13 +186,13 @@ impl Layers {
             },
             color: if geom_type.has_fill() {
                 LayerColor {
-                    fill: Some(colorous_color_to_bevy_color(next_colorous_color())),
+                    fill: Some(colorous_color_to_bevy_color(color)),
                     stroke: Color::BLACK,
                 }
             } else {
                 LayerColor {
                     fill: None,
-                    stroke: colorous_color_to_bevy_color(next_colorous_color()),
+                    stroke: colorous_color_to_bevy_color(color),
                 }
             },
             name,
@@ -370,14 +379,11 @@ fn colorous_color_to_bevy_color(colorous_color: colorous::Color) -> Color {
 
 const COLORS: [colorous::Color; 10] = colorous::CATEGORY10;
 
-fn next_colorous_color() -> colorous::Color {
+fn next_colorous_color(counter: &mut usize) -> colorous::Color {
     #[allow(clippy::indexing_slicing)]
-    COLORS[next_color_index()]
-}
-
-fn next_color_index() -> usize {
-    static COUNTER: sync::atomic::AtomicUsize = sync::atomic::AtomicUsize::new(0);
-    COUNTER.fetch_add(1, sync::atomic::Ordering::Relaxed) % COLORS.len()
+    let color = COLORS[*counter % COLORS.len()];
+    *counter += 1;
+    color
 }
 
 pub struct Plugin;

@@ -9,12 +9,12 @@ fn handle_picking_click(
         Or<(With<crate::Point>, With<crate::Polygon>, With<crate::LineString>)>,
     >,
     layers: Res<rgis_layers::Layers>,
-    settings: Res<rgis_settings::RgisSettings>,
+    current_tool: Res<State<rgis_settings::Tool>>,
     mut bevy_egui_ctx: bevy_egui::EguiContexts,
     mut feature_selected_writer: MessageWriter<rgis_map_messages::FeatureSelectedMessage>,
     mut render_props_writer: MessageWriter<rgis_ui_messages::RenderFeaturePropertiesMessage>,
 ) {
-    if settings.current_tool != rgis_settings::Tool::Query {
+    if *current_tool.get() != rgis_settings::Tool::Query {
         return;
     }
 
@@ -194,38 +194,32 @@ type LayerEntitiesQuery<'world, 'state, 'a> =
     Query<'world, 'state, (&'a rgis_primitives::LayerId, Entity)>;
 
 fn handle_despawn_meshes_event(
-    mut layer_deleted_event_reader: MessageReader<rgis_renderer_messages::DespawnMeshesMessage>,
+    event: On<rgis_renderer_messages::DespawnMeshesEvent>,
     mut commands: Commands,
     query: LayerEntitiesQuery,
 ) {
-    for event in layer_deleted_event_reader.read() {
-        for (layer_id, entity) in query.iter() {
-            if *layer_id == event.0 {
-                commands.entity(entity).despawn();
-            }
+    for (layer_id, entity) in query.iter() {
+        if *layer_id == event.0 {
+            commands.entity(entity).despawn();
         }
     }
 }
 
 fn handle_layer_became_hidden_event(
-    mut event_reader: MessageReader<rgis_layer_messages::LayerBecameHiddenMessage>,
+    event: On<rgis_layer_messages::LayerBecameHiddenEvent>,
     mut query: Query<(&rgis_primitives::LayerId, &mut Visibility)>,
 ) {
-    for event in event_reader.read() {
-        for (_, mut visibility) in query.iter_mut().filter(|(i, _)| **i == event.0) {
-            *visibility = Visibility::Hidden;
-        }
+    for (_, mut visibility) in query.iter_mut().filter(|(i, _)| **i == event.0) {
+        *visibility = Visibility::Hidden;
     }
 }
 
 fn handle_layer_became_visible_event(
-    mut event_reader: MessageReader<rgis_layer_messages::LayerBecameVisibleMessage>,
+    event: On<rgis_layer_messages::LayerBecameVisibleEvent>,
     mut query: Query<(&rgis_primitives::LayerId, &mut Visibility)>,
 ) {
-    for event in event_reader.read() {
-        for (_, mut visibility) in query.iter_mut().filter(|(i, _)| **i == event.0) {
-            *visibility = Visibility::Visible;
-        }
+    for (_, mut visibility) in query.iter_mut().filter(|(i, _)| **i == event.0) {
+        *visibility = Visibility::Visible;
     }
 }
 
@@ -315,17 +309,15 @@ fn handle_layer_color_updated_event(
 }
 
 fn handle_crs_changed_events(
-    mut crs_changed_event_reader: MessageReader<rgis_crs_messages::CrsChangedMessage>,
+    _event: On<rgis_crs_messages::CrsChangedEvent>,
     query: Query<(&rgis_primitives::LayerId, Entity), With<MeshMaterial2d<ColorMaterial>>>,
     mut commands: Commands,
 ) {
-    for _ in crs_changed_event_reader.read() {
-        // FIXME: there's a race condition here where we'll delete newly generated projected geometry
-        // meshes if this gets executed after we project the new geometries. We should add a filter
-        // in here for the old CRS.
-        for (_, entity) in &query {
-            commands.entity(entity).despawn();
-        }
+    // FIXME: there's a race condition here where we'll delete newly generated projected geometry
+    // meshes if this gets executed after we project the new geometries. We should add a filter
+    // in here for the old CRS.
+    for (_, entity) in &query {
+        commands.entity(entity).despawn();
     }
 }
 
@@ -406,18 +398,22 @@ pub fn configure(app: &mut App) {
         Update,
         (
             layer_loaded,
-            handle_layer_became_hidden_event,
-            handle_layer_became_visible_event,
             handle_layer_color_updated_event,
             handle_layer_point_size_updated_event,
             handle_layer_z_index_updated_event,
-            handle_despawn_meshes_event,
             handle_mesh_building_job_outcome,
-            handle_crs_changed_events,
             handle_camera_scale_changed_event,
-            handle_feature_selected_event_despawn,
-            handle_feature_selected_event_spawn,
+            // Despawn old selection entities before spawning new ones
+            (
+                handle_feature_selected_event_despawn,
+                handle_feature_selected_event_spawn,
+            )
+                .chain(),
         ),
     );
     app.add_observer(handle_picking_click);
+    app.add_observer(handle_layer_became_hidden_event);
+    app.add_observer(handle_layer_became_visible_event);
+    app.add_observer(handle_despawn_meshes_event);
+    app.add_observer(handle_crs_changed_events);
 }
