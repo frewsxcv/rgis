@@ -44,12 +44,7 @@ test("load eox_cloudless with Countries overlay", async ({ appPage }) => {
   await appPage.waitForLayerRender(countBefore);
 
   // Now add the Countries library layer on top
-  await appPage.openAddLayerWindow();
-  await appPage.clickWidget("Library");
-  await appPage.clickWidget("World");
-  const countBeforeCountries = await appPage.getRenderedLayerCount();
-  await appPage.clickWidget("Add:Countries");
-  await appPage.waitForLayerRender(countBeforeCountries);
+  await appPage.addLibraryLayer("World", "Countries");
 
   await expect(appPage.page).toHaveScreenshot(
     "real-data-eox-eox-cloudless-with-countries.png",

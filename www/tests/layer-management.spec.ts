@@ -4,20 +4,7 @@ test.describe("layer management", () => {
   test.beforeEach(async ({ appPage }) => {
     test.setTimeout(60000);
 
-    // Open the Add Layer window first
-    await appPage.openAddLayerWindow();
-
-    // Load World Countries from library
-    await appPage.clickWidget("Library");
-
-    // Expand World folder
-    await appPage.clickWidget("World");
-
-    // Click "+ Add" button next to Countries
-    await appPage.clickWidget("Add:Countries");
-
-    // Wait for layer to load
-    await appPage.waitForLayerRender();
+    await appPage.addLibraryLayer("World", "Countries");
 
     // Close the Add Layer window
     await appPage.closeWindow("Add Layer");

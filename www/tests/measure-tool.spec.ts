@@ -8,11 +8,7 @@ test.describe("measure tool", () => {
     await appPage.closeWindow("Welcome");
 
     // Load the USA States layer from the built-in library
-    await appPage.openAddLayerWindow();
-    await appPage.clickWidget("Library");
-    await appPage.clickWidget("USA");
-    await appPage.clickWidget("Add:States");
-    await appPage.waitForLayerRender();
+    await appPage.addLibraryLayer("USA", "States");
 
     // Close the Add Layer window
     await appPage.closeWindow("Add Layer");
