@@ -1,7 +1,7 @@
 import { test, expect } from "./fixtures/app-fixture";
 
 test("app loads and renders", async ({ appPage }) => {
-  await expect(appPage.page).toHaveScreenshot("app-loaded.png");
+  await appPage.expectScreenshot("app-loaded.png");
 });
 
 test("canvas has non-blank content", async ({ appPage }) => {
@@ -45,7 +45,7 @@ test("canvas is present and fills viewport", async ({ appPage }) => {
 });
 
 test("initial render baseline", async ({ appPage }) => {
-  await expect(appPage.page).toHaveScreenshot("initial-render.png");
+  await appPage.expectScreenshot("initial-render.png");
 });
 
 test("welcome dialog is visible in center", async ({ appPage }) => {
@@ -65,7 +65,7 @@ test("clicking Library option changes the view", async ({ appPage }) => {
   const after = await appPage.page.screenshot();
   expect(Buffer.compare(before, after)).not.toBe(0);
 
-  await expect(appPage.page).toHaveScreenshot("library-selected.png");
+  await appPage.expectScreenshot("library-selected.png");
 });
 
 test("add World Countries layer from library", async ({ appPage }) => {
@@ -73,5 +73,5 @@ test("add World Countries layer from library", async ({ appPage }) => {
 
   await appPage.addLibraryLayer("World", "Countries");
 
-  await expect(appPage.page).toHaveScreenshot("world-countries-rendered.png");
+  await appPage.expectScreenshot("world-countries-rendered.png");
 });
