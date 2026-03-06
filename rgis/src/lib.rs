@@ -62,7 +62,7 @@ pub fn run() {
     app.add_plugins(rgis_file_loader::Plugin);
     app.add_plugins(rgis_renderer::Plugin);
     app.add_plugins(rgis_mouse::Plugin);
-    app.add_plugins(rgis_keyboard::Plugin);
+    app.add_plugins(rgis_keyboard::Plugin::default());
     app.add_plugins(rgis_camera::Plugin);
     app.add_plugins(rgis_ui_messages::Plugin);
     app.add_plugins(rgis_camera_messages::Plugin);
@@ -75,7 +75,7 @@ pub fn run() {
     app.add_plugins(rgis_transform::Plugin);
     app.add_plugins(rgis_settings::Plugin);
     app.add_plugins(rgis_geodesy::Plugin);
-    app.add_plugins(rgis_crs::Plugin);
+    app.add_plugins(rgis_crs::Plugin::default());
 
     app.run();
 }
