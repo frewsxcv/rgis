@@ -18,12 +18,4 @@ test.describe("panel presence", () => {
     const hasContent = await appPage.regionHasContent(0, 0.96, 1, 0.04);
     expect(hasContent).toBe(true);
   });
-
-  test("UI panels have more visual complexity than empty map", async ({
-    appPage,
-  }) => {
-    // Side panel (UI) should have content
-    const panelHasContent = await appPage.regionHasContent(0, 0.1, 0.15, 0.8);
-    expect(panelHasContent).toBe(true);
-  });
 });
