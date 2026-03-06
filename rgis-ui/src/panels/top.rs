@@ -15,6 +15,7 @@ pub struct Top<'a, 'w> {
     pub show_add_layer_window_event_writer:
         &'a mut MessageWriter<'w, rgis_ui_messages::ShowAddLayerWindowMessage>,
     pub clear_color: &'a mut ClearColor,
+    pub logo_texture_id: Option<egui::TextureId>,
 }
 
 impl Top<'_, '_> {
@@ -24,7 +25,12 @@ impl Top<'_, '_> {
             egui::MenuBar::new().ui(ui, |ui| {
                 let mut new_tool = current_tool;
 
-                ui.label("rgis");
+                if let Some(texture_id) = self.logo_texture_id {
+                    let logo_size = egui::vec2(20.0, 20.0);
+                    ui.image(egui::load::SizedTexture::new(texture_id, logo_size));
+                } else {
+                    ui.label("rgis");
+                }
                 let file_response = ui.menu_button("File", |ui| {
                     if ui.button("Add Layer...").clicked() {
                         self.show_add_layer_window_event_writer.write_default();
