@@ -21,6 +21,9 @@ module.exports = {
         to: 'assets',
         context: '../rgis'
       }, {
+        from: 'favicon.ico',
+        to: 'favicon.ico',
+      }, {
         from: 'index.html',
         to: 'index.html',
       }, {
