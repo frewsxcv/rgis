@@ -62,6 +62,16 @@ export class AppPage {
     await this.clickWidget("Add Layer");
   }
 
+  async closeWindow(title: string) {
+    await this.page.evaluate((t) => (window as any).close_window(t), title);
+    await this.waitForNextFrame();
+  }
+
+  async stabilizeForScreenshot() {
+    await this.page.mouse.move(0, 0);
+    await this.waitForNextFrame();
+  }
+
   async clickOnCanvas(xFrac: number, yFrac: number) {
     const box = await this.canvasBoundingBox();
     const x = box.x + box.width * xFrac;

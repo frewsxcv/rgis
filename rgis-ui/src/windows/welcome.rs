@@ -44,6 +44,11 @@ pub fn render_welcome_window_system(
     mut bevy_egui_ctx: bevy_egui::EguiContexts,
     mut is_window_open: ResMut<bevy_egui_window::IsWindowOpen<Welcome<'static>>>,
 ) -> Result {
+    if crate::widget_registry::take_close_request("Welcome") {
+        is_window_open.0 = false;
+        return Ok(());
+    }
+
     let ctx = bevy_egui_ctx.ctx_mut()?;
 
     let (anchor_align, anchor_offset) = window.default_anchor();
