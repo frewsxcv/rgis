@@ -72,6 +72,11 @@ export class AppPage {
     await this.waitForNextFrame();
   }
 
+  async expectScreenshot(name: string) {
+    await this.stabilizeForScreenshot();
+    await expect(this.page).toHaveScreenshot(name);
+  }
+
   async clickOnCanvas(xFrac: number, yFrac: number) {
     const box = await this.canvasBoundingBox();
     const x = box.x + box.width * xFrac;

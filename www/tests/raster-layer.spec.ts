@@ -1,4 +1,4 @@
-import { test, expect } from "./fixtures/app-fixture";
+import { test } from "./fixtures/app-fixture";
 
 const geotiffFiles = [
   "rasterio_generated/fixtures/antimeridian.tif",
@@ -51,7 +51,7 @@ test("load eox_cloudless with Countries overlay", async ({ appPage }) => {
   await appPage.clickWidget("Add:Countries");
   await appPage.waitForLayerRender(countBeforeCountries);
 
-  await expect(appPage.page).toHaveScreenshot(
+  await appPage.expectScreenshot(
     "real-data-eox-eox-cloudless-with-countries.png",
   );
 });
@@ -74,6 +74,6 @@ for (const filePath of geotiffFiles) {
     await appPage.clickWidget("Add layer");
     await appPage.waitForLayerRender(countBefore);
 
-    await expect(appPage.page).toHaveScreenshot(snapshotName(filePath));
+    await appPage.expectScreenshot(snapshotName(filePath));
   });
 }

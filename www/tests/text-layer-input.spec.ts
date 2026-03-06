@@ -1,4 +1,4 @@
-import { test, expect } from "./fixtures/app-fixture";
+import { test } from "./fixtures/app-fixture";
 
 test.describe("text layer input", () => {
   test.beforeEach(async ({ appPage }) => {
@@ -7,14 +7,14 @@ test.describe("text layer input", () => {
   });
 
   test("selecting Text source shows format options", async ({ appPage }) => {
-    await expect(appPage.page).toHaveScreenshot("text-tab-selected.png");
+    await appPage.expectScreenshot("text-tab-selected.png");
   });
 
   test("selecting GeoJSON format in text tab shows text area", async ({
     appPage,
   }) => {
     await appPage.clickWidget("GeoJSON");
-    await expect(appPage.page).toHaveScreenshot(
+    await appPage.expectScreenshot(
       "text-tab-geojson-textarea.png",
     );
   });
@@ -23,6 +23,6 @@ test.describe("text layer input", () => {
     appPage,
   }) => {
     await appPage.clickWidget("WKT");
-    await expect(appPage.page).toHaveScreenshot("text-tab-wkt-textarea.png");
+    await appPage.expectScreenshot("text-tab-wkt-textarea.png");
   });
 });
