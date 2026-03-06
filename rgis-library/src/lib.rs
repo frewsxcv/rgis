@@ -14,98 +14,403 @@ pub struct Folder {
 fn build() -> Vec<Folder> {
     vec![
         Folder {
-            name: "Russia",
+            name: "World",
             entries: vec![
                 Entry {
-                    name: "Country",
-                    url: "https://raw.githubusercontent.com/hugoledoux/BIGpolygons/master/russia.geojson",
+                    name: "Countries",
+                    url: "https://storage.googleapis.com/rgis-library/World/Countries.geojson",
+                    crs: 4326,
+                },
+                Entry {
+                    name: "Land",
+                    url: "https://storage.googleapis.com/rgis-library/World/Land.geojson",
+                    crs: 4326,
+                },
+                Entry {
+                    name: "Ocean",
+                    url: "https://storage.googleapis.com/rgis-library/World/Ocean.geojson",
+                    crs: 4326,
+                },
+                Entry {
+                    name: "Coastline",
+                    url: "https://storage.googleapis.com/rgis-library/World/Coastline.geojson",
+                    crs: 4326,
+                },
+                Entry {
+                    name: "Boundary Lines",
+                    url: "https://storage.googleapis.com/rgis-library/World/Boundary-Lines.geojson",
+                    crs: 4326,
+                },
+                Entry {
+                    name: "Disputed Areas",
+                    url: "https://storage.googleapis.com/rgis-library/World/Disputed-Areas.geojson",
+                    crs: 4326,
+                },
+                Entry {
+                    name: "Lakes",
+                    url: "https://storage.googleapis.com/rgis-library/World/Lakes.geojson",
+                    crs: 4326,
+                },
+                Entry {
+                    name: "Lakes (Europe)",
+                    url: "https://storage.googleapis.com/rgis-library/World/Lakes-Europe.geojson",
+                    crs: 4326,
+                },
+                Entry {
+                    name: "Rivers",
+                    url: "https://storage.googleapis.com/rgis-library/World/Rivers.geojson",
+                    crs: 4326,
+                },
+                Entry {
+                    name: "Rivers (Europe)",
+                    url: "https://storage.googleapis.com/rgis-library/World/Rivers-Europe.geojson",
+                    crs: 4326,
+                },
+                Entry {
+                    name: "Glaciated Areas",
+                    url: "https://storage.googleapis.com/rgis-library/World/Glaciated-Areas.geojson",
+                    crs: 4326,
+                },
+                Entry {
+                    name: "Antarctic Ice Shelves",
+                    url: "https://storage.googleapis.com/rgis-library/World/Antarctic-Ice-Shelves.geojson",
+                    crs: 4326,
+                },
+                Entry {
+                    name: "Coral Reefs",
+                    url: "https://storage.googleapis.com/rgis-library/World/Coral-Reefs.geojson",
+                    crs: 4326,
+                },
+                Entry {
+                    name: "Playas",
+                    url: "https://storage.googleapis.com/rgis-library/World/Playas.geojson",
+                    crs: 4326,
+                },
+                Entry {
+                    name: "Tectonic Plate Boundaries",
+                    url: "https://storage.googleapis.com/rgis-library/World/Tectonic-Plate-Boundaries.geojson",
+                    crs: 4326,
+                },
+                Entry {
+                    name: "Airports",
+                    url: "https://storage.googleapis.com/rgis-library/World/Airports.geojson",
+                    crs: 4326,
+                },
+                Entry {
+                    name: "Ports",
+                    url: "https://storage.googleapis.com/rgis-library/World/Ports.geojson",
+                    crs: 4326,
+                },
+                Entry {
+                    name: "Shipping Lanes",
+                    url: "https://storage.googleapis.com/rgis-library/World/Shipping-Lanes.geojson",
+                    crs: 4326,
+                },
+                Entry {
+                    name: "Populated Places",
+                    url: "https://storage.googleapis.com/rgis-library/World/Populated-Places.geojson",
+                    crs: 4326,
+                },
+                Entry {
+                    name: "Urban Areas",
+                    url: "https://storage.googleapis.com/rgis-library/World/Urban-Areas.geojson",
+                    crs: 4326,
+                },
+                Entry {
+                    name: "Elevation Points",
+                    url: "https://storage.googleapis.com/rgis-library/World/Elevation-Points.geojson",
+                    crs: 4326,
+                },
+                Entry {
+                    name: "Geographic Regions",
+                    url: "https://storage.googleapis.com/rgis-library/World/Geographic-Regions.geojson",
+                    crs: 4326,
+                },
+                Entry {
+                    name: "Marine Regions",
+                    url: "https://storage.googleapis.com/rgis-library/World/Marine-Regions.geojson",
+                    crs: 4326,
+                },
+                Entry {
+                    name: "Time Zones",
+                    url: "https://storage.googleapis.com/rgis-library/World/Time-Zones.geojson",
+                    crs: 4326,
+                },
+                Entry {
+                    name: "Geographic Lines",
+                    url: "https://storage.googleapis.com/rgis-library/World/Geographic-Lines.geojson",
+                    crs: 4326,
+                },
+                Entry {
+                    name: "Graticules",
+                    url: "https://storage.googleapis.com/rgis-library/World/Graticules.geojson",
                     crs: 4326,
                 },
             ],
+        },
+        Folder {
+            name: "Australia",
+            entries: vec![Entry {
+                name: "States",
+                url: "https://storage.googleapis.com/rgis-library/Countries/Australia-States.geojson",
+                crs: 4326,
+            }],
+        },
+        Folder {
+            name: "Brazil",
+            entries: vec![Entry {
+                name: "States",
+                url: "https://storage.googleapis.com/rgis-library/Countries/Brazil-States.geojson",
+                crs: 4326,
+            }],
+        },
+        Folder {
+            name: "Caribbean",
+            entries: vec![Entry {
+                name: "Islands",
+                url: "https://storage.googleapis.com/rgis-library/Countries/Caribbean-Islands.geojson",
+                crs: 4326,
+            }],
+        },
+        Folder {
+            name: "France",
+            entries: vec![Entry {
+                name: "Regions",
+                url: "https://storage.googleapis.com/rgis-library/Countries/France-Regions.geojson",
+                crs: 4326,
+            }],
+        },
+        Folder {
+            name: "India",
+            entries: vec![Entry {
+                name: "States",
+                url: "https://storage.googleapis.com/rgis-library/Countries/India-States.geojson",
+                crs: 4326,
+            }],
+        },
+        Folder {
+            name: "Ireland",
+            entries: vec![Entry {
+                name: "Counties",
+                url: "https://storage.googleapis.com/rgis-library/Countries/Ireland-Counties.geojson",
+                crs: 4326,
+            }],
+        },
+        Folder {
+            name: "Japan",
+            entries: vec![Entry {
+                name: "Prefectures",
+                url: "https://storage.googleapis.com/rgis-library/Countries/Japan-Prefectures.geojson",
+                crs: 4326,
+            }],
+        },
+        Folder {
+            name: "Mexico",
+            entries: vec![Entry {
+                name: "States",
+                url: "https://storage.googleapis.com/rgis-library/Countries/Mexico-States.geojson",
+                crs: 4326,
+            }],
+        },
+        Folder {
+            name: "Russia",
+            entries: vec![Entry {
+                name: "Country",
+                url: "https://storage.googleapis.com/rgis-library/Russia.geojson",
+                crs: 4326,
+            }],
+        },
+        Folder {
+            name: "Spain",
+            entries: vec![Entry {
+                name: "Provinces",
+                url: "https://storage.googleapis.com/rgis-library/Countries/Spain-Provinces.geojson",
+                crs: 4326,
+            }],
         },
         Folder {
             name: "USA",
             entries: vec![
                 Entry {
                     name: "States",
-                    url: "https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json",
+                    url: "https://storage.googleapis.com/rgis-library/USA/States.geojson",
+                    crs: 4326,
+                },
+                Entry {
+                    name: "National Parks",
+                    url: "https://storage.googleapis.com/rgis-library/USA/Parks.geojson",
+                    crs: 4326,
+                },
+                Entry {
+                    name: "Railroads",
+                    url: "https://storage.googleapis.com/rgis-library/USA/Railroads.geojson",
+                    crs: 4326,
+                },
+                Entry {
+                    name: "Amtrak Stations",
+                    url: "https://storage.googleapis.com/rgis-library/USA/Amtrak-Stations.geojson",
+                    crs: 4326,
+                },
+                Entry {
+                    name: "Amtrak Tracks",
+                    url: "https://storage.googleapis.com/rgis-library/USA/Amtrak-Tracks.geojson",
                     crs: 4326,
                 },
             ],
         },
         Folder {
-            name: "USA: Amtrak",
-            entries: vec![
-                Entry {
-                    name: "Stations",
-                    url: "https://raw.githubusercontent.com/datanews/amtrak-geojson/master/amtrak-stations.geojson",
-                    crs: 4326,
-                },
-                Entry {
-                    name: "Tracks",
-                    url: "https://raw.githubusercontent.com/datanews/amtrak-geojson/master/amtrak-track.geojson",
-                    crs: 4326,
-                },
-            ],
+            name: "USA: California",
+            entries: vec![Entry {
+                name: "Counties",
+                url: "https://storage.googleapis.com/rgis-library/Countries/USA-California-Counties.geojson",
+                crs: 4326,
+            }],
         },
         Folder {
             name: "USA: New York City",
             entries: vec![
                 Entry {
-                    name: "Parks",
-                    url: "https://storage.googleapis.com/rgis-library/NYC/Parks.geojson",
-                    crs: 4326,
-                },
-                Entry {
-                    name: "Shoreline",
-                    url: "https://storage.googleapis.com/rgis-library/NYC/Shoreline.geojson",
-                    crs: 4326,
-                },
-                Entry {
-                    name: "Sidewalk",
-                    url: "https://storage.googleapis.com/rgis-library/NYC/Sidewalk.geojson",
-                    crs: 4326,
-                },
-                Entry {
-                    name: "Street Centerline",
-                    url: "https://storage.googleapis.com/rgis-library/NYC/Street-Centerline.geojson",
-                    crs: 4326,
-                },
-                Entry {
                     name: "Subway Lines",
                     url: "https://storage.googleapis.com/rgis-library/NYC/Subway-Lines.geojson",
+                    crs: 4326,
+                },
+                Entry {
+                    name: "Subway Stations",
+                    url: "https://storage.googleapis.com/rgis-library/NYC/Subway-Stations.geojson",
+                    crs: 4326,
+                },
+                Entry {
+                    name: "Bike Routes",
+                    url: "https://storage.googleapis.com/rgis-library/NYC/Bike-Routes.geojson",
+                    crs: 4326,
+                },
+                Entry {
+                    name: "Taxi Zones",
+                    url: "https://storage.googleapis.com/rgis-library/NYC/Taxi-Zones.geojson",
+                    crs: 4326,
+                },
+                Entry {
+                    name: "Police Precincts",
+                    url: "https://storage.googleapis.com/rgis-library/NYC/Police-Precincts.geojson",
+                    crs: 4326,
+                },
+                Entry {
+                    name: "WiFi Hotspots",
+                    url: "https://storage.googleapis.com/rgis-library/NYC/WiFi-Hotspots.geojson",
                     crs: 4326,
                 },
             ],
         },
         Folder {
             name: "USA: Washington D.C.",
-            entries: vec![
-                Entry {
-                    name: "Street Centerline",
-                    url: "https://raw.githubusercontent.com/benbalter/dc-maps/master/maps/street-centerlines.geojson",
-                    crs: 4326,
-                }
-            ],
+            entries: vec![Entry {
+                name: "Street Centerlines",
+                url: "https://storage.googleapis.com/rgis-library/USA/DC-Street-Centerlines.geojson",
+                crs: 4326,
+            }],
         },
         Folder {
-            name: "World",
+            name: "Amsterdam",
+            entries: vec![Entry {
+                name: "Neighbourhoods",
+                url: "https://storage.googleapis.com/rgis-library/Cities/Amsterdam-Neighbourhoods.geojson",
+                crs: 4326,
+            }],
+        },
+        Folder {
+            name: "Berlin",
+            entries: vec![Entry {
+                name: "Districts",
+                url: "https://storage.googleapis.com/rgis-library/Cities/Berlin-Districts.geojson",
+                crs: 4326,
+            }],
+        },
+        Folder {
+            name: "Buenos Aires",
+            entries: vec![Entry {
+                name: "Neighbourhoods",
+                url: "https://storage.googleapis.com/rgis-library/Cities/Buenos-Aires-Neighbourhoods.geojson",
+                crs: 4326,
+            }],
+        },
+        Folder {
+            name: "Copenhagen",
+            entries: vec![Entry {
+                name: "Districts",
+                url: "https://storage.googleapis.com/rgis-library/Cities/Copenhagen-Districts.geojson",
+                crs: 4326,
+            }],
+        },
+        Folder {
+            name: "London",
             entries: vec![
                 Entry {
-                    name: "Countries",
-                    url: "https://raw.githubusercontent.com/andrea-ballatore/open-geo-data-education/main/datasets/world_country_boundaries_2018/natural_earth_world_boundaries_50m_2018.geojson",
-                    crs: 4326,
-                }, Entry {
-                    name: "Lakes",
-                    url: "https://raw.githubusercontent.com/simonepri/geo-maps/master/previews/earth-lakes.geo.json",
+                    name: "Boroughs",
+                    url: "https://storage.googleapis.com/rgis-library/Cities/London-Boroughs.geojson",
                     crs: 4326,
                 },
                 Entry {
-                    name: "Tectonic Plate Boundaries",
-                    url: "https://raw.githubusercontent.com/andrea-ballatore/open-geo-data-education/main/datasets/tectonic_plates_2002/PB2002_boundaries.geojson",
+                    name: "Underground Lines",
+                    url: "https://storage.googleapis.com/rgis-library/Cities/London-Underground.geojson",
                     crs: 4326,
-                }
+                },
             ],
+        },
+        Folder {
+            name: "Moscow",
+            entries: vec![Entry {
+                name: "Districts",
+                url: "https://storage.googleapis.com/rgis-library/Cities/Moscow-Districts.geojson",
+                crs: 4326,
+            }],
+        },
+        Folder {
+            name: "Paris",
+            entries: vec![Entry {
+                name: "Arrondissements",
+                url: "https://storage.googleapis.com/rgis-library/Cities/Paris-Arrondissements.geojson",
+                crs: 4326,
+            }],
+        },
+        Folder {
+            name: "Rome",
+            entries: vec![Entry {
+                name: "Rioni",
+                url: "https://storage.googleapis.com/rgis-library/Cities/Rome-Rioni.geojson",
+                crs: 4326,
+            }],
+        },
+        Folder {
+            name: "Seoul",
+            entries: vec![Entry {
+                name: "Districts",
+                url: "https://storage.googleapis.com/rgis-library/Cities/Seoul-Districts.geojson",
+                crs: 4326,
+            }],
+        },
+        Folder {
+            name: "Sydney",
+            entries: vec![Entry {
+                name: "Suburbs",
+                url: "https://storage.googleapis.com/rgis-library/Cities/Sydney-Suburbs.geojson",
+                crs: 4326,
+            }],
+        },
+        Folder {
+            name: "Toronto",
+            entries: vec![Entry {
+                name: "Neighbourhoods",
+                url: "https://storage.googleapis.com/rgis-library/Cities/Toronto-Neighbourhoods.geojson",
+                crs: 4326,
+            }],
+        },
+        Folder {
+            name: "Venice",
+            entries: vec![Entry {
+                name: "Islands",
+                url: "https://storage.googleapis.com/rgis-library/Cities/Venice.geojson",
+                crs: 4326,
+            }],
         },
     ]
 }
