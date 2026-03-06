@@ -1,28 +1,21 @@
-use std::{num, sync};
-
-// The starting value is `1` so we can utilize `NonZeroU16`.
-static NEXT_ID: sync::atomic::AtomicU16 = sync::atomic::AtomicU16::new(1);
+use std::num;
 
 #[derive(
     Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Hash, bevy::ecs::component::Component,
 )]
 pub struct LayerId(num::NonZeroU16);
 
-impl Default for LayerId {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl LayerId {
-    pub fn new() -> Self {
-        LayerId(new_id())
+    /// Creates a `LayerId` from a `u16` value.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `value` is 0.
+    pub fn from_u16(value: u16) -> Self {
+        LayerId(
+            num::NonZeroU16::new(value).expect("LayerId value must be non-zero"),
+        )
     }
-}
-
-fn new_id() -> num::NonZeroU16 {
-    // Unsafety: The starting ID is 1 and we always increment.
-    unsafe { num::NonZeroU16::new_unchecked(NEXT_ID.fetch_add(1, sync::atomic::Ordering::SeqCst)) }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
