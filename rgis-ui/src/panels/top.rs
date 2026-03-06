@@ -27,7 +27,8 @@ impl Top<'_, '_> {
 
                 if let Some(texture_id) = self.logo_texture_id {
                     let logo_size = egui::vec2(20.0, 20.0);
-                    ui.image(egui::load::SizedTexture::new(texture_id, logo_size));
+                    let logo_response = ui.image(egui::load::SizedTexture::new(texture_id, logo_size));
+                    crate::widget_registry::register("Logo", logo_response.rect);
                 } else {
                     ui.label("rgis");
                 }

@@ -364,10 +364,12 @@ fn render_top(
     }
 
     let logo_texture_id = if app_settings.dark_mode {
-        logo_textures.dark.as_ref().map(|(_, id)| *id)
+        logo_textures.dark.as_ref()
     } else {
-        logo_textures.light.as_ref().map(|(_, id)| *id)
-    };
+        logo_textures.light.as_ref()
+    }
+    .filter(|(handle, _)| asset_server.is_loaded_with_dependencies(handle))
+    .map(|(_, id)| *id);
 
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     let Ok(mut window) = windows.single_mut() else {
