@@ -2292,12 +2292,6 @@ checksum = "d0a5c400df2834b80a4c3327b3aad3a4c4cd4de0629063962b03235697506a28"
 
 [[package]]
 name = "crs-definitions"
-version = "0.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "36aeb03b9e8d31aa9e8796d6d78957647761e96ee53935520cdda23cd19aa98b"
-
-[[package]]
-name = "crs-definitions"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5229c5b63bdc8e24d60e5c4b6115fbb4d11a8978661b4ecc57d6068ddb073983"
@@ -3078,11 +3072,11 @@ dependencies = [
 
 [[package]]
 name = "geo-geodesy"
-version = "6.0.0"
+version = "7.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ed652d9c3102fd9b9ba65d413b9477050d35a1332f5509f7ab3ad0ed646b8d5d"
+checksum = "cd01048caaf36daaf93683c8b533d54d74366bfea95964270d2314c7234243b2"
 dependencies = [
- "crs-definitions 0.3.1",
+ "crs-definitions",
  "geo",
  "geodesy",
 ]
@@ -3139,17 +3133,19 @@ dependencies = [
 
 [[package]]
 name = "geodesy"
-version = "0.14.0"
+version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1c1778eaef1f258c89d8d3f0fadb42ef70f4c714d237714fede0936285661c20"
+checksum = "2ef2bd803c1d8af10b606c25679c045abc04f36256955edc26f5952018b6afb7"
 dependencies = [
  "anyhow",
+ "byteorder",
  "clap",
  "clap-verbosity-flag",
  "dirs",
  "env_logger",
  "float_eq",
  "log",
+ "memmap2",
  "thiserror 1.0.69",
  "uuid",
  "wasm-bindgen",
@@ -5392,7 +5388,7 @@ name = "rgis-geodesy"
 version = "0.1.0"
 dependencies = [
  "bevy",
- "crs-definitions 0.4.0",
+ "crs-definitions",
  "geodesy",
 ]
 
@@ -5514,7 +5510,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_jobs",
- "crs-definitions 0.4.0",
+ "crs-definitions",
  "geo",
  "geo-features",
  "geo-geodesy",
