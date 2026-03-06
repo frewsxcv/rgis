@@ -441,8 +441,12 @@ pub fn configure(app: &mut App) {
             handle_layer_z_index_updated_event,
             handle_mesh_building_job_outcome,
             handle_camera_scale_changed_event,
-            handle_feature_selected_event_despawn,
-            handle_feature_selected_event_spawn,
+            // Despawn old selection entities before spawning new ones
+            (
+                handle_feature_selected_event_despawn,
+                handle_feature_selected_event_spawn,
+            )
+                .chain(),
         ),
     );
     app.add_observer(handle_picking_click);
