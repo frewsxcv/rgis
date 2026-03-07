@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use bevy::prelude::*;
 
 fn handle_layer_created_events(
@@ -24,7 +25,7 @@ fn handle_layer_created_events(
             }
             rgis_layers::LayerData::Vector { unprojected_feature_collection, .. } => {
                 job_spawner.spawn(crate::jobs::ReprojectGeometryJob {
-                    feature_collection: unprojected_feature_collection.clone(),
+                    feature_collection: Arc::clone(unprojected_feature_collection),
                     layer_id: event.0,
                     source_crs: layer.crs.clone(),
                     target_crs: target_crs.0.clone(),
@@ -132,7 +133,7 @@ fn handle_crs_changed_events(
             }
             rgis_layers::LayerData::Vector { unprojected_feature_collection, .. } => {
                 job_spawner.spawn(crate::jobs::ReprojectGeometryJob {
-                    feature_collection: unprojected_feature_collection.clone(),
+                    feature_collection: Arc::clone(unprojected_feature_collection),
                     layer_id: layer.id,
                     source_crs: layer.crs.clone(),
                     target_crs: target_crs.0.clone(),

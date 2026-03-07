@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use bevy::prelude::*;
 
 #[derive(Debug, Message)]
@@ -34,7 +35,7 @@ pub struct UpdateLayerPointSizeMessage(pub rgis_primitives::LayerId, pub f32);
 #[derive(Message)]
 pub struct OpenOperationWindowMessage {
     pub operation: Box<dyn Send + Sync + rgis_geo_ops::Operation>,
-    pub feature_collection: geo_features::FeatureCollection<geo_projected::UnprojectedScalar>,
+    pub feature_collection: Arc<geo_features::FeatureCollection<geo_projected::UnprojectedScalar>>,
 }
 
 #[derive(Message)]

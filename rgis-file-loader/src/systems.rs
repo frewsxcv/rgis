@@ -77,7 +77,7 @@ fn handle_load_file_job_finished_events(
             }) => {
                 create_layer_event_writer.write(rgis_layer_messages::CreateLayerMessage {
                     name,
-                    feature_collection,
+                    feature_collection: std::sync::Arc::new(feature_collection),
                     source_crs,
                 });
             }
