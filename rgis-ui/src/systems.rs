@@ -715,8 +715,6 @@ mod tests {
         app.init_asset::<bevy::prelude::Image>();
 
         app.add_plugins(bevy_egui::EguiPlugin::default());
-        app.add_plugins(rgis_crs::Plugin);
-        app.add_plugins(rgis_crs_messages::Plugin);
         app.add_plugins(rgis_crs::Plugin::default());
         app.add_plugins(bevy::state::app::StatesPlugin);
 
@@ -783,8 +781,6 @@ mod tests {
     fn test_calculate_all_distances() {
         let mut app = App::new();
         app.add_plugins(MinimalPlugins);
-        app.add_plugins(rgis_crs::Plugin);
-        app.add_plugins(rgis_crs_messages::Plugin);
         app.add_plugins(rgis_crs::Plugin::default());
 
         app.update();
