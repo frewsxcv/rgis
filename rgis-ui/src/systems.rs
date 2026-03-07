@@ -614,6 +614,7 @@ pub fn configure(app: &mut App) {
             handle_open_file_job,
             perform_operation,
             handle_debug_window_close_request,
+            handle_fill_color_requests,
         ),
     );
 
@@ -629,6 +630,21 @@ pub fn configure(app: &mut App) {
         crate::windows::welcome::render_welcome_window_system
             .run_if(bevy_egui_window::run_if_is_window_open::<crate::windows::welcome::Welcome>),
     );
+}
+
+fn handle_fill_color_requests(
+    layers: Res<rgis_layers::Layers>,
+    mut color_events: ResMut<Messages<rgis_ui_messages::UpdateLayerColorMessage>>,
+) {
+    for rgba in crate::widget_registry::take_fill_color_requests() {
+        // Apply to the first layer
+        if let Some(layer) = layers.iter().next() {
+            color_events.write(rgis_ui_messages::UpdateLayerColorMessage::Fill(
+                layer.id,
+                Color::linear_rgba(rgba[0], rgba[1], rgba[2], rgba[3]),
+            ));
+        }
+    }
 }
 
 fn handle_debug_window_close_request(

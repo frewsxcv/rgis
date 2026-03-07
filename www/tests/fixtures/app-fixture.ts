@@ -150,6 +150,16 @@ export class AppPage {
     await this.waitForLayerRender(countBefore);
   }
 
+  async setFirstLayerFillColor(r: number, g: number, b: number, a: number) {
+    await this.page.evaluate(
+      ({ r, g, b, a }) =>
+        (window as any).set_first_layer_fill_color(r, g, b, a),
+      { r, g, b, a },
+    );
+    await this.waitForNextFrame();
+    await this.waitForNextFrame();
+  }
+
   async regionHasContent(
     xFrac: number,
     yFrac: number,

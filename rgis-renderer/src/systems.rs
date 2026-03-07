@@ -1,5 +1,7 @@
 use bevy::prelude::*;
 
+use bevy::sprite_render::AlphaMode2d;
+
 use crate::{jobs::MeshBuildingJob, RenderEntityIndex, RenderEntityType};
 
 fn handle_picking_click(
@@ -289,13 +291,16 @@ fn handle_line_string_color_updated_event(
                 for child in children.iter() {
                     if is_fill {
                         if let Ok(mut color_material) = material_fill_query.get_mut(child) {
-                            materials.get_mut(&mut color_material.0).unwrap().color =
-                                layer.color.fill.unwrap();
+                            let mat = materials.get_mut(&mut color_material.0).unwrap();
+                            let color = layer.color.fill.unwrap();
+                            mat.color = color;
+                            mat.alpha_mode = alpha_mode_for_color(color);
                         }
                     } else {
                         if let Ok(mut color_material) = material_stroke_query.get_mut(child) {
-                            materials.get_mut(&mut color_material.0).unwrap().color =
-                                layer.color.stroke;
+                            let mat = materials.get_mut(&mut color_material.0).unwrap();
+                            mat.color = layer.color.stroke;
+                            mat.alpha_mode = alpha_mode_for_color(layer.color.stroke);
                         }
                     }
                 }
@@ -333,18 +338,29 @@ fn handle_polygon_color_updated_event(
                 for child in children.iter() {
                     if is_fill {
                         if let Ok(mut color_material) = material_fill_query.get_mut(child) {
-                            materials.get_mut(&mut color_material.0).unwrap().color =
-                                layer.color.fill.unwrap();
+                            let mat = materials.get_mut(&mut color_material.0).unwrap();
+                            let color = layer.color.fill.unwrap();
+                            mat.color = color;
+                            mat.alpha_mode = alpha_mode_for_color(color);
                         }
                     } else {
                         if let Ok(mut color_material) = material_stroke_query.get_mut(child) {
-                            materials.get_mut(&mut color_material.0).unwrap().color =
-                                layer.color.stroke;
+                            let mat = materials.get_mut(&mut color_material.0).unwrap();
+                            mat.color = layer.color.stroke;
+                            mat.alpha_mode = alpha_mode_for_color(layer.color.stroke);
                         }
                     }
                 }
             }
         }
+    }
+}
+
+fn alpha_mode_for_color(color: Color) -> AlphaMode2d {
+    if color.alpha() < 1.0 {
+        AlphaMode2d::Blend
+    } else {
+        AlphaMode2d::Opaque
     }
 }
 

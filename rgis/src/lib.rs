@@ -32,6 +32,12 @@ pub fn close_window(title: &str) {
 
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
+pub fn set_first_layer_fill_color(r: f32, g: f32, b: f32, a: f32) {
+    rgis_ui::widget_registry::request_set_fill_color([r, g, b, a]);
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen]
 pub fn get_all_widget_rects() -> JsValue {
     let all = rgis_ui::widget_registry::get_all();
     let obj = js_sys::Object::new();
