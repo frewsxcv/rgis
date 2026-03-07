@@ -96,6 +96,8 @@ fn render_add_layer_window(
     mut state: Local<crate::windows::add_layer::State>,
     mut events: crate::windows::add_layer::Events,
     geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
+    side_panel_width: Res<rgis_units::SidePanelWidth>,
+    top_panel_height: Res<rgis_units::TopPanelHeight>,
 ) -> Result {
     if crate::widget_registry::take_close_request("Add Layer") {
         state.reset();
@@ -119,6 +121,8 @@ fn render_add_layer_window(
         is_visible: &mut is_visible,
         egui_ctx: bevy_egui_ctx_mut,
         geodesy_ctx: &geodesy_ctx,
+        side_panel_width: side_panel_width.0,
+        top_panel_height: top_panel_height.0,
     }
     .render();
 
