@@ -123,7 +123,7 @@ fn render_add_layer_window(
     mut job_spawner: bevy_jobs::JobSpawner,
     mut state: Local<crate::windows::add_layer::State>,
     mut events: crate::windows::add_layer::Events,
-    geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
+    geodesy_ctx: Res<rgis_crs::GeodesyContext>,
     side_panel_width: Res<rgis_units::SidePanelWidth>,
     top_panel_height: Res<rgis_units::TopPanelHeight>,
 ) -> Result {
@@ -240,7 +240,7 @@ fn render_change_crs_window(
     mut crs_input_mode: Local<crate::widgets::crs_input::CrsInputMode>,
     mut change_crs_event_writer: MessageWriter<rgis_events::ChangeCrsMessage>,
     mut crs_input_outcome: Local<Option<crate::widgets::crs_input::Outcome>>,
-    geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
+    geodesy_ctx: Res<rgis_crs::GeodesyContext>,
     side_panel_width: Res<rgis_units::SidePanelWidth>,
     top_panel_height: Res<rgis_units::TopPanelHeight>,
 ) -> Result {
@@ -519,14 +519,14 @@ struct AllDistances {
 fn calculate_all_distances(
     start: geo::Coord<f64>,
     end: geo::Coord<f64>,
-    geodesy_ctx: &rgis_geodesy::GeodesyContext,
+    geodesy_ctx: &rgis_crs::GeodesyContext,
     target_crs: &rgis_crs::TargetCrs,
 ) -> Option<AllDistances> {
     let mut geodesy_ctx_inner = geodesy_ctx.write().ok()?;
     let target_epsg_code = 4326; // WGS 84
 
     let target_op_handle =
-        rgis_geodesy::epsg_code_to_geodesy_op_handle(&mut *geodesy_ctx_inner, target_epsg_code).ok()?;
+        rgis_crs::epsg_code_to_geodesy_op_handle(&mut *geodesy_ctx_inner, target_epsg_code).ok()?;
 
     let transformer = geo_geodesy::Transformer::from_geodesy(
         &*geodesy_ctx_inner,
@@ -559,7 +559,7 @@ fn render_measure_tool(
     current_tool: Res<State<rgis_settings::Tool>>,
     measure_state: Res<rgis_mouse::MeasureState>,
     mouse_pos: Res<rgis_mouse::MousePos>,
-    geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
+    geodesy_ctx: Res<rgis_crs::GeodesyContext>,
     target_crs: Res<rgis_crs::TargetCrs>,
     camera_q: Query<&Transform, With<Camera>>,
     windows: Query<&bevy::window::Window, With<PrimaryWindow>>,
@@ -814,7 +814,6 @@ mod tests {
         app.init_asset::<bevy::prelude::Image>();
 
         app.add_plugins(bevy_egui::EguiPlugin::default());
-        app.add_plugins(rgis_geodesy::Plugin);
         app.add_plugins(rgis_events::RgisEventsPlugin);
         app.add_plugins(rgis_crs::Plugin::default());
         app.add_plugins(bevy::state::app::StatesPlugin);
@@ -882,7 +881,6 @@ mod tests {
     fn test_calculate_all_distances() {
         let mut app = App::new();
         app.add_plugins(MinimalPlugins);
-        app.add_plugins(rgis_geodesy::Plugin);
         app.add_plugins(rgis_events::RgisEventsPlugin);
         app.add_plugins(rgis_crs::Plugin::default());
 
@@ -890,9 +888,9 @@ mod tests {
 
         // Manually set TargetCrs to 4326 (WGS84) to simplify test and verify logic without projection issues
         let op_handle = {
-            let geodesy_ctx = app.world().resource::<rgis_geodesy::GeodesyContext>();
+            let geodesy_ctx = app.world().resource::<rgis_crs::GeodesyContext>();
             let mut geodesy_ctx_inner = geodesy_ctx.write().unwrap();
-            rgis_geodesy::epsg_code_to_geodesy_op_handle(&mut *geodesy_ctx_inner, 4326).unwrap()
+            rgis_crs::epsg_code_to_geodesy_op_handle(&mut *geodesy_ctx_inner, 4326).unwrap()
         };
 
         app.insert_resource(rgis_crs::TargetCrs(rgis_primitives::Crs {
@@ -901,7 +899,7 @@ mod tests {
             op_handle,
         }));
 
-        let geodesy_ctx = app.world().resource::<rgis_geodesy::GeodesyContext>();
+        let geodesy_ctx = app.world().resource::<rgis_crs::GeodesyContext>();
         let target_crs = app.world().resource::<rgis_crs::TargetCrs>();
 
         // San Francisco (lon: -122.4194°, lat: 37.7749°)

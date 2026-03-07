@@ -5287,8 +5287,6 @@ dependencies = [
  "rgis-crs",
  "rgis-events",
  "rgis-file-loader",
- "rgis-geodesy",
- "rgis-keyboard",
  "rgis-layers",
  "rgis-mouse",
  "rgis-renderer",
@@ -5307,8 +5305,8 @@ dependencies = [
  "geo",
  "geo-geodesy",
  "geo-projected",
+ "rgis-crs",
  "rgis-events",
- "rgis-geodesy",
  "rgis-layers",
  "rgis-units",
 ]
@@ -5326,9 +5324,9 @@ name = "rgis-crs"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "crs-definitions",
  "geodesy",
  "rgis-events",
- "rgis-geodesy",
  "rgis-primitives",
 ]
 
@@ -5359,8 +5357,8 @@ dependencies = [
  "geo-file-loader",
  "geo-projected",
  "geo-raster",
+ "rgis-crs",
  "rgis-events",
- "rgis-geodesy",
  "rgis-primitives",
  "rgis-ui-messages",
 ]
@@ -5375,23 +5373,6 @@ dependencies = [
  "geo-geom-type",
  "geo-projected",
  "num-t",
-]
-
-[[package]]
-name = "rgis-geodesy"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "crs-definitions",
- "geodesy",
-]
-
-[[package]]
-name = "rgis-keyboard"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "rgis-events",
 ]
 
 [[package]]
@@ -5481,7 +5462,6 @@ dependencies = [
  "num-t",
  "rgis-crs",
  "rgis-events",
- "rgis-geodesy",
  "rgis-layers",
  "rgis-primitives",
  "rgis-settings",
@@ -5508,7 +5488,6 @@ dependencies = [
  "rgis-crs",
  "rgis-events",
  "rgis-geo-ops",
- "rgis-geodesy",
  "rgis-layers",
  "rgis-library",
  "rgis-mouse",

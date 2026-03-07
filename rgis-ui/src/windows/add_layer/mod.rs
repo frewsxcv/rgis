@@ -19,7 +19,7 @@ pub struct Events<'w, 's> {
 pub struct AddLayer<'a> {
     pub state: &'a mut State,
     pub selected_file: &'a mut file::SelectedFile,
-    pub geodesy_ctx: &'a rgis_geodesy::GeodesyContext,
+    pub geodesy_ctx: &'a rgis_crs::GeodesyContext,
 }
 
 #[derive(PartialEq, Eq)]

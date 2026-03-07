@@ -16,4 +16,4 @@ rgis-events = { path = "../rgis-events" }
 rgis-layers = { path = "../rgis-layers" }
 geo-geodesy = { workspace = true }
 rgis-units = { path = "../rgis-units" }
-rgis-geodesy = { path = "../rgis-geodesy" }
+rgis-crs = { path = "../rgis-crs" }
