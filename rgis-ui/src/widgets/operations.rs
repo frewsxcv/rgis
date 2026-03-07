@@ -18,7 +18,7 @@ impl egui::Widget for Operations<'_, '_> {
                         self.events
                             .create_layer_event_writer
                             .write(CreateLayerMessage {
-                                feature_collection,
+                                feature_collection: std::sync::Arc::new(feature_collection),
                                 name: "Bounding rect".into(), // FIXME
                                 source_crs: self.layer.crs.clone(),
                             });

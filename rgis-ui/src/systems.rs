@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use bevy::{ecs::query::QueryIter, prelude::*, window::PrimaryWindow};
 use bevy_egui::{
     egui::{self, Widget},
@@ -670,18 +671,18 @@ fn perform_operation(
                 open_operation_window_event_writer.write(
                     rgis_ui_messages::OpenOperationWindowMessage {
                         operation,
-                        feature_collection: fc.clone(), // TODO: clone?
+                        feature_collection: Arc::clone(fc),
                     },
                 );
             }
             rgis_geo_ops::Action::Perform => {
                 // TODO: perform in background job
-                let outcome = operation.perform(fc.clone()); // TODO: clone?
+                let outcome = operation.perform(fc);
 
                 match outcome {
                     Ok(rgis_geo_ops::Outcome::FeatureCollection(feature_collection)) => {
                         create_layer_event_writer.write(rgis_layer_messages::CreateLayerMessage {
-                            feature_collection,
+                            feature_collection: Arc::new(feature_collection),
                             name: "foo".into(), // TODO
                             source_crs: layer.crs.clone(),
                         });

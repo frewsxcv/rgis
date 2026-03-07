@@ -48,8 +48,7 @@ impl Operation for Simplify {
                     "Previous # of nodes: {}",
                     feature_collection.coords_count()
                 ));
-                let feature_collection = match self.perform(feature_collection.clone()) {
-                    // TODO: CLONE ABOVE
+                let feature_collection = match self.perform(feature_collection) {
                     Ok(Outcome::FeatureCollection(fc)) => fc,
                     _ => {
                         ui.label("<ENCOUNTERED AN ERROR>");

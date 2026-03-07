@@ -30,7 +30,7 @@ pub struct ChangeCrsWindowVisible(pub bool);
 /// Data displayed in the operation window.
 struct OperationWindowData {
     operation: Box<dyn Send + Sync + rgis_geo_ops::Operation>,
-    feature_collection: geo_features::FeatureCollection<geo_projected::UnprojectedScalar>,
+    feature_collection: std::sync::Arc<geo_features::FeatureCollection<geo_projected::UnprojectedScalar>>,
     source_crs: Option<rgis_primitives::Crs>,
 }
 

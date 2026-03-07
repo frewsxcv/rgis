@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use bevy::prelude::*;
 use geo_projected::UnprojectedScalar;
 
@@ -39,7 +40,7 @@ pub struct LayerZIndexUpdatedMessage(pub rgis_primitives::LayerId);
 
 #[derive(Message)]
 pub struct CreateLayerMessage {
-    pub feature_collection: geo_features::FeatureCollection<UnprojectedScalar>,
+    pub feature_collection: Arc<geo_features::FeatureCollection<UnprojectedScalar>>,
     pub name: String,
     pub source_crs: rgis_primitives::Crs,
 }
