@@ -3,14 +3,13 @@ use rgis_events::CreateLayerMessage;
 use rgis_ui_messages::RenderTextMessage;
 
 pub struct Operation<'w> {
-    pub egui_ctx: &'w mut bevy_egui::egui::Context,
     pub state: &'w mut crate::OperationWindowState,
     pub create_layer_event_writer: bevy::ecs::message::MessageWriter<'w, CreateLayerMessage>,
     pub render_message_event_writer: bevy::ecs::message::MessageWriter<'w, RenderTextMessage>,
 }
 
 impl Operation<'_> {
-    pub fn render(&mut self) {
+    pub fn render(&mut self, ui: &mut egui::Ui) {
         let Some(ref mut data) = *self.state else {
             return;
         };
@@ -47,16 +46,7 @@ impl Operation<'_> {
                 *self.state = None;
             }
             rgis_geo_ops::Action::RenderUi => {
-                let mut is_open = true;
-                egui::Window::new("Operation")
-                    .open(&mut is_open)
-                    .show(self.egui_ctx, |ui| {
-                        data.operation.ui(ui, &data.feature_collection);
-                    });
-
-                if !is_open {
-                    *self.state = None;
-                }
+                data.operation.ui(ui, &data.feature_collection);
             }
         }
     }

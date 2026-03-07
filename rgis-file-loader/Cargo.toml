@@ -12,6 +12,7 @@ arrow = { version = "58", default-features = false }
 bevy = { workspace = true }
 geo-features = { path = "../geo-features" }
 geo-file-loader = { path = "../geo-file-loader" }
+geo-fix-antimeridian = { path = "../geo-fix-antimeridian" }
 geo-projected = { path = "../geo-projected" }
 geo-raster = { path = "../geo-raster" }
 rgis-events = { path = "../rgis-events" }

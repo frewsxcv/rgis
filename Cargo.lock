@@ -3288,6 +3288,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "geo-fix-antimeridian"
+version = "0.1.0"
+dependencies = [
+ "geo",
+]
+
+[[package]]
 name = "geo-geodesy"
 version = "7.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5666,6 +5673,7 @@ dependencies = [
  "bytes",
  "geo-features",
  "geo-file-loader",
+ "geo-fix-antimeridian",
  "geo-projected",
  "geo-raster",
  "rgis-crs",
@@ -5727,6 +5735,7 @@ name = "rgis-primitives"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "crs-definitions",
  "geodesy",
 ]
 

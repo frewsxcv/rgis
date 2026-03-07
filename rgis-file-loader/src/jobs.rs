@@ -43,6 +43,7 @@ impl bevy_jobs::Job for LoadFileJob {
                 source_crs: self.source_crs,
             })
         } else {
+            let is_geographic = self.source_crs.is_geographic();
             let loaded_features = geo_file_loader::load_file(self.file_format, self.bytes)?;
 
             let mut features = Vec::with_capacity(loaded_features.len());
@@ -50,11 +51,15 @@ impl bevy_jobs::Job for LoadFileJob {
                 Vec::with_capacity(loaded_features.len());
 
             for f in loaded_features {
-                features.push(
-                    geo_features::FeatureBuilder::new()
-                        .with_geometry(f.geometry)
-                        .build(),
-                );
+                let mut feature = geo_features::FeatureBuilder::new()
+                    .with_geometry(f.geometry)
+                    .build();
+                if is_geographic {
+                    if let Some(ref geom) = feature.geometry {
+                        feature.geometry = Some(geo_fix_antimeridian::fix_geometry(geom));
+                    }
+                }
+                features.push(feature);
                 property_maps.push(f.properties);
             }
 
