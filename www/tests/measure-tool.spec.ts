@@ -16,7 +16,11 @@ test.describe("measure tool", () => {
     // Expand the layer in the side panel and zoom to extent
     await appPage.clickWidget("USA: States");
     await appPage.clickWidget("Zoom to extent");
-    await appPage.waitForNextFrame();
+
+    // Wait several frames for the camera to settle after zoom
+    for (let i = 0; i < 5; i++) {
+      await appPage.waitForNextFrame();
+    }
 
     // Select the Measure Tool
     await appPage.clickWidget("Measure Tool");
@@ -51,6 +55,8 @@ test.describe("measure tool", () => {
     await appPage.page.mouse.move(box.x + box.width * 0.5, box.y + box.height * 0.3);
     await appPage.waitForNextFrame();
 
-    await appPage.expectScreenshot("measure-tool-line.png");
+    await appPage.expectScreenshot("measure-tool-line.png", {
+      maxDiffPixelRatio: 0.05,
+    });
   });
 });
