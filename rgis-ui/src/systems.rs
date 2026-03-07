@@ -107,24 +107,52 @@ fn render_manage_layer_window(
     mut rename_events: ResMut<Messages<rgis_ui_messages::RenameLayerMessage>>,
     mut name_edit_buffer: Local<String>,
     mut name_edit_layer_id: Local<Option<rgis_primitives::LayerId>>,
+    side_panel_width: Res<rgis_units::SidePanelWidth>,
+    top_panel_height: Res<rgis_units::TopPanelHeight>,
 ) -> Result {
-    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     if let Some(event) = show_manage_layer_window_event_reader.read().last() {
         *state = Some(event.0);
     }
 
-    crate::windows::manage_layer::ManageLayer {
-        state: &mut state,
-        layers: &layers,
-        egui_ctx: bevy_egui_ctx_mut,
-        color_events: &mut color_events,
-        point_size_events: &mut point_size_events,
-        duplicate_layer_events: &mut duplicate_layer_events,
-        rename_events: &mut rename_events,
-        name_edit_buffer: &mut name_edit_buffer,
-        name_edit_layer_id: &mut name_edit_layer_id,
+    let Some(layer_id) = *state else {
+        return Ok(());
+    };
+    let Some(layer) = layers.get(layer_id) else {
+        warn!(
+            "Could not find layer with ID {:?}, closing manage layer window",
+            layer_id
+        );
+        *state = None;
+        return Ok(());
+    };
+
+    // Initialize or reset the edit buffer when switching layers
+    if *name_edit_layer_id != Some(layer_id) {
+        *name_edit_layer_id = Some(layer_id);
+        name_edit_buffer.clone_from(&layer.name);
     }
-    .render();
+
+    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
+    let default_pos = egui::pos2(side_panel_width.0 + 4.0, top_panel_height.0 + 4.0);
+    let mut is_open = true;
+    egui::Window::new("Manage Layer")
+        .default_pos(default_pos)
+        .open(&mut is_open)
+        .show(bevy_egui_ctx_mut, |ui| {
+            crate::windows::manage_layer::ManageLayer {
+                layer,
+                color_events: &mut color_events,
+                point_size_events: &mut point_size_events,
+                duplicate_layer_events: &mut duplicate_layer_events,
+                rename_events: &mut rename_events,
+                name_edit_buffer: &mut name_edit_buffer,
+            }
+            .render(ui);
+        });
+
+    if !is_open {
+        *state = None;
+    }
     Ok(())
 }
 
@@ -136,6 +164,8 @@ fn render_add_layer_window(
     mut state: Local<crate::windows::add_layer::State>,
     mut events: crate::windows::add_layer::Events,
     geodesy_ctx: Res<rgis_crs::GeodesyContext>,
+    side_panel_width: Res<rgis_units::SidePanelWidth>,
+    top_panel_height: Res<rgis_units::TopPanelHeight>,
 ) -> Result {
     if crate::widget_registry::take_close_request("Add Layer") {
         state.reset();
@@ -143,7 +173,6 @@ fn render_add_layer_window(
         return Ok(());
     }
 
-    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     if !events.show_add_layer_window_event_reader.is_empty() {
         *is_visible = true;
     }
@@ -153,14 +182,26 @@ fn render_add_layer_window(
         *is_visible = false;
     }
 
-    let output = crate::windows::add_layer::AddLayer {
-        state: &mut state,
-        selected_file: &mut selected_file,
-        is_visible: &mut is_visible,
-        egui_ctx: bevy_egui_ctx_mut,
-        geodesy_ctx: &geodesy_ctx,
+    let mut output = None;
+
+    if *is_visible {
+        let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
+        let default_pos = egui::pos2(side_panel_width.0 + 4.0, top_panel_height.0 + 4.0);
+        egui::Window::new("Add Layer")
+            .resizable(false)
+            .default_pos(default_pos)
+            .open(&mut is_visible)
+            .show(bevy_egui_ctx_mut, |ui| {
+                output = crate::windows::add_layer::AddLayer {
+                    state: &mut state,
+                    selected_file: &mut selected_file,
+                    geodesy_ctx: &geodesy_ctx,
+                }
+                .render(ui);
+            });
+    } else {
+        state.reset();
     }
-    .render();
 
     if let Some(output) = output {
         use crate::windows::add_layer::AddLayerOutput;
@@ -240,24 +281,34 @@ fn render_change_crs_window(
     mut change_crs_event_writer: MessageWriter<rgis_events::ChangeCrsMessage>,
     mut crs_input_outcome: Local<Option<crate::widgets::crs_input::Outcome>>,
     geodesy_ctx: Res<rgis_crs::GeodesyContext>,
+    side_panel_width: Res<rgis_units::SidePanelWidth>,
+    top_panel_height: Res<rgis_units::TopPanelHeight>,
 ) -> Result {
     if crate::widget_registry::take_close_request("Change CRS") {
         is_visible.0 = false;
         return Ok(());
     }
 
-    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
-    crate::windows::change_crs::ChangeCrs {
-        is_visible: &mut is_visible.0,
-        egui_ctx: bevy_egui_ctx_mut,
-        text_field_value: &mut text_field_value,
-        crs_input_mode: &mut crs_input_mode,
-        change_crs_event_writer: &mut change_crs_event_writer,
-        target_crs: (*target_crs).clone(),
-        crs_input_outcome: &mut crs_input_outcome,
-        geodesy_ctx: &geodesy_ctx,
+    if !is_visible.0 {
+        return Ok(());
     }
-    .render();
+
+    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
+    let default_pos = egui::pos2(side_panel_width.0 + 4.0, top_panel_height.0 + 4.0);
+    egui::Window::new("Change CRS")
+        .default_pos(default_pos)
+        .open(&mut is_visible.0)
+        .show(bevy_egui_ctx_mut, |ui| {
+            crate::windows::change_crs::ChangeCrs {
+                text_field_value: &mut text_field_value,
+                crs_input_mode: &mut crs_input_mode,
+                change_crs_event_writer: &mut change_crs_event_writer,
+                target_crs: (*target_crs).clone(),
+                crs_input_outcome: &mut crs_input_outcome,
+                geodesy_ctx: &geodesy_ctx,
+            }
+            .render(ui);
+        });
     Ok(())
 }
 
@@ -266,6 +317,8 @@ fn render_feature_properties_window(
     mut bevy_egui_ctx: EguiContexts,
     layers: Res<rgis_layers::Layers>,
     mut render_message_events: ResMut<Messages<rgis_ui_messages::RenderFeaturePropertiesMessage>>,
+    side_panel_width: Res<rgis_units::SidePanelWidth>,
+    top_panel_height: Res<rgis_units::TopPanelHeight>,
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     if let Some(event) = render_message_events.drain().last() {
@@ -283,12 +336,20 @@ fn render_feature_properties_window(
         return Ok(());
     };
 
-    crate::windows::feature_properties::FeatureProperties {
-        state: &mut state,
-        layer,
-        egui_ctx: bevy_egui_ctx_mut,
+    let default_pos = egui::pos2(side_panel_width.0 + 4.0, top_panel_height.0 + 4.0);
+    let properties = &data.properties;
+    let mut is_open = true;
+    egui::Window::new("Layer Feature Properties")
+        .id(egui::Id::new("Layer Feature Properties Window"))
+        .default_pos(default_pos)
+        .open(&mut is_open)
+        .show(bevy_egui_ctx_mut, |ui| {
+            crate::windows::feature_properties::FeatureProperties { layer, properties }.render(ui);
+        });
+
+    if !is_open {
+        *state = None;
     }
-    .render();
     Ok(())
 }
 
@@ -316,6 +377,8 @@ fn render_operation_window(
     mut bevy_egui_ctx: EguiContexts,
     create_layer_event_writer: MessageWriter<rgis_events::CreateLayerMessage>,
     render_message_event_writer: MessageWriter<rgis_ui_messages::RenderTextMessage>,
+    side_panel_width: Res<rgis_units::SidePanelWidth>,
+    top_panel_height: Res<rgis_units::TopPanelHeight>,
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     if let Some(event) = events.drain().last() {
@@ -327,13 +390,24 @@ fn render_operation_window(
         });
     }
 
-    crate::windows::operation::Operation {
-        egui_ctx: bevy_egui_ctx_mut,
-        state: &mut state,
-        create_layer_event_writer,
-        render_message_event_writer,
+    if state.is_some() {
+        let default_pos = egui::pos2(side_panel_width.0 + 4.0, top_panel_height.0 + 4.0);
+        let mut is_open = true;
+        egui::Window::new("Operation")
+            .default_pos(default_pos)
+            .open(&mut is_open)
+            .show(bevy_egui_ctx_mut, |ui| {
+                crate::windows::operation::Operation {
+                    state: &mut state,
+                    create_layer_event_writer,
+                    render_message_event_writer,
+                }
+                .render(ui);
+            });
+        if !is_open {
+            *state = None;
+        }
     }
-    .render();
     Ok(())
 }
 

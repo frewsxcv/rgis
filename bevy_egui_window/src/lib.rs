@@ -10,9 +10,6 @@ pub trait Window: egui::Widget + SystemParam + Send + Sync {
 
     fn title(&self) -> &str;
     fn default_width(&self) -> f32;
-    fn default_anchor(&self) -> (egui::Align2, [f32; 2]) {
-        (egui::Align2::LEFT_TOP, [0., 0.])
-    }
 
     fn setup(app: &mut App)
     where
@@ -29,16 +26,17 @@ pub fn render_window_system<W: Window + 'static>(
     window: <W as Window>::Item<'_, '_>,
     mut bevy_egui_ctx: EguiContexts,
     mut is_window_open: ResMut<IsWindowOpen<W>>,
+    side_panel_width: Res<rgis_units::SidePanelWidth>,
+    top_panel_height: Res<rgis_units::TopPanelHeight>,
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
-
-    let (anchor_align, anchor_offset) = window.default_anchor();
+    let default_pos = egui::pos2(side_panel_width.0 + 4.0, top_panel_height.0 + 4.0);
 
     egui::Window::new(window.title())
         .default_width(window.default_width())
         .open(&mut is_window_open.0)
         .resizable(false)
-        .anchor(anchor_align, anchor_offset)
+        .default_pos(default_pos)
         .show(bevy_egui_ctx_mut, |ui| {
             ui.add(window);
         });
