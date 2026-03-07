@@ -80,7 +80,6 @@ pub fn run() {
     app.add_plugins(bevy_jobs::Plugin);
     app.add_plugins(rgis_transform::Plugin);
     app.add_plugins(rgis_settings::Plugin);
-    app.add_plugins(rgis_geodesy::Plugin);
     app.add_plugins(rgis_crs::Plugin::default());
 
     app.run();

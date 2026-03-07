@@ -32,5 +32,4 @@ bevy_jobs = { workspace = true }
 geo = { workspace = true }
 geodesy = { workspace = true }
 rgis-crs = { path = "../rgis-crs" }
-rgis-geodesy = { path = "../rgis-geodesy" }
 geo-geodesy = { workspace = true }

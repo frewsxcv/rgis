@@ -66,7 +66,7 @@ fn handle_load_file_job_finished_events(
     mut create_layer_event_writer: MessageWriter<rgis_events::CreateLayerMessage>,
     mut create_raster_layer_event_writer: MessageWriter<rgis_events::CreateRasterLayerMessage>,
     mut render_message_event_writer: MessageWriter<rgis_ui_messages::RenderTextMessage>,
-    geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
+    geodesy_ctx: Res<rgis_crs::GeodesyContext>,
 ) {
     while let Some(outcome) = finished_jobs.take_next::<crate::jobs::LoadFileJob>() {
         match outcome {
@@ -91,7 +91,7 @@ fn handle_load_file_job_finished_events(
                     if Some(detected_epsg) != source_crs.epsg_code {
                         let mut ctx = geodesy_ctx.write().unwrap();
                         if let Ok(op_handle) =
-                            rgis_geodesy::epsg_code_to_geodesy_op_handle(&mut *ctx, detected_epsg)
+                            rgis_crs::epsg_code_to_geodesy_op_handle(&mut *ctx, detected_epsg)
                         {
                             source_crs = Crs {
                                 epsg_code: Some(detected_epsg),

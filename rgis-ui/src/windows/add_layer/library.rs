@@ -1,5 +1,5 @@
 use bevy_egui::egui;
-use rgis_geodesy::GeodesyContext;
+use rgis_crs::GeodesyContext;
 
 use super::AddLayerOutput;
 
@@ -59,7 +59,7 @@ fn show_entry(
         if add_btn.clicked() {
             let mut geodesy_ctx = geodesy_ctx.write().unwrap();
             let op_handle =
-                rgis_geodesy::epsg_code_to_geodesy_op_handle(&mut *geodesy_ctx, entry.crs)
+                rgis_crs::epsg_code_to_geodesy_op_handle(&mut *geodesy_ctx, entry.crs)
                     .unwrap();
             output = Some(AddLayerOutput::LoadFromLibrary {
                 name: format!("{}: {}", name_prefix, entry.name),
