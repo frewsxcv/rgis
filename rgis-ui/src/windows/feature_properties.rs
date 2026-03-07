@@ -1,33 +1,17 @@
 use bevy_egui::egui;
 
 pub struct FeatureProperties<'a> {
-    pub egui_ctx: &'a mut bevy_egui::egui::Context,
-    pub state: &'a mut crate::FeaturePropertiesWindowState,
     pub layer: &'a rgis_layers::Layer,
-    pub default_pos: egui::Pos2,
+    pub properties: &'a geo_features::Properties,
 }
 
 impl FeatureProperties<'_> {
-    pub fn render(&mut self) {
-        let Some(ref data) = *self.state else {
-            return;
-        };
-
-        let properties = &data.properties;
-        let mut is_open = true;
-        egui::Window::new("Layer Feature Properties")
-            .id(egui::Id::new("Layer Feature Properties Window"))
-            .default_pos(self.default_pos)
-            .open(&mut is_open)
-            .show(self.egui_ctx, |ui| {
-                ui.label(format!("Layer: {}", self.layer.name));
-                ui.add(
-                    crate::widgets::feature_properties_table::FeaturePropertiesTable { properties },
-                )
-            });
-
-        if !is_open {
-            *self.state = None;
-        }
+    pub fn render(&self, ui: &mut egui::Ui) {
+        ui.label(format!("Layer: {}", self.layer.name));
+        ui.add(
+            crate::widgets::feature_properties_table::FeaturePropertiesTable {
+                properties: self.properties,
+            },
+        );
     }
 }
