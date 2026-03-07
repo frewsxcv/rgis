@@ -85,7 +85,16 @@ export class AppPage {
     await this.waitForNextFrame();
   }
 
+  async waitForWidget(label: string, timeout = 10000) {
+    await this.page.waitForFunction(
+      (l) => !!(window as any).get_widget_rect?.(l),
+      label,
+      { timeout },
+    );
+  }
+
   async clickWidget(label: string) {
+    await this.waitForWidget(label);
     const rect = await this.page.evaluate(
       (l) => (window as any).get_widget_rect(l),
       label,
@@ -96,7 +105,29 @@ export class AppPage {
       );
     const cx = (rect[0] + rect[2]) / 2;
     const cy = (rect[1] + rect[3]) / 2;
-    await this.page.mouse.click(cx, cy);
+    // Dispatch pointer events directly on the canvas so that winit/bevy_egui
+    // detects the click (Playwright's mouse.click may not produce pointer
+    // events that winit recognises on all platforms).
+    await this.page.evaluate(
+      ({ x, y }) => {
+        const canvas = document.querySelector("canvas")!;
+        const opts = {
+          clientX: x,
+          clientY: y,
+          bubbles: true,
+          cancelable: true,
+          pointerId: 1,
+          pointerType: "mouse" as const,
+          button: 0,
+          buttons: 1,
+        };
+        canvas.dispatchEvent(new PointerEvent("pointerdown", opts));
+        canvas.dispatchEvent(
+          new PointerEvent("pointerup", { ...opts, buttons: 0 }),
+        );
+      },
+      { x: cx, y: cy },
+    );
     await this.waitForNextFrame();
   }
 
@@ -148,6 +179,16 @@ export class AppPage {
     const countBefore = await this.getRenderedLayerCount();
     await this.clickWidget(`Add:${entry}`);
     await this.waitForLayerRender(countBefore);
+  }
+
+  async setFirstLayerFillColor(r: number, g: number, b: number, a: number) {
+    await this.page.evaluate(
+      ({ r, g, b, a }) =>
+        (window as any).set_first_layer_fill_color(r, g, b, a),
+      { r, g, b, a },
+    );
+    await this.waitForNextFrame();
+    await this.waitForNextFrame();
   }
 
   async regionHasContent(
