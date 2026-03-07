@@ -105,9 +105,13 @@ impl ManageLayer<'_> {
                     self.duplicate_layer_events
                         .write(DuplicateLayerMessage(layer_id));
                 }
-                if layer.is_vector() && ui.button("Attribute Table").clicked() {
-                    self.show_attribute_table_events
-                        .write(ShowAttributeTableMessage(layer_id));
+                if layer.is_vector() {
+                    let attr_btn = ui.button("Attribute Table");
+                    crate::widget_registry::register("Attribute Table", attr_btn.rect);
+                    if attr_btn.clicked() {
+                        self.show_attribute_table_events
+                            .write(ShowAttributeTableMessage(layer_id));
+                    }
                 }
             });
 
