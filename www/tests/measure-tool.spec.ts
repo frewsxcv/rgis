@@ -25,8 +25,8 @@ test.describe("measure tool", () => {
     // with waits are needed to update egui's pointer state (which has a
     // one-frame delay on is_pointer_over_area()).
     const box = await appPage.canvasBoundingBox();
-    const sfX = box.x + box.width * 0.649;
-    const sfY = box.y + box.height * 0.692;
+    const sfX = box.x + box.width * 0.31;
+    const sfY = box.y + box.height * 0.60;
 
     await appPage.page.mouse.move(sfX, sfY);
     await appPage.waitForNextFrame();
@@ -40,8 +40,8 @@ test.describe("measure tool", () => {
     await appPage.waitForNextFrame();
 
     // Click on New York City area to lock the end point
-    const nycX = box.x + box.width * 0.898;
-    const nycY = box.y + box.height * 0.622;
+    const nycX = box.x + box.width * 0.42;
+    const nycY = box.y + box.height * 0.55;
     await appPage.page.mouse.move(nycX, nycY);
     await appPage.waitForNextFrame();
     await appPage.page.mouse.click(nycX, nycY);

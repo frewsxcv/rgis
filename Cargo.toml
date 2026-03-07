@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "geo-features",
+    "geo-fix-antimeridian",
     "geo-geom-type",
     "geo-projected",
     "geo-raster",
