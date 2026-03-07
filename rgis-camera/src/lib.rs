@@ -1,13 +1,26 @@
 use bevy::prelude::*;
 
+mod keyboard;
 mod systems;
 mod utils;
 
-pub struct Plugin;
+/// Configuration for the camera plugin, including keyboard input settings.
+pub struct Plugin {
+    /// How many units the camera pans per arrow key press.
+    pub pan_amount: f32,
+}
+
+impl Default for Plugin {
+    fn default() -> Self {
+        Self { pan_amount: 15. }
+    }
+}
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
+        app.insert_resource(keyboard::PanAmount(self.pan_amount));
         systems::configure(app);
+        keyboard::configure(app);
     }
 }
 

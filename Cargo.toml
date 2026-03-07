@@ -15,7 +15,6 @@ members = [
     "rgis-crs-messages",
     "rgis-renderer-messages",
     "rgis-geo-ops",
-    "rgis-keyboard",
     "rgis-layers",
     "rgis-library",
     "rgis-mouse",
