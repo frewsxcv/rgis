@@ -1,7 +1,7 @@
 use bevy::{ecs::system::SystemParam, prelude::*};
 use bevy_egui::egui;
 use geo_file_loader::FileFormat;
-use rgis_file_loader_messages::LoadFileMessage;
+use rgis_events::LoadFileMessage;
 use rgis_ui_messages::{HideAddLayerWindowMessage, ShowAddLayerWindowMessage};
 
 pub mod by_file;
@@ -21,7 +21,7 @@ pub struct AddLayer<'a> {
     pub is_visible: &'a mut bool,
     pub selected_file: &'a mut file::SelectedFile,
     pub egui_ctx: &'a mut bevy_egui::egui::Context,
-    pub geodesy_ctx: &'a rgis_geodesy::GeodesyContext,
+    pub geodesy_ctx: &'a rgis_crs::GeodesyContext,
 }
 
 #[derive(PartialEq, Eq)]

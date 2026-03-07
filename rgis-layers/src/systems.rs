@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 fn handle_toggle_layer_visibility_events(
     mut toggle_layer_visibility_event_reader: MessageReader<
-        rgis_layer_messages::ToggleLayerVisibilityMessage,
+        rgis_events::ToggleLayerVisibilityMessage,
     >,
     mut commands: Commands,
     mut layers: ResMut<crate::Layers>,
@@ -14,16 +14,16 @@ fn handle_toggle_layer_visibility_events(
         };
         layer.visible = !layer.visible;
         if layer.visible {
-            commands.trigger(rgis_layer_messages::LayerBecameVisibleEvent(event.0));
+            commands.trigger(rgis_events::LayerBecameVisibleEvent(event.0));
         } else {
-            commands.trigger(rgis_layer_messages::LayerBecameHiddenEvent(event.0));
+            commands.trigger(rgis_events::LayerBecameHiddenEvent(event.0));
         }
     }
 }
 
 fn handle_update_color_events(
     mut update_events: MessageReader<rgis_ui_messages::UpdateLayerColorMessage>,
-    mut updated_events: MessageWriter<rgis_layer_messages::LayerColorUpdatedMessage>,
+    mut updated_events: MessageWriter<rgis_events::LayerColorUpdatedMessage>,
     mut layers: ResMut<crate::Layers>,
 ) {
     for event in update_events.read() {
@@ -34,7 +34,7 @@ fn handle_update_color_events(
                     continue;
                 };
                 layer.color.stroke = *color;
-                rgis_layer_messages::LayerColorUpdatedMessage::Stroke(*layer_id)
+                rgis_events::LayerColorUpdatedMessage::Stroke(*layer_id)
             }
             rgis_ui_messages::UpdateLayerColorMessage::Fill(layer_id, color) => {
                 let Some(layer) = layers.get_mut(*layer_id) else {
@@ -42,7 +42,7 @@ fn handle_update_color_events(
                     continue;
                 };
                 layer.color.fill = Some(*color);
-                rgis_layer_messages::LayerColorUpdatedMessage::Fill(*layer_id)
+                rgis_events::LayerColorUpdatedMessage::Fill(*layer_id)
             }
         };
         updated_events.write(event);
@@ -51,7 +51,7 @@ fn handle_update_color_events(
 
 fn handle_update_point_size_events(
     mut update_events: MessageReader<rgis_ui_messages::UpdateLayerPointSizeMessage>,
-    mut updated_events: MessageWriter<rgis_layer_messages::LayerPointSizeUpdatedMessage>,
+    mut updated_events: MessageWriter<rgis_events::LayerPointSizeUpdatedMessage>,
     mut layers: ResMut<crate::Layers>,
 ) {
     for rgis_ui_messages::UpdateLayerPointSizeMessage(layer_id, point_size) in update_events.read() {
@@ -60,24 +60,37 @@ fn handle_update_point_size_events(
             continue;
         };
         layer.point_size = *point_size;
-        updated_events.write(rgis_layer_messages::LayerPointSizeUpdatedMessage(*layer_id));
+        updated_events.write(rgis_events::LayerPointSizeUpdatedMessage(*layer_id));
+    }
+}
+
+fn handle_rename_layer_events(
+    mut rename_events: MessageReader<rgis_ui_messages::RenameLayerMessage>,
+    mut layers: ResMut<crate::Layers>,
+) {
+    for rgis_ui_messages::RenameLayerMessage(layer_id, new_name) in rename_events.read() {
+        let Some(layer) = layers.get_mut(*layer_id) else {
+            warn!("Could not find layer");
+            continue;
+        };
+        layer.name.clone_from(new_name);
     }
 }
 
 fn handle_delete_layer_events(
-    mut delete_layer_event_reader: MessageReader<rgis_layer_messages::DeleteLayerMessage>,
+    mut delete_layer_event_reader: MessageReader<rgis_events::DeleteLayerMessage>,
     mut commands: Commands,
     mut layers: ResMut<crate::Layers>,
 ) {
     for event in delete_layer_event_reader.read() {
         layers.remove(event.0);
-        commands.trigger(rgis_renderer_messages::DespawnMeshesEvent(event.0));
+        commands.trigger(rgis_events::DespawnMeshesEvent(event.0));
     }
 }
 
 fn handle_move_layer_events(
-    mut move_layer_event_reader: MessageReader<rgis_layer_messages::MoveLayerMessage>,
-    mut layer_z_index_updated_event_writer: MessageWriter<rgis_layer_messages::LayerZIndexUpdatedMessage>,
+    mut move_layer_event_reader: MessageReader<rgis_events::MoveLayerMessage>,
+    mut layer_z_index_updated_event_writer: MessageWriter<rgis_events::LayerZIndexUpdatedMessage>,
     mut layers: ResMut<crate::Layers>,
 ) {
     for event in move_layer_event_reader.read() {
@@ -90,14 +103,14 @@ fn handle_move_layer_events(
         };
 
         let new_z_index = match event.1 {
-            rgis_layer_messages::MoveDirection::Up => {
+            rgis_events::MoveDirection::Up => {
                 if old_z_index < layers.count() - 1 {
                     old_z_index + 1
                 } else {
                     old_z_index
                 }
             }
-            rgis_layer_messages::MoveDirection::Down => {
+            rgis_events::MoveDirection::Down => {
                 if old_z_index > 0 {
                     old_z_index - 1
                 } else {
@@ -114,47 +127,47 @@ fn handle_move_layer_events(
             layers.data.swap(old_z_index, new_z_index);
 
             layer_z_index_updated_event_writer
-                .write(rgis_layer_messages::LayerZIndexUpdatedMessage(event.0));
+                .write(rgis_events::LayerZIndexUpdatedMessage(event.0));
             layer_z_index_updated_event_writer
-                .write(rgis_layer_messages::LayerZIndexUpdatedMessage(other_layer_id));
+                .write(rgis_events::LayerZIndexUpdatedMessage(other_layer_id));
         }
     }
 }
 
 fn handle_create_layer_events(
-    mut create_layer_events: ResMut<Messages<rgis_layer_messages::CreateLayerMessage>>,
-    mut layer_created_event_writer: MessageWriter<rgis_layer_messages::LayerCreatedMessage>,
+    mut create_layer_events: ResMut<Messages<rgis_events::CreateLayerMessage>>,
+    mut layer_created_event_writer: MessageWriter<rgis_events::LayerCreatedMessage>,
     mut layers: ResMut<crate::Layers>,
 ) {
     for event in create_layer_events.drain() {
         let layer_id = layers.add(event.feature_collection, event.name, event.source_crs);
-        layer_created_event_writer.write(rgis_layer_messages::LayerCreatedMessage(layer_id));
+        layer_created_event_writer.write(rgis_events::LayerCreatedMessage(layer_id));
     }
 }
 
 fn handle_create_raster_layer_events(
-    mut create_raster_layer_events: ResMut<Messages<rgis_layer_messages::CreateRasterLayerMessage>>,
-    mut layer_created_event_writer: MessageWriter<rgis_layer_messages::LayerCreatedMessage>,
+    mut create_raster_layer_events: ResMut<Messages<rgis_events::CreateRasterLayerMessage>>,
+    mut layer_created_event_writer: MessageWriter<rgis_events::LayerCreatedMessage>,
     mut layers: ResMut<crate::Layers>,
 ) {
     for event in create_raster_layer_events.drain() {
         let layer_id = layers.add_raster(event.raster, event.name, event.source_crs);
-        layer_created_event_writer.write(rgis_layer_messages::LayerCreatedMessage(layer_id));
+        layer_created_event_writer.write(rgis_events::LayerCreatedMessage(layer_id));
     }
 }
 
 use crate::LayerWithIndex;
 
 fn handle_duplicate_layer_events(
-    mut duplicate_layer_event_reader: MessageReader<rgis_layer_messages::DuplicateLayerMessage>,
-    mut create_layer_event_writer: MessageWriter<rgis_layer_messages::CreateLayerMessage>,
+    mut duplicate_layer_event_reader: MessageReader<rgis_events::DuplicateLayerMessage>,
+    mut create_layer_event_writer: MessageWriter<rgis_events::CreateLayerMessage>,
     layers: Res<crate::Layers>,
 ) {
     for event in duplicate_layer_event_reader.read() {
         if let Some(LayerWithIndex(layer, _)) = layers.get_with_index(event.0) {
             if let Some(fc) = layer.unprojected_feature_collection() {
                 let new_name = format!("Copy of {}", layer.name);
-                create_layer_event_writer.write(rgis_layer_messages::CreateLayerMessage {
+                create_layer_event_writer.write(rgis_events::CreateLayerMessage {
                     feature_collection: fc.clone(),
                     name: new_name,
                     source_crs: layer.crs.clone(),
@@ -171,6 +184,7 @@ pub fn configure(app: &mut App) {
             handle_toggle_layer_visibility_events,
             handle_update_color_events,
             handle_update_point_size_events,
+            handle_rename_layer_events,
             handle_move_layer_events,
             handle_delete_layer_events,
             // handle_duplicate_layer_events writes CreateLayerMessage events,

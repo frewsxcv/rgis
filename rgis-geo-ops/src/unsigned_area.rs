@@ -24,6 +24,10 @@ impl OperationEntry for UnsignedArea {
 }
 
 impl Operation for UnsignedArea {
+    fn name(&self) -> &str {
+        <Self as OperationEntry>::NAME
+    }
+
     fn visit_polygon(&mut self, polygon: &geo::Polygon<UnprojectedScalar>) {
         self.total_area += polygon.unsigned_area();
     }

@@ -18,6 +18,10 @@ pub struct Triangulate {
 }
 
 impl Operation for Triangulate {
+    fn name(&self) -> &str {
+        <Self as OperationEntry>::NAME
+    }
+
     fn visit_polygon(&mut self, polygon: &geo::Polygon<UnprojectedScalar>) {
         self.triangles.extend(polygon.earcut_triangles_iter());
     }

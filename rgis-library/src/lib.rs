@@ -9,6 +9,7 @@ pub struct Entry {
 pub struct Folder {
     pub name: &'static str,
     pub entries: Vec<Entry>,
+    pub sub_folders: Vec<Folder>,
 }
 
 fn build() -> Vec<Folder> {
@@ -147,6 +148,20 @@ fn build() -> Vec<Folder> {
                     crs: 4326,
                 },
             ],
+            sub_folders: vec![],
+        },
+        Folder {
+            name: "Argentina",
+            entries: vec![],
+            sub_folders: vec![Folder {
+                name: "Buenos Aires",
+                entries: vec![Entry {
+                    name: "Neighbourhoods",
+                    url: "https://storage.googleapis.com/rgis-library/Cities/Buenos-Aires-Neighbourhoods.geojson",
+                    crs: 4326,
+                }],
+                sub_folders: vec![],
+            }],
         },
         Folder {
             name: "Australia",
@@ -154,6 +169,15 @@ fn build() -> Vec<Folder> {
                 name: "States",
                 url: "https://storage.googleapis.com/rgis-library/Countries/Australia-States.geojson",
                 crs: 4326,
+            }],
+            sub_folders: vec![Folder {
+                name: "Sydney",
+                entries: vec![Entry {
+                    name: "Suburbs",
+                    url: "https://storage.googleapis.com/rgis-library/Cities/Sydney-Suburbs.geojson",
+                    crs: 4326,
+                }],
+                sub_folders: vec![],
             }],
         },
         Folder {
@@ -163,6 +187,20 @@ fn build() -> Vec<Folder> {
                 url: "https://storage.googleapis.com/rgis-library/Countries/Brazil-States.geojson",
                 crs: 4326,
             }],
+            sub_folders: vec![],
+        },
+        Folder {
+            name: "Canada",
+            entries: vec![],
+            sub_folders: vec![Folder {
+                name: "Toronto",
+                entries: vec![Entry {
+                    name: "Neighbourhoods",
+                    url: "https://storage.googleapis.com/rgis-library/Cities/Toronto-Neighbourhoods.geojson",
+                    crs: 4326,
+                }],
+                sub_folders: vec![],
+            }],
         },
         Folder {
             name: "Caribbean",
@@ -170,6 +208,20 @@ fn build() -> Vec<Folder> {
                 name: "Islands",
                 url: "https://storage.googleapis.com/rgis-library/Countries/Caribbean-Islands.geojson",
                 crs: 4326,
+            }],
+            sub_folders: vec![],
+        },
+        Folder {
+            name: "Denmark",
+            entries: vec![],
+            sub_folders: vec![Folder {
+                name: "Copenhagen",
+                entries: vec![Entry {
+                    name: "Districts",
+                    url: "https://storage.googleapis.com/rgis-library/Cities/Copenhagen-Districts.geojson",
+                    crs: 4326,
+                }],
+                sub_folders: vec![],
             }],
         },
         Folder {
@@ -179,6 +231,28 @@ fn build() -> Vec<Folder> {
                 url: "https://storage.googleapis.com/rgis-library/Countries/France-Regions.geojson",
                 crs: 4326,
             }],
+            sub_folders: vec![Folder {
+                name: "Paris",
+                entries: vec![Entry {
+                    name: "Arrondissements",
+                    url: "https://storage.googleapis.com/rgis-library/Cities/Paris-Arrondissements.geojson",
+                    crs: 4326,
+                }],
+                sub_folders: vec![],
+            }],
+        },
+        Folder {
+            name: "Germany",
+            entries: vec![],
+            sub_folders: vec![Folder {
+                name: "Berlin",
+                entries: vec![Entry {
+                    name: "Districts",
+                    url: "https://storage.googleapis.com/rgis-library/Cities/Berlin-Districts.geojson",
+                    crs: 4326,
+                }],
+                sub_folders: vec![],
+            }],
         },
         Folder {
             name: "India",
@@ -187,6 +261,7 @@ fn build() -> Vec<Folder> {
                 url: "https://storage.googleapis.com/rgis-library/Countries/India-States.geojson",
                 crs: 4326,
             }],
+            sub_folders: vec![],
         },
         Folder {
             name: "Ireland",
@@ -195,6 +270,31 @@ fn build() -> Vec<Folder> {
                 url: "https://storage.googleapis.com/rgis-library/Countries/Ireland-Counties.geojson",
                 crs: 4326,
             }],
+            sub_folders: vec![],
+        },
+        Folder {
+            name: "Italy",
+            entries: vec![],
+            sub_folders: vec![
+                Folder {
+                    name: "Rome",
+                    entries: vec![Entry {
+                        name: "Rioni",
+                        url: "https://storage.googleapis.com/rgis-library/Cities/Rome-Rioni.geojson",
+                        crs: 4326,
+                    }],
+                    sub_folders: vec![],
+                },
+                Folder {
+                    name: "Venice",
+                    entries: vec![Entry {
+                        name: "Islands",
+                        url: "https://storage.googleapis.com/rgis-library/Cities/Venice.geojson",
+                        crs: 4326,
+                    }],
+                    sub_folders: vec![],
+                },
+            ],
         },
         Folder {
             name: "Japan",
@@ -203,6 +303,7 @@ fn build() -> Vec<Folder> {
                 url: "https://storage.googleapis.com/rgis-library/Countries/Japan-Prefectures.geojson",
                 crs: 4326,
             }],
+            sub_folders: vec![],
         },
         Folder {
             name: "Mexico",
@@ -210,6 +311,20 @@ fn build() -> Vec<Folder> {
                 name: "States",
                 url: "https://storage.googleapis.com/rgis-library/Countries/Mexico-States.geojson",
                 crs: 4326,
+            }],
+            sub_folders: vec![],
+        },
+        Folder {
+            name: "Netherlands",
+            entries: vec![],
+            sub_folders: vec![Folder {
+                name: "Amsterdam",
+                entries: vec![Entry {
+                    name: "Neighbourhoods",
+                    url: "https://storage.googleapis.com/rgis-library/Cities/Amsterdam-Neighbourhoods.geojson",
+                    crs: 4326,
+                }],
+                sub_folders: vec![],
             }],
         },
         Folder {
@@ -219,6 +334,28 @@ fn build() -> Vec<Folder> {
                 url: "https://storage.googleapis.com/rgis-library/Russia.geojson",
                 crs: 4326,
             }],
+            sub_folders: vec![Folder {
+                name: "Moscow",
+                entries: vec![Entry {
+                    name: "Districts",
+                    url: "https://storage.googleapis.com/rgis-library/Cities/Moscow-Districts.geojson",
+                    crs: 4326,
+                }],
+                sub_folders: vec![],
+            }],
+        },
+        Folder {
+            name: "South Korea",
+            entries: vec![],
+            sub_folders: vec![Folder {
+                name: "Seoul",
+                entries: vec![Entry {
+                    name: "Districts",
+                    url: "https://storage.googleapis.com/rgis-library/Cities/Seoul-Districts.geojson",
+                    crs: 4326,
+                }],
+                sub_folders: vec![],
+            }],
         },
         Folder {
             name: "Spain",
@@ -226,6 +363,27 @@ fn build() -> Vec<Folder> {
                 name: "Provinces",
                 url: "https://storage.googleapis.com/rgis-library/Countries/Spain-Provinces.geojson",
                 crs: 4326,
+            }],
+            sub_folders: vec![],
+        },
+        Folder {
+            name: "UK",
+            entries: vec![],
+            sub_folders: vec![Folder {
+                name: "London",
+                entries: vec![
+                    Entry {
+                        name: "Boroughs",
+                        url: "https://storage.googleapis.com/rgis-library/Cities/London-Boroughs.geojson",
+                        crs: 4326,
+                    },
+                    Entry {
+                        name: "Underground Lines",
+                        url: "https://storage.googleapis.com/rgis-library/Cities/London-Underground.geojson",
+                        crs: 4326,
+                    },
+                ],
+                sub_folders: vec![],
             }],
         },
         Folder {
@@ -257,160 +415,62 @@ fn build() -> Vec<Folder> {
                     crs: 4326,
                 },
             ],
-        },
-        Folder {
-            name: "USA: California",
-            entries: vec![Entry {
-                name: "Counties",
-                url: "https://storage.googleapis.com/rgis-library/Countries/USA-California-Counties.geojson",
-                crs: 4326,
-            }],
-        },
-        Folder {
-            name: "USA: New York City",
-            entries: vec![
-                Entry {
-                    name: "Subway Lines",
-                    url: "https://storage.googleapis.com/rgis-library/NYC/Subway-Lines.geojson",
-                    crs: 4326,
+            sub_folders: vec![
+                Folder {
+                    name: "California",
+                    entries: vec![Entry {
+                        name: "Counties",
+                        url: "https://storage.googleapis.com/rgis-library/Countries/USA-California-Counties.geojson",
+                        crs: 4326,
+                    }],
+                    sub_folders: vec![],
                 },
-                Entry {
-                    name: "Subway Stations",
-                    url: "https://storage.googleapis.com/rgis-library/NYC/Subway-Stations.geojson",
-                    crs: 4326,
+                Folder {
+                    name: "New York City",
+                    entries: vec![
+                        Entry {
+                            name: "Subway Lines",
+                            url: "https://storage.googleapis.com/rgis-library/NYC/Subway-Lines.geojson",
+                            crs: 4326,
+                        },
+                        Entry {
+                            name: "Subway Stations",
+                            url: "https://storage.googleapis.com/rgis-library/NYC/Subway-Stations.geojson",
+                            crs: 4326,
+                        },
+                        Entry {
+                            name: "Bike Routes",
+                            url: "https://storage.googleapis.com/rgis-library/NYC/Bike-Routes.geojson",
+                            crs: 4326,
+                        },
+                        Entry {
+                            name: "Taxi Zones",
+                            url: "https://storage.googleapis.com/rgis-library/NYC/Taxi-Zones.geojson",
+                            crs: 4326,
+                        },
+                        Entry {
+                            name: "Police Precincts",
+                            url: "https://storage.googleapis.com/rgis-library/NYC/Police-Precincts.geojson",
+                            crs: 4326,
+                        },
+                        Entry {
+                            name: "WiFi Hotspots",
+                            url: "https://storage.googleapis.com/rgis-library/NYC/WiFi-Hotspots.geojson",
+                            crs: 4326,
+                        },
+                    ],
+                    sub_folders: vec![],
                 },
-                Entry {
-                    name: "Bike Routes",
-                    url: "https://storage.googleapis.com/rgis-library/NYC/Bike-Routes.geojson",
-                    crs: 4326,
-                },
-                Entry {
-                    name: "Taxi Zones",
-                    url: "https://storage.googleapis.com/rgis-library/NYC/Taxi-Zones.geojson",
-                    crs: 4326,
-                },
-                Entry {
-                    name: "Police Precincts",
-                    url: "https://storage.googleapis.com/rgis-library/NYC/Police-Precincts.geojson",
-                    crs: 4326,
-                },
-                Entry {
-                    name: "WiFi Hotspots",
-                    url: "https://storage.googleapis.com/rgis-library/NYC/WiFi-Hotspots.geojson",
-                    crs: 4326,
-                },
-            ],
-        },
-        Folder {
-            name: "USA: Washington D.C.",
-            entries: vec![Entry {
-                name: "Street Centerlines",
-                url: "https://storage.googleapis.com/rgis-library/USA/DC-Street-Centerlines.geojson",
-                crs: 4326,
-            }],
-        },
-        Folder {
-            name: "Amsterdam",
-            entries: vec![Entry {
-                name: "Neighbourhoods",
-                url: "https://storage.googleapis.com/rgis-library/Cities/Amsterdam-Neighbourhoods.geojson",
-                crs: 4326,
-            }],
-        },
-        Folder {
-            name: "Berlin",
-            entries: vec![Entry {
-                name: "Districts",
-                url: "https://storage.googleapis.com/rgis-library/Cities/Berlin-Districts.geojson",
-                crs: 4326,
-            }],
-        },
-        Folder {
-            name: "Buenos Aires",
-            entries: vec![Entry {
-                name: "Neighbourhoods",
-                url: "https://storage.googleapis.com/rgis-library/Cities/Buenos-Aires-Neighbourhoods.geojson",
-                crs: 4326,
-            }],
-        },
-        Folder {
-            name: "Copenhagen",
-            entries: vec![Entry {
-                name: "Districts",
-                url: "https://storage.googleapis.com/rgis-library/Cities/Copenhagen-Districts.geojson",
-                crs: 4326,
-            }],
-        },
-        Folder {
-            name: "London",
-            entries: vec![
-                Entry {
-                    name: "Boroughs",
-                    url: "https://storage.googleapis.com/rgis-library/Cities/London-Boroughs.geojson",
-                    crs: 4326,
-                },
-                Entry {
-                    name: "Underground Lines",
-                    url: "https://storage.googleapis.com/rgis-library/Cities/London-Underground.geojson",
-                    crs: 4326,
+                Folder {
+                    name: "Washington D.C.",
+                    entries: vec![Entry {
+                        name: "Street Centerlines",
+                        url: "https://storage.googleapis.com/rgis-library/USA/DC-Street-Centerlines.geojson",
+                        crs: 4326,
+                    }],
+                    sub_folders: vec![],
                 },
             ],
-        },
-        Folder {
-            name: "Moscow",
-            entries: vec![Entry {
-                name: "Districts",
-                url: "https://storage.googleapis.com/rgis-library/Cities/Moscow-Districts.geojson",
-                crs: 4326,
-            }],
-        },
-        Folder {
-            name: "Paris",
-            entries: vec![Entry {
-                name: "Arrondissements",
-                url: "https://storage.googleapis.com/rgis-library/Cities/Paris-Arrondissements.geojson",
-                crs: 4326,
-            }],
-        },
-        Folder {
-            name: "Rome",
-            entries: vec![Entry {
-                name: "Rioni",
-                url: "https://storage.googleapis.com/rgis-library/Cities/Rome-Rioni.geojson",
-                crs: 4326,
-            }],
-        },
-        Folder {
-            name: "Seoul",
-            entries: vec![Entry {
-                name: "Districts",
-                url: "https://storage.googleapis.com/rgis-library/Cities/Seoul-Districts.geojson",
-                crs: 4326,
-            }],
-        },
-        Folder {
-            name: "Sydney",
-            entries: vec![Entry {
-                name: "Suburbs",
-                url: "https://storage.googleapis.com/rgis-library/Cities/Sydney-Suburbs.geojson",
-                crs: 4326,
-            }],
-        },
-        Folder {
-            name: "Toronto",
-            entries: vec![Entry {
-                name: "Neighbourhoods",
-                url: "https://storage.googleapis.com/rgis-library/Cities/Toronto-Neighbourhoods.geojson",
-                crs: 4326,
-            }],
-        },
-        Folder {
-            name: "Venice",
-            entries: vec![Entry {
-                name: "Islands",
-                url: "https://storage.googleapis.com/rgis-library/Cities/Venice.geojson",
-                crs: 4326,
-            }],
         },
     ]
 }

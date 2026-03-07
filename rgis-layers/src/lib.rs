@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 use geo::contains::Contains;
+use std::sync::Arc;
 
+pub mod export;
 mod systems;
 
 #[derive(Copy, Clone, Debug)]
@@ -171,7 +173,7 @@ impl Layers {
 
     fn add(
         &mut self,
-        unprojected: geo_features::FeatureCollection<geo_projected::UnprojectedScalar>,
+        unprojected: Arc<geo_features::FeatureCollection<geo_projected::UnprojectedScalar>>,
         name: String,
         crs: rgis_primitives::Crs,
     ) -> rgis_primitives::LayerId {
@@ -259,7 +261,7 @@ pub struct LayerColor {
 pub enum LayerData {
     Vector {
         unprojected_feature_collection:
-            geo_features::FeatureCollection<geo_projected::UnprojectedScalar>,
+            Arc<geo_features::FeatureCollection<geo_projected::UnprojectedScalar>>,
         projected_feature_collection:
             Option<geo_features::FeatureCollection<geo_projected::ProjectedScalar>>,
         geom_type: geo_geom_type::GeomType,
@@ -299,7 +301,7 @@ impl Layer {
 
     pub fn unprojected_feature_collection(
         &self,
-    ) -> Option<&geo_features::FeatureCollection<geo_projected::UnprojectedScalar>> {
+    ) -> Option<&Arc<geo_features::FeatureCollection<geo_projected::UnprojectedScalar>>> {
         match &self.data {
             LayerData::Vector {
                 unprojected_feature_collection,

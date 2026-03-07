@@ -23,6 +23,10 @@ impl OperationEntry for Smoothing {
 const NUM_ITERATIONS: usize = 2;
 
 impl Operation for Smoothing {
+    fn name(&self) -> &str {
+        <Self as OperationEntry>::NAME
+    }
+
     fn visit_line_string(&mut self, line_string: &geo::LineString<UnprojectedScalar>) {
         self.smoothed
             .0

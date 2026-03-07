@@ -44,28 +44,30 @@ pub enum Action {
 }
 
 pub trait Operation {
+    fn name(&self) -> &str;
+
     fn perform(
         &mut self,
-        feature_collection: geo_features::FeatureCollection<UnprojectedScalar>,
+        feature_collection: &geo_features::FeatureCollection<UnprojectedScalar>,
     ) -> Result<Outcome, Box<dyn error::Error>> {
-        self.visit_feature_collection(&feature_collection);
-        for feature in feature_collection.features.into_iter() {
-            self.visit_feature(&feature);
-            if let Some(geometry) = feature.geometry {
-                self.visit_geometry(&geometry);
+        self.visit_feature_collection(feature_collection);
+        for feature in feature_collection.features.iter() {
+            self.visit_feature(feature);
+            if let Some(geometry) = feature.geometry.as_ref() {
+                self.visit_geometry(geometry);
                 match geometry {
-                    geo::Geometry::Point(g) => self.visit_point(&g),
-                    geo::Geometry::Line(g) => self.visit_line(&g),
-                    geo::Geometry::LineString(g) => self.visit_line_string(&g),
-                    geo::Geometry::Polygon(g) => self.visit_polygon(&g),
-                    geo::Geometry::MultiPoint(g) => self.visit_multi_point(&g),
-                    geo::Geometry::MultiLineString(g) => self.visit_multi_line_string(&g),
-                    geo::Geometry::MultiPolygon(g) => self.visit_multi_polygon(&g),
-                    geo::Geometry::Rect(g) => self.visit_rect(&g),
-                    geo::Geometry::Triangle(g) => self.visit_triangle(&g),
+                    geo::Geometry::Point(g) => self.visit_point(g),
+                    geo::Geometry::Line(g) => self.visit_line(g),
+                    geo::Geometry::LineString(g) => self.visit_line_string(g),
+                    geo::Geometry::Polygon(g) => self.visit_polygon(g),
+                    geo::Geometry::MultiPoint(g) => self.visit_multi_point(g),
+                    geo::Geometry::MultiLineString(g) => self.visit_multi_line_string(g),
+                    geo::Geometry::MultiPolygon(g) => self.visit_multi_polygon(g),
+                    geo::Geometry::Rect(g) => self.visit_rect(g),
+                    geo::Geometry::Triangle(g) => self.visit_triangle(g),
                     geo::Geometry::GeometryCollection(geometry_collection) => {
                         for geometry in geometry_collection {
-                            self.visit_geometry(&geometry);
+                            self.visit_geometry(geometry);
                         }
                     }
                 }

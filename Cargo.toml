@@ -9,12 +9,7 @@ members = [
     "rgis-cli",
     "rgis-file-loader",
     "rgis-ui-messages",
-    "rgis-camera-messages",
-    "rgis-layer-messages",
-    "rgis-map-messages",
-    "rgis-file-loader-messages",
-    "rgis-crs-messages",
-    "rgis-renderer-messages",
+    "rgis-events",
     "rgis-geo-ops",
     "rgis-layers",
     "rgis-library",
@@ -26,7 +21,6 @@ members = [
     "rgis",
     "rgis-crs",
     "rgis-primitives",
-    "rgis-geodesy",
     "bevy_egui_window",
 ]
 resolver = "2"

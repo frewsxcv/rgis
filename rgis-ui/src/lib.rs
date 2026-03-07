@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 
 mod panels;
+pub mod save_file;
 mod systems;
 pub mod widget_registry;
 mod widgets;
@@ -30,8 +31,9 @@ pub struct ChangeCrsWindowVisible(pub bool);
 /// Data displayed in the operation window.
 struct OperationWindowData {
     operation: Box<dyn Send + Sync + rgis_geo_ops::Operation>,
-    feature_collection: geo_features::FeatureCollection<geo_projected::UnprojectedScalar>,
+    feature_collection: std::sync::Arc<geo_features::FeatureCollection<geo_projected::UnprojectedScalar>>,
     source_crs: Option<rgis_primitives::Crs>,
+    layer_name: String,
 }
 
 /// Window state for operations. `Some(data)` means visible.

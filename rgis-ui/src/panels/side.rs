@@ -1,7 +1,7 @@
 use bevy::{ecs::system::SystemParam, prelude::*};
 use bevy_egui::egui::{self, Align, Layout, Widget};
-use rgis_camera_messages::CenterCameraMessage;
-use rgis_layer_messages::{
+use rgis_events::CenterCameraMessage;
+use rgis_events::{
     CreateLayerMessage, DeleteLayerMessage, MoveDirection, MoveLayerMessage,
     ToggleLayerVisibilityMessage,
 };
@@ -20,6 +20,7 @@ pub struct Events<'w> {
     pub show_add_layer_window_event_writer: MessageWriter<'w, ShowAddLayerWindowMessage>,
     pub show_manage_layer_window_event_writer: MessageWriter<'w, ShowManageLayerWindowMessage>,
     pub perform_operation_event_writer: MessageWriter<'w, rgis_ui_messages::PerformOperationMessage>,
+    pub download_layer_event_writer: MessageWriter<'w, rgis_events::DownloadLayerMessage>,
 }
 
 pub struct Side<'a, 'w> {
@@ -227,6 +228,27 @@ impl Widget for Layer<'_, '_> {
                             });
                         });
                     crate::widget_registry::register("Operations", ops_header.header_response.rect);
+                }
+
+                if layer.is_vector() {
+                    ui.menu_button("Download As...", |ui| {
+                        for format in [
+                            rgis_primitives::ExportFormat::GeoJson,
+                            rgis_primitives::ExportFormat::Wkt,
+                        ] {
+                            let btn = ui.button(format.label());
+                            crate::widget_registry::register(format.label(), btn.rect);
+                            if btn.clicked() {
+                                self.events
+                                    .download_layer_event_writer
+                                    .write(rgis_events::DownloadLayerMessage {
+                                        layer_id: layer.id,
+                                        format,
+                                    });
+                                ui.close();
+                            }
+                        }
+                    });
                 }
 
                 ui.separator();

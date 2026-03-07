@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use geo_projected::CastTo;
 use geodesy::prelude::Context;
 
@@ -6,7 +7,7 @@ pub struct ReprojectRasterExtentJob {
     pub layer_id: rgis_primitives::LayerId,
     pub source_crs: rgis_primitives::Crs,
     pub target_crs: rgis_primitives::Crs,
-    pub geodesy_ctx: rgis_geodesy::GeodesyContext,
+    pub geodesy_ctx: rgis_crs::GeodesyContext,
 }
 
 pub struct ReprojectRasterExtentJobOutcome {
@@ -197,11 +198,11 @@ impl bevy_jobs::Job for ReprojectRasterExtentJob {
 }
 
 pub struct ReprojectGeometryJob {
-    pub feature_collection: geo_features::FeatureCollection<geo_projected::UnprojectedScalar>,
+    pub feature_collection: Arc<geo_features::FeatureCollection<geo_projected::UnprojectedScalar>>,
     pub layer_id: rgis_primitives::LayerId,
     pub source_crs: rgis_primitives::Crs,
     pub target_crs: rgis_primitives::Crs,
-    pub geodesy_ctx: rgis_geodesy::GeodesyContext,
+    pub geodesy_ctx: rgis_crs::GeodesyContext,
 }
 
 pub struct ReprojectGeometryJobOutcome {
@@ -218,9 +219,10 @@ impl bevy_jobs::Job for ReprojectGeometryJob {
     }
 
     async fn perform(self, progress_sender: bevy_jobs::Context) -> Self::Outcome {
-        let total = self.feature_collection.features.len();
+        let feature_collection = Arc::unwrap_or_clone(self.feature_collection);
+        let total = feature_collection.features.len();
 
-        let mut feature_collection = self.feature_collection.cast::<geo_projected::Projected>();
+        let mut feature_collection = feature_collection.cast::<geo_projected::Projected>();
 
         for (i, feature) in feature_collection.features.iter_mut().enumerate() {
             let _ = progress_sender.send_progress((100 * i / total) as u8).await;

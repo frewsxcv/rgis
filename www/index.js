@@ -1,4 +1,4 @@
-import init, { run, get_widget_rect, get_all_widget_rects, get_rendered_layer_count, close_window } from "rgis-pkg/rgis.js";
+import init, { run, get_widget_rect, get_all_widget_rects, get_rendered_layer_count, close_window, set_first_layer_fill_color } from "rgis-pkg/rgis.js";
 
 async function fetchWasmWithProgress() {
     const bar = document.getElementById("loading-bar");
@@ -48,6 +48,7 @@ async function main() {
     window.get_all_widget_rects = get_all_widget_rects;
     window.get_rendered_layer_count = get_rendered_layer_count;
     window.close_window = close_window;
+    window.set_first_layer_fill_color = set_first_layer_fill_color;
     // Signal that WASM has loaded and initialized
     document.title = "rgis - ready";
     // Call the run function

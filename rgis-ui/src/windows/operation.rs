@@ -1,5 +1,5 @@
 use bevy_egui::egui;
-use rgis_layer_messages::CreateLayerMessage;
+use rgis_events::CreateLayerMessage;
 use rgis_ui_messages::RenderTextMessage;
 
 pub struct Operation<'w> {
@@ -18,7 +18,8 @@ impl Operation<'_> {
         match data.operation.next_action() {
             rgis_geo_ops::Action::Perform => {
                 // TODO: perform in background job
-                let outcome = data.operation.perform(data.feature_collection.clone());
+                let layer_name = format!("{} of {}", data.operation.name(), data.layer_name);
+                let outcome = data.operation.perform(&data.feature_collection);
                 let source_crs = match data.source_crs.clone() {
                     Some(crs) => crs,
                     None => {
@@ -30,8 +31,8 @@ impl Operation<'_> {
                     Ok(rgis_geo_ops::Outcome::FeatureCollection(feature_collection)) => {
                         self.create_layer_event_writer
                             .write(CreateLayerMessage {
-                                feature_collection,
-                                name: "FOOOOO".into(), // FIXME
+                                feature_collection: std::sync::Arc::new(feature_collection),
+                                name: layer_name,
                                 source_crs,
                             });
                     }

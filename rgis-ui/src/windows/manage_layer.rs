@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_egui::egui;
-use rgis_layer_messages::DuplicateLayerMessage;
-use rgis_ui_messages::{UpdateLayerColorMessage, UpdateLayerPointSizeMessage};
+use rgis_events::DuplicateLayerMessage;
+use rgis_ui_messages::{RenameLayerMessage, UpdateLayerColorMessage, UpdateLayerPointSizeMessage};
 
 pub struct ManageLayer<'a> {
     pub state: &'a mut crate::ManageLayerWindowState,
@@ -10,6 +10,9 @@ pub struct ManageLayer<'a> {
     pub color_events: &'a mut Messages<UpdateLayerColorMessage>,
     pub point_size_events: &'a mut Messages<UpdateLayerPointSizeMessage>,
     pub duplicate_layer_events: &'a mut Messages<DuplicateLayerMessage>,
+    pub rename_events: &'a mut Messages<RenameLayerMessage>,
+    pub name_edit_buffer: &'a mut String,
+    pub name_edit_layer_id: &'a mut Option<rgis_primitives::LayerId>,
 }
 
 impl ManageLayer<'_> {
@@ -25,6 +28,13 @@ impl ManageLayer<'_> {
             *self.state = None;
             return;
         };
+
+        // Initialize or reset the edit buffer when switching layers
+        if *self.name_edit_layer_id != Some(layer_id) {
+            *self.name_edit_layer_id = Some(layer_id);
+            self.name_edit_buffer.clone_from(&layer.name);
+        }
+
         let mut is_open = true;
         egui::Window::new("Manage Layer")
             .open(&mut is_open)
@@ -34,7 +44,16 @@ impl ManageLayer<'_> {
                     .striped(true)
                     .show(ui, |ui| {
                         ui.label("Name");
-                        ui.label(&layer.name);
+                        let response = ui.text_edit_singleline(self.name_edit_buffer);
+                        if response.lost_focus()
+                            && *self.name_edit_buffer != layer.name
+                            && !self.name_edit_buffer.is_empty()
+                        {
+                            self.rename_events.write(RenameLayerMessage(
+                                layer_id,
+                                self.name_edit_buffer.clone(),
+                            ));
+                        }
                         ui.end_row();
                         ui.label("CRS");
                         match layer.crs.epsg_code {

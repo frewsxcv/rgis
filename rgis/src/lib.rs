@@ -32,6 +32,12 @@ pub fn close_window(title: &str) {
 
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
+pub fn set_first_layer_fill_color(r: f32, g: f32, b: f32, a: f32) {
+    rgis_ui::widget_registry::request_set_fill_color([r, g, b, a]);
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen]
 pub fn get_all_widget_rects() -> JsValue {
     let all = rgis_ui::widget_registry::get_all();
     let obj = js_sys::Object::new();
@@ -70,16 +76,10 @@ pub fn run() {
     app.add_plugins(rgis_mouse::Plugin);
     app.add_plugins(rgis_camera::Plugin::default());
     app.add_plugins(rgis_ui_messages::Plugin);
-    app.add_plugins(rgis_camera_messages::Plugin);
-    app.add_plugins(rgis_layer_messages::Plugin);
-    app.add_plugins(rgis_map_messages::Plugin);
-    app.add_plugins(rgis_file_loader_messages::Plugin);
-    app.add_plugins(rgis_crs_messages::Plugin);
-    app.add_plugins(rgis_renderer_messages::Plugin);
+    app.add_plugins(rgis_events::RgisEventsPlugin);
     app.add_plugins(bevy_jobs::Plugin);
     app.add_plugins(rgis_transform::Plugin);
     app.add_plugins(rgis_settings::Plugin);
-    app.add_plugins(rgis_geodesy::Plugin);
     app.add_plugins(rgis_crs::Plugin::default());
 
     app.run();
