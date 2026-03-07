@@ -362,6 +362,8 @@ fn render_attribute_table_window(
     mut show_events: MessageReader<rgis_ui_messages::ShowAttributeTableMessage>,
     side_panel_width: Res<rgis_units::SidePanelWidth>,
     top_panel_height: Res<rgis_units::TopPanelHeight>,
+    mut center_camera_on_feature_writer: MessageWriter<rgis_events::CenterCameraOnFeatureMessage>,
+    mut feature_selected_writer: MessageWriter<rgis_events::FeatureSelectedMessage>,
 ) -> Result {
     if let Some(event) = show_events.read().last() {
         *state = Some(event.0);
@@ -379,6 +381,7 @@ fn render_attribute_table_window(
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     let default_pos = egui::pos2(side_panel_width.0 + 4.0, top_panel_height.0 + 40.0);
     let mut is_open = true;
+    let mut action = None;
     egui::Window::new(format!("Attribute Table: {}", layer.name))
         .id(egui::Id::new("Attribute Table Window"))
         .default_pos(default_pos)
@@ -386,8 +389,18 @@ fn render_attribute_table_window(
         .resizable(true)
         .open(&mut is_open)
         .show(bevy_egui_ctx_mut, |ui| {
-            crate::windows::attribute_table::AttributeTable { layer }.render(ui);
+            action = crate::windows::attribute_table::AttributeTable { layer }.render(ui);
         });
+
+    match action {
+        Some(crate::windows::attribute_table::AttributeTableAction::ZoomToFeature(feature_id)) => {
+            center_camera_on_feature_writer.write(rgis_events::CenterCameraOnFeatureMessage(layer_id, feature_id));
+        }
+        Some(crate::windows::attribute_table::AttributeTableAction::SelectFeature(feature_id)) => {
+            feature_selected_writer.write(rgis_events::FeatureSelectedMessage(layer_id, feature_id));
+        }
+        None => {}
+    }
 
     if !is_open {
         *state = None;

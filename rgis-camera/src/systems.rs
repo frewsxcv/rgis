@@ -6,6 +6,7 @@ pub fn configure(app: &mut App) {
         Update,
         (
             center_camera,
+            center_camera_on_feature,
             pan_camera_system,
             handle_meshes_spawned_events,
             zoom_camera_system,
@@ -140,6 +141,44 @@ fn handle_meshes_spawned_events(
             center_camera_event_writer.write(event.0.into());
             *has_moved = true;
         }
+    }
+}
+
+fn center_camera_on_feature(
+    layers: Res<rgis_layers::Layers>,
+    mut event_reader: MessageReader<rgis_events::CenterCameraOnFeatureMessage>,
+    mut query: Query<&mut Transform, With<Camera>>,
+    windows: Query<&Window, With<PrimaryWindow>>,
+    ui_margins: rgis_units::UiMargins,
+) {
+    let Ok(window) = windows.single() else {
+        return;
+    };
+    for event in event_reader.read() {
+        let Some(layer) = layers.get(event.0) else {
+            continue;
+        };
+        let Some(feature) = layer.get_projected_feature(event.1) else {
+            continue;
+        };
+        let Some(bounding_rect) = feature.bounding_rect else {
+            continue;
+        };
+        let Ok(mut transform) = query.single_mut() else {
+            continue;
+        };
+        let map_area = rgis_units::MapArea {
+            window,
+            right_offset_px: 0.,
+            left_offset_px: ui_margins.left.0,
+            bottom_offset_px: ui_margins.bottom.0,
+            top_offset_px: ui_margins.top.0,
+        };
+        crate::utils::center_camera_on_projected_world_rect(
+            bounding_rect,
+            &mut transform,
+            map_area,
+        );
     }
 }
 
