@@ -19,11 +19,11 @@ fn init_camera(mut commands: Commands) {
 }
 
 fn handle_change_crs_event(
-    event: On<rgis_crs_messages::CrsChangedEvent>,
+    event: On<rgis_events::CrsChangedEvent>,
     mut query: Query<&mut Transform, With<Camera>>,
     windows: Query<&Window, With<PrimaryWindow>>,
     ui_margins: rgis_units::UiMargins,
-    geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
+    geodesy_ctx: Res<rgis_crs::GeodesyContext>,
 ) -> Result {
     let window = windows.single()?;
     let Ok(mut transform) = query.single_mut() else {
@@ -54,7 +54,7 @@ fn handle_change_crs_event(
 }
 
 fn pan_camera_system(
-    mut pan_camera_event_reader: MessageReader<rgis_camera_messages::PanCameraMessage>,
+    mut pan_camera_event_reader: MessageReader<rgis_events::PanCameraMessage>,
     mut query: Query<&mut Transform, With<Camera>>,
 ) {
     if pan_camera_event_reader.is_empty() {
@@ -74,10 +74,10 @@ fn pan_camera_system(
 }
 
 fn zoom_camera_system(
-    mut zoom_camera_event_reader: MessageReader<rgis_camera_messages::ZoomCameraMessage>,
+    mut zoom_camera_event_reader: MessageReader<rgis_events::ZoomCameraMessage>,
     mut query: Query<&mut Transform, With<Camera>>,
     mut recalculate_mouse_position_event_writer: MessageWriter<
-        rgis_camera_messages::RecalculateMousePositionMessage,
+        rgis_events::RecalculateMousePositionMessage,
     >,
 ) {
     if zoom_camera_event_reader.is_empty() {
@@ -127,8 +127,8 @@ fn zoom_camera_system(
 }
 
 fn handle_meshes_spawned_events(
-    mut meshes_spawned_event_reader: MessageReader<rgis_renderer_messages::MeshesSpawnedMessage>,
-    mut center_camera_event_writer: MessageWriter<rgis_camera_messages::CenterCameraMessage>,
+    mut meshes_spawned_event_reader: MessageReader<rgis_events::MeshesSpawnedMessage>,
+    mut center_camera_event_writer: MessageWriter<rgis_events::CenterCameraMessage>,
     mut has_moved: Local<bool>,
 ) {
     for event in meshes_spawned_event_reader.read() {
@@ -142,7 +142,7 @@ fn handle_meshes_spawned_events(
 fn center_camera(
     id_map: Res<rgis_layers::LayerIdToEntity>,
     layer_query: Query<&rgis_layers::LayerData>,
-    mut event_reader: MessageReader<rgis_camera_messages::CenterCameraMessage>,
+    mut event_reader: MessageReader<rgis_events::CenterCameraMessage>,
     mut query: Query<&mut Transform, With<Camera>>,
     windows: Query<&Window, With<PrimaryWindow>>,
     ui_margins: rgis_units::UiMargins,

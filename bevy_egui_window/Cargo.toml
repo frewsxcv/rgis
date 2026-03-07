@@ -9,6 +9,7 @@ publish.workspace = true
 
 bevy = { workspace = true }
 bevy_egui = { workspace = true }
+rgis-units = { path = "../rgis-units" }
 
 [lints]
 workspace = true

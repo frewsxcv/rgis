@@ -1,0 +1,14 @@
+[package]
+name = "geo-fix-antimeridian"
+version = "0.1.0"
+edition = "2021"
+description = "Fix geometries that cross the antimeridian by splitting them"
+
+[lints]
+workspace = true
+
+[dependencies]
+geo = { workspace = true }
+
+[dev-dependencies]
+geo = { workspace = true }

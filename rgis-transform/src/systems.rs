@@ -2,12 +2,12 @@ use std::sync::Arc;
 use bevy::prelude::*;
 
 fn handle_layer_created_events(
-    mut layer_created_event_reader: MessageReader<rgis_layer_messages::LayerCreatedMessage>,
+    mut layer_created_event_reader: MessageReader<rgis_events::LayerCreatedMessage>,
     id_map: Res<rgis_layers::LayerIdToEntity>,
     layer_query: Query<(&rgis_layers::LayerCrs, &rgis_layers::LayerData)>,
     target_crs: Res<rgis_crs::TargetCrs>,
     mut job_spawner: bevy_jobs::JobSpawner,
-    geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
+    geodesy_ctx: Res<rgis_crs::GeodesyContext>,
 ) {
     for event in layer_created_event_reader.read() {
         let Some(entity) = id_map.get(event.0) else {
@@ -44,7 +44,7 @@ fn handle_reproject_geometry_job_completion_events(
     mut finished_jobs: bevy_jobs::FinishedJobs,
     id_map: Res<rgis_layers::LayerIdToEntity>,
     mut layer_query: Query<&mut rgis_layers::LayerData>,
-    mut layer_reprojected_event_writer: MessageWriter<rgis_layer_messages::LayerReprojectedMessage>,
+    mut layer_reprojected_event_writer: MessageWriter<rgis_events::LayerReprojectedMessage>,
     target_crs: Res<rgis_crs::TargetCrs>,
 ) {
     while let Some(outcome) = finished_jobs.take_next::<crate::jobs::ReprojectGeometryJob>() {
@@ -79,7 +79,7 @@ fn handle_reproject_geometry_job_completion_events(
         }
 
         layer_reprojected_event_writer
-            .write(rgis_layer_messages::LayerReprojectedMessage(outcome.layer_id));
+            .write(rgis_events::LayerReprojectedMessage(outcome.layer_id));
     }
 }
 
@@ -87,7 +87,7 @@ fn handle_reproject_raster_extent_job_completion_events(
     mut finished_jobs: bevy_jobs::FinishedJobs,
     id_map: Res<rgis_layers::LayerIdToEntity>,
     mut layer_query: Query<&mut rgis_layers::LayerData>,
-    mut layer_reprojected_event_writer: MessageWriter<rgis_layer_messages::LayerReprojectedMessage>,
+    mut layer_reprojected_event_writer: MessageWriter<rgis_events::LayerReprojectedMessage>,
     target_crs: Res<rgis_crs::TargetCrs>,
 ) {
     while let Some(outcome) = finished_jobs.take_next::<crate::jobs::ReprojectRasterExtentJob>() {
@@ -119,16 +119,16 @@ fn handle_reproject_raster_extent_job_completion_events(
         }
 
         layer_reprojected_event_writer
-            .write(rgis_layer_messages::LayerReprojectedMessage(outcome.layer_id));
+            .write(rgis_events::LayerReprojectedMessage(outcome.layer_id));
     }
 }
 
 fn handle_crs_changed_events(
-    _event: On<rgis_crs_messages::CrsChangedEvent>,
+    _event: On<rgis_events::CrsChangedEvent>,
     mut layer_query: Query<(&rgis_primitives::LayerId, &rgis_layers::LayerCrs, &mut rgis_layers::LayerData)>,
     target_crs: Res<rgis_crs::TargetCrs>,
     mut job_spawner: bevy_jobs::JobSpawner,
-    geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
+    geodesy_ctx: Res<rgis_crs::GeodesyContext>,
 ) {
     for (layer_id, crs, mut data) in layer_query.iter_mut() {
         data.clear_projected();

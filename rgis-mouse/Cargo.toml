@@ -13,7 +13,7 @@ bevy = { workspace = true }
 bevy_egui = { workspace = true }
 geo = { workspace = true }
 geo-projected = { path = "../geo-projected" }
-rgis-camera-messages = { path = "../rgis-camera-messages" }
+rgis-events = { path = "../rgis-events" }
 rgis-settings = { path = "../rgis-settings" }
 rgis-units = { path = "../rgis-units" }
 num-t = { workspace = true }

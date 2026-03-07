@@ -1,7 +1,7 @@
 use bevy::{ecs::system::SystemParam, prelude::*};
 use bevy_egui::egui::{self, Align, Layout, Widget};
-use rgis_camera_messages::CenterCameraMessage;
-use rgis_layer_messages::{
+use rgis_events::CenterCameraMessage;
+use rgis_events::{
     CreateLayerMessage, DeleteLayerMessage, MoveDirection, MoveLayerMessage,
     ToggleLayerVisibilityMessage,
 };
@@ -20,6 +20,7 @@ pub struct Events<'w> {
     pub show_add_layer_window_event_writer: MessageWriter<'w, ShowAddLayerWindowMessage>,
     pub show_manage_layer_window_event_writer: MessageWriter<'w, ShowManageLayerWindowMessage>,
     pub perform_operation_event_writer: MessageWriter<'w, rgis_ui_messages::PerformOperationMessage>,
+    pub download_layer_event_writer: MessageWriter<'w, rgis_events::DownloadLayerMessage>,
 }
 
 /// Snapshot of a single layer's data for UI rendering (avoids Query lifetime issues).
@@ -32,7 +33,7 @@ pub struct LayerSnapshot {
     pub is_active: bool,
     pub geom_type: Option<geo_geom_type::GeomType>,
     pub crs: rgis_layers::LayerCrs,
-    pub unprojected_fc: Option<geo_features::FeatureCollection<geo_projected::UnprojectedScalar>>,
+    pub unprojected_fc: Option<std::sync::Arc<geo_features::FeatureCollection<geo_projected::UnprojectedScalar>>>,
 }
 
 pub struct Side<'a, 'w> {
@@ -84,7 +85,7 @@ impl Side<'_, '_> {
                 is_active: snap.is_active,
                 geom_type: snap.geom_type,
                 crs: &snap.crs,
-                unprojected_fc: snap.unprojected_fc.as_ref(),
+                unprojected_fc: snap.unprojected_fc.as_deref(),
                 events: self.events,
             });
         }
@@ -263,6 +264,27 @@ impl Widget for Layer<'_, '_> {
                             });
                         });
                     crate::widget_registry::register("Operations", ops_header.header_response.rect);
+                }
+
+                if self.is_vector {
+                    ui.menu_button("Download As...", |ui| {
+                        for format in [
+                            rgis_primitives::ExportFormat::GeoJson,
+                            rgis_primitives::ExportFormat::Wkt,
+                        ] {
+                            let btn = ui.button(format.label());
+                            crate::widget_registry::register(format.label(), btn.rect);
+                            if btn.clicked() {
+                                self.events
+                                    .download_layer_event_writer
+                                    .write(rgis_events::DownloadLayerMessage {
+                                        layer_id: self.layer_id,
+                                        format,
+                                    });
+                                ui.close();
+                            }
+                        }
+                    });
                 }
 
                 ui.separator();

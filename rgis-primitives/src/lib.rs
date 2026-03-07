@@ -1,11 +1,22 @@
 use std::num;
+use std::sync::atomic::{AtomicU16, Ordering};
 
 #[derive(
     Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Hash, bevy::ecs::component::Component,
 )]
 pub struct LayerId(num::NonZeroU16);
 
+static NEXT_LAYER_ID: AtomicU16 = AtomicU16::new(1);
+
 impl LayerId {
+    /// Creates a new unique `LayerId`.
+    pub fn new() -> Self {
+        let value = NEXT_LAYER_ID.fetch_add(1, Ordering::Relaxed);
+        LayerId(
+            num::NonZeroU16::new(value).expect("LayerId overflow"),
+        )
+    }
+
     /// Creates a `LayerId` from a `u16` value.
     ///
     /// # Panics
@@ -18,9 +29,45 @@ impl LayerId {
     }
 }
 
+#[derive(Debug, Clone, Copy)]
+pub enum ExportFormat {
+    GeoJson,
+    Wkt,
+}
+
+impl ExportFormat {
+    pub fn extension(self) -> &'static str {
+        match self {
+            ExportFormat::GeoJson => "geojson",
+            ExportFormat::Wkt => "wkt",
+        }
+    }
+
+    pub fn label(self) -> &'static str {
+        match self {
+            ExportFormat::GeoJson => "GeoJSON",
+            ExportFormat::Wkt => "WKT",
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Crs {
     pub epsg_code: Option<u16>,
     pub proj_string: Option<String>,
     pub op_handle: geodesy::ctx::OpHandle,
+}
+
+impl Crs {
+    pub fn is_geographic(&self) -> bool {
+        if let Some(code) = self.epsg_code {
+            crs_definitions::from_code(code)
+                .map(|def| def.proj4.contains("+proj=longlat"))
+                .unwrap_or(true)
+        } else if let Some(ref proj) = self.proj_string {
+            proj.contains("+proj=longlat")
+        } else {
+            true
+        }
+    }
 }

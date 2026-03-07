@@ -492,7 +492,7 @@ dependencies = [
 [[package]]
 name = "async-tiff"
 version = "0.2.0"
-source = "git+https://github.com/developmentseed/async-tiff#8e03688ec39180de18343f46744152a0e7413554"
+source = "git+https://github.com/developmentseed/async-tiff#4f64a92eaa25f85cb98701057412c060c6efaa20"
 dependencies = [
  "async-trait",
  "bytemuck",
@@ -912,6 +912,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_egui",
+ "rgis-units",
 ]
 
 [[package]]
@@ -1190,7 +1191,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
- "toml_edit",
+ "toml_edit 0.23.10+spec-1.0.0",
 ]
 
 [[package]]
@@ -3087,6 +3088,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "geo-fix-antimeridian"
+version = "0.1.0"
+dependencies = [
+ "geo",
+]
+
+[[package]]
 name = "geo-geodesy"
 version = "7.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4926,11 +4934,11 @@ dependencies = [
 
 [[package]]
 name = "proc-macro-crate"
-version = "3.4.0"
+version = "3.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "219cb19e96be00ab2e37d6e299658a0cfa83e52429179969b0f0121b4ac46983"
+checksum = "e67ba7e9b2b56446f1d419b1d807906278ffa1a658a8a5d8a39dcb1f5a78614f"
 dependencies = [
- "toml_edit",
+ "toml_edit 0.25.4+spec-1.1.0",
 ]
 
 [[package]]
@@ -4962,9 +4970,9 @@ checksum = "a993555f31e5a609f617c12db6250dedcac1b0a85076912c436e6fc9b2c8e6a3"
 
 [[package]]
 name = "quick-xml"
-version = "0.38.4"
+version = "0.39.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b66c2058c55a409d601666cffe35f04333cf1013010882cec174a7467cd4e21c"
+checksum = "958f21e8e7ceb5a1aa7fa87fab28e7c75976e0bfe7e23ff069e0a260f894067d"
 dependencies = [
  "memchr",
 ]
@@ -5283,20 +5291,13 @@ dependencies = [
  "getrandom 0.2.17",
  "js-sys",
  "rgis-camera",
- "rgis-camera-messages",
  "rgis-cli",
  "rgis-crs",
- "rgis-crs-messages",
+ "rgis-events",
  "rgis-file-loader",
- "rgis-file-loader-messages",
- "rgis-geodesy",
- "rgis-keyboard",
- "rgis-layer-messages",
  "rgis-layers",
- "rgis-map-messages",
  "rgis-mouse",
  "rgis-renderer",
- "rgis-renderer-messages",
  "rgis-settings",
  "rgis-transform",
  "rgis-ui",
@@ -5312,23 +5313,10 @@ dependencies = [
  "geo",
  "geo-geodesy",
  "geo-projected",
- "rgis-camera-messages",
- "rgis-crs-messages",
- "rgis-geodesy",
+ "rgis-crs",
+ "rgis-events",
  "rgis-layers",
- "rgis-renderer-messages",
  "rgis-units",
-]
-
-[[package]]
-name = "rgis-camera-messages"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "geo",
- "geo-projected",
- "num-t",
- "rgis-primitives",
 ]
 
 [[package]]
@@ -5344,17 +5332,24 @@ name = "rgis-crs"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "crs-definitions",
  "geodesy",
- "rgis-crs-messages",
- "rgis-geodesy",
+ "rgis-events",
  "rgis-primitives",
 ]
 
 [[package]]
-name = "rgis-crs-messages"
+name = "rgis-events"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bytes",
+ "geo",
+ "geo-features",
+ "geo-file-loader",
+ "geo-projected",
+ "geo-raster",
+ "num-t",
  "rgis-primitives",
 ]
 
@@ -5368,23 +5363,13 @@ dependencies = [
  "bytes",
  "geo-features",
  "geo-file-loader",
+ "geo-fix-antimeridian",
  "geo-projected",
  "geo-raster",
- "rgis-file-loader-messages",
- "rgis-geodesy",
- "rgis-layer-messages",
+ "rgis-crs",
+ "rgis-events",
  "rgis-primitives",
  "rgis-ui-messages",
-]
-
-[[package]]
-name = "rgis-file-loader-messages"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bytes",
- "geo-file-loader",
- "rgis-primitives",
 ]
 
 [[package]]
@@ -5400,34 +5385,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rgis-geodesy"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "crs-definitions",
- "geodesy",
-]
-
-[[package]]
-name = "rgis-keyboard"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "rgis-camera-messages",
-]
-
-[[package]]
-name = "rgis-layer-messages"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "geo-features",
- "geo-projected",
- "geo-raster",
- "rgis-primitives",
-]
-
-[[package]]
 name = "rgis-layers"
 version = "0.1.0"
 dependencies = [
@@ -5438,25 +5395,16 @@ dependencies = [
  "geo-geom-type",
  "geo-projected",
  "geo-raster",
+ "geozero",
  "rgis-crs",
- "rgis-layer-messages",
+ "rgis-events",
  "rgis-primitives",
- "rgis-renderer-messages",
  "rgis-ui-messages",
 ]
 
 [[package]]
 name = "rgis-library"
 version = "0.1.0"
-
-[[package]]
-name = "rgis-map-messages"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "geo-features",
- "rgis-primitives",
-]
 
 [[package]]
 name = "rgis-mouse"
@@ -5467,7 +5415,7 @@ dependencies = [
  "geo",
  "geo-projected",
  "num-t",
- "rgis-camera-messages",
+ "rgis-events",
  "rgis-settings",
  "rgis-units",
 ]
@@ -5477,6 +5425,7 @@ name = "rgis-primitives"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "crs-definitions",
  "geodesy",
 ]
 
@@ -5493,22 +5442,11 @@ dependencies = [
  "geo-projected",
  "geo-raster",
  "num-t",
- "rgis-crs-messages",
- "rgis-layer-messages",
+ "rgis-events",
  "rgis-layers",
- "rgis-map-messages",
  "rgis-primitives",
- "rgis-renderer-messages",
  "rgis-settings",
  "rgis-ui-messages",
-]
-
-[[package]]
-name = "rgis-renderer-messages"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "rgis-primitives",
 ]
 
 [[package]]
@@ -5517,7 +5455,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "dark-light",
- "rgis-map-messages",
+ "rgis-events",
 ]
 
 [[package]]
@@ -5534,9 +5472,7 @@ dependencies = [
  "geodesy",
  "num-t",
  "rgis-crs",
- "rgis-crs-messages",
- "rgis-geodesy",
- "rgis-layer-messages",
+ "rgis-events",
  "rgis-layers",
  "rgis-primitives",
  "rgis-settings",
@@ -5560,16 +5496,11 @@ dependencies = [
  "geo-projected",
  "geodesy",
  "rfd",
- "rgis-camera-messages",
  "rgis-crs",
- "rgis-crs-messages",
- "rgis-file-loader-messages",
+ "rgis-events",
  "rgis-geo-ops",
- "rgis-geodesy",
- "rgis-layer-messages",
  "rgis-layers",
  "rgis-library",
- "rgis-map-messages",
  "rgis-mouse",
  "rgis-primitives",
  "rgis-settings",
@@ -6025,12 +5956,12 @@ dependencies = [
 
 [[package]]
 name = "socket2"
-version = "0.6.2"
+version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "86f4aa3ad99f2088c990dfa82d367e19cb29268ed67c574d10d0a4bfe71f07e0"
+checksum = "3a766e1110788c36f4fa1c2b71b387a7815aa65f88ce0229841826633d93723e"
 dependencies = [
  "libc",
- "windows-sys 0.60.2",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -6461,13 +6392,34 @@ dependencies = [
 ]
 
 [[package]]
+name = "toml_datetime"
+version = "1.0.0+spec-1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "32c2555c699578a4f59f0cc68e5116c8d7cabbd45e1409b989d4be085b53f13e"
+dependencies = [
+ "serde_core",
+]
+
+[[package]]
 name = "toml_edit"
 version = "0.23.10+spec-1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "84c8b9f757e028cee9fa244aea147aab2a9ec09d5325a9b01e0a49730c2b5269"
 dependencies = [
  "indexmap",
- "toml_datetime",
+ "toml_datetime 0.7.5+spec-1.1.0",
+ "toml_parser",
+ "winnow",
+]
+
+[[package]]
+name = "toml_edit"
+version = "0.25.4+spec-1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7193cbd0ce53dc966037f54351dbbcf0d5a642c7f0038c382ef9e677ce8c13f2"
+dependencies = [
+ "indexmap",
+ "toml_datetime 1.0.0+spec-1.1.0",
  "toml_parser",
  "winnow",
 ]
@@ -6660,13 +6612,13 @@ checksum = "f8c1ae7cc0fdb8b842d65d127cb981574b0d2b249b74d1c7a2986863dc134f71"
 
 [[package]]
 name = "uds_windows"
-version = "1.1.0"
+version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "89daebc3e6fd160ac4aa9fc8b3bf71e1f74fbf92367ae71fb83a037e8bf164b9"
+checksum = "51b70b87d15e91f553711b40df3048faf27a7a04e01e0ddc0cf9309f0af7c2ca"
 dependencies = [
  "memoffset",
  "tempfile",
- "winapi",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -6744,9 +6696,9 @@ checksum = "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821"
 
 [[package]]
 name = "uuid"
-version = "1.21.0"
+version = "1.22.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b672338555252d43fd2240c714dc444b8c6fb0a5c5335e65a07bba7742735ddb"
+checksum = "a68d3c8f01c0cfa54a75291d83601161799e4a89a39e0929f4b0354d88757a37"
 dependencies = [
  "getrandom 0.4.2",
  "js-sys",
@@ -6940,9 +6892,9 @@ dependencies = [
 
 [[package]]
 name = "wayland-backend"
-version = "0.3.12"
+version = "0.3.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fee64194ccd96bf648f42a65a7e589547096dfa702f7cadef84347b66ad164f9"
+checksum = "aa75f400b7f719bcd68b3f47cd939ba654cedeef690f486db71331eec4c6a406"
 dependencies = [
  "cc",
  "downcast-rs 1.2.1",
@@ -6954,9 +6906,9 @@ dependencies = [
 
 [[package]]
 name = "wayland-client"
-version = "0.31.12"
+version = "0.31.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b8e6faa537fbb6c186cb9f1d41f2f811a4120d1b57ec61f50da451a0c5122bec"
+checksum = "ab51d9f7c071abeee76007e2b742499e535148035bb835f97aaed1338cf516c3"
 dependencies = [
  "bitflags 2.11.0",
  "rustix 1.1.4",
@@ -6977,9 +6929,9 @@ dependencies = [
 
 [[package]]
 name = "wayland-cursor"
-version = "0.31.12"
+version = "0.31.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5864c4b5b6064b06b1e8b74ead4a98a6c45a285fe7a0e784d24735f011fdb078"
+checksum = "4b3298683470fbdc6ca40151dfc48c8f2fd4c41a26e13042f801f85002384091"
 dependencies = [
  "rustix 1.1.4",
  "wayland-client",
@@ -6988,9 +6940,9 @@ dependencies = [
 
 [[package]]
 name = "wayland-protocols"
-version = "0.32.10"
+version = "0.32.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "baeda9ffbcfc8cd6ddaade385eaf2393bd2115a69523c735f12242353c3df4f3"
+checksum = "b23b5df31ceff1328f06ac607591d5ba360cf58f90c8fad4ac8d3a55a3c4aec7"
 dependencies = [
  "bitflags 2.11.0",
  "wayland-backend",
@@ -7000,9 +6952,9 @@ dependencies = [
 
 [[package]]
 name = "wayland-protocols-plasma"
-version = "0.3.10"
+version = "0.3.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aa98634619300a535a9a97f338aed9a5ff1e01a461943e8346ff4ae26007306b"
+checksum = "d392fc283a87774afc9beefcd6f931582bb97fe0e6ced0b306a62cb1d026527c"
 dependencies = [
  "bitflags 2.11.0",
  "wayland-backend",
@@ -7013,9 +6965,9 @@ dependencies = [
 
 [[package]]
 name = "wayland-protocols-wlr"
-version = "0.3.10"
+version = "0.3.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e9597cdf02cf0c34cd5823786dce6b5ae8598f05c2daf5621b6e178d4f7345f3"
+checksum = "78248e4cc0eff8163370ba5c158630dcae1f3497a586b826eca2ef5f348d6235"
 dependencies = [
  "bitflags 2.11.0",
  "wayland-backend",
@@ -7026,9 +6978,9 @@ dependencies = [
 
 [[package]]
 name = "wayland-scanner"
-version = "0.31.8"
+version = "0.31.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5423e94b6a63e68e439803a3e153a9252d5ead12fd853334e2ad33997e3889e3"
+checksum = "c86287151a309799b821ca709b7345a048a2956af05957c89cb824ab919fa4e3"
 dependencies = [
  "proc-macro2",
  "quick-xml",
@@ -7037,9 +6989,9 @@ dependencies = [
 
 [[package]]
 name = "wayland-sys"
-version = "0.31.8"
+version = "0.31.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1e6dbfc3ac5ef974c92a2235805cc0114033018ae1290a72e474aa8b28cbbdfd"
+checksum = "374f6b70e8e0d6bf9461a32988fd553b59ff630964924dad6e4a4eb6bd538d17"
 dependencies = [
  "dlib",
  "log",
@@ -7251,22 +7203,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "winapi"
-version = "0.3.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5c839a674fcd7a98952e593242ea400abe93992746761e38641405d28b00f419"
-dependencies = [
- "winapi-i686-pc-windows-gnu",
- "winapi-x86_64-pc-windows-gnu",
-]
-
-[[package]]
-name = "winapi-i686-pc-windows-gnu"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ac3b87c63620426dd9b991e5ce0329eff545bccbbb34f3be09ff6fb6ab51b7b6"
-
-[[package]]
 name = "winapi-util"
 version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7274,12 +7210,6 @@ checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
  "windows-sys 0.61.2",
 ]
-
-[[package]]
-name = "winapi-x86_64-pc-windows-gnu"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
 
 [[package]]
 name = "windows"
@@ -7842,9 +7772,9 @@ dependencies = [
 
 [[package]]
 name = "winnow"
-version = "0.7.14"
+version = "0.7.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5a5364e9d77fcdeeaa6062ced926ee3381faa2ee02d3eb83a5c27a8825540829"
+checksum = "df79d97927682d2fd8adb29682d1140b343be4ac0f08fd68b7765d9c059d3945"
 dependencies = [
  "memchr",
 ]

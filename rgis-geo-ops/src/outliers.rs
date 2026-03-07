@@ -19,6 +19,10 @@ pub struct Outliers {
 }
 
 impl Operation for Outliers {
+    fn name(&self) -> &str {
+        <Self as OperationEntry>::NAME
+    }
+
     fn visit_point(&mut self, point: &geo::Point<TypedNum<f64, Unprojected>>) {
         self.points.push(*point);
     }

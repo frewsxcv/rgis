@@ -15,6 +15,10 @@ impl OperationEntry for ConvexHull {
 }
 
 impl Operation for ConvexHull {
+    fn name(&self) -> &str {
+        <Self as OperationEntry>::NAME
+    }
+
     fn visit_geometry(&mut self, geometry: &geo::Geometry<UnprojectedScalar>) {
         self.geometries.push(geometry.clone());
     }

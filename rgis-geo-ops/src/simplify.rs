@@ -25,6 +25,10 @@ impl OperationEntry for Simplify {
 }
 
 impl Operation for Simplify {
+    fn name(&self) -> &str {
+        <Self as OperationEntry>::NAME
+    }
+
     fn next_action(&self) -> crate::Action {
         if self.execute_pressed {
             crate::Action::Perform
