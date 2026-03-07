@@ -33,10 +33,6 @@ impl bevy_egui_window::Window for Welcome<'_> {
     fn default_width(&self) -> f32 {
         350.0
     }
-
-    fn default_anchor(&self) -> (egui::Align2, [f32; 2]) {
-        (egui::Align2::CENTER_CENTER, [0., 0.])
-    }
 }
 
 pub fn render_welcome_window_system(
@@ -51,13 +47,11 @@ pub fn render_welcome_window_system(
 
     let ctx = bevy_egui_ctx.ctx_mut()?;
 
-    let (anchor_align, anchor_offset) = window.default_anchor();
-
     let response = egui::Window::new(window.title())
         .default_width(window.default_width())
         .open(&mut is_window_open.0)
         .resizable(false)
-        .anchor(anchor_align, anchor_offset)
+        .anchor(egui::Align2::CENTER_CENTER, [0., 0.])
         .show(ctx, |ui| {
             ui.add(window);
         });

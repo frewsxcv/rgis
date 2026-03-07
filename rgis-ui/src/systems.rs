@@ -93,7 +93,7 @@ fn render_manage_layer_window(
     }
 
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
-    let default_pos = egui::pos2(side_panel_width.0, top_panel_height.0);
+    let default_pos = egui::pos2(side_panel_width.0 + 4.0, top_panel_height.0 + 4.0);
     let mut is_open = true;
     egui::Window::new("Manage Layer")
         .default_pos(default_pos)
@@ -146,7 +146,7 @@ fn render_add_layer_window(
 
     if *is_visible {
         let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
-        let default_pos = egui::pos2(side_panel_width.0, top_panel_height.0);
+        let default_pos = egui::pos2(side_panel_width.0 + 4.0, top_panel_height.0 + 4.0);
         egui::Window::new("Add Layer")
             .resizable(false)
             .default_pos(default_pos)
@@ -254,7 +254,7 @@ fn render_change_crs_window(
     }
 
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
-    let default_pos = egui::pos2(side_panel_width.0, top_panel_height.0);
+    let default_pos = egui::pos2(side_panel_width.0 + 4.0, top_panel_height.0 + 4.0);
     egui::Window::new("Change CRS")
         .default_pos(default_pos)
         .open(&mut is_visible.0)
@@ -296,7 +296,7 @@ fn render_feature_properties_window(
         return Ok(());
     };
 
-    let default_pos = egui::pos2(side_panel_width.0, top_panel_height.0);
+    let default_pos = egui::pos2(side_panel_width.0 + 4.0, top_panel_height.0 + 4.0);
     let properties = &data.properties;
     let mut is_open = true;
     egui::Window::new("Layer Feature Properties")
@@ -351,7 +351,7 @@ fn render_operation_window(
     }
 
     if state.is_some() {
-        let default_pos = egui::pos2(side_panel_width.0, top_panel_height.0);
+        let default_pos = egui::pos2(side_panel_width.0 + 4.0, top_panel_height.0 + 4.0);
         let mut is_open = true;
         egui::Window::new("Operation")
             .default_pos(default_pos)
