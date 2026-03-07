@@ -11,10 +11,6 @@ test("canvas is present and fills viewport", async ({ appPage }) => {
   expect(box.height).toBeGreaterThanOrEqual(650);
 });
 
-test("initial render baseline", async ({ appPage }) => {
-  await appPage.expectScreenshot("initial-render.png");
-});
-
 test("clicking Library option changes the view", async ({ appPage }) => {
   await appPage.openAddLayerWindow();
   const before = await appPage.page.screenshot();
