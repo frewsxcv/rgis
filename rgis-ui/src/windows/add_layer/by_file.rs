@@ -7,7 +7,7 @@ use super::{file::SelectedFile, AddLayerOutput, State};
 pub struct ByFile<'a> {
     pub selected_file: &'a mut SelectedFile,
     pub state: &'a mut State,
-    pub geodesy_ctx: &'a rgis_geodesy::GeodesyContext,
+    pub geodesy_ctx: &'a rgis_crs::GeodesyContext,
 }
 
 impl<'a> ByFile<'a> {

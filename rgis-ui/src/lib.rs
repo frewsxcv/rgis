@@ -33,6 +33,7 @@ struct OperationWindowData {
     operation: Box<dyn Send + Sync + rgis_geo_ops::Operation>,
     feature_collection: std::sync::Arc<geo_features::FeatureCollection<geo_projected::UnprojectedScalar>>,
     source_crs: Option<rgis_primitives::Crs>,
+    layer_name: String,
 }
 
 /// Window state for operations. `Some(data)` means visible.

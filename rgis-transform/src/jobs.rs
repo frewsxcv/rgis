@@ -7,7 +7,7 @@ pub struct ReprojectRasterExtentJob {
     pub layer_id: rgis_primitives::LayerId,
     pub source_crs: rgis_primitives::Crs,
     pub target_crs: rgis_primitives::Crs,
-    pub geodesy_ctx: rgis_geodesy::GeodesyContext,
+    pub geodesy_ctx: rgis_crs::GeodesyContext,
 }
 
 pub struct ReprojectRasterExtentJobOutcome {
@@ -202,7 +202,7 @@ pub struct ReprojectGeometryJob {
     pub layer_id: rgis_primitives::LayerId,
     pub source_crs: rgis_primitives::Crs,
     pub target_crs: rgis_primitives::Crs,
-    pub geodesy_ctx: rgis_geodesy::GeodesyContext,
+    pub geodesy_ctx: rgis_crs::GeodesyContext,
 }
 
 pub struct ReprojectGeometryJobOutcome {

@@ -15,7 +15,7 @@ impl Default for CrsInputMode {
 }
 
 pub struct CrsInput<'a> {
-    pub geodesy_ctx: &'a rgis_geodesy::GeodesyContext,
+    pub geodesy_ctx: &'a rgis_crs::GeodesyContext,
     pub text_field_value: &'a mut String,
     pub input_mode: &'a mut CrsInputMode,
     outcome: &'a mut Option<Outcome>,
@@ -23,7 +23,7 @@ pub struct CrsInput<'a> {
 
 impl<'a> CrsInput<'a> {
     pub fn new(
-        geodesy_ctx: &'a rgis_geodesy::GeodesyContext,
+        geodesy_ctx: &'a rgis_crs::GeodesyContext,
         outcome: &'a mut Option<Outcome>,
         text_field_value: &'a mut String,
         input_mode: &'a mut CrsInputMode,
@@ -88,7 +88,7 @@ impl egui::Widget for CrsInput<'_> {
 }
 
 struct EpsgCodeInputFieldWidget<'a> {
-    geodesy_ctx: &'a rgis_geodesy::GeodesyContext,
+    geodesy_ctx: &'a rgis_crs::GeodesyContext,
     text_field_value: &'a mut String,
     outcome: &'a mut Option<Outcome>,
     parsed_text_field_value: Option<u16>,
@@ -96,7 +96,7 @@ struct EpsgCodeInputFieldWidget<'a> {
 
 impl<'a> EpsgCodeInputFieldWidget<'a> {
     pub fn new(
-        geodesy_ctx: &'a rgis_geodesy::GeodesyContext,
+        geodesy_ctx: &'a rgis_crs::GeodesyContext,
         text_field_value: &'a mut String,
         outcome: &'a mut Option<Outcome>,
     ) -> Self {
@@ -141,14 +141,14 @@ impl egui::Widget for EpsgCodeInputFieldWidget<'_> {
 }
 
 struct ProjStringInputFieldWidget<'a> {
-    geodesy_ctx: &'a rgis_geodesy::GeodesyContext,
+    geodesy_ctx: &'a rgis_crs::GeodesyContext,
     text_field_value: &'a mut String,
     outcome: &'a mut Option<Outcome>,
 }
 
 impl<'a> ProjStringInputFieldWidget<'a> {
     pub fn new(
-        geodesy_ctx: &'a rgis_geodesy::GeodesyContext,
+        geodesy_ctx: &'a rgis_crs::GeodesyContext,
         text_field_value: &'a mut String,
         outcome: &'a mut Option<Outcome>,
     ) -> Self {
@@ -193,7 +193,7 @@ impl egui::Widget for ProjStringInputFieldWidget<'_> {
 #[derive(Debug)]
 pub enum Error {
     ParseIntError(std::num::ParseIntError),
-    Geodesy(rgis_geodesy::Error),
+    Geodesy(rgis_crs::Error),
 }
 
 impl std::fmt::Display for Error {
@@ -213,14 +213,14 @@ impl From<std::num::ParseIntError> for Error {
     }
 }
 
-impl From<rgis_geodesy::Error> for Error {
-    fn from(err: rgis_geodesy::Error) -> Self {
+impl From<rgis_crs::Error> for Error {
+    fn from(err: rgis_crs::Error) -> Self {
         Error::Geodesy(err)
     }
 }
 
 fn parse_epsg_input_value(
-    geodesy_ctx: &rgis_geodesy::GeodesyContext,
+    geodesy_ctx: &rgis_crs::GeodesyContext,
     input: &str,
     parsed_text_field_value: &mut Option<u16>,
 ) -> Outcome {
@@ -228,17 +228,17 @@ fn parse_epsg_input_value(
     let parsed = u16::from_str(input);
     *parsed_text_field_value = parsed.as_ref().ok().copied();
     let parsed = parsed?;
-    let outcome = rgis_geodesy::epsg_code_to_geodesy_op_handle(&mut *geodesy_ctx, parsed)
+    let outcome = rgis_crs::epsg_code_to_geodesy_op_handle(&mut *geodesy_ctx, parsed)
         .map_err(Error::Geodesy)?;
     Ok((outcome, Some(parsed), None))
 }
 
 fn parse_proj_input_value(
-    geodesy_ctx: &rgis_geodesy::GeodesyContext,
+    geodesy_ctx: &rgis_crs::GeodesyContext,
     input: &str,
 ) -> Outcome {
     let mut geodesy_ctx = geodesy_ctx.write().unwrap();
-    let op_handle = rgis_geodesy::proj_string_to_geodesy_op_handle(&mut *geodesy_ctx, input)
+    let op_handle = rgis_crs::proj_string_to_geodesy_op_handle(&mut *geodesy_ctx, input)
         .map_err(Error::Geodesy)?;
     Ok((op_handle, None, Some(input.to_string())))
 }
