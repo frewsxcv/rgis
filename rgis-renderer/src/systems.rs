@@ -48,13 +48,13 @@ fn handle_picking_click(
     });
     let layers_vec: Vec<_> = layers_iter.map(|(id, data)| (*id, data)).collect();
 
-    if let Some((layer_id, feature)) = rgis_layers::feature_from_click(coord, layers_vec.into_iter()) {
+    if let Some(result) = rgis_layers::feature_from_click(coord, layers_vec.into_iter()) {
         render_props_writer.write(rgis_ui_messages::RenderFeaturePropertiesMessage {
-            layer_id,
-            properties: feature.properties.clone(),
+            layer_id: result.layer_id,
+            properties: result.properties,
         });
         feature_selected_writer
-            .write(rgis_events::FeatureSelectedMessage(layer_id, feature.id));
+            .write(rgis_events::FeatureSelectedMessage(result.layer_id, result.feature.id));
     }
 }
 

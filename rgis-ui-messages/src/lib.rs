@@ -17,9 +17,12 @@ pub struct HideAddLayerWindowMessage;
 pub struct RenderTextMessage(pub String);
 
 #[derive(Message)]
+pub struct ShowAttributeTableMessage(pub rgis_primitives::LayerId);
+
+#[derive(Message)]
 pub struct RenderFeaturePropertiesMessage {
     pub layer_id: rgis_primitives::LayerId,
-    pub properties: geo_features::Properties,
+    pub properties: Option<Vec<(String, String)>>,
 }
 
 /// Change the `Layer`'s color
@@ -52,7 +55,8 @@ pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.add_message::<ShowManageLayerWindowMessage>()
+        app.add_message::<ShowAttributeTableMessage>()
+            .add_message::<ShowManageLayerWindowMessage>()
             .add_message::<OpenChangeCrsWindowMessage>()
             .add_message::<ShowAddLayerWindowMessage>()
             .add_message::<HideAddLayerWindowMessage>()

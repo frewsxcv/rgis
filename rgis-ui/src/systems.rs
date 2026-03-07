@@ -371,10 +371,12 @@ fn render_feature_properties_window(
     top_panel_height: Res<rgis_units::TopPanelHeight>,
 ) -> Result {
     if let Some(event) = render_message_events.drain().last() {
-        *state = Some(crate::FeaturePropertiesWindowData {
-            layer_id: event.layer_id,
-            properties: event.properties,
-        });
+        if let Some(properties) = event.properties {
+            *state = Some(crate::FeaturePropertiesWindowData {
+                layer_id: event.layer_id,
+                properties,
+            });
+        }
     }
 
     let Some(ref data) = *state else {
@@ -403,6 +405,64 @@ fn render_feature_properties_window(
             }
             .render(ui);
         });
+
+    if !is_open {
+        *state = None;
+    }
+    Ok(())
+}
+
+fn render_attribute_table_window(
+    mut state: Local<crate::AttributeTableWindowState>,
+    mut bevy_egui_ctx: EguiContexts,
+    id_map: Res<rgis_layers::LayerIdToEntity>,
+    layer_query: Query<(&rgis_layers::LayerName, &rgis_layers::LayerData)>,
+    mut show_events: MessageReader<rgis_ui_messages::ShowAttributeTableMessage>,
+    side_panel_width: Res<rgis_units::SidePanelWidth>,
+    top_panel_height: Res<rgis_units::TopPanelHeight>,
+    mut center_camera_on_feature_writer: MessageWriter<rgis_events::CenterCameraOnFeatureMessage>,
+    mut feature_selected_writer: MessageWriter<rgis_events::FeatureSelectedMessage>,
+) -> Result {
+    if let Some(event) = show_events.read().last() {
+        *state = Some(event.0);
+    }
+
+    let Some(layer_id) = *state else {
+        return Ok(());
+    };
+
+    let Some(entity) = id_map.get(layer_id) else {
+        *state = None;
+        return Ok(());
+    };
+    let Ok((name, data)) = layer_query.get(entity) else {
+        *state = None;
+        return Ok(());
+    };
+
+    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
+    let default_pos = egui::pos2(side_panel_width.0 + 4.0, top_panel_height.0 + 40.0);
+    let mut is_open = true;
+    let mut action = None;
+    egui::Window::new(format!("Attribute Table: {}", name.0))
+        .id(egui::Id::new("Attribute Table Window"))
+        .default_pos(default_pos)
+        .default_size([600.0, 400.0])
+        .resizable(true)
+        .open(&mut is_open)
+        .show(bevy_egui_ctx_mut, |ui| {
+            action = crate::windows::attribute_table::AttributeTable { data }.render(ui);
+        });
+
+    match action {
+        Some(crate::windows::attribute_table::AttributeTableAction::ZoomToFeature(feature_id)) => {
+            center_camera_on_feature_writer.write(rgis_events::CenterCameraOnFeatureMessage(layer_id, feature_id));
+        }
+        Some(crate::windows::attribute_table::AttributeTableAction::SelectFeature(feature_id)) => {
+            feature_selected_writer.write(rgis_events::FeatureSelectedMessage(layer_id, feature_id));
+        }
+        None => {}
+    }
 
     if !is_open {
         *state = None;
@@ -780,6 +840,7 @@ pub fn configure(app: &mut App) {
             render_add_layer_window.in_set(RenderSystemSet::Windows),
             render_change_crs_window.in_set(RenderSystemSet::Windows),
             render_feature_properties_window.in_set(RenderSystemSet::Windows),
+            render_attribute_table_window.in_set(RenderSystemSet::Windows),
             render_operation_window.in_set(RenderSystemSet::Windows),
             render_measure_tool.in_set(RenderSystemSet::RenderingTopBottom),
         ),

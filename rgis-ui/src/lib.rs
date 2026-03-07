@@ -18,11 +18,14 @@ type ManageLayerWindowState = Option<rgis_primitives::LayerId>;
 /// Data displayed in the feature properties window.
 pub struct FeaturePropertiesWindowData {
     layer_id: rgis_primitives::LayerId,
-    properties: geo_features::Properties,
+    properties: Vec<(String, String)>,
 }
 
 /// Window state for feature properties. `Some(data)` means visible.
 type FeaturePropertiesWindowState = Option<FeaturePropertiesWindowData>;
+
+/// Window state for attribute table. `Some(layer_id)` means visible.
+type AttributeTableWindowState = Option<rgis_primitives::LayerId>;
 
 /// Whether the Change CRS window is visible.
 #[derive(Resource, Default)]

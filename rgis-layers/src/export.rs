@@ -40,21 +40,11 @@ fn write_features<W: FeatureProcessor + geozero::GeomProcessor + PropertyProcess
         }
 
         writer.properties_begin()?;
-        for (i, (key, value)) in feature.properties.iter().enumerate() {
-            match value {
-                geo_features::Value::String(s) => {
-                    writer.property(i, key, &ColumnValue::String(s))?;
-                }
-                geo_features::Value::Number(n) => {
-                    writer.property(i, key, &ColumnValue::Double(*n))?;
-                }
-                geo_features::Value::Boolean(b) => {
-                    writer.property(i, key, &ColumnValue::Bool(*b))?;
-                }
-                geo_features::Value::Null => {
-                    writer.property(i, key, &ColumnValue::String(""))?;
-                }
-            };
+        if let Some(ref record_batch) = fc.properties {
+            let props = geo_features::properties_for_row(record_batch, idx);
+            for (i, (key, value)) in props.iter().enumerate() {
+                writer.property(i, key, &ColumnValue::String(value))?;
+            }
         }
         writer.properties_end()?;
 

@@ -284,13 +284,16 @@ impl LayerData {
 /// Given a projected coordinate, find the first feature that contains it.
 /// The caller should pass an iterator of (LayerId, &LayerData) in
 /// top-to-bottom order.
+pub struct FeatureFromClickResult<'a> {
+    pub layer_id: rgis_primitives::LayerId,
+    pub feature: &'a geo_features::Feature<geo_projected::UnprojectedScalar>,
+    pub properties: Option<Vec<(String, String)>>,
+}
+
 pub fn feature_from_click<'a>(
     coord: geo_projected::ProjectedCoord,
     layers: impl Iterator<Item = (rgis_primitives::LayerId, &'a LayerData)>,
-) -> Option<(
-    rgis_primitives::LayerId,
-    &'a geo_features::Feature<geo_projected::UnprojectedScalar>,
-)> {
+) -> Option<FeatureFromClickResult<'a>> {
     for (layer_id, data) in layers {
         if let LayerData::Vector {
             unprojected_feature_collection,
@@ -298,13 +301,22 @@ pub fn feature_from_click<'a>(
             ..
         } = data
         {
-            for (unprojected, proj_feature) in unprojected_feature_collection
+            for (feature_index, (unprojected, proj_feature)) in unprojected_feature_collection
                 .features
                 .iter()
                 .zip(projected.features.iter())
+                .enumerate()
             {
                 if proj_feature.contains(&coord) {
-                    return Some((layer_id, unprojected));
+                    let properties = unprojected_feature_collection
+                        .properties
+                        .as_ref()
+                        .map(|rb| geo_features::properties_for_row(rb, feature_index));
+                    return Some(FeatureFromClickResult {
+                        layer_id,
+                        feature: unprojected,
+                        properties,
+                    });
                 }
             }
         }

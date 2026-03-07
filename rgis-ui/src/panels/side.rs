@@ -5,7 +5,7 @@ use rgis_events::{
     CreateLayerMessage, DeleteLayerMessage, MoveDirection, MoveLayerMessage,
     ToggleLayerVisibilityMessage,
 };
-use rgis_ui_messages::{ShowAddLayerWindowMessage, ShowManageLayerWindowMessage};
+use rgis_ui_messages::{ShowAddLayerWindowMessage, ShowAttributeTableMessage, ShowManageLayerWindowMessage};
 use std::marker;
 
 // const MAX_SIDE_PANEL_WIDTH: f32 = 200.0f32;
@@ -19,6 +19,7 @@ pub struct Events<'w> {
     pub create_layer_event_writer: MessageWriter<'w, CreateLayerMessage>,
     pub show_add_layer_window_event_writer: MessageWriter<'w, ShowAddLayerWindowMessage>,
     pub show_manage_layer_window_event_writer: MessageWriter<'w, ShowManageLayerWindowMessage>,
+    pub show_attribute_table_event_writer: MessageWriter<'w, ShowAttributeTableMessage>,
     pub perform_operation_event_writer: MessageWriter<'w, rgis_ui_messages::PerformOperationMessage>,
     pub download_layer_event_writer: MessageWriter<'w, rgis_events::DownloadLayerMessage>,
 }
@@ -215,6 +216,16 @@ impl Widget for Layer<'_, '_> {
                     self.events
                         .show_manage_layer_window_event_writer
                         .write(ShowManageLayerWindowMessage(layer_id));
+                }
+
+                if self.is_vector {
+                    let attr_btn = ui.button("Attribute Table");
+                    crate::widget_registry::register("Attribute Table", attr_btn.rect);
+                    if attr_btn.clicked() {
+                        self.events
+                            .show_attribute_table_event_writer
+                            .write(ShowAttributeTableMessage(layer_id));
+                    }
                 }
 
                 let zoom_btn = ui.button("Zoom to Extent");
