@@ -39,6 +39,7 @@ pub struct RenameLayerMessage(pub rgis_primitives::LayerId, pub String);
 pub struct OpenOperationWindowMessage {
     pub operation: Box<dyn Send + Sync + rgis_geo_ops::Operation>,
     pub feature_collection: Arc<geo_features::FeatureCollection<geo_projected::UnprojectedScalar>>,
+    pub layer_name: String,
 }
 
 #[derive(Message)]

@@ -44,6 +44,8 @@ pub enum Action {
 }
 
 pub trait Operation {
+    fn name(&self) -> &str;
+
     fn perform(
         &mut self,
         feature_collection: &geo_features::FeatureCollection<UnprojectedScalar>,

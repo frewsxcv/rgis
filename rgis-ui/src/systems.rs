@@ -283,6 +283,7 @@ fn render_operation_window(
             operation: event.operation,
             feature_collection: event.feature_collection,
             source_crs: None,
+            layer_name: event.layer_name,
         });
     }
 
@@ -694,18 +695,20 @@ fn perform_operation(
                     rgis_ui_messages::OpenOperationWindowMessage {
                         operation,
                         feature_collection: Arc::clone(fc),
+                        layer_name: layer.name.clone(),
                     },
                 );
             }
             rgis_geo_ops::Action::Perform => {
                 // TODO: perform in background job
+                let op_name = operation.name().to_string();
                 let outcome = operation.perform(fc);
 
                 match outcome {
                     Ok(rgis_geo_ops::Outcome::FeatureCollection(feature_collection)) => {
                         create_layer_event_writer.write(rgis_events::CreateLayerMessage {
                             feature_collection: Arc::new(feature_collection),
-                            name: "foo".into(), // TODO
+                            name: format!("{} of {}", op_name, layer.name),
                             source_crs: layer.crs.clone(),
                         });
                     }
