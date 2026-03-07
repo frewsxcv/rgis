@@ -37,6 +37,7 @@ fn handle_change_crs_event(
         bottom_offset_px: ui_margins.bottom.0,
     };
     let rect = map_area.projected_geo_rect(&transform, window);
+    let mut geometry: geo::Geometry<_> = rect.into();
 
     {
         let geodesy_ctx = geodesy_ctx.read().unwrap();
@@ -45,9 +46,12 @@ fn handle_change_crs_event(
             event.old.op_handle,
             event.new.op_handle,
         )?;
-        transformer.transform(&mut (rect.into()))?;
+        transformer.transform(&mut geometry)?;
     }
 
+    let geo::Geometry::Rect(rect) = geometry else {
+        unreachable!()
+    };
     crate::utils::center_camera_on_projected_world_rect(rect, &mut transform, map_area);
 
     Ok(())
