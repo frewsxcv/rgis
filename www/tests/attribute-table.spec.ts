@@ -16,10 +16,7 @@ test.describe("attribute table", () => {
     // Expand the layer header
     await appPage.clickWidget("World: Countries");
 
-    // Open the Manage Layer window
-    await appPage.clickWidget("Manage");
-
-    // Click the Attribute Table button
+    // Click the Attribute Table button in the side panel
     await appPage.clickWidget("Attribute Table");
 
     await appPage.expectScreenshot("attribute-table.png");

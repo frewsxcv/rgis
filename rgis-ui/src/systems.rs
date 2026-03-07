@@ -105,7 +105,6 @@ fn render_manage_layer_window(
     >,
     mut duplicate_layer_events: ResMut<Messages<rgis_events::DuplicateLayerMessage>>,
     mut rename_events: ResMut<Messages<rgis_ui_messages::RenameLayerMessage>>,
-    mut show_attribute_table_events: ResMut<Messages<rgis_ui_messages::ShowAttributeTableMessage>>,
     mut name_edit_buffer: Local<String>,
     mut name_edit_layer_id: Local<Option<rgis_primitives::LayerId>>,
 ) -> Result {
@@ -122,7 +121,6 @@ fn render_manage_layer_window(
         point_size_events: &mut point_size_events,
         duplicate_layer_events: &mut duplicate_layer_events,
         rename_events: &mut rename_events,
-        show_attribute_table_events: &mut show_attribute_table_events,
         name_edit_buffer: &mut name_edit_buffer,
         name_edit_layer_id: &mut name_edit_layer_id,
     }
