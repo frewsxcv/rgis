@@ -24,11 +24,7 @@ rgis-primitives = { path = "../rgis-primitives" }
 rgis-layers = { path = "../rgis-layers" }
 rgis-library = { path = "../rgis-library" }
 rgis-ui-messages = { path = "../rgis-ui-messages" }
-rgis-camera-messages = { path = "../rgis-camera-messages" }
-rgis-layer-messages = { path = "../rgis-layer-messages" }
-rgis-map-messages = { path = "../rgis-map-messages" }
-rgis-file-loader-messages = { path = "../rgis-file-loader-messages" }
-rgis-crs-messages = { path = "../rgis-crs-messages" }
+rgis-events = { path = "../rgis-events" }
 rgis-mouse = { path = "../rgis-mouse" }
 rgis-settings = { path = "../rgis-settings" }
 rgis-units = { path = "../rgis-units" }

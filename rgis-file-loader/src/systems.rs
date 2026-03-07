@@ -5,7 +5,7 @@ use rgis_primitives::Crs;
 struct SourceCrs(Crs);
 
 fn handle_network_fetch_finished_jobs(
-    mut load_event_reader: ResMut<Messages<rgis_file_loader_messages::LoadFileMessage>>,
+    mut load_event_reader: ResMut<Messages<rgis_events::LoadFileMessage>>,
     mut finished_jobs: bevy_jobs::FinishedJobs,
     mut render_message_event_writer: MessageWriter<rgis_ui_messages::RenderTextMessage>,
 ) {
@@ -14,7 +14,7 @@ fn handle_network_fetch_finished_jobs(
     {
         match outcome {
             Ok(fetched) => {
-                load_event_reader.write(rgis_file_loader_messages::LoadFileMessage::FromBytes {
+                load_event_reader.write(rgis_events::LoadFileMessage::FromBytes {
                     file_format: geo_file_loader::FileFormat::GeoJson,
                     bytes: fetched.bytes,
                     file_name: fetched.name,
@@ -32,12 +32,12 @@ fn handle_network_fetch_finished_jobs(
 }
 
 fn handle_load_file_events(
-    mut load_event_reader: ResMut<Messages<rgis_file_loader_messages::LoadFileMessage>>,
+    mut load_event_reader: ResMut<Messages<rgis_events::LoadFileMessage>>,
     mut job_spawner: bevy_jobs::JobSpawner,
 ) {
     for event in load_event_reader.drain() {
         match event {
-            rgis_file_loader_messages::LoadFileMessage::FromNetwork {
+            rgis_events::LoadFileMessage::FromNetwork {
                 url,
                 name,
                 source_crs,
@@ -46,7 +46,7 @@ fn handle_load_file_events(
                 user_data: SourceCrs(source_crs),
                 name,
             }),
-            rgis_file_loader_messages::LoadFileMessage::FromBytes {
+            rgis_events::LoadFileMessage::FromBytes {
                 file_name,
                 bytes,
                 file_format,
@@ -63,8 +63,8 @@ fn handle_load_file_events(
 
 fn handle_load_file_job_finished_events(
     mut finished_jobs: bevy_jobs::FinishedJobs,
-    mut create_layer_event_writer: MessageWriter<rgis_layer_messages::CreateLayerMessage>,
-    mut create_raster_layer_event_writer: MessageWriter<rgis_layer_messages::CreateRasterLayerMessage>,
+    mut create_layer_event_writer: MessageWriter<rgis_events::CreateLayerMessage>,
+    mut create_raster_layer_event_writer: MessageWriter<rgis_events::CreateRasterLayerMessage>,
     mut render_message_event_writer: MessageWriter<rgis_ui_messages::RenderTextMessage>,
     geodesy_ctx: Res<rgis_crs::GeodesyContext>,
 ) {
@@ -75,7 +75,7 @@ fn handle_load_file_job_finished_events(
                 name,
                 source_crs,
             }) => {
-                create_layer_event_writer.write(rgis_layer_messages::CreateLayerMessage {
+                create_layer_event_writer.write(rgis_events::CreateLayerMessage {
                     name,
                     feature_collection: std::sync::Arc::new(feature_collection),
                     source_crs,
@@ -102,7 +102,7 @@ fn handle_load_file_job_finished_events(
                     }
                 }
                 create_raster_layer_event_writer.write(
-                    rgis_layer_messages::CreateRasterLayerMessage {
+                    rgis_events::CreateRasterLayerMessage {
                         raster,
                         name,
                         source_crs,

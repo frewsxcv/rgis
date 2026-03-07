@@ -11,5 +11,5 @@ workspace = true
 bevy = { workspace = true }
 geodesy = { workspace = true }
 crs-definitions = { workspace = true }
-rgis-crs-messages = { path = "../rgis-crs-messages" }
+rgis-events = { path = "../rgis-events" }
 rgis-primitives = { path = "../rgis-primitives" }

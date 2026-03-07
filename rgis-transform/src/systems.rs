@@ -2,7 +2,7 @@ use std::sync::Arc;
 use bevy::prelude::*;
 
 fn handle_layer_created_events(
-    mut layer_created_event_reader: MessageReader<rgis_layer_messages::LayerCreatedMessage>,
+    mut layer_created_event_reader: MessageReader<rgis_events::LayerCreatedMessage>,
     layers: Res<rgis_layers::Layers>,
     target_crs: Res<rgis_crs::TargetCrs>,
     mut job_spawner: bevy_jobs::JobSpawner,
@@ -39,7 +39,7 @@ fn handle_layer_created_events(
 fn handle_reproject_geometry_job_completion_events(
     mut finished_jobs: bevy_jobs::FinishedJobs,
     mut layers: ResMut<rgis_layers::Layers>,
-    mut layer_reprojected_event_writer: MessageWriter<rgis_layer_messages::LayerReprojectedMessage>,
+    mut layer_reprojected_event_writer: MessageWriter<rgis_events::LayerReprojectedMessage>,
     target_crs: Res<rgis_crs::TargetCrs>,
 ) {
     while let Some(outcome) = finished_jobs.take_next::<crate::jobs::ReprojectGeometryJob>() {
@@ -71,14 +71,14 @@ fn handle_reproject_geometry_job_completion_events(
         }
 
         layer_reprojected_event_writer
-            .write(rgis_layer_messages::LayerReprojectedMessage(outcome.layer_id));
+            .write(rgis_events::LayerReprojectedMessage(outcome.layer_id));
     }
 }
 
 fn handle_reproject_raster_extent_job_completion_events(
     mut finished_jobs: bevy_jobs::FinishedJobs,
     mut layers: ResMut<rgis_layers::Layers>,
-    mut layer_reprojected_event_writer: MessageWriter<rgis_layer_messages::LayerReprojectedMessage>,
+    mut layer_reprojected_event_writer: MessageWriter<rgis_events::LayerReprojectedMessage>,
     target_crs: Res<rgis_crs::TargetCrs>,
 ) {
     while let Some(outcome) = finished_jobs.take_next::<crate::jobs::ReprojectRasterExtentJob>() {
@@ -107,12 +107,12 @@ fn handle_reproject_raster_extent_job_completion_events(
         }
 
         layer_reprojected_event_writer
-            .write(rgis_layer_messages::LayerReprojectedMessage(outcome.layer_id));
+            .write(rgis_events::LayerReprojectedMessage(outcome.layer_id));
     }
 }
 
 fn handle_crs_changed_events(
-    _event: On<rgis_crs_messages::CrsChangedEvent>,
+    _event: On<rgis_events::CrsChangedEvent>,
     mut layers: ResMut<rgis_layers::Layers>,
     target_crs: Res<rgis_crs::TargetCrs>,
     mut job_spawner: bevy_jobs::JobSpawner,

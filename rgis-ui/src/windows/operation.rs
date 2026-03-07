@@ -1,5 +1,5 @@
 use bevy_egui::egui;
-use rgis_layer_messages::CreateLayerMessage;
+use rgis_events::CreateLayerMessage;
 use rgis_ui_messages::RenderTextMessage;
 
 pub struct Operation<'w> {

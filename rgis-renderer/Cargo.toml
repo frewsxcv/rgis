@@ -13,10 +13,7 @@ geo-bevy = { workspace = true }
 geo-projected = { path = "../geo-projected" }
 geo-geom-type = { path = "../geo-geom-type" }
 geo-raster = { path = "../geo-raster" }
-rgis-renderer-messages = { path = "../rgis-renderer-messages" }
-rgis-layer-messages = { path = "../rgis-layer-messages" }
-rgis-crs-messages = { path = "../rgis-crs-messages" }
-rgis-map-messages = { path = "../rgis-map-messages" }
+rgis-events = { path = "../rgis-events" }
 rgis-primitives = { path = "../rgis-primitives" }
 rgis-layers = { path = "../rgis-layers" }
 rgis-settings = { path = "../rgis-settings" }

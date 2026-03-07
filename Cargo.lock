@@ -5283,19 +5283,13 @@ dependencies = [
  "getrandom 0.2.17",
  "js-sys",
  "rgis-camera",
- "rgis-camera-messages",
  "rgis-cli",
  "rgis-crs",
- "rgis-crs-messages",
+ "rgis-events",
  "rgis-file-loader",
- "rgis-file-loader-messages",
- "rgis-keyboard",
- "rgis-layer-messages",
  "rgis-layers",
- "rgis-map-messages",
  "rgis-mouse",
  "rgis-renderer",
- "rgis-renderer-messages",
  "rgis-settings",
  "rgis-transform",
  "rgis-ui",
@@ -5311,23 +5305,10 @@ dependencies = [
  "geo",
  "geo-geodesy",
  "geo-projected",
- "rgis-camera-messages",
  "rgis-crs",
- "rgis-crs-messages",
+ "rgis-events",
  "rgis-layers",
- "rgis-renderer-messages",
  "rgis-units",
-]
-
-[[package]]
-name = "rgis-camera-messages"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "geo",
- "geo-projected",
- "num-t",
- "rgis-primitives",
 ]
 
 [[package]]
@@ -5345,15 +5326,22 @@ dependencies = [
  "bevy",
  "crs-definitions",
  "geodesy",
- "rgis-crs-messages",
+ "rgis-events",
  "rgis-primitives",
 ]
 
 [[package]]
-name = "rgis-crs-messages"
+name = "rgis-events"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bytes",
+ "geo",
+ "geo-features",
+ "geo-file-loader",
+ "geo-projected",
+ "geo-raster",
+ "num-t",
  "rgis-primitives",
 ]
 
@@ -5370,20 +5358,9 @@ dependencies = [
  "geo-projected",
  "geo-raster",
  "rgis-crs",
- "rgis-file-loader-messages",
- "rgis-layer-messages",
+ "rgis-events",
  "rgis-primitives",
  "rgis-ui-messages",
-]
-
-[[package]]
-name = "rgis-file-loader-messages"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "bytes",
- "geo-file-loader",
- "rgis-primitives",
 ]
 
 [[package]]
@@ -5399,25 +5376,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rgis-keyboard"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "rgis-camera-messages",
-]
-
-[[package]]
-name = "rgis-layer-messages"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "geo-features",
- "geo-projected",
- "geo-raster",
- "rgis-primitives",
-]
-
-[[package]]
 name = "rgis-layers"
 version = "0.1.0"
 dependencies = [
@@ -5429,24 +5387,14 @@ dependencies = [
  "geo-projected",
  "geo-raster",
  "rgis-crs",
- "rgis-layer-messages",
+ "rgis-events",
  "rgis-primitives",
- "rgis-renderer-messages",
  "rgis-ui-messages",
 ]
 
 [[package]]
 name = "rgis-library"
 version = "0.1.0"
-
-[[package]]
-name = "rgis-map-messages"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "geo-features",
- "rgis-primitives",
-]
 
 [[package]]
 name = "rgis-mouse"
@@ -5457,7 +5405,7 @@ dependencies = [
  "geo",
  "geo-projected",
  "num-t",
- "rgis-camera-messages",
+ "rgis-events",
  "rgis-settings",
  "rgis-units",
 ]
@@ -5483,22 +5431,11 @@ dependencies = [
  "geo-projected",
  "geo-raster",
  "num-t",
- "rgis-crs-messages",
- "rgis-layer-messages",
+ "rgis-events",
  "rgis-layers",
- "rgis-map-messages",
  "rgis-primitives",
- "rgis-renderer-messages",
  "rgis-settings",
  "rgis-ui-messages",
-]
-
-[[package]]
-name = "rgis-renderer-messages"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "rgis-primitives",
 ]
 
 [[package]]
@@ -5507,7 +5444,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "dark-light",
- "rgis-map-messages",
+ "rgis-events",
 ]
 
 [[package]]
@@ -5524,8 +5461,7 @@ dependencies = [
  "geodesy",
  "num-t",
  "rgis-crs",
- "rgis-crs-messages",
- "rgis-layer-messages",
+ "rgis-events",
  "rgis-layers",
  "rgis-primitives",
  "rgis-settings",
@@ -5549,15 +5485,11 @@ dependencies = [
  "geo-projected",
  "geodesy",
  "rfd",
- "rgis-camera-messages",
  "rgis-crs",
- "rgis-crs-messages",
- "rgis-file-loader-messages",
+ "rgis-events",
  "rgis-geo-ops",
- "rgis-layer-messages",
  "rgis-layers",
  "rgis-library",
- "rgis-map-messages",
  "rgis-mouse",
  "rgis-primitives",
  "rgis-settings",

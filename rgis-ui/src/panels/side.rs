@@ -1,7 +1,7 @@
 use bevy::{ecs::system::SystemParam, prelude::*};
 use bevy_egui::egui::{self, Align, Layout, Widget};
-use rgis_camera_messages::CenterCameraMessage;
-use rgis_layer_messages::{
+use rgis_events::CenterCameraMessage;
+use rgis_events::{
     CreateLayerMessage, DeleteLayerMessage, MoveDirection, MoveLayerMessage,
     ToggleLayerVisibilityMessage,
 };

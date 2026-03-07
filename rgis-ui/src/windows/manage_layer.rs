@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use bevy_egui::egui;
-use rgis_layer_messages::DuplicateLayerMessage;
+use rgis_events::DuplicateLayerMessage;
 use rgis_ui_messages::{UpdateLayerColorMessage, UpdateLayerPointSizeMessage};
 
 pub struct ManageLayer<'a> {
