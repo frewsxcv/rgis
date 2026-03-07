@@ -11,7 +11,7 @@ fn handle_picking_click(
     layers: Res<rgis_layers::Layers>,
     current_tool: Res<State<rgis_settings::Tool>>,
     mut bevy_egui_ctx: bevy_egui::EguiContexts,
-    mut feature_selected_writer: MessageWriter<rgis_map_messages::FeatureSelectedMessage>,
+    mut feature_selected_writer: MessageWriter<rgis_events::FeatureSelectedMessage>,
     mut render_props_writer: MessageWriter<rgis_ui_messages::RenderFeaturePropertiesMessage>,
 ) {
     if *current_tool.get() != rgis_settings::Tool::Query {
@@ -45,19 +45,19 @@ fn handle_picking_click(
             properties: feature.properties.clone(),
         });
         feature_selected_writer
-            .write(rgis_map_messages::FeatureSelectedMessage(layer.id, feature.id));
+            .write(rgis_events::FeatureSelectedMessage(layer.id, feature.id));
     }
 }
 
 fn layer_loaded(
     layers: Res<rgis_layers::Layers>,
-    mut event_reader: MessageReader<rgis_layer_messages::LayerReprojectedMessage>,
+    mut event_reader: MessageReader<rgis_events::LayerReprojectedMessage>,
     mut job_spawner: bevy_jobs::JobSpawner,
     mut commands: Commands,
     mut images: ResMut<Assets<Image>>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
-    mut meshes_spawned_event_writer: MessageWriter<rgis_renderer_messages::MeshesSpawnedMessage>,
+    mut meshes_spawned_event_writer: MessageWriter<rgis_events::MeshesSpawnedMessage>,
 ) {
     for event in event_reader.read() {
         let Some(layer) = layers.get(event.0) else {
@@ -104,7 +104,7 @@ fn handle_mesh_building_job_outcome(
     mut assets_meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     layers: Res<rgis_layers::Layers>,
-    mut meshes_spawned_event_writer: MessageWriter<rgis_renderer_messages::MeshesSpawnedMessage>,
+    mut meshes_spawned_event_writer: MessageWriter<rgis_events::MeshesSpawnedMessage>,
     mut finished_jobs: bevy_jobs::FinishedJobs,
     asset_server: Res<AssetServer>,
 ) {
@@ -141,7 +141,7 @@ fn handle_mesh_building_job_outcome(
 
 // TODO
 fn handle_layer_z_index_updated_event(
-    mut layer_z_index_updated_event_reader: MessageReader<rgis_layer_messages::LayerZIndexUpdatedMessage>,
+    mut layer_z_index_updated_event_reader: MessageReader<rgis_events::LayerZIndexUpdatedMessage>,
     mut query: Query<(&mut Transform, &RenderEntityType)>,
     layers: Res<rgis_layers::Layers>,
     index: Res<RenderEntityIndex>,
@@ -161,7 +161,7 @@ fn handle_layer_z_index_updated_event(
 }
 
 fn handle_layer_point_size_updated_event(
-    mut events: MessageReader<rgis_layer_messages::LayerPointSizeUpdatedMessage>,
+    mut events: MessageReader<rgis_events::LayerPointSizeUpdatedMessage>,
     layers: Res<rgis_layers::Layers>,
     mut sprite_query: Query<(&mut Sprite, &crate::PointSprite)>,
     camera_query: Query<&GlobalTransform, With<Camera>>,
@@ -192,7 +192,7 @@ fn handle_layer_point_size_updated_event(
 }
 
 fn handle_despawn_meshes_event(
-    event: On<rgis_renderer_messages::DespawnMeshesEvent>,
+    event: On<rgis_events::DespawnMeshesEvent>,
     mut commands: Commands,
     index: Res<RenderEntityIndex>,
 ) {
@@ -202,7 +202,7 @@ fn handle_despawn_meshes_event(
 }
 
 fn handle_layer_became_hidden_event(
-    event: On<rgis_layer_messages::LayerBecameHiddenEvent>,
+    event: On<rgis_events::LayerBecameHiddenEvent>,
     mut query: Query<&mut Visibility>,
     index: Res<RenderEntityIndex>,
 ) {
@@ -214,7 +214,7 @@ fn handle_layer_became_hidden_event(
 }
 
 fn handle_layer_became_visible_event(
-    event: On<rgis_layer_messages::LayerBecameVisibleEvent>,
+    event: On<rgis_events::LayerBecameVisibleEvent>,
     mut query: Query<&mut Visibility>,
     index: Res<RenderEntityIndex>,
 ) {
@@ -226,7 +226,7 @@ fn handle_layer_became_visible_event(
 }
 
 fn handle_point_color_updated_event(
-    mut event_reader: MessageReader<rgis_layer_messages::LayerColorUpdatedMessage>,
+    mut event_reader: MessageReader<rgis_events::LayerColorUpdatedMessage>,
     layers: Res<rgis_layers::Layers>,
     point_layer_query: Query<&Children, With<crate::Point>>,
     mut sprite_fill_query: Query<&mut Sprite, (With<crate::Fill>, Without<crate::Stroke>)>,
@@ -235,8 +235,8 @@ fn handle_point_color_updated_event(
 ) {
     for event in event_reader.read() {
         let (layer_id, is_fill) = match event {
-            rgis_layer_messages::LayerColorUpdatedMessage::Fill(layer_id) => (layer_id, true),
-            rgis_layer_messages::LayerColorUpdatedMessage::Stroke(layer_id) => (layer_id, false),
+            rgis_events::LayerColorUpdatedMessage::Fill(layer_id) => (layer_id, true),
+            rgis_events::LayerColorUpdatedMessage::Stroke(layer_id) => (layer_id, false),
         };
         let Some(layer) = layers.get(*layer_id) else {
             continue;
@@ -261,7 +261,7 @@ fn handle_point_color_updated_event(
 }
 
 fn handle_line_string_color_updated_event(
-    mut event_reader: MessageReader<rgis_layer_messages::LayerColorUpdatedMessage>,
+    mut event_reader: MessageReader<rgis_events::LayerColorUpdatedMessage>,
     layers: Res<rgis_layers::Layers>,
     line_string_layer_query: Query<&Children, With<crate::LineString>>,
     mut material_fill_query: Query<
@@ -277,8 +277,8 @@ fn handle_line_string_color_updated_event(
 ) {
     for event in event_reader.read() {
         let (layer_id, is_fill) = match event {
-            rgis_layer_messages::LayerColorUpdatedMessage::Fill(layer_id) => (layer_id, true),
-            rgis_layer_messages::LayerColorUpdatedMessage::Stroke(layer_id) => (layer_id, false),
+            rgis_events::LayerColorUpdatedMessage::Fill(layer_id) => (layer_id, true),
+            rgis_events::LayerColorUpdatedMessage::Stroke(layer_id) => (layer_id, false),
         };
         let Some(layer) = layers.get(*layer_id) else {
             continue;
@@ -305,7 +305,7 @@ fn handle_line_string_color_updated_event(
 }
 
 fn handle_polygon_color_updated_event(
-    mut event_reader: MessageReader<rgis_layer_messages::LayerColorUpdatedMessage>,
+    mut event_reader: MessageReader<rgis_events::LayerColorUpdatedMessage>,
     layers: Res<rgis_layers::Layers>,
     polygon_layer_query: Query<&Children, With<crate::Polygon>>,
     mut material_fill_query: Query<
@@ -321,8 +321,8 @@ fn handle_polygon_color_updated_event(
 ) {
     for event in event_reader.read() {
         let (layer_id, is_fill) = match event {
-            rgis_layer_messages::LayerColorUpdatedMessage::Fill(layer_id) => (layer_id, true),
-            rgis_layer_messages::LayerColorUpdatedMessage::Stroke(layer_id) => (layer_id, false),
+            rgis_events::LayerColorUpdatedMessage::Fill(layer_id) => (layer_id, true),
+            rgis_events::LayerColorUpdatedMessage::Stroke(layer_id) => (layer_id, false),
         };
         let Some(layer) = layers.get(*layer_id) else {
             continue;
@@ -349,7 +349,7 @@ fn handle_polygon_color_updated_event(
 }
 
 fn handle_crs_changed_events(
-    _event: On<rgis_crs_messages::CrsChangedEvent>,
+    _event: On<rgis_events::CrsChangedEvent>,
     query: Query<(&rgis_primitives::LayerId, Entity), With<MeshMaterial2d<ColorMaterial>>>,
     mut commands: Commands,
 ) {
@@ -394,7 +394,7 @@ type SelectedFeatureQuery<'world, 'state, 'a> = Query<
 >;
 
 fn handle_feature_selected_event_despawn(
-    event_reader: MessageReader<rgis_map_messages::FeatureSelectedMessage>,
+    event_reader: MessageReader<rgis_events::FeatureSelectedMessage>,
     mut commands: Commands,
     query: SelectedFeatureQuery,
 ) {
@@ -411,7 +411,7 @@ fn handle_feature_selected_event_despawn(
 }
 
 fn handle_feature_selected_event_spawn(
-    mut event_reader: MessageReader<rgis_map_messages::FeatureSelectedMessage>,
+    mut event_reader: MessageReader<rgis_events::FeatureSelectedMessage>,
     layers: Res<rgis_layers::Layers>,
     mut job_spawner: bevy_jobs::JobSpawner,
 ) {

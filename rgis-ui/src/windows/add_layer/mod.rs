@@ -1,7 +1,7 @@
 use bevy::{ecs::system::SystemParam, prelude::*};
 use bevy_egui::egui;
 use geo_file_loader::FileFormat;
-use rgis_file_loader_messages::LoadFileMessage;
+use rgis_events::LoadFileMessage;
 use rgis_ui_messages::{HideAddLayerWindowMessage, ShowAddLayerWindowMessage};
 
 pub mod by_file;

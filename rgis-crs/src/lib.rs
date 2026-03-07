@@ -51,13 +51,13 @@ fn insert_target_crs(
 }
 
 fn handle_crs_changed_events(
-    mut change_crs_event_reader: MessageReader<rgis_crs_messages::ChangeCrsMessage>,
+    mut change_crs_event_reader: MessageReader<rgis_events::ChangeCrsMessage>,
     mut commands: Commands,
     mut target_crs: ResMut<TargetCrs>,
 ) {
     if let Some(event) = change_crs_event_reader.read().last() {
         target_crs.0 = event.new.clone();
-        commands.trigger(rgis_crs_messages::CrsChangedEvent {
+        commands.trigger(rgis_events::CrsChangedEvent {
             old: event.old.clone(),
             new: event.new.clone(),
         });

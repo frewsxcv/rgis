@@ -10,6 +10,6 @@ workspace = true
 [dependencies]
 bevy = { workspace = true }
 geodesy = { workspace = true }
-rgis-crs-messages = { path = "../rgis-crs-messages" }
+rgis-events = { path = "../rgis-events" }
 rgis-primitives = { path = "../rgis-primitives" }
 rgis-geodesy = { path = "../rgis-geodesy" }
