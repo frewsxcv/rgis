@@ -320,12 +320,13 @@ fn render_feature_properties_window(
     side_panel_width: Res<rgis_units::SidePanelWidth>,
     top_panel_height: Res<rgis_units::TopPanelHeight>,
 ) -> Result {
-    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     if let Some(event) = render_message_events.drain().last() {
-        *state = Some(crate::FeaturePropertiesWindowData {
-            layer_id: event.layer_id,
-            properties: event.properties,
-        });
+        if let Some(properties) = event.properties {
+            *state = Some(crate::FeaturePropertiesWindowData {
+                layer_id: event.layer_id,
+                properties,
+            });
+        }
     }
 
     let Some(ref data) = *state else {
@@ -336,6 +337,7 @@ fn render_feature_properties_window(
         return Ok(());
     };
 
+    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     let default_pos = egui::pos2(side_panel_width.0 + 4.0, top_panel_height.0 + 4.0);
     let properties = &data.properties;
     let mut is_open = true;
@@ -345,6 +347,46 @@ fn render_feature_properties_window(
         .open(&mut is_open)
         .show(bevy_egui_ctx_mut, |ui| {
             crate::windows::feature_properties::FeatureProperties { layer, properties }.render(ui);
+        });
+
+    if !is_open {
+        *state = None;
+    }
+    Ok(())
+}
+
+fn render_attribute_table_window(
+    mut state: Local<crate::AttributeTableWindowState>,
+    mut bevy_egui_ctx: EguiContexts,
+    layers: Res<rgis_layers::Layers>,
+    mut show_events: MessageReader<rgis_ui_messages::ShowAttributeTableMessage>,
+    side_panel_width: Res<rgis_units::SidePanelWidth>,
+    top_panel_height: Res<rgis_units::TopPanelHeight>,
+) -> Result {
+    if let Some(event) = show_events.read().last() {
+        *state = Some(event.0);
+    }
+
+    let Some(layer_id) = *state else {
+        return Ok(());
+    };
+
+    let Some(layer) = layers.get(layer_id) else {
+        *state = None;
+        return Ok(());
+    };
+
+    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
+    let default_pos = egui::pos2(side_panel_width.0 + 4.0, top_panel_height.0 + 40.0);
+    let mut is_open = true;
+    egui::Window::new(format!("Attribute Table: {}", layer.name))
+        .id(egui::Id::new("Attribute Table Window"))
+        .default_pos(default_pos)
+        .default_size([600.0, 400.0])
+        .resizable(true)
+        .open(&mut is_open)
+        .show(bevy_egui_ctx_mut, |ui| {
+            crate::windows::attribute_table::AttributeTable { layer }.render(ui);
         });
 
     if !is_open {
@@ -723,6 +765,7 @@ pub fn configure(app: &mut App) {
             render_add_layer_window.in_set(RenderSystemSet::Windows),
             render_change_crs_window.in_set(RenderSystemSet::Windows),
             render_feature_properties_window.in_set(RenderSystemSet::Windows),
+            render_attribute_table_window.in_set(RenderSystemSet::Windows),
             render_operation_window.in_set(RenderSystemSet::Windows),
             render_measure_tool.in_set(RenderSystemSet::RenderingTopBottom),
         ),

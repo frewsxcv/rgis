@@ -104,10 +104,13 @@ impl Layers {
                     .features
                     .iter()
                     .zip(projected.features.iter())
-                    .map(move |(unprojected, projected)| FeaturesIterItem {
+                    .enumerate()
+                    .map(move |(feature_index, (unprojected_feature, projected_feature))| FeaturesIterItem {
                         layer,
-                        projected,
-                        unprojected,
+                        projected: projected_feature,
+                        unprojected: unprojected_feature,
+                        unprojected_collection: unprojected,
+                        feature_index,
                     })
             },
         )
@@ -116,13 +119,21 @@ impl Layers {
     pub fn feature_from_click(
         &self,
         coord: geo_projected::ProjectedCoord,
-    ) -> Option<(
-        &Layer,
-        &geo_features::Feature<geo_projected::UnprojectedScalar>,
-    )> {
+    ) -> Option<FeatureFromClickResult<'_>> {
         self.features_iter()
             .find(|item| item.projected.contains(&coord))
-            .map(|item| (item.layer, item.unprojected))
+            .map(|item| {
+                let properties = item
+                    .unprojected_collection
+                    .properties
+                    .as_ref()
+                    .map(|rb| geo_features::properties_for_row(rb, item.feature_index));
+                FeatureFromClickResult {
+                    layer: item.layer,
+                    feature: item.unprojected,
+                    properties,
+                }
+            })
     }
 
     fn get_index(&self, layer_id: rgis_primitives::LayerId) -> Option<usize> {
@@ -407,4 +418,12 @@ struct FeaturesIterItem<'a> {
     layer: &'a Layer,
     projected: &'a geo_features::Feature<geo_projected::ProjectedScalar>,
     unprojected: &'a geo_features::Feature<geo_projected::UnprojectedScalar>,
+    unprojected_collection: &'a geo_features::FeatureCollection<geo_projected::UnprojectedScalar>,
+    feature_index: usize,
+}
+
+pub struct FeatureFromClickResult<'a> {
+    pub layer: &'a Layer,
+    pub feature: &'a geo_features::Feature<geo_projected::UnprojectedScalar>,
+    pub properties: Option<Vec<(String, String)>>,
 }

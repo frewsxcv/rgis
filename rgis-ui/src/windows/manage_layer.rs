@@ -1,7 +1,10 @@
 use bevy::prelude::*;
 use bevy_egui::egui;
 use rgis_events::DuplicateLayerMessage;
-use rgis_ui_messages::{RenameLayerMessage, UpdateLayerColorMessage, UpdateLayerPointSizeMessage};
+use rgis_ui_messages::{
+    RenameLayerMessage, UpdateLayerColorMessage,
+    UpdateLayerPointSizeMessage,
+};
 
 pub struct ManageLayer<'a> {
     pub layer: &'a rgis_layers::Layer,

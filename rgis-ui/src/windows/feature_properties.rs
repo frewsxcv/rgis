@@ -2,7 +2,7 @@ use bevy_egui::egui;
 
 pub struct FeatureProperties<'a> {
     pub layer: &'a rgis_layers::Layer,
-    pub properties: &'a geo_features::Properties,
+    pub properties: &'a [(String, String)],
 }
 
 impl FeatureProperties<'_> {
