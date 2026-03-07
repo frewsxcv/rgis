@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use geo::contains::Contains;
 use std::sync::Arc;
 
+pub mod export;
 mod systems;
 
 #[derive(Copy, Clone, Debug)]

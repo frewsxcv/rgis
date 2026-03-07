@@ -19,4 +19,5 @@ rgis-events = { path = "../rgis-events" }
 rgis-ui-messages = { path = "../rgis-ui-messages" }
 rgis-primitives = { path = "../rgis-primitives" }
 geo = { workspace = true }
+geozero = { workspace = true }
 rgis-crs = { path = "../rgis-crs" }

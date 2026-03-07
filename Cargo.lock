@@ -5288,7 +5288,6 @@ dependencies = [
  "rgis-events",
  "rgis-file-loader",
  "rgis-geodesy",
- "rgis-keyboard",
  "rgis-layers",
  "rgis-mouse",
  "rgis-renderer",
@@ -5387,14 +5386,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rgis-keyboard"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "rgis-events",
-]
-
-[[package]]
 name = "rgis-layers"
 version = "0.1.0"
 dependencies = [
@@ -5405,6 +5396,7 @@ dependencies = [
  "geo-geom-type",
  "geo-projected",
  "geo-raster",
+ "geozero",
  "rgis-crs",
  "rgis-events",
  "rgis-primitives",
