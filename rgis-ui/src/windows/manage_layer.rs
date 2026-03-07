@@ -13,6 +13,7 @@ pub struct ManageLayer<'a> {
     pub rename_events: &'a mut Messages<RenameLayerMessage>,
     pub name_edit_buffer: &'a mut String,
     pub name_edit_layer_id: &'a mut Option<rgis_primitives::LayerId>,
+    pub default_pos: egui::Pos2,
 }
 
 impl ManageLayer<'_> {
@@ -37,6 +38,7 @@ impl ManageLayer<'_> {
 
         let mut is_open = true;
         egui::Window::new("Manage Layer")
+            .default_pos(self.default_pos)
             .open(&mut is_open)
             .show(self.egui_ctx, |ui| {
                 egui::Grid::new("manage_layer_window_grid")

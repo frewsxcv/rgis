@@ -7,6 +7,7 @@ pub struct Operation<'w> {
     pub state: &'w mut crate::OperationWindowState,
     pub create_layer_event_writer: bevy::ecs::message::MessageWriter<'w, CreateLayerMessage>,
     pub render_message_event_writer: bevy::ecs::message::MessageWriter<'w, RenderTextMessage>,
+    pub default_pos: egui::Pos2,
 }
 
 impl Operation<'_> {
@@ -49,6 +50,7 @@ impl Operation<'_> {
             rgis_geo_ops::Action::RenderUi => {
                 let mut is_open = true;
                 egui::Window::new("Operation")
+                    .default_pos(self.default_pos)
                     .open(&mut is_open)
                     .show(self.egui_ctx, |ui| {
                         data.operation.ui(ui, &data.feature_collection);

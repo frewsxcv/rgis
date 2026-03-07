@@ -11,6 +11,7 @@ pub struct ChangeCrs<'a, 'w> {
     pub target_crs: rgis_crs::TargetCrs,
     pub crs_input_outcome: &'a mut Option<crate::widgets::crs_input::Outcome>,
     pub geodesy_ctx: &'a rgis_geodesy::GeodesyContext,
+    pub default_pos: egui::Pos2,
 }
 
 impl ChangeCrs<'_, '_> {
@@ -20,6 +21,7 @@ impl ChangeCrs<'_, '_> {
         }
 
         egui::Window::new("Change CRS")
+            .default_pos(self.default_pos)
             .open(self.is_visible)
             .show(self.egui_ctx, |ui| {
                 ui.label("Common projections:");

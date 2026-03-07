@@ -67,6 +67,8 @@ fn render_manage_layer_window(
     mut rename_events: ResMut<Messages<rgis_ui_messages::RenameLayerMessage>>,
     mut name_edit_buffer: Local<String>,
     mut name_edit_layer_id: Local<Option<rgis_primitives::LayerId>>,
+    side_panel_width: Res<rgis_units::SidePanelWidth>,
+    top_panel_height: Res<rgis_units::TopPanelHeight>,
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     if let Some(event) = show_manage_layer_window_event_reader.read().last() {
@@ -83,6 +85,7 @@ fn render_manage_layer_window(
         rename_events: &mut rename_events,
         name_edit_buffer: &mut name_edit_buffer,
         name_edit_layer_id: &mut name_edit_layer_id,
+        default_pos: egui::pos2(side_panel_width.0, top_panel_height.0),
     }
     .render();
     Ok(())
@@ -121,8 +124,7 @@ fn render_add_layer_window(
         is_visible: &mut is_visible,
         egui_ctx: bevy_egui_ctx_mut,
         geodesy_ctx: &geodesy_ctx,
-        side_panel_width: side_panel_width.0,
-        top_panel_height: top_panel_height.0,
+        default_pos: egui::pos2(side_panel_width.0, top_panel_height.0),
     }
     .render();
 
@@ -204,6 +206,8 @@ fn render_change_crs_window(
     mut change_crs_event_writer: MessageWriter<rgis_events::ChangeCrsMessage>,
     mut crs_input_outcome: Local<Option<crate::widgets::crs_input::Outcome>>,
     geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
+    side_panel_width: Res<rgis_units::SidePanelWidth>,
+    top_panel_height: Res<rgis_units::TopPanelHeight>,
 ) -> Result {
     if crate::widget_registry::take_close_request("Change CRS") {
         is_visible.0 = false;
@@ -220,6 +224,7 @@ fn render_change_crs_window(
         target_crs: (*target_crs).clone(),
         crs_input_outcome: &mut crs_input_outcome,
         geodesy_ctx: &geodesy_ctx,
+        default_pos: egui::pos2(side_panel_width.0, top_panel_height.0),
     }
     .render();
     Ok(())
@@ -230,6 +235,8 @@ fn render_feature_properties_window(
     mut bevy_egui_ctx: EguiContexts,
     layers: Res<rgis_layers::Layers>,
     mut render_message_events: ResMut<Messages<rgis_ui_messages::RenderFeaturePropertiesMessage>>,
+    side_panel_width: Res<rgis_units::SidePanelWidth>,
+    top_panel_height: Res<rgis_units::TopPanelHeight>,
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     if let Some(event) = render_message_events.drain().last() {
@@ -251,6 +258,7 @@ fn render_feature_properties_window(
         state: &mut state,
         layer,
         egui_ctx: bevy_egui_ctx_mut,
+        default_pos: egui::pos2(side_panel_width.0, top_panel_height.0),
     }
     .render();
     Ok(())
@@ -280,6 +288,8 @@ fn render_operation_window(
     mut bevy_egui_ctx: EguiContexts,
     create_layer_event_writer: MessageWriter<rgis_events::CreateLayerMessage>,
     render_message_event_writer: MessageWriter<rgis_ui_messages::RenderTextMessage>,
+    side_panel_width: Res<rgis_units::SidePanelWidth>,
+    top_panel_height: Res<rgis_units::TopPanelHeight>,
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     if let Some(event) = events.drain().last() {
@@ -296,6 +306,7 @@ fn render_operation_window(
         state: &mut state,
         create_layer_event_writer,
         render_message_event_writer,
+        default_pos: egui::pos2(side_panel_width.0, top_panel_height.0),
     }
     .render();
     Ok(())

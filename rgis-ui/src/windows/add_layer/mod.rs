@@ -22,8 +22,7 @@ pub struct AddLayer<'a> {
     pub selected_file: &'a mut file::SelectedFile,
     pub egui_ctx: &'a mut bevy_egui::egui::Context,
     pub geodesy_ctx: &'a rgis_geodesy::GeodesyContext,
-    pub side_panel_width: f32,
-    pub top_panel_height: f32,
+    pub default_pos: egui::Pos2,
 }
 
 #[derive(PartialEq, Eq)]
@@ -95,7 +94,7 @@ impl AddLayer<'_> {
         if *self.is_visible {
             egui::Window::new("Add Layer")
                 .resizable(false)
-                .default_pos(egui::pos2(self.side_panel_width, self.top_panel_height))
+                .default_pos(self.default_pos)
                 .open(self.is_visible)
                 .show(self.egui_ctx, |ui| {
                     ui.label("Layer source:");
