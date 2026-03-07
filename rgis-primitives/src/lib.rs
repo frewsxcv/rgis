@@ -18,6 +18,28 @@ impl LayerId {
     }
 }
 
+#[derive(Debug, Clone, Copy)]
+pub enum ExportFormat {
+    GeoJson,
+    Wkt,
+}
+
+impl ExportFormat {
+    pub fn extension(self) -> &'static str {
+        match self {
+            ExportFormat::GeoJson => "geojson",
+            ExportFormat::Wkt => "wkt",
+        }
+    }
+
+    pub fn label(self) -> &'static str {
+        match self {
+            ExportFormat::GeoJson => "GeoJSON",
+            ExportFormat::Wkt => "WKT",
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Crs {
     pub epsg_code: Option<u16>,

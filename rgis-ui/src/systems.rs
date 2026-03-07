@@ -54,6 +54,46 @@ fn handle_open_file_job(
     }
 }
 
+fn handle_download_layer(
+    mut events: MessageReader<rgis_events::DownloadLayerMessage>,
+    layers: Res<rgis_layers::Layers>,
+    mut job_spawner: bevy_jobs::JobSpawner,
+) {
+    for event in events.read() {
+        let Some(layer) = layers.get(event.layer_id) else {
+            warn!("Could not find layer for download");
+            continue;
+        };
+
+        let Some(fc) = layer.unprojected_feature_collection() else {
+            warn!("Cannot download raster layer");
+            continue;
+        };
+
+        match rgis_layers::export::export_feature_collection(fc, event.format) {
+            Ok(data) => {
+                let default_name = format!("{}.{}", layer.name, event.format.extension());
+                job_spawner.spawn(crate::save_file::SaveFileJob {
+                    data: data.into_bytes(),
+                    default_name,
+                    format: event.format,
+                });
+            }
+            Err(e) => {
+                error!("Failed to export layer: {}", e);
+            }
+        }
+    }
+}
+
+fn handle_save_file_job(mut finished_jobs: bevy_jobs::FinishedJobs) {
+    while let Some(outcome) = finished_jobs.take_next::<crate::save_file::SaveFileJob>() {
+        if let Err(e) = outcome {
+            error!("Failed to save file: {}", e);
+        }
+    }
+}
+
 fn render_manage_layer_window(
     mut state: Local<crate::ManageLayerWindowState>,
     mut bevy_egui_ctx: EguiContexts,
@@ -619,6 +659,8 @@ pub fn configure(app: &mut App) {
         (
             handle_open_change_crs_window_event,
             handle_open_file_job,
+            handle_save_file_job,
+            handle_download_layer,
             perform_operation,
             handle_debug_window_close_request,
             handle_fill_color_requests,

@@ -121,6 +121,12 @@ pub struct LayerReprojectedMessage(pub rgis_primitives::LayerId);
 #[derive(Message, Debug)]
 pub struct DuplicateLayerMessage(pub rgis_primitives::LayerId);
 
+#[derive(Message, Debug)]
+pub struct DownloadLayerMessage {
+    pub layer_id: rgis_primitives::LayerId,
+    pub format: rgis_primitives::ExportFormat,
+}
+
 #[derive(Message)]
 pub struct CreateRasterLayerMessage {
     pub raster: geo_raster::Raster,
@@ -205,7 +211,8 @@ impl bevy::app::Plugin for RgisEventsPlugin {
             .add_message::<LayerReprojectedMessage>()
             .add_message::<CreateLayerMessage>()
             .add_message::<DuplicateLayerMessage>()
-            .add_message::<CreateRasterLayerMessage>();
+            .add_message::<CreateRasterLayerMessage>()
+            .add_message::<DownloadLayerMessage>();
 
         // CRS
         app.add_message::<ChangeCrsMessage>();
