@@ -64,6 +64,19 @@ fn handle_update_point_size_events(
     }
 }
 
+fn handle_rename_layer_events(
+    mut rename_events: MessageReader<rgis_ui_messages::RenameLayerMessage>,
+    mut layers: ResMut<crate::Layers>,
+) {
+    for rgis_ui_messages::RenameLayerMessage(layer_id, new_name) in rename_events.read() {
+        let Some(layer) = layers.get_mut(*layer_id) else {
+            warn!("Could not find layer");
+            continue;
+        };
+        layer.name.clone_from(new_name);
+    }
+}
+
 fn handle_delete_layer_events(
     mut delete_layer_event_reader: MessageReader<rgis_events::DeleteLayerMessage>,
     mut commands: Commands,
@@ -171,6 +184,7 @@ pub fn configure(app: &mut App) {
             handle_toggle_layer_visibility_events,
             handle_update_color_events,
             handle_update_point_size_events,
+            handle_rename_layer_events,
             handle_move_layer_events,
             handle_delete_layer_events,
             // handle_duplicate_layer_events writes CreateLayerMessage events,

@@ -64,6 +64,9 @@ fn render_manage_layer_window(
         rgis_ui_messages::ShowManageLayerWindowMessage,
     >,
     mut duplicate_layer_events: ResMut<Messages<rgis_events::DuplicateLayerMessage>>,
+    mut rename_events: ResMut<Messages<rgis_ui_messages::RenameLayerMessage>>,
+    mut name_edit_buffer: Local<String>,
+    mut name_edit_layer_id: Local<Option<rgis_primitives::LayerId>>,
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     if let Some(event) = show_manage_layer_window_event_reader.read().last() {
@@ -77,6 +80,9 @@ fn render_manage_layer_window(
         color_events: &mut color_events,
         point_size_events: &mut point_size_events,
         duplicate_layer_events: &mut duplicate_layer_events,
+        rename_events: &mut rename_events,
+        name_edit_buffer: &mut name_edit_buffer,
+        name_edit_layer_id: &mut name_edit_layer_id,
     }
     .render();
     Ok(())
