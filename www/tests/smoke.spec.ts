@@ -1,7 +1,7 @@
 import { test, expect } from "./fixtures/app-fixture";
 
 test("app loads and renders", async ({ appPage }) => {
-  await expect(appPage.page).toHaveScreenshot("app-loaded.png");
+  await appPage.expectScreenshot("app-loaded.png");
 });
 
 test("canvas is present and fills viewport", async ({ appPage }) => {
@@ -12,7 +12,7 @@ test("canvas is present and fills viewport", async ({ appPage }) => {
 });
 
 test("initial render baseline", async ({ appPage }) => {
-  await expect(appPage.page).toHaveScreenshot("initial-render.png");
+  await appPage.expectScreenshot("initial-render.png");
 });
 
 test("clicking Library option changes the view", async ({ appPage }) => {
@@ -25,26 +25,13 @@ test("clicking Library option changes the view", async ({ appPage }) => {
   const after = await appPage.page.screenshot();
   expect(Buffer.compare(before, after)).not.toBe(0);
 
-  await expect(appPage.page).toHaveScreenshot("library-selected.png");
+  await appPage.expectScreenshot("library-selected.png");
 });
 
 test("add World Countries layer from library", async ({ appPage }) => {
   test.setTimeout(60000);
 
-  // Open the Add Layer window
-  await appPage.openAddLayerWindow();
+  await appPage.addLibraryLayer("World", "Countries");
 
-  // Click the "Library" radio button
-  await appPage.clickWidget("Library");
-
-  // Expand the "World" folder
-  await appPage.clickWidget("World");
-
-  // Click the "+ Add" button next to "Countries"
-  await appPage.clickWidget("Add:Countries");
-
-  // Wait for the layer to load from network and render
-  await appPage.waitForLayerRender();
-
-  await expect(appPage.page).toHaveScreenshot("world-countries-rendered.png");
+  await appPage.expectScreenshot("world-countries-rendered.png");
 });

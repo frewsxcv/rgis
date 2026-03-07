@@ -72,6 +72,11 @@ export class AppPage {
     await this.waitForNextFrame();
   }
 
+  async expectScreenshot(name: string) {
+    await this.stabilizeForScreenshot();
+    await expect(this.page).toHaveScreenshot(name);
+  }
+
   async clickOnCanvas(xFrac: number, yFrac: number) {
     const box = await this.canvasBoundingBox();
     const x = box.x + box.width * xFrac;
@@ -120,6 +125,15 @@ export class AppPage {
       { timeout: 30000 },
     );
     await this.waitForNextFrame();
+  }
+
+  async addLibraryLayer(folder: string, entry: string) {
+    await this.openAddLayerWindow();
+    await this.clickWidget("Library");
+    await this.clickWidget(folder);
+    const countBefore = await this.getRenderedLayerCount();
+    await this.clickWidget(`Add:${entry}`);
+    await this.waitForLayerRender(countBefore);
   }
 
   async regionHasContent(

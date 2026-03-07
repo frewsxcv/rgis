@@ -1,4 +1,4 @@
-import { test, expect } from "./fixtures/app-fixture";
+import { test } from "./fixtures/app-fixture";
 
 test.describe("measure tool", () => {
   test("measure from San Francisco to New York City", async ({ appPage }) => {
@@ -8,11 +8,7 @@ test.describe("measure tool", () => {
     await appPage.closeWindow("Welcome");
 
     // Load the USA States layer from the built-in library
-    await appPage.openAddLayerWindow();
-    await appPage.clickWidget("Library");
-    await appPage.clickWidget("USA");
-    await appPage.clickWidget("Add:States");
-    await appPage.waitForLayerRender();
+    await appPage.addLibraryLayer("USA", "States");
 
     // Close the Add Layer window
     await appPage.closeWindow("Add Layer");
@@ -55,6 +51,6 @@ test.describe("measure tool", () => {
     await appPage.page.mouse.move(box.x + box.width * 0.5, box.y + box.height * 0.3);
     await appPage.waitForNextFrame();
 
-    await expect(appPage.page).toHaveScreenshot("measure-tool-line.png");
+    await appPage.expectScreenshot("measure-tool-line.png");
   });
 });
