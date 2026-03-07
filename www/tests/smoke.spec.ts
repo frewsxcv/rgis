@@ -4,6 +4,11 @@ test("app loads and renders", async ({ appPage }) => {
   await appPage.expectScreenshot("app-loaded.png");
 });
 
+test("canvas has non-blank content", async ({ appPage }) => {
+  const hasContent = await appPage.regionHasContent(0, 0, 1, 1);
+  expect(hasContent).toBe(true);
+});
+
 test("canvas is present and fills viewport", async ({ appPage }) => {
   const box = await appPage.canvasBoundingBox();
   // Canvas should roughly fill the 1280x720 viewport
