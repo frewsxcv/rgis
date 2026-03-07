@@ -3087,6 +3087,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "geo-fix-antimeridian"
+version = "0.1.0"
+dependencies = [
+ "geo",
+]
+
+[[package]]
 name = "geo-geodesy"
 version = "7.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5290,7 +5297,6 @@ dependencies = [
  "rgis-file-loader",
  "rgis-file-loader-messages",
  "rgis-geodesy",
- "rgis-keyboard",
  "rgis-layer-messages",
  "rgis-layers",
  "rgis-map-messages",
@@ -5368,6 +5374,7 @@ dependencies = [
  "bytes",
  "geo-features",
  "geo-file-loader",
+ "geo-fix-antimeridian",
  "geo-projected",
  "geo-raster",
  "rgis-file-loader-messages",
@@ -5406,14 +5413,6 @@ dependencies = [
  "bevy",
  "crs-definitions",
  "geodesy",
-]
-
-[[package]]
-name = "rgis-keyboard"
-version = "0.1.0"
-dependencies = [
- "bevy",
- "rgis-camera-messages",
 ]
 
 [[package]]
@@ -5477,6 +5476,7 @@ name = "rgis-primitives"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "crs-definitions",
  "geodesy",
 ]
 

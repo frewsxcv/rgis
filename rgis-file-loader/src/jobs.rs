@@ -38,9 +38,18 @@ impl bevy_jobs::Job for LoadFileJob {
                 source_crs: self.source_crs,
             })
         } else {
+            let is_geographic = self.source_crs.is_geographic();
             let features = geo_file_loader::load_file(self.file_format, self.bytes)?
                 .into_iter()
-                .map(geo_file_loader_feature_to_geo_features_feature)
+                .map(|f| {
+                    let mut feature = geo_file_loader_feature_to_geo_features_feature(f);
+                    if is_geographic {
+                        if let Some(ref geom) = feature.geometry {
+                            feature.geometry = Some(geo_fix_antimeridian::fix_geometry(geom));
+                        }
+                    }
+                    feature
+                })
                 .collect();
             Ok(LoadFileJobOutcome::Vector {
                 feature_collection: FeatureCollection::from_features(features).wrap(),

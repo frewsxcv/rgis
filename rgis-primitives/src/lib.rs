@@ -24,3 +24,17 @@ pub struct Crs {
     pub proj_string: Option<String>,
     pub op_handle: geodesy::ctx::OpHandle,
 }
+
+impl Crs {
+    pub fn is_geographic(&self) -> bool {
+        if let Some(code) = self.epsg_code {
+            crs_definitions::from_code(code)
+                .map(|def| def.proj4.contains("+proj=longlat"))
+                .unwrap_or(true)
+        } else if let Some(ref proj) = self.proj_string {
+            proj.contains("+proj=longlat")
+        } else {
+            true
+        }
+    }
+}
