@@ -52,7 +52,6 @@ impl<Scalar: geo::CoordNum> WrapTo<Scalar> for geo_features::Feature<Scalar> {
     fn wrap<To: Debug>(self) -> Self::Output<To> {
         geo_features::Feature {
             id: self.id,
-            properties: self.properties,
             bounding_rect: self.bounding_rect.map(|rect| rect.wrap()),
             geometry: self.geometry.map(|geometry| geometry.wrap()),
         }
@@ -70,6 +69,7 @@ impl<Scalar: geo::CoordNum> WrapTo<Scalar> for geo_features::FeatureCollection<S
                 .map(|feature| feature.wrap())
                 .collect(),
             bounding_rect: self.bounding_rect.map(|rect| rect.wrap()),
+            properties: self.properties,
         }
     }
 }
@@ -120,7 +120,6 @@ impl<Scalar: geo::CoordNum, From: Debug> CastTo<Scalar, From>
     fn cast<To: Debug>(self) -> Self::Output<To> {
         geo_features::Feature {
             id: self.id,
-            properties: self.properties,
             bounding_rect: self.bounding_rect.map(|rect| rect.cast()),
             geometry: self.geometry.map(|geometry| geometry.cast()),
         }
@@ -140,6 +139,7 @@ impl<Scalar: geo::CoordNum, From: Debug> CastTo<Scalar, From>
                 .map(|feature| feature.cast())
                 .collect(),
             bounding_rect: self.bounding_rect.map(|rect| rect.cast()),
+            properties: self.properties,
         }
     }
 }

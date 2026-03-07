@@ -41,13 +41,13 @@ fn handle_picking_click(
         y: num_t::Num::new(f64::from(hit_position.y)),
     };
 
-    if let Some((layer, feature)) = layers.feature_from_click(coord) {
+    if let Some(result) = layers.feature_from_click(coord) {
         render_props_writer.write(rgis_ui_messages::RenderFeaturePropertiesMessage {
-            layer_id: layer.id,
-            properties: feature.properties.clone(),
+            layer_id: result.layer.id,
+            properties: result.properties,
         });
         feature_selected_writer
-            .write(rgis_events::FeatureSelectedMessage(layer.id, feature.id));
+            .write(rgis_events::FeatureSelectedMessage(result.layer.id, result.feature.id));
     }
 }
 

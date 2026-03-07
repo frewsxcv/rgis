@@ -1,7 +1,10 @@
 use bevy::prelude::*;
 use bevy_egui::egui;
 use rgis_events::DuplicateLayerMessage;
-use rgis_ui_messages::{RenameLayerMessage, UpdateLayerColorMessage, UpdateLayerPointSizeMessage};
+use rgis_ui_messages::{
+    RenameLayerMessage, ShowAttributeTableMessage, UpdateLayerColorMessage,
+    UpdateLayerPointSizeMessage,
+};
 
 pub struct ManageLayer<'a> {
     pub state: &'a mut crate::ManageLayerWindowState,
@@ -11,6 +14,7 @@ pub struct ManageLayer<'a> {
     pub point_size_events: &'a mut Messages<UpdateLayerPointSizeMessage>,
     pub duplicate_layer_events: &'a mut Messages<DuplicateLayerMessage>,
     pub rename_events: &'a mut Messages<RenameLayerMessage>,
+    pub show_attribute_table_events: &'a mut Messages<ShowAttributeTableMessage>,
     pub name_edit_buffer: &'a mut String,
     pub name_edit_layer_id: &'a mut Option<rgis_primitives::LayerId>,
 }
@@ -100,6 +104,10 @@ impl ManageLayer<'_> {
                 if ui.button("Duplicate").clicked() {
                     self.duplicate_layer_events
                         .write(DuplicateLayerMessage(layer_id));
+                }
+                if layer.is_vector() && ui.button("Attribute Table").clicked() {
+                    self.show_attribute_table_events
+                        .write(ShowAttributeTableMessage(layer_id));
                 }
             });
 

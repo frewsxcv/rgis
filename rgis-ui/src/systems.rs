@@ -105,6 +105,7 @@ fn render_manage_layer_window(
     >,
     mut duplicate_layer_events: ResMut<Messages<rgis_events::DuplicateLayerMessage>>,
     mut rename_events: ResMut<Messages<rgis_ui_messages::RenameLayerMessage>>,
+    mut show_attribute_table_events: ResMut<Messages<rgis_ui_messages::ShowAttributeTableMessage>>,
     mut name_edit_buffer: Local<String>,
     mut name_edit_layer_id: Local<Option<rgis_primitives::LayerId>>,
 ) -> Result {
@@ -121,6 +122,7 @@ fn render_manage_layer_window(
         point_size_events: &mut point_size_events,
         duplicate_layer_events: &mut duplicate_layer_events,
         rename_events: &mut rename_events,
+        show_attribute_table_events: &mut show_attribute_table_events,
         name_edit_buffer: &mut name_edit_buffer,
         name_edit_layer_id: &mut name_edit_layer_id,
     }
@@ -267,28 +269,71 @@ fn render_feature_properties_window(
     layers: Res<rgis_layers::Layers>,
     mut render_message_events: ResMut<Messages<rgis_ui_messages::RenderFeaturePropertiesMessage>>,
 ) -> Result {
-    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     if let Some(event) = render_message_events.drain().last() {
-        *state = Some(crate::FeaturePropertiesWindowData {
-            layer_id: event.layer_id,
-            properties: event.properties,
-        });
+        if let Some(properties) = event.properties {
+            *state = Some(crate::FeaturePropertiesWindowData {
+                layer_id: event.layer_id,
+                properties,
+            });
+        }
     }
 
-    let Some(ref data) = *state else {
+    let layer_id = match *state {
+        Some(ref data) => data.layer_id,
+        None => return Ok(()),
+    };
+
+    let Some(layer) = layers.get(layer_id) else {
         return Ok(());
     };
 
-    let Some(layer) = layers.get(data.layer_id) else {
-        return Ok(());
-    };
-
+    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     crate::windows::feature_properties::FeatureProperties {
         state: &mut state,
         layer,
         egui_ctx: bevy_egui_ctx_mut,
     }
     .render();
+    Ok(())
+}
+
+fn render_attribute_table_window(
+    mut state: Local<crate::AttributeTableWindowState>,
+    mut bevy_egui_ctx: EguiContexts,
+    layers: Res<rgis_layers::Layers>,
+    mut show_events: MessageReader<rgis_ui_messages::ShowAttributeTableMessage>,
+    side_panel_width: Res<rgis_units::SidePanelWidth>,
+    top_panel_height: Res<rgis_units::TopPanelHeight>,
+) -> Result {
+    if let Some(event) = show_events.read().last() {
+        *state = Some(event.0);
+    }
+
+    let Some(layer_id) = *state else {
+        return Ok(());
+    };
+
+    let Some(layer) = layers.get(layer_id) else {
+        *state = None;
+        return Ok(());
+    };
+
+    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
+    let default_pos = egui::pos2(side_panel_width.0 + 4.0, top_panel_height.0 + 40.0);
+    let mut is_open = true;
+    egui::Window::new(format!("Attribute Table: {}", layer.name))
+        .id(egui::Id::new("Attribute Table Window"))
+        .default_pos(default_pos)
+        .default_size([600.0, 400.0])
+        .resizable(true)
+        .open(&mut is_open)
+        .show(bevy_egui_ctx_mut, |ui| {
+            crate::windows::attribute_table::AttributeTable { layer }.render(ui);
+        });
+
+    if !is_open {
+        *state = None;
+    }
     Ok(())
 }
 
@@ -649,6 +694,7 @@ pub fn configure(app: &mut App) {
             render_add_layer_window.in_set(RenderSystemSet::Windows),
             render_change_crs_window.in_set(RenderSystemSet::Windows),
             render_feature_properties_window.in_set(RenderSystemSet::Windows),
+            render_attribute_table_window.in_set(RenderSystemSet::Windows),
             render_operation_window.in_set(RenderSystemSet::Windows),
             render_measure_tool.in_set(RenderSystemSet::RenderingTopBottom),
         ),

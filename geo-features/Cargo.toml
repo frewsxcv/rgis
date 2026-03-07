@@ -7,4 +7,5 @@ edition.workspace = true
 workspace = true
 
 [dependencies]
+arrow = { version = "58", default-features = false }
 geo = { workspace = true }

@@ -1,29 +1,22 @@
+use arrow::array::Array;
+use arrow::record_batch::RecordBatch;
 use geo::{BoundingRect, Contains};
-use std::{collections, fmt, iter, num, sync};
+use std::{fmt, iter, num, sync};
 
 #[derive(Default)]
 pub struct FeatureBuilder<Scalar: geo::CoordNum> {
     geometry: Option<geo::Geometry<Scalar>>,
-    properties: Properties,
 }
 
 impl<Scalar: geo::CoordNum> FeatureBuilder<Scalar> {
     pub fn new() -> Self {
-        FeatureBuilder {
-            geometry: None,
-            properties: Default::default(),
-        }
+        FeatureBuilder { geometry: None }
     }
 
     pub fn with_geometry(self, geometry: geo::Geometry<Scalar>) -> Self {
         FeatureBuilder {
             geometry: Some(geometry),
-            ..self
         }
-    }
-
-    pub fn with_properties(self, properties: Properties) -> Self {
-        FeatureBuilder { properties, ..self }
     }
 
     pub fn build(self) -> Feature<Scalar> {
@@ -34,7 +27,6 @@ impl<Scalar: geo::CoordNum> FeatureBuilder<Scalar> {
         Feature {
             id: FeatureId::new(),
             geometry: self.geometry,
-            properties: self.properties,
             bounding_rect,
         }
     }
@@ -44,7 +36,6 @@ impl<Scalar: geo::CoordNum> FeatureBuilder<Scalar> {
 pub struct Feature<Scalar: geo::CoordNum> {
     pub id: FeatureId,
     pub geometry: Option<geo::Geometry<Scalar>>,
-    pub properties: Properties,
     pub bounding_rect: Option<geo::Rect<Scalar>>,
 }
 
@@ -81,16 +72,6 @@ impl<Scalar: geo::CoordNum> geo::CoordsIter for Feature<Scalar> {
     }
 }
 
-#[derive(Clone, Debug)]
-pub enum Value {
-    String(String),
-    Number(f64),
-    Boolean(bool),
-    Null,
-}
-
-pub type Properties = collections::HashMap<String, Value>;
-
 impl<Scalar: geo::CoordNum> Feature<Scalar> {
     pub fn recalculate_bounding_rect(&mut self) {
         self.bounding_rect = self
@@ -123,6 +104,7 @@ where
 pub struct FeatureCollection<Scalar: geo::CoordNum> {
     pub features: Vec<Feature<Scalar>>,
     pub bounding_rect: Option<geo::Rect<Scalar>>,
+    pub properties: Option<RecordBatch>,
 }
 
 impl<Scalar: geo::CoordNum + Default> FeatureCollection<Scalar> {
@@ -196,6 +178,7 @@ impl<Scalar: geo::CoordNum> FeatureCollection<Scalar> {
         FeatureCollection {
             bounding_rect: feature.bounding_rect,
             features: vec![feature],
+            properties: None,
         }
     }
 
@@ -203,6 +186,18 @@ impl<Scalar: geo::CoordNum> FeatureCollection<Scalar> {
         FeatureCollection {
             bounding_rect: bounding_rect_from_features(&features),
             features,
+            properties: None,
+        }
+    }
+
+    pub fn from_features_with_properties(
+        features: Vec<Feature<Scalar>>,
+        properties: RecordBatch,
+    ) -> Self {
+        FeatureCollection {
+            bounding_rect: bounding_rect_from_features(&features),
+            features,
+            properties: Some(properties),
         }
     }
 
@@ -223,6 +218,84 @@ impl<Scalar: geo::CoordNum> FeatureCollection<Scalar> {
 
     pub fn recalculate_bounding_rect(&mut self) {
         self.bounding_rect = bounding_rect_from_features(&self.features);
+    }
+}
+
+/// Extract properties for a single feature (row) as key-value string pairs.
+pub fn properties_for_row(record_batch: &RecordBatch, row: usize) -> Vec<(String, String)> {
+    let schema = record_batch.schema();
+    schema
+        .fields()
+        .iter()
+        .enumerate()
+        .map(|(col_idx, field)| {
+            let name = field.name().clone();
+            let col = record_batch.column(col_idx);
+            let value = array_value_to_string(col, row);
+            (name, value)
+        })
+        .collect()
+}
+
+fn array_value_to_string(array: &dyn Array, row: usize) -> String {
+    use arrow::array::{self as aa};
+    use arrow::datatypes::DataType;
+
+    if array.is_null(row) {
+        return "null".to_string();
+    }
+
+    match array.data_type() {
+        DataType::Utf8 => {
+            let arr = array.as_any().downcast_ref::<aa::StringArray>();
+            match arr {
+                Some(a) => a.value(row).to_string(),
+                None => "<error>".to_string(),
+            }
+        }
+        DataType::LargeUtf8 => {
+            let arr = array.as_any().downcast_ref::<aa::LargeStringArray>();
+            match arr {
+                Some(a) => a.value(row).to_string(),
+                None => "<error>".to_string(),
+            }
+        }
+        DataType::Float64 => {
+            let arr = array.as_any().downcast_ref::<aa::Float64Array>();
+            match arr {
+                Some(a) => a.value(row).to_string(),
+                None => "<error>".to_string(),
+            }
+        }
+        DataType::Float32 => {
+            let arr = array.as_any().downcast_ref::<aa::Float32Array>();
+            match arr {
+                Some(a) => a.value(row).to_string(),
+                None => "<error>".to_string(),
+            }
+        }
+        DataType::Int64 => {
+            let arr = array.as_any().downcast_ref::<aa::Int64Array>();
+            match arr {
+                Some(a) => a.value(row).to_string(),
+                None => "<error>".to_string(),
+            }
+        }
+        DataType::Int32 => {
+            let arr = array.as_any().downcast_ref::<aa::Int32Array>();
+            match arr {
+                Some(a) => a.value(row).to_string(),
+                None => "<error>".to_string(),
+            }
+        }
+        DataType::Boolean => {
+            let arr = array.as_any().downcast_ref::<aa::BooleanArray>();
+            match arr {
+                Some(a) => a.value(row).to_string(),
+                None => "<error>".to_string(),
+            }
+        }
+        _ => format!("<unsupported type: {:?}>", array.data_type()),
     }
 }
 
