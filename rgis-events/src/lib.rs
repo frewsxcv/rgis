@@ -67,6 +67,9 @@ impl From<rgis_primitives::LayerId> for CenterCameraMessage {
     }
 }
 
+#[derive(Message, Debug)]
+pub struct CenterCameraOnFeatureMessage(pub rgis_primitives::LayerId, pub geo_features::FeatureId);
+
 #[derive(Default, Message, Debug)]
 pub struct RecalculateMousePositionMessage;
 
@@ -198,6 +201,7 @@ impl bevy::app::Plugin for RgisEventsPlugin {
         app.add_message::<PanCameraMessage>()
             .add_message::<ZoomCameraMessage>()
             .add_message::<CenterCameraMessage>()
+            .add_message::<CenterCameraOnFeatureMessage>()
             .add_message::<RecalculateMousePositionMessage>();
 
         // Layer

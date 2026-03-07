@@ -1,19 +1,24 @@
 use bevy_egui::egui;
 
+pub enum AttributeTableAction {
+    ZoomToFeature(geo_features::FeatureId),
+    SelectFeature(geo_features::FeatureId),
+}
+
 pub struct AttributeTable<'a> {
     pub layer: &'a rgis_layers::Layer,
 }
 
 impl AttributeTable<'_> {
-    pub fn render(&self, ui: &mut egui::Ui) {
+    pub fn render(&self, ui: &mut egui::Ui) -> Option<AttributeTableAction> {
         let Some(fc) = self.layer.unprojected_feature_collection() else {
             ui.label("No vector data available.");
-            return;
+            return None;
         };
 
         let Some(ref record_batch) = fc.properties else {
             ui.label("No attributes available.");
-            return;
+            return None;
         };
 
         let schema = record_batch.schema();
@@ -27,7 +32,8 @@ impl AttributeTable<'_> {
         ));
         ui.separator();
 
-        let num_columns = fields.len() + 1; // +1 for row number
+        let num_columns = fields.len() + 3; // +1 for row number, +2 for action buttons
+        let mut action = None;
         egui::ScrollArea::both()
             .auto_shrink([false, false])
             .show(ui, |ui| {
@@ -40,6 +46,8 @@ impl AttributeTable<'_> {
                         for field in fields.iter() {
                             ui.strong(field.name());
                         }
+                        ui.strong(""); // Zoom column
+                        ui.strong(""); // Select column
                         ui.end_row();
 
                         // Data rows
@@ -49,9 +57,21 @@ impl AttributeTable<'_> {
                             for (_key, value) in &props {
                                 ui.label(value);
                             }
+
+                            let feature_id = fc.features[row].id;
+
+                            if ui.small_button("Zoom").clicked() {
+                                action = Some(AttributeTableAction::ZoomToFeature(feature_id));
+                            }
+                            if ui.small_button("Select").clicked() {
+                                action = Some(AttributeTableAction::SelectFeature(feature_id));
+                            }
+
                             ui.end_row();
                         }
                     });
             });
+
+        action
     }
 }
