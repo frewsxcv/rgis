@@ -67,7 +67,8 @@ struct Stroke;
 fn spawn_raster(
     raster: &geo_raster::Raster,
     grid: &rgis_layers::ProjectedRasterGrid,
-    layer: &rgis_layers::Layer,
+    layer_id: rgis_primitives::LayerId,
+    layer_visible: bool,
     layer_index: LayerIndex,
     commands: &mut Commands,
     images: &mut Assets<Image>,
@@ -157,7 +158,7 @@ fn spawn_raster(
     mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
     mesh.insert_indices(bevy::mesh::Indices::U32(indices));
 
-    let visibility = if layer.visible {
+    let visibility = if layer_visible {
         Visibility::Visible
     } else {
         Visibility::Hidden
@@ -173,26 +174,31 @@ fn spawn_raster(
         MeshMaterial2d(material),
         Transform::from_xyz(0., 0., z_index.0 as f32),
         visibility,
-        layer.id,
+        layer_id,
         RenderEntityType::Raster,
     ));
 }
 
+/// Spawn geometry meshes for a layer. Takes individual component values.
 fn spawn_geometry_meshes(
     geometry_mesh: geo_bevy::GeometryMesh,
     materials: &mut Assets<ColorMaterial>,
-    rgis_layers::LayerWithIndex(layer, layer_index): rgis_layers::LayerWithIndex,
+    layer_id: rgis_primitives::LayerId,
+    layer_visible: bool,
+    layer_color: &rgis_layers::LayerColor,
+    layer_point_size: f32,
+    layer_index: LayerIndex,
     commands: &mut Commands,
     assets_meshes: &mut Assets<Mesh>,
     asset_server: &AssetServer,
     is_selected: bool,
 ) {
-    let visibility = if layer.visible {
+    let visibility = if layer_visible {
         Visibility::Visible
     } else {
         Visibility::Hidden
     };
-    let mut entity_commands = commands.spawn((visibility, Transform::default(), layer.id));
+    let mut entity_commands = commands.spawn((visibility, Transform::default(), layer_id));
     match geometry_mesh {
         geo_bevy::GeometryMesh::Point(_) => {
             entity_commands.insert(Point);
@@ -212,7 +218,9 @@ fn spawn_geometry_meshes(
                 asset_server,
                 is_selected,
                 layer_index,
-                layer,
+                layer_id,
+                layer_color,
+                layer_point_size,
             );
         }
         geo_bevy::GeometryMesh::Polygon(polygon_mesh) => {
@@ -223,7 +231,7 @@ fn spawn_geometry_meshes(
                 assets_meshes,
                 is_selected,
                 layer_index,
-                layer,
+                layer_color,
             );
         }
         geo_bevy::GeometryMesh::LineString(line_string_mesh) => {
@@ -234,7 +242,7 @@ fn spawn_geometry_meshes(
                 assets_meshes,
                 is_selected,
                 layer_index,
-                layer,
+                layer_color,
             );
         }
     });
@@ -247,7 +255,7 @@ fn spawn_linestring_geometry(
     assets_meshes: &mut Assets<Mesh>,
     is_selected: bool,
     layer_index: LayerIndex,
-    layer: &rgis_layers::Layer,
+    layer_color: &rgis_layers::LayerColor,
 ) {
     let entity_type = if is_selected {
         RenderEntityType::SelectedLineString
@@ -259,7 +267,7 @@ fn spawn_linestring_geometry(
         if is_selected {
             SELECTED_COLOR
         } else {
-            layer.color.stroke
+            layer_color.stroke
         },
         layer_index,
         line_string_mesh,
@@ -277,7 +285,7 @@ fn spawn_polygon_geometry(
     assets_meshes: &mut Assets<Mesh>,
     is_selected: bool,
     layer_index: LayerIndex,
-    layer: &rgis_layers::Layer,
+    layer_color: &rgis_layers::LayerColor,
 ) {
     let polygon_entity_type = if is_selected {
         RenderEntityType::SelectedPolygon
@@ -295,7 +303,7 @@ fn spawn_polygon_geometry(
         if is_selected {
             SELECTED_COLOR
         } else {
-            match layer.color.fill {
+            match layer_color.fill {
                 Some(color) => color,
                 None => {
                     bevy::log::error!("Expected a fill color for polygon, but none was provided.");
@@ -313,7 +321,7 @@ fn spawn_polygon_geometry(
     // Exterior border
     spawn_helper(
         materials,
-        layer.color.stroke,
+        layer_color.stroke,
         layer_index,
         polygon_mesh.exterior_mesh,
         commands,
@@ -325,7 +333,7 @@ fn spawn_polygon_geometry(
     for mesh in polygon_mesh.interior_meshes {
         spawn_helper(
             materials,
-            layer.color.stroke,
+            layer_color.stroke,
             layer_index,
             mesh,
             commands,
@@ -342,7 +350,9 @@ fn spawn_point_geometry(
     asset_server: &AssetServer,
     is_selected: bool,
     layer_index: LayerIndex,
-    layer: &rgis_layers::Layer,
+    layer_id: rgis_primitives::LayerId,
+    layer_color: &rgis_layers::LayerColor,
+    layer_point_size: f32,
 ) {
     let circle = asset_server.load("circle.png");
     let (stroke_entity_type, fill_entity_type) = if is_selected {
@@ -359,11 +369,12 @@ fn spawn_point_geometry(
         points,
         layer_index,
         stroke_entity_type,
-        layer.color.stroke,
+        layer_color.stroke,
         circle.clone(),
         1.0,
         false,
-        layer,
+        layer_id,
+        layer_point_size,
     );
 
     // Fill
@@ -375,12 +386,13 @@ fn spawn_point_geometry(
         if is_selected {
             SELECTED_COLOR
         } else {
-            layer.color.fill.unwrap()
+            layer_color.fill.unwrap()
         },
         circle.clone(),
         0.7, // Fill should be smaller than stroke.
         true,
-        layer,
+        layer_id,
+        layer_point_size,
     );
 }
 
@@ -419,7 +431,8 @@ fn spawn_point_sprites(
     circle: Handle<Image>,
     scale: f32,
     is_fill: bool,
-    layer: &rgis_layers::Layer,
+    layer_id: rgis_primitives::LayerId,
+    _layer_point_size: f32,
 ) {
     for coord in points {
         let z_index = ZIndex::calculate(layer_index, entity_type);
@@ -432,7 +445,7 @@ fn spawn_point_sprites(
             },
             entity_type,
             transform,
-            layer.id,
+            layer_id,
             PointSprite {
                 relative_scale: scale,
             },

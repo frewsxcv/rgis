@@ -145,7 +145,8 @@ fn handle_meshes_spawned_events(
 }
 
 fn center_camera_on_feature(
-    layers: Res<rgis_layers::Layers>,
+    id_map: Res<rgis_layers::LayerIdToEntity>,
+    layer_query: Query<&rgis_layers::LayerData>,
     mut event_reader: MessageReader<rgis_events::CenterCameraOnFeatureMessage>,
     mut query: Query<&mut Transform, With<Camera>>,
     windows: Query<&Window, With<PrimaryWindow>>,
@@ -155,10 +156,16 @@ fn center_camera_on_feature(
         return;
     };
     for event in event_reader.read() {
-        let Some(layer) = layers.get(event.0) else {
+        let Some(entity) = id_map.get(event.0) else {
             continue;
         };
-        let Some(feature) = layer.get_projected_feature(event.1) else {
+        let Ok(data) = layer_query.get(entity) else {
+            continue;
+        };
+        let Some(fc) = data.get_projected_feature_collection_or_log(event.0) else {
+            continue;
+        };
+        let Some(feature) = fc.features.iter().find(|f| f.id == event.1) else {
             continue;
         };
         let Some(bounding_rect) = feature.bounding_rect else {
@@ -183,7 +190,8 @@ fn center_camera_on_feature(
 }
 
 fn center_camera(
-    layers: Res<rgis_layers::Layers>,
+    id_map: Res<rgis_layers::LayerIdToEntity>,
+    layer_query: Query<&rgis_layers::LayerData>,
     mut event_reader: MessageReader<rgis_events::CenterCameraMessage>,
     mut query: Query<&mut Transform, With<Camera>>,
     windows: Query<&Window, With<PrimaryWindow>>,
@@ -193,11 +201,14 @@ fn center_camera(
         return;
     };
     for event in event_reader.read() {
-        let Some(layer) = layers.get(event.0) else {
+        let Some(entity) = id_map.get(event.0) else {
+            continue;
+        };
+        let Ok(data) = layer_query.get(entity) else {
             continue;
         };
 
-        let bounding_rect = if let rgis_layers::LayerData::Raster { projected_grid: Some(grid), .. } = &layer.data {
+        let bounding_rect = if let rgis_layers::LayerData::Raster { projected_grid: Some(grid), .. } = data {
             use geo_projected::WrapTo;
             geo::Rect::new(
                 geo::Coord {
@@ -210,7 +221,7 @@ fn center_camera(
                 },
             )
             .wrap::<geo_projected::Projected>()
-        } else if let Some(fc) = layer.get_projected_feature_collection_or_log() {
+        } else if let Some(fc) = data.get_projected_feature_collection_or_log(event.0) {
             match fc.bounding_rect() {
                 Ok(r) => r,
                 Err(_) => continue,

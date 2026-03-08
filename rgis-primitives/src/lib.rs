@@ -1,11 +1,22 @@
 use std::num;
+use std::sync::atomic::{AtomicU16, Ordering};
 
 #[derive(
     Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Hash, bevy::ecs::component::Component,
 )]
 pub struct LayerId(num::NonZeroU16);
 
+static NEXT_LAYER_ID: AtomicU16 = AtomicU16::new(1);
+
 impl LayerId {
+    /// Creates a new unique `LayerId`.
+    pub fn new() -> Self {
+        let value = NEXT_LAYER_ID.fetch_add(1, Ordering::Relaxed);
+        LayerId(
+            num::NonZeroU16::new(value).expect("LayerId overflow"),
+        )
+    }
+
     /// Creates a `LayerId` from a `u16` value.
     ///
     /// # Panics

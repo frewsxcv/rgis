@@ -6,12 +6,12 @@ pub enum AttributeTableAction {
 }
 
 pub struct AttributeTable<'a> {
-    pub layer: &'a rgis_layers::Layer,
+    pub data: &'a rgis_layers::LayerData,
 }
 
 impl AttributeTable<'_> {
     pub fn render(&self, ui: &mut egui::Ui) -> Option<AttributeTableAction> {
-        let Some(fc) = self.layer.unprojected_feature_collection() else {
+        let Some(fc) = self.data.unprojected_feature_collection() else {
             ui.label("No vector data available.");
             return None;
         };
