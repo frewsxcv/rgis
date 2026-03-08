@@ -13,6 +13,7 @@ fn render_bottom(
     mut bevy_egui_ctx: EguiContexts,
     mouse_pos: Res<rgis_mouse::MousePos>,
     target_crs: Res<rgis_crs::TargetCrs>,
+    geodesy_ctx: Res<rgis_crs::GeodesyContext>,
     mut open_change_crs_window_event_writer: MessageWriter<rgis_ui_messages::OpenChangeCrsWindowMessage>,
     mut bottom_panel_height: ResMut<rgis_units::BottomPanelHeight>,
 ) -> Result {
@@ -21,6 +22,7 @@ fn render_bottom(
         egui_ctx: bevy_egui_ctx_mut,
         mouse_pos: &mouse_pos,
         target_crs: &target_crs,
+        geodesy_ctx: &geodesy_ctx,
         open_change_crs_window_event_writer: &mut open_change_crs_window_event_writer,
         bottom_panel_height: &mut bottom_panel_height,
     }

@@ -6,15 +6,9 @@ pub struct Bottom<'a, 'w> {
     pub egui_ctx: &'a egui::Context,
     pub mouse_pos: &'a rgis_mouse::MousePos,
     pub target_crs: &'a rgis_crs::TargetCrs,
+    pub geodesy_ctx: &'a rgis_crs::GeodesyContext,
     pub open_change_crs_window_event_writer: &'a mut MessageWriter<'w, OpenChangeCrsWindowMessage>,
     pub bottom_panel_height: &'a mut rgis_units::BottomPanelHeight,
-}
-
-fn coordinate_precision(epsg_code: Option<u16>) -> usize {
-    match epsg_code {
-        Some(code) if (4000..5000).contains(&code) => 6,
-        _ => 2,
-    }
 }
 
 impl Bottom<'_, '_> {
@@ -45,9 +39,39 @@ impl Bottom<'_, '_> {
     }
 
     fn render_mouse_position(&mut self, ui: &mut egui::Ui) {
+        if let Some((lat, lng)) = self.projected_to_latlng() {
+            ui.label(format!("Lat: {lat:.6}  Lng: {lng:.6}"));
+        } else {
+            let x = self.mouse_pos.0.x.0;
+            let y = self.mouse_pos.0.y.0;
+            ui.label(format!("X: {x:.2}  Y: {y:.2}"));
+        }
+    }
+
+    fn projected_to_latlng(&self) -> Option<(f64, f64)> {
+        let mut geodesy_ctx_inner = self.geodesy_ctx.write().ok()?;
+        let wgs84_op_handle =
+            rgis_crs::epsg_code_to_geodesy_op_handle(&mut *geodesy_ctx_inner, 4326).ok()?;
+
+        let transformer = geo_geodesy::Transformer::from_geodesy(
+            &*geodesy_ctx_inner,
+            self.target_crs.0.op_handle,
+            wgs84_op_handle,
+        )
+        .ok()?;
+
         let x = self.mouse_pos.0.x.0;
         let y = self.mouse_pos.0.y.0;
-        let prec = coordinate_precision(self.target_crs.0.epsg_code);
-        ui.label(format!("X: {x:.prec$}  Y: {y:.prec$}"));
+        let mut point = geo::Geometry::Point(geo::Point::new(x, y));
+        transformer.transform(&mut point).ok()?;
+
+        if let geo::Geometry::Point(p) = point {
+            let lng = p.x();
+            let lat = p.y();
+            if lat.is_finite() && lng.is_finite() {
+                return Some((lat, lng));
+            }
+        }
+        None
     }
 }
