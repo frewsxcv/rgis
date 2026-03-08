@@ -69,6 +69,7 @@ pub fn run() {
     );
     app.add_plugins(bevy::log::LogPlugin::default());
     app.add_plugins(MeshPickingPlugin);
+    app.add_plugins(bevy::diagnostic::FrameTimeDiagnosticsPlugin::default());
     app.add_plugins(rgis_ui::Plugin);
     app.add_plugins(rgis_layers::Plugin);
     app.add_plugins(rgis_file_loader::Plugin);
