@@ -599,7 +599,7 @@ fn render_top(
     mut bevy_egui_ctx: EguiContexts,
     mut app_exit_events: ResMut<Messages<AppExit>>,
     mut windows: Query<&mut bevy::window::Window, With<PrimaryWindow>>,
-    mut app_settings: ResMut<rgis_settings::RgisSettings>,
+    app_settings: Res<rgis_settings::RgisSettings>,
     current_tool: Res<State<rgis_settings::Tool>>,
     mut next_tool: ResMut<NextState<rgis_settings::Tool>>,
     mut top_panel_height: ResMut<rgis_units::TopPanelHeight>,
@@ -607,9 +607,9 @@ fn render_top(
         bevy_egui_window::IsWindowOpen<crate::windows::logs::Logs<'static>>,
     >,
     mut show_add_layer_window_event_writer: MessageWriter<rgis_ui_messages::ShowAddLayerWindowMessage>,
-    mut clear_color: ResMut<ClearColor>,
     asset_server: Res<AssetServer>,
     mut logo_textures: Local<LogoTextures>,
+    mut settings_to_apply: ResMut<SettingsToApply>,
 ) -> Result {
     if logo_textures.light.is_none() {
         let handle: Handle<Image> = asset_server.load("logo-black.png");
@@ -635,28 +635,72 @@ fn render_top(
         return Ok(());
     };
 
-    crate::panels::top::Top {
+    let output = crate::panels::top::Top {
         egui_ctx: bevy_egui_ctx_mut,
         app_exit_events: &mut app_exit_events,
         window: &mut window,
-        app_settings: &mut app_settings,
+        app_settings: &app_settings,
         current_tool: current_tool.get(),
         next_tool: &mut next_tool,
         top_panel_height: &mut top_panel_height,
         is_logs_window_open: &mut is_logs_window_open,
         show_add_layer_window_event_writer: &mut show_add_layer_window_event_writer,
-        clear_color: &mut clear_color,
         logo_texture_id,
     }
     .render();
+
+    // Defer settings mutations so that RgisSettings change detection works correctly.
+    // The actual mutation happens in apply_deferred_settings, which runs after render_top.
+    if output.toggle_show_scale {
+        settings_to_apply.toggle_show_scale = true;
+    }
+    if output.toggle_dark_mode {
+        settings_to_apply.toggle_dark_mode = true;
+    }
+
     Ok(())
 }
 
-fn set_egui_theme(
+/// Resource that buffers settings mutations from the top panel UI.
+/// This allows `render_top` to use `Res<RgisSettings>` (immutable) so that
+/// Bevy's change detection on `RgisSettings` fires only when settings actually
+/// change, not every frame.
+#[derive(Resource, Default)]
+struct SettingsToApply {
+    toggle_show_scale: bool,
+    toggle_dark_mode: bool,
+}
+
+/// Applies deferred settings mutations from the top panel, then resets the buffer.
+fn apply_deferred_settings(
+    mut settings_to_apply: ResMut<SettingsToApply>,
+    mut app_settings: ResMut<rgis_settings::RgisSettings>,
+) {
+    if !settings_to_apply.toggle_show_scale && !settings_to_apply.toggle_dark_mode {
+        return;
+    }
+    if settings_to_apply.toggle_show_scale {
+        app_settings.show_scale = !app_settings.show_scale;
+    }
+    if settings_to_apply.toggle_dark_mode {
+        app_settings.dark_mode = !app_settings.dark_mode;
+    }
+    settings_to_apply.toggle_show_scale = false;
+    settings_to_apply.toggle_dark_mode = false;
+}
+
+/// Synchronizes the egui theme and clear color when `RgisSettings` changes.
+/// Thanks to the deferred-mutation pattern in `render_top` / `apply_deferred_settings`,
+/// `RgisSettings` is only marked as changed when a setting is actually toggled,
+/// so this system skips work on most frames.
+fn sync_egui_theme(
     mut bevy_egui_ctx: EguiContexts,
     mut clear_color: ResMut<ClearColor>,
     app_settings: Res<rgis_settings::RgisSettings>,
 ) -> Result {
+    if !app_settings.is_changed() {
+        return Ok(());
+    }
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     let dark_mode = app_settings.dark_mode;
     let egui_visuals = if dark_mode {
@@ -819,9 +863,11 @@ enum RenderSystemSet {
 }
 
 pub fn configure(app: &mut App) {
+    app.init_resource::<SettingsToApply>();
+
     app.add_systems(
         PostStartup,
-        (bevy_egui::setup_primary_egui_context_system, set_egui_theme).chain(),
+        (bevy_egui::setup_primary_egui_context_system, sync_egui_theme).chain(),
     );
 
     app.configure_sets(
@@ -864,6 +910,9 @@ pub fn configure(app: &mut App) {
             handle_download_layer,
             perform_operation,
             handle_fill_color_requests,
+            // Apply deferred settings mutations, then sync theme only when
+            // RgisSettings actually changed.
+            (apply_deferred_settings, sync_egui_theme).chain(),
         ),
     );
 
