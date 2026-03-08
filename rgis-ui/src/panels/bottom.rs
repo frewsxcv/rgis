@@ -1,18 +1,16 @@
-use bevy::prelude::*;
 use bevy_egui::egui;
-use rgis_ui_messages::OpenChangeCrsWindowMessage;
 
-pub struct Bottom<'a, 'w> {
+pub struct Bottom<'a> {
     pub egui_ctx: &'a egui::Context,
     pub mouse_pos: &'a rgis_mouse::MousePos,
     pub target_crs: &'a rgis_crs::TargetCrs,
     pub geodesy_ctx: &'a rgis_crs::GeodesyContext,
     pub wgs84_op_handle: &'a rgis_crs::Wgs84OpHandle,
-    pub open_change_crs_window_event_writer: &'a mut MessageWriter<'w, OpenChangeCrsWindowMessage>,
+    pub change_crs_window_visible: &'a mut crate::ChangeCrsWindowVisible,
     pub bottom_panel_height: &'a mut rgis_units::BottomPanelHeight,
 }
 
-impl Bottom<'_, '_> {
+impl Bottom<'_> {
     pub fn render(&mut self) {
         let inner_response = egui::TopBottomPanel::bottom("bottom").show(self.egui_ctx, |ui| {
             egui::MenuBar::new().ui(ui, |ui| {
@@ -30,7 +28,7 @@ impl Bottom<'_, '_> {
         let edit_btn = ui.button("Edit");
         crate::widget_registry::register("Edit CRS", edit_btn.rect);
         if edit_btn.clicked() {
-            self.open_change_crs_window_event_writer.write_default();
+            self.change_crs_window_visible.0 = true;
         }
 
         match self.target_crs.0.epsg_code {
