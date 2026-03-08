@@ -45,6 +45,7 @@ bevy = { version = "0.18", default-features = false, features = [
     "bevy_winit",
     "bevy_core_pipeline",
     "bevy_gizmos",
+    "bevy_gizmos_render",
     "bevy_log",
     "bevy_render",
     "bevy_sprite",
