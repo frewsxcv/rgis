@@ -42,7 +42,7 @@ impl bevy::app::Plugin for Plugin {
     }
 }
 
-const SELECTED_COLOR: Color = Color::srgb(255., 192., 203.); // pink
+const SELECTED_COLOR: Color = Color::srgb(0.0, 0.9, 1.0); // bright cyan
 
 #[derive(Copy, Clone, Component)]
 struct Point;

@@ -474,4 +474,35 @@ pub fn configure(app: &mut App) {
     app.add_observer(handle_layer_became_visible_event);
     app.add_observer(handle_despawn_meshes_event);
     app.add_observer(handle_crs_changed_events);
+    app.add_systems(Update, animate_selected_highlight);
+}
+
+fn animate_selected_highlight(
+    time: Res<Time>,
+    mesh_query: Query<(&MeshMaterial2d<ColorMaterial>, &RenderEntityType)>,
+    mut sprite_query: Query<(&mut Sprite, &RenderEntityType)>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+) {
+    let t = time.elapsed_secs();
+    // Cycle hue over time: base hue ~185° (cyan), oscillate ±30°
+    let hue = 185.0 + 30.0 * (t * 2.5).sin();
+    let pulse = 0.7 + 0.3 * (t * 3.0).sin();
+    let color = Color::hsl(hue, 0.9, 0.55 * pulse + 0.2);
+
+    for (handle, entity_type) in mesh_query.iter() {
+        if matches!(
+            entity_type,
+            RenderEntityType::SelectedPolygon | RenderEntityType::SelectedLineString
+        ) {
+            if let Some(mat) = materials.get_mut(&handle.0) {
+                mat.color = color;
+            }
+        }
+    }
+
+    for (mut sprite, entity_type) in sprite_query.iter_mut() {
+        if matches!(entity_type, RenderEntityType::SelectedPoint) {
+            sprite.color = color;
+        }
+    }
 }
