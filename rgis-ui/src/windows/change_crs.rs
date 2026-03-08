@@ -9,6 +9,7 @@ pub struct ChangeCrs<'a, 'w> {
     pub target_crs: rgis_crs::TargetCrs,
     pub crs_input_outcome: &'a mut Option<crate::widgets::crs_input::Outcome>,
     pub geodesy_ctx: &'a rgis_crs::GeodesyContext,
+    pub request_focus: bool,
 }
 
 impl ChangeCrs<'_, '_> {
@@ -28,6 +29,7 @@ impl ChangeCrs<'_, '_> {
             self.crs_input_outcome,
             self.text_field_value,
             self.crs_input_mode,
+            self.request_focus,
         ));
         let button = egui::Button::new("Set");
         match self.crs_input_outcome {
