@@ -603,8 +603,8 @@ fn render_top(
     current_tool: Res<State<rgis_settings::Tool>>,
     mut next_tool: ResMut<NextState<rgis_settings::Tool>>,
     mut top_panel_height: ResMut<rgis_units::TopPanelHeight>,
-    mut is_logs_window_open: ResMut<
-        bevy_egui_window::IsWindowOpen<crate::windows::logs::Logs<'static>>,
+    mut next_logs_visibility: ResMut<
+        NextState<bevy_egui_window::WindowVisibility<crate::windows::logs::Logs<'static>>>,
     >,
     mut show_add_layer_window_event_writer: MessageWriter<rgis_ui_messages::ShowAddLayerWindowMessage>,
     mut clear_color: ResMut<ClearColor>,
@@ -643,7 +643,7 @@ fn render_top(
         current_tool: current_tool.get(),
         next_tool: &mut next_tool,
         top_panel_height: &mut top_panel_height,
-        is_logs_window_open: &mut is_logs_window_open,
+        next_logs_visibility: &mut next_logs_visibility,
         show_add_layer_window_event_writer: &mut show_add_layer_window_event_writer,
         clear_color: &mut clear_color,
         logo_texture_id,
@@ -872,12 +872,12 @@ pub fn configure(app: &mut App) {
     app.add_systems(
         EguiPrimaryContextPass,
         bevy_egui_window::render_window_system::<crate::windows::logs::Logs>
-            .run_if(bevy_egui_window::run_if_is_window_open::<crate::windows::logs::Logs>),
+            .run_if(in_state(bevy_egui_window::WindowVisibility::<crate::windows::logs::Logs>::Open)),
     );
     app.add_systems(
         EguiPrimaryContextPass,
         crate::windows::welcome::render_welcome_window_system
-            .run_if(bevy_egui_window::run_if_is_window_open::<crate::windows::welcome::Welcome>),
+            .run_if(in_state(bevy_egui_window::WindowVisibility::<crate::windows::welcome::Welcome>::Open)),
     );
 }
 
