@@ -25,7 +25,7 @@ fn nice_interval(camera_scale: f32, min_screen_px: f32) -> f32 {
 }
 
 const MIN_LINE_SPACING_PX: f32 = 80.0;
-const GRID_Z: f32 = -1.0;
+const GRID_Z: f32 = -0.01;
 
 fn grid_color(clear_color: &ClearColor) -> Color {
     let bg = clear_color.0.to_srgba();
