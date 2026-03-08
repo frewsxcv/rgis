@@ -50,6 +50,8 @@ impl bevy::app::Plugin for Plugin {
         app.add_observer(on_remove_fade_in);
         app.add_observer(on_add_fade_out);
         app.add_observer(on_remove_fade_out);
+        app.add_observer(on_add_visibility_fade_out);
+        app.add_observer(on_remove_visibility_fade_out);
         systems::configure(app);
     }
 }
@@ -67,6 +69,14 @@ fn on_add_fade_out(_trigger: On<Add, FadeOut>) {
 }
 
 fn on_remove_fade_out(_trigger: On<Remove, FadeOut>) {
+    ACTIVE_FADE_COUNT.fetch_sub(1, std::sync::atomic::Ordering::Relaxed);
+}
+
+fn on_add_visibility_fade_out(_trigger: On<Add, VisibilityFadeOut>) {
+    ACTIVE_FADE_COUNT.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+}
+
+fn on_remove_visibility_fade_out(_trigger: On<Remove, VisibilityFadeOut>) {
     ACTIVE_FADE_COUNT.fetch_sub(1, std::sync::atomic::Ordering::Relaxed);
 }
 
@@ -108,6 +118,20 @@ struct FadeOut {
     elapsed: f32,
     duration: f32,
 }
+
+/// Marks an entity for fade-out due to visibility toggle. Alpha interpolates
+/// from current value to 0, then the entity's `Visibility` is set to `Hidden`.
+/// Unlike `FadeOut`, the entity is NOT despawned.
+#[derive(Clone, Copy, Component)]
+struct VisibilityFadeOut {
+    elapsed: f32,
+    duration: f32,
+}
+
+/// Remembers the fully-opaque target alpha for a render entity so that
+/// visibility fade-in can restore it correctly.
+#[derive(Clone, Copy, Component)]
+struct TargetAlpha(f32);
 
 const FADE_DURATION: f32 = 0.4;
 
@@ -234,6 +258,7 @@ fn spawn_raster(
         visibility,
         layer_id,
         RenderEntityType::Raster,
+        TargetAlpha(1.0),
     ));
     if animate {
         entity_commands.insert(FadeIn {
@@ -484,17 +509,19 @@ fn spawn_helper<'a>(
         materials.add(color)
     };
     let z_index = ZIndex::calculate(layer_index, entity_type);
+    let target_alpha = color.alpha();
     let mut entity_commands = commands.spawn((
         Mesh2d(assets_meshes.add(mesh)),
         Transform::from_xyz(0., 0., z_index.0 as f32),
         MeshMaterial2d(material),
         entity_type,
+        TargetAlpha(target_alpha),
     ));
     if animate {
         entity_commands.insert(FadeIn {
             elapsed: 0.0,
             duration: FADE_DURATION,
-            target_alpha: color.alpha(),
+            target_alpha,
         });
     }
     if is_fill {
@@ -525,6 +552,7 @@ fn spawn_point_sprites(
     } else {
         color
     };
+    let target_alpha = color.alpha();
     for coord in points {
         let z_index = ZIndex::calculate(layer_index, entity_type);
         let transform = Transform::from_xyz(coord.x, coord.y, z_index.0 as f32);
@@ -540,12 +568,13 @@ fn spawn_point_sprites(
             PointSprite {
                 relative_scale: scale,
             },
+            TargetAlpha(target_alpha),
         ));
         if animate {
             entity_commands.insert(FadeIn {
                 elapsed: 0.0,
                 duration: FADE_DURATION,
-                target_alpha: color.alpha(),
+                target_alpha,
             });
         }
         if is_fill {
