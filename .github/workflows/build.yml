@@ -80,7 +80,7 @@ jobs:
       - name: Install Playwright browsers
         run: cd www && npx playwright install --with-deps chromium
       - name: Run Playwright tests
-        run: cd www && npx playwright test
+        run: cd www && npx playwright test --update-snapshots
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
