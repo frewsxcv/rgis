@@ -98,16 +98,20 @@ fn zoom_camera_system(
     let mut camera_scale = before_scale;
     let mut set = false;
     for event in zoom_camera_event_reader.read() {
-        // Set mouse_offset based on the first event's coordinate
+        // Set mouse_offset based on the first event's coordinate.
+        // When coord is None, mouse_offset stays equal to camera_offset,
+        // so the zoom is centered on the camera.
         if !set {
             set = true;
-            mouse_offset = match crate::CameraOffset::from_coord(event.coord) {
-                Ok(offset) => offset,
-                Err(e) => {
-                    error!("Error creating camera offset: {:?}", e);
-                    continue;
-                }
-            };
+            if let Some(coord) = event.coord {
+                mouse_offset = match crate::CameraOffset::from_coord(coord) {
+                    Ok(offset) => offset,
+                    Err(e) => {
+                        error!("Error creating camera offset: {:?}", e);
+                        continue;
+                    }
+                };
+            }
         }
         // Adjust the camera scale based on the zoom amount from the event
         camera_scale.zoom(event.amount);

@@ -43,7 +43,8 @@ pub struct ZoomCameraMessage {
     /// * `amount ∈ [1]` → no change
     /// * `amount ∈ (0, 1)` → zoom out
     pub amount: f32,
-    pub coord: ProjectedCoord,
+    /// The point to zoom towards. When `None`, zooms around the camera center.
+    pub coord: Option<ProjectedCoord>,
 }
 
 impl ZoomCameraMessage {
@@ -52,7 +53,15 @@ impl ZoomCameraMessage {
         ZoomCameraMessage {
             // Don't let amount be negative, so add `max`
             amount: (1. + amount / ZOOM_FACTOR).max(0.),
-            coord,
+            coord: Some(coord),
+        }
+    }
+
+    #[inline]
+    pub fn new_center(amount: f32) -> Self {
+        ZoomCameraMessage {
+            amount: (1. + amount / ZOOM_FACTOR).max(0.),
+            coord: None,
         }
     }
 }
