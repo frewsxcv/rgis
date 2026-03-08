@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_egui::{egui::{self, Widget}, EguiContexts};
+use bevy_egui::{egui, EguiContexts};
 
 pub fn render_map_scale(
     query: Query<
@@ -32,24 +32,52 @@ pub fn render_map_scale(
             y: 0.,
         })
         .show(egui_ctx, |ui| {
-            ui.horizontal(|ui| {
-                ui.spacing_mut().item_spacing = egui::Vec2 { x: 4., y: 0. };
-                egui::Button::new("")
-                    .min_size(egui::Vec2 {
-                        x: bar_width,
-                        y: 0.,
-                    })
-                    .small()
-                    .frame(false)
-                    .sense(egui::Sense::hover())
-                    .fill(egui::Color32::GRAY)
-                    .ui(ui);
-                ui.label(
-                    egui::RichText::new(bar_text)
-                        // .small()
-                        .background_color(ui.visuals().window_fill()), // .strong(),
-                );
-            });
+            let bar_color = if ui.visuals().dark_mode {
+                egui::Color32::WHITE
+            } else {
+                egui::Color32::BLACK
+            };
+            let stroke = egui::Stroke::new(2.0, bar_color);
+            let tick_height = 8.0;
+            let bar_y_offset = tick_height / 2.0;
+
+            let (response, painter) =
+                ui.allocate_painter(egui::Vec2::new(bar_max_width, tick_height + 14.0), egui::Sense::hover());
+            let origin = response.rect.left_top();
+
+            // Left tick
+            painter.line_segment(
+                [
+                    origin + egui::vec2(0.0, 0.0),
+                    origin + egui::vec2(0.0, tick_height),
+                ],
+                stroke,
+            );
+            // Horizontal bar
+            painter.line_segment(
+                [
+                    origin + egui::vec2(0.0, bar_y_offset),
+                    origin + egui::vec2(bar_width, bar_y_offset),
+                ],
+                stroke,
+            );
+            // Right tick
+            painter.line_segment(
+                [
+                    origin + egui::vec2(bar_width, 0.0),
+                    origin + egui::vec2(bar_width, tick_height),
+                ],
+                stroke,
+            );
+
+            // Label below the bar
+            painter.text(
+                origin + egui::vec2(bar_width / 2.0, tick_height + 2.0),
+                egui::Align2::CENTER_TOP,
+                &bar_text,
+                egui::FontId::proportional(11.0),
+                bar_color,
+            );
         });
 }
 
