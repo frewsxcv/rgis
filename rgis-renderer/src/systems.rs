@@ -868,10 +868,7 @@ fn animate_selected_highlight(
     let color = Color::hsl(hue, 0.9, 0.55 * pulse + 0.2);
 
     for (handle, entity_type) in mesh_query.iter() {
-        if matches!(
-            entity_type,
-            RenderEntityType::SelectedPolygon | RenderEntityType::SelectedLineString
-        ) {
+        if matches!(entity_type, RenderEntityType::SelectedPolygon) {
             if let Some(mat) = materials.get_mut(&handle.0) {
                 mat.color = color;
             }
