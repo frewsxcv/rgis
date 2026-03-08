@@ -67,8 +67,18 @@ export class AppPage {
     await this.waitForNextFrame();
   }
 
+  async waitForFadesComplete(timeout = 10000) {
+    await this.page.waitForFunction(
+      () => ((window as any).get_active_fade_count?.() ?? 0) === 0,
+      null,
+      { timeout },
+    );
+    await this.waitForNextFrame();
+  }
+
   async stabilizeForScreenshot() {
     await this.page.mouse.move(0, 0);
+    await this.waitForFadesComplete();
     await this.waitForNextFrame();
   }
 

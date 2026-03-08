@@ -16,6 +16,10 @@ pub use render_entity_index::RenderEntityIndex;
 /// access `Res<T>`.
 pub static RENDERED_LAYER_COUNT: AtomicU32 = AtomicU32::new(0);
 
+/// Number of entities currently fading in or out. Tests can poll this to wait
+/// for animations to finish before taking screenshots.
+pub static ACTIVE_FADE_COUNT: AtomicU32 = AtomicU32::new(0);
+
 use rgis_layers::LayerIndex;
 use z_index::ZIndex;
 
@@ -38,8 +42,28 @@ impl bevy::app::Plugin for Plugin {
         app.init_resource::<RenderEntityIndex>();
         app.add_observer(render_entity_index::on_add_layer_id);
         app.add_observer(render_entity_index::on_remove_layer_id);
+        app.add_observer(on_add_fade_in);
+        app.add_observer(on_remove_fade_in);
+        app.add_observer(on_add_fade_out);
+        app.add_observer(on_remove_fade_out);
         systems::configure(app);
     }
+}
+
+fn on_add_fade_in(_trigger: On<Add, FadeIn>) {
+    ACTIVE_FADE_COUNT.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+}
+
+fn on_remove_fade_in(_trigger: On<Remove, FadeIn>) {
+    ACTIVE_FADE_COUNT.fetch_sub(1, std::sync::atomic::Ordering::Relaxed);
+}
+
+fn on_add_fade_out(_trigger: On<Add, FadeOut>) {
+    ACTIVE_FADE_COUNT.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+}
+
+fn on_remove_fade_out(_trigger: On<Remove, FadeOut>) {
+    ACTIVE_FADE_COUNT.fetch_sub(1, std::sync::atomic::Ordering::Relaxed);
 }
 
 const SELECTED_COLOR: Color = Color::srgb(0.0, 0.9, 1.0); // bright cyan
