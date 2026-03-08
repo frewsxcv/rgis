@@ -137,19 +137,19 @@ impl<Op: rgis_geo_ops::OperationEntry> egui::Widget for OperationButton<'_, '_, 
     }
 }
 
-struct Layer<'a, 'w> {
-    layer_id: rgis_primitives::LayerId,
-    name: &'a str,
-    visible: bool,
-    color: &'a rgis_layers::LayerColor,
-    is_vector: bool,
-    is_active: bool,
-    geom_type: Option<geo_geom_type::GeomType>,
-    crs: &'a rgis_layers::LayerCrs,
-    unprojected_fc: Option<&'a geo_features::FeatureCollection<geo_projected::UnprojectedScalar>>,
-    is_move_up_enabled: bool,
-    is_move_down_enabled: bool,
-    events: &'a mut Events<'w>,
+pub(crate) struct Layer<'a, 'w> {
+    pub(crate) layer_id: rgis_primitives::LayerId,
+    pub(crate) name: &'a str,
+    pub(crate) visible: bool,
+    pub(crate) color: &'a rgis_layers::LayerColor,
+    pub(crate) is_vector: bool,
+    pub(crate) is_active: bool,
+    pub(crate) geom_type: Option<geo_geom_type::GeomType>,
+    pub(crate) crs: &'a rgis_layers::LayerCrs,
+    pub(crate) unprojected_fc: Option<&'a geo_features::FeatureCollection<geo_projected::UnprojectedScalar>>,
+    pub(crate) is_move_up_enabled: bool,
+    pub(crate) is_move_down_enabled: bool,
+    pub(crate) events: &'a mut Events<'w>,
 }
 
 impl Layer<'_, '_> {

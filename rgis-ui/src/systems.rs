@@ -41,7 +41,7 @@ fn render_bottom(
     Ok(())
 }
 
-fn render_side(
+fn render_tiles(
     mut bevy_egui_ctx: EguiContexts,
     layer_order: Res<rgis_layers::LayerOrder>,
     layer_query: Query<(
@@ -55,9 +55,11 @@ fn render_side(
         &rgis_layers::LayerCrs,
     )>,
     mut events: crate::panels::side::Events,
+    mut tiles_tree: ResMut<crate::tiles::TilesTree>,
+    mut map_pane_rect: ResMut<rgis_units::MapPaneRect>,
     mut side_panel_width: ResMut<rgis_units::SidePanelWidth>,
 ) -> Result {
-    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
+    let egui_ctx = bevy_egui_ctx.ctx_mut()?;
 
     // Build snapshots in top-to-bottom order to avoid passing Query across lifetime boundaries
     let snapshots: Vec<crate::panels::side::LayerSnapshot> = layer_order
@@ -79,13 +81,27 @@ fn render_side(
         })
         .collect();
 
-    crate::panels::side::Side {
-        egui_ctx: bevy_egui_ctx_mut,
-        snapshots,
-        events: &mut events,
-        side_panel_width: &mut side_panel_width,
-    }
-    .render();
+    // SAFETY: We transmute the Events lifetime to 'static so it can be stored in
+    // RgisBehavior. This is safe because the behavior struct is dropped before
+    // this function returns, so the references remain valid.
+    let events_ref: &mut crate::panels::side::Events<'static> =
+        unsafe { std::mem::transmute(&mut events) };
+
+    let mut behavior = crate::tiles::RgisBehavior {
+        snapshots: &snapshots,
+        events: events_ref,
+        map_pane_rect: &mut map_pane_rect,
+    };
+
+    egui::CentralPanel::default()
+        .frame(egui::Frame::NONE)
+        .show(egui_ctx, |ui| {
+            tiles_tree.0.ui(&mut behavior, ui);
+        });
+
+    // Update side_panel_width based on map pane rect for window positioning compatibility
+    side_panel_width.0 = map_pane_rect.min_x;
+
     Ok(())
 }
 
@@ -905,7 +921,7 @@ pub fn configure(app: &mut App) {
             render_message_window.in_set(RenderSystemSet::RenderingMessageWindow),
             render_top.in_set(RenderSystemSet::RenderingTopBottom),
             render_bottom.in_set(RenderSystemSet::RenderingTopBottom),
-            render_side.in_set(RenderSystemSet::Side),
+            render_tiles.in_set(RenderSystemSet::Side),
             render_in_progress.in_set(RenderSystemSet::Side),
             render_manage_layer_window.in_set(RenderSystemSet::Windows),
             render_add_layer_window.in_set(RenderSystemSet::Windows),
