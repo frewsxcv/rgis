@@ -99,7 +99,7 @@ struct FadeIn {
 
 /// Marks an entity for fade-out and despawn. Alpha interpolates from current
 /// value to 0, then the entity is despawned.
-#[derive(Component)]
+#[derive(Clone, Copy, Component)]
 struct FadeOut {
     elapsed: f32,
     duration: f32,

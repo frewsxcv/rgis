@@ -197,15 +197,37 @@ fn handle_despawn_meshes_event(
     event: On<rgis_events::DespawnMeshesEvent>,
     mut commands: Commands,
     index: Res<RenderEntityIndex>,
+    renderable_query: Query<
+        (),
+        Or<(With<MeshMaterial2d<ColorMaterial>>, With<Sprite>)>,
+    >,
+    children_query: Query<&Children>,
 ) {
+    let fade_out = crate::FadeOut {
+        elapsed: 0.0,
+        duration: crate::FADE_DURATION,
+    };
     for &entity in index.get(event.0) {
-        commands
-            .entity(entity)
-            .remove::<crate::FadeIn>()
-            .insert(crate::FadeOut {
-                elapsed: 0.0,
-                duration: crate::FADE_DURATION,
-            });
+        if renderable_query.get(entity).is_ok() {
+            // Entity directly has materials/sprites (e.g. raster) — fade it out
+            commands
+                .entity(entity)
+                .remove::<crate::FadeIn>()
+                .insert(fade_out);
+        } else {
+            // Parent entity for vector layers — fade out renderable children
+            if let Ok(children) = children_query.get(entity) {
+                for child in children.iter() {
+                    commands
+                        .entity(child)
+                        .remove::<crate::FadeIn>()
+                        .insert(fade_out);
+                }
+            }
+            // Detach children so recursive despawn doesn't kill them,
+            // then despawn the now-childless parent entity
+            commands.entity(entity).detach_all_children().despawn();
+        }
     }
 }
 
