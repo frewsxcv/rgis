@@ -19,6 +19,7 @@ pub struct CrsInput<'a> {
     pub text_field_value: &'a mut String,
     pub input_mode: &'a mut CrsInputMode,
     outcome: &'a mut Option<Outcome>,
+    request_focus: bool,
 }
 
 impl<'a> CrsInput<'a> {
@@ -27,12 +28,14 @@ impl<'a> CrsInput<'a> {
         outcome: &'a mut Option<Outcome>,
         text_field_value: &'a mut String,
         input_mode: &'a mut CrsInputMode,
+        request_focus: bool,
     ) -> Self {
         Self {
             geodesy_ctx,
             outcome,
             text_field_value,
             input_mode,
+            request_focus,
         }
     }
 }
@@ -53,6 +56,7 @@ impl egui::Widget for CrsInput<'_> {
                         self.geodesy_ctx,
                         self.text_field_value,
                         self.outcome,
+                        self.request_focus,
                     ));
                 }
                 CrsInputMode::Proj => {
@@ -60,6 +64,7 @@ impl egui::Widget for CrsInput<'_> {
                         self.geodesy_ctx,
                         self.text_field_value,
                         self.outcome,
+                        self.request_focus,
                     ));
                 }
             }
@@ -92,6 +97,7 @@ struct EpsgCodeInputFieldWidget<'a> {
     text_field_value: &'a mut String,
     outcome: &'a mut Option<Outcome>,
     parsed_text_field_value: Option<u16>,
+    request_focus: bool,
 }
 
 impl<'a> EpsgCodeInputFieldWidget<'a> {
@@ -99,12 +105,14 @@ impl<'a> EpsgCodeInputFieldWidget<'a> {
         geodesy_ctx: &'a rgis_crs::GeodesyContext,
         text_field_value: &'a mut String,
         outcome: &'a mut Option<Outcome>,
+        request_focus: bool,
     ) -> Self {
         Self {
             geodesy_ctx,
             text_field_value,
             outcome,
             parsed_text_field_value: None,
+            request_focus,
         }
     }
 }
@@ -114,6 +122,9 @@ impl egui::Widget for EpsgCodeInputFieldWidget<'_> {
         ui.horizontal(|ui| {
             ui.label("EPSG:");
             let edit_field = ui.text_edit_singleline(self.text_field_value);
+            if self.request_focus {
+                edit_field.request_focus();
+            }
 
             *self.outcome = if edit_field.changed()
                 || (!self.text_field_value.is_empty() && self.outcome.is_none())
@@ -144,6 +155,7 @@ struct ProjStringInputFieldWidget<'a> {
     geodesy_ctx: &'a rgis_crs::GeodesyContext,
     text_field_value: &'a mut String,
     outcome: &'a mut Option<Outcome>,
+    request_focus: bool,
 }
 
 impl<'a> ProjStringInputFieldWidget<'a> {
@@ -151,11 +163,13 @@ impl<'a> ProjStringInputFieldWidget<'a> {
         geodesy_ctx: &'a rgis_crs::GeodesyContext,
         text_field_value: &'a mut String,
         outcome: &'a mut Option<Outcome>,
+        request_focus: bool,
     ) -> Self {
         Self {
             geodesy_ctx,
             text_field_value,
             outcome,
+            request_focus,
         }
     }
 }
@@ -165,6 +179,9 @@ impl egui::Widget for ProjStringInputFieldWidget<'_> {
         ui.horizontal(|ui| {
             ui.label("PROJ:");
             let edit_field = ui.text_edit_singleline(self.text_field_value);
+            if self.request_focus {
+                edit_field.request_focus();
+            }
 
             *self.outcome = if edit_field.changed()
                 || (!self.text_field_value.is_empty() && self.outcome.is_none())

@@ -283,11 +283,15 @@ fn render_change_crs_window(
     geodesy_ctx: Res<rgis_crs::GeodesyContext>,
     side_panel_width: Res<rgis_units::SidePanelWidth>,
     top_panel_height: Res<rgis_units::TopPanelHeight>,
+    mut was_visible: Local<bool>,
 ) -> Result {
     if crate::widget_registry::take_close_request("Change CRS") {
         is_visible.0 = false;
         return Ok(());
     }
+
+    let just_opened = is_visible.0 && !*was_visible;
+    *was_visible = is_visible.0;
 
     if !is_visible.0 {
         return Ok(());
@@ -306,6 +310,7 @@ fn render_change_crs_window(
                 target_crs: (*target_crs).clone(),
                 crs_input_outcome: &mut crs_input_outcome,
                 geodesy_ctx: &geodesy_ctx,
+                request_focus: just_opened,
             }
             .render(ui);
         });

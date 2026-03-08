@@ -80,6 +80,7 @@ impl<'a> ByFile<'a> {
             &mut self.state.crs_input_outcome,
             &mut self.state.crs_input,
             &mut self.state.crs_input_mode,
+            false,
         ));
 
         ui.separator();
