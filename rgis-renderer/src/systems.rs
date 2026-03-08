@@ -296,24 +296,102 @@ fn handle_despawn_meshes_event(
 
 fn handle_layer_became_hidden_event(
     event: On<rgis_events::LayerBecameHiddenEvent>,
+    mut commands: Commands,
     mut query: Query<&mut Visibility>,
+    children_query: Query<&Children>,
+    renderable_query: Query<(), Or<(With<MeshMaterial2d<ColorMaterial>>, With<Sprite>)>>,
     index: Res<RenderEntityIndex>,
 ) {
+    if !crate::animations_enabled() {
+        for &entity in index.get(event.0) {
+            if let Ok(mut visibility) = query.get_mut(entity) {
+                *visibility = Visibility::Hidden;
+            }
+        }
+        return;
+    }
+    let fade_out = crate::VisibilityFadeOut {
+        elapsed: 0.0,
+        duration: crate::FADE_DURATION,
+    };
     for &entity in index.get(event.0) {
-        if let Ok(mut visibility) = query.get_mut(entity) {
-            *visibility = Visibility::Hidden;
+        if renderable_query.get(entity).is_ok() {
+            // Flat entity (e.g. raster) — fade it out directly
+            commands
+                .entity(entity)
+                .remove::<crate::FadeIn>()
+                .insert(fade_out);
+        } else {
+            // Parent entity for vector layers — fade out renderable children
+            if let Ok(children) = children_query.get(entity) {
+                for child in children.iter() {
+                    commands
+                        .entity(child)
+                        .remove::<crate::FadeIn>()
+                        .insert(fade_out);
+                }
+            }
         }
     }
 }
 
 fn handle_layer_became_visible_event(
     event: On<rgis_events::LayerBecameVisibleEvent>,
-    mut query: Query<&mut Visibility>,
+    mut commands: Commands,
+    mut visibility_query: Query<&mut Visibility>,
+    children_query: Query<&Children>,
+    target_alpha_query: Query<&crate::TargetAlpha>,
+    material_query: Query<&MeshMaterial2d<ColorMaterial>, Without<Sprite>>,
+    mut sprite_query: Query<&mut Sprite>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
     index: Res<RenderEntityIndex>,
 ) {
     for &entity in index.get(event.0) {
-        if let Ok(mut visibility) = query.get_mut(entity) {
+        if let Ok(mut visibility) = visibility_query.get_mut(entity) {
             *visibility = Visibility::Visible;
+        }
+    }
+
+    if !crate::animations_enabled() {
+        return;
+    }
+
+    for &entity in index.get(event.0) {
+        // Collect renderable entities: either direct (raster) or children (vector)
+        let has_target_alpha = target_alpha_query.get(entity).is_ok();
+        let renderables: Vec<Entity> = if has_target_alpha {
+            vec![entity]
+        } else if let Ok(children) = children_query.get(entity) {
+            children.iter().collect()
+        } else {
+            continue;
+        };
+
+        for child in renderables {
+            let target_alpha = target_alpha_query
+                .get(child)
+                .map(|ta| ta.0)
+                .unwrap_or(1.0);
+
+            // Set alpha to 0 before fading in
+            if let Ok(handle) = material_query.get(child) {
+                if let Some(mat) = materials.get_mut(&handle.0) {
+                    mat.color.set_alpha(0.0);
+                    mat.alpha_mode = AlphaMode2d::Blend;
+                }
+            }
+            if let Ok(mut sprite) = sprite_query.get_mut(child) {
+                sprite.color.set_alpha(0.0);
+            }
+
+            commands
+                .entity(child)
+                .remove::<crate::VisibilityFadeOut>()
+                .insert(crate::FadeIn {
+                    elapsed: 0.0,
+                    duration: crate::FADE_DURATION,
+                    target_alpha,
+                });
         }
     }
 }
@@ -598,7 +676,7 @@ pub fn configure(app: &mut App) {
     app.add_observer(handle_crs_changed_events);
     app.add_systems(
         Update,
-        (animate_fade_in, animate_fade_out, animate_selected_highlight),
+        (animate_fade_in, animate_fade_out, animate_visibility_fade_out, animate_selected_highlight),
     );
 }
 
@@ -666,6 +744,63 @@ fn animate_fade_out(
         if t >= 1.0 {
             commands.entity(entity).despawn();
         }
+    }
+}
+
+fn animate_visibility_fade_out(
+    time: Res<Time>,
+    mut mesh_query: Query<
+        (Entity, &MeshMaterial2d<ColorMaterial>, &mut crate::VisibilityFadeOut),
+        Without<Sprite>,
+    >,
+    mut sprite_query: Query<(Entity, &mut Sprite, &mut crate::VisibilityFadeOut)>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    mut commands: Commands,
+    child_of_query: Query<&ChildOf>,
+) {
+    let dt = time.delta_secs();
+
+    // Track entities that need to be hidden once fade completes
+    let mut to_hide: Vec<Entity> = Vec::new();
+
+    for (entity, handle, mut fade) in mesh_query.iter_mut() {
+        fade.elapsed += dt;
+        let t = (fade.elapsed / fade.duration).min(1.0);
+        if let Some(mat) = materials.get_mut(&handle.0) {
+            mat.color.set_alpha(1.0 - t);
+            mat.alpha_mode = AlphaMode2d::Blend;
+        }
+        if t >= 1.0 {
+            commands
+                .entity(entity)
+                .remove::<crate::VisibilityFadeOut>();
+            // Hide the parent container (for vector layers) or self (for rasters)
+            if let Ok(child_of) = child_of_query.get(entity) {
+                to_hide.push(child_of.parent());
+            } else {
+                to_hide.push(entity);
+            }
+        }
+    }
+
+    for (entity, mut sprite, mut fade) in sprite_query.iter_mut() {
+        fade.elapsed += dt;
+        let t = (fade.elapsed / fade.duration).min(1.0);
+        sprite.color.set_alpha(1.0 - t);
+        if t >= 1.0 {
+            commands
+                .entity(entity)
+                .remove::<crate::VisibilityFadeOut>();
+            if let Ok(child_of) = child_of_query.get(entity) {
+                to_hide.push(child_of.parent());
+            } else {
+                to_hide.push(entity);
+            }
+        }
+    }
+
+    for entity in to_hide {
+        commands.entity(entity).insert(Visibility::Hidden);
     }
 }
 
