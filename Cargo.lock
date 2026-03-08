@@ -1082,6 +1082,7 @@ dependencies = [
  "bevy_dev_tools",
  "bevy_diagnostic",
  "bevy_ecs",
+ "bevy_gizmos",
  "bevy_gizmos_render",
  "bevy_image",
  "bevy_input",
@@ -5230,6 +5231,7 @@ dependencies = [
  "rgis-file-loader",
  "rgis-file-loader-events",
  "rgis-geodesy",
+ "rgis-grid",
  "rgis-keyboard",
  "rgis-layer-events",
  "rgis-layers",
@@ -5344,6 +5346,13 @@ dependencies = [
  "bevy",
  "crs-definitions",
  "geodesy",
+]
+
+[[package]]
+name = "rgis-grid"
+version = "0.1.0"
+dependencies = [
+ "bevy",
 ]
 
 [[package]]

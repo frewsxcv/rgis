@@ -20,6 +20,7 @@ rgis-crs-events = { path = "../rgis-crs-events" }
 rgis-file-loader = { path = "../rgis-file-loader" }
 rgis-file-loader-events = { path = "../rgis-file-loader-events" }
 rgis-geodesy = { path = "../rgis-geodesy" }
+rgis-grid = { path = "../rgis-grid" }
 rgis-keyboard = { path = "../rgis-keyboard" }
 rgis-layer-events = { path = "../rgis-layer-events" }
 rgis-layers = { path = "../rgis-layers" }

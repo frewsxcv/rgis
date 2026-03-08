@@ -61,6 +61,7 @@ pub fn run() {
     app.add_plugins(rgis_layers::Plugin);
     app.add_plugins(rgis_file_loader::Plugin);
     app.add_plugins(rgis_renderer::Plugin);
+    app.add_plugins(rgis_grid::Plugin);
     app.add_plugins(rgis_mouse::Plugin);
     app.add_plugins(rgis_keyboard::Plugin);
     app.add_plugins(rgis_camera::Plugin);
