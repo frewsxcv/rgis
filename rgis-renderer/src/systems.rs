@@ -712,6 +712,11 @@ pub fn configure(app: &mut App) {
             )
                 .chain(),
             handle_features_deselected_event,
+            animate_fade_in,
+            animate_fade_out,
+            animate_visibility_fade_out,
+            animate_selected_highlight,
+            crate::particles::animate_selection_particles,
         ),
     );
     app.add_observer(handle_picking_click);
@@ -719,10 +724,6 @@ pub fn configure(app: &mut App) {
     app.add_observer(handle_layer_became_visible_event);
     app.add_observer(handle_despawn_meshes_event);
     app.add_observer(handle_crs_changed_events);
-    app.add_systems(
-        Update,
-        (animate_fade_in, animate_fade_out, animate_visibility_fade_out, animate_selected_highlight, crate::particles::animate_selection_particles),
-    );
 }
 
 fn animate_fade_in(

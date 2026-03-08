@@ -4,10 +4,44 @@ pub struct Bottom<'a> {
     pub egui_ctx: &'a egui::Context,
     pub mouse_pos: &'a rgis_mouse::MousePos,
     pub target_crs: &'a rgis_crs::TargetCrs,
-    pub geodesy_ctx: &'a rgis_crs::GeodesyContext,
-    pub wgs84_op_handle: &'a rgis_crs::Wgs84OpHandle,
+    pub cached_latlng: Option<(f64, f64)>,
     pub change_crs_window_visible: &'a mut crate::ChangeCrsWindowVisible,
     pub bottom_panel_height: &'a mut rgis_units::BottomPanelHeight,
+}
+
+/// Convert the current mouse position from the target CRS to WGS 84 lat/lng.
+///
+/// This is extracted as a free function so the caller can cache the result and
+/// only recompute when the mouse position or target CRS actually changes,
+/// avoiding a per-frame coordinate transformation and geodesy lock acquisition.
+pub fn projected_to_latlng(
+    mouse_pos: &rgis_mouse::MousePos,
+    target_crs: &rgis_crs::TargetCrs,
+    geodesy_ctx: &rgis_crs::GeodesyContext,
+    wgs84_op_handle: &rgis_crs::Wgs84OpHandle,
+) -> Option<(f64, f64)> {
+    let geodesy_ctx_inner = geodesy_ctx.read().ok()?;
+
+    let transformer = geo_geodesy::Transformer::from_geodesy(
+        &*geodesy_ctx_inner,
+        target_crs.0.op_handle,
+        wgs84_op_handle.0,
+    )
+    .ok()?;
+
+    let x = mouse_pos.0.x.0;
+    let y = mouse_pos.0.y.0;
+    let mut point = geo::Geometry::Point(geo::Point::new(x, y));
+    transformer.transform(&mut point).ok()?;
+
+    if let geo::Geometry::Point(p) = point {
+        let lng = p.x();
+        let lat = p.y();
+        if lat.is_finite() && lng.is_finite() {
+            return Some((lat, lng));
+        }
+    }
+    None
 }
 
 impl Bottom<'_> {
@@ -38,37 +72,12 @@ impl Bottom<'_> {
     }
 
     fn render_mouse_position(&mut self, ui: &mut egui::Ui) {
-        if let Some((lat, lng)) = self.projected_to_latlng() {
+        if let Some((lat, lng)) = self.cached_latlng {
             ui.label(format!("Lat: {lat:.6}  Lng: {lng:.6}"));
         } else {
             let x = self.mouse_pos.0.x.0;
             let y = self.mouse_pos.0.y.0;
             ui.label(format!("X: {x:.2}  Y: {y:.2}"));
         }
-    }
-
-    fn projected_to_latlng(&self) -> Option<(f64, f64)> {
-        let geodesy_ctx_inner = self.geodesy_ctx.read().ok()?;
-
-        let transformer = geo_geodesy::Transformer::from_geodesy(
-            &*geodesy_ctx_inner,
-            self.target_crs.0.op_handle,
-            self.wgs84_op_handle.0,
-        )
-        .ok()?;
-
-        let x = self.mouse_pos.0.x.0;
-        let y = self.mouse_pos.0.y.0;
-        let mut point = geo::Geometry::Point(geo::Point::new(x, y));
-        transformer.transform(&mut point).ok()?;
-
-        if let geo::Geometry::Point(p) = point {
-            let lng = p.x();
-            let lat = p.y();
-            if lat.is_finite() && lng.is_finite() {
-                return Some((lat, lng));
-            }
-        }
-        None
     }
 }

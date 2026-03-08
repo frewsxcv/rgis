@@ -17,6 +17,7 @@ rgis-camera = { path = "../rgis-camera" }
 rgis-crs = { path = "../rgis-crs" }
 rgis-events = { path = "../rgis-events" }
 rgis-file-loader = { path = "../rgis-file-loader" }
+rgis-grid = { path = "../rgis-grid" }
 rgis-layers = { path = "../rgis-layers" }
 rgis-mouse = { path = "../rgis-mouse" }
 rgis-renderer = { path = "../rgis-renderer" }
