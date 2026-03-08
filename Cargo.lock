@@ -1259,7 +1259,6 @@ dependencies = [
  "bevy_diagnostic",
  "bevy_ecs",
  "bevy_feathers",
- "bevy_gizmos",
  "bevy_gizmos_render",
  "bevy_image",
  "bevy_input",
