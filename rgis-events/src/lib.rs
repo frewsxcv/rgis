@@ -171,6 +171,9 @@ impl From<rgis_primitives::LayerId> for MeshesSpawnedMessage {
 #[derive(Clone, Copy, Message, Debug)]
 pub struct FeatureSelectedMessage(pub rgis_primitives::LayerId, pub geo_features::FeatureId);
 
+#[derive(Default, Message, Debug)]
+pub struct FeaturesDeselectedMessage;
+
 // ── File Loader ─────────────────────────────────────────────────────────────
 
 #[derive(Message, Debug)]
@@ -222,7 +225,8 @@ impl bevy::app::Plugin for RgisEventsPlugin {
         app.add_message::<MeshesSpawnedMessage>();
 
         // Map
-        app.add_message::<FeatureSelectedMessage>();
+        app.add_message::<FeatureSelectedMessage>()
+            .add_message::<FeaturesDeselectedMessage>();
 
         // File Loader
         app.add_message::<LoadFileMessage>();
