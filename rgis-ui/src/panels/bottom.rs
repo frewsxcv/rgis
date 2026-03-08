@@ -7,6 +7,7 @@ pub struct Bottom<'a, 'w> {
     pub mouse_pos: &'a rgis_mouse::MousePos,
     pub target_crs: &'a rgis_crs::TargetCrs,
     pub geodesy_ctx: &'a rgis_crs::GeodesyContext,
+    pub wgs84_op_handle: &'a rgis_crs::Wgs84OpHandle,
     pub open_change_crs_window_event_writer: &'a mut MessageWriter<'w, OpenChangeCrsWindowMessage>,
     pub bottom_panel_height: &'a mut rgis_units::BottomPanelHeight,
 }
@@ -49,14 +50,12 @@ impl Bottom<'_, '_> {
     }
 
     fn projected_to_latlng(&self) -> Option<(f64, f64)> {
-        let mut geodesy_ctx_inner = self.geodesy_ctx.write().ok()?;
-        let wgs84_op_handle =
-            rgis_crs::epsg_code_to_geodesy_op_handle(&mut *geodesy_ctx_inner, 4326).ok()?;
+        let geodesy_ctx_inner = self.geodesy_ctx.read().ok()?;
 
         let transformer = geo_geodesy::Transformer::from_geodesy(
             &*geodesy_ctx_inner,
             self.target_crs.0.op_handle,
-            wgs84_op_handle,
+            self.wgs84_op_handle.0,
         )
         .ok()?;
 
