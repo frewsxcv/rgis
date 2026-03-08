@@ -120,7 +120,7 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut bevy::app::App) {
         app.insert_resource(GeodesyContext(Default::default()))
             .insert_resource(DefaultTargetCrs(self.default_crs))
-            .add_systems(Update, handle_crs_changed_events)
+            .add_systems(Update, handle_crs_changed_events.in_set(rgis_primitives::RgisSet::LayerProcessing))
             .add_systems(Startup, insert_target_crs);
     }
 }

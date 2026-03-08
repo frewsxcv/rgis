@@ -163,7 +163,8 @@ pub fn configure(app: &mut App) {
             handle_layer_created_events,
             handle_reproject_geometry_job_completion_events,
             handle_reproject_raster_extent_job_completion_events,
-        ),
+        )
+            .in_set(rgis_primitives::RgisSet::Transform),
     );
     app.add_observer(handle_crs_changed_events);
 }

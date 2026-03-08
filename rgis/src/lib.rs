@@ -97,5 +97,20 @@ pub fn run() {
     app.add_plugins(rgis_settings::Plugin);
     app.add_plugins(rgis_crs::Plugin::default());
 
+    // Establish explicit ordering between system sets to prevent race conditions.
+    // For example, Transform must complete before Rendering so that a CRS change
+    // doesn't despawn meshes that were just projected in the same frame.
+    app.configure_sets(
+        Update,
+        (
+            rgis_primitives::RgisSet::FileLoading,
+            rgis_primitives::RgisSet::LayerProcessing,
+            rgis_primitives::RgisSet::Transform,
+            rgis_primitives::RgisSet::Rendering,
+            rgis_primitives::RgisSet::Camera,
+        )
+            .chain(),
+    );
+
     app.run();
 }

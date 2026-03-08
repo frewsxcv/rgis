@@ -1,6 +1,27 @@
 use std::num;
 use std::sync::atomic::{AtomicU16, Ordering};
 
+/// Named system sets for cross-crate ordering of Bevy systems.
+///
+/// The intended ordering is:
+///   `FileLoading` → `LayerProcessing` → `Transform` → `Rendering` → `Camera`
+///
+/// This prevents race conditions such as newly-projected geometry meshes being
+/// deleted by a stale despawn that runs out of order.
+#[derive(bevy::ecs::schedule::SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
+pub enum RgisSet {
+    /// Loading files and creating layer entities.
+    FileLoading,
+    /// Processing layer data (creation, deletion, visibility, CRS updates).
+    LayerProcessing,
+    /// Reprojecting geometry / raster data into the target CRS.
+    Transform,
+    /// Building and spawning render meshes / sprites.
+    Rendering,
+    /// Updating the camera (centering, panning, zooming).
+    Camera,
+}
+
 #[derive(
     Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Hash, bevy::ecs::component::Component,
 )]

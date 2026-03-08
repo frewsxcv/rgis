@@ -565,9 +565,9 @@ fn handle_crs_changed_events(
     query: Query<(&rgis_primitives::LayerId, Entity), With<MeshMaterial2d<ColorMaterial>>>,
     mut commands: Commands,
 ) {
-    // FIXME: there's a race condition here where we'll delete newly generated projected geometry
-    // meshes if this gets executed after we project the new geometries. We should add a filter
-    // in here for the old CRS.
+    // The RgisSet ordering (Transform before Rendering) ensures that reprojection
+    // job completions are processed before mesh spawning, preventing a race where
+    // newly projected meshes could be deleted by a stale CRS-change despawn.
     for (_, entity) in &query {
         commands.entity(entity).despawn();
     }
@@ -682,7 +682,8 @@ pub fn configure(app: &mut App) {
                 handle_feature_selected_event_spawn,
             )
                 .chain(),
-        ),
+        )
+            .in_set(rgis_primitives::RgisSet::Rendering),
     );
     app.add_observer(handle_picking_click);
     app.add_observer(handle_layer_became_hidden_event);
@@ -691,7 +692,8 @@ pub fn configure(app: &mut App) {
     app.add_observer(handle_crs_changed_events);
     app.add_systems(
         Update,
-        (animate_fade_in, animate_fade_out, animate_visibility_fade_out, animate_selected_highlight, crate::particles::animate_selection_particles),
+        (animate_fade_in, animate_fade_out, animate_visibility_fade_out, animate_selected_highlight, crate::particles::animate_selection_particles)
+            .in_set(rgis_primitives::RgisSet::Rendering),
     );
 }
 

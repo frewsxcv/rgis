@@ -287,6 +287,7 @@ pub fn configure(app: &mut App) {
             )
                 .chain(),
             handle_create_raster_layer_events,
-        ),
+        )
+            .in_set(rgis_primitives::RgisSet::LayerProcessing),
     );
 }
