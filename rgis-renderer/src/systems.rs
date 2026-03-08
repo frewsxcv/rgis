@@ -533,10 +533,9 @@ fn animate_fade_in(
         let t = (fade.elapsed / fade.duration).min(1.0);
         if let Some(mat) = materials.get_mut(&handle.0) {
             mat.color.set_alpha(t * fade.target_alpha);
-            if t >= 1.0 {
-                mat.alpha_mode = alpha_mode_for_color(mat.color);
-                commands.entity(entity).remove::<crate::FadeIn>();
-            }
+        }
+        if t >= 1.0 {
+            commands.entity(entity).remove::<crate::FadeIn>();
         }
     }
 
