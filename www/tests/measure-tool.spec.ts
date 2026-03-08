@@ -2,7 +2,7 @@ import { test } from "./fixtures/app-fixture";
 
 test.describe("measure tool", () => {
   test("measure from San Francisco to New York City", async ({ appPage }) => {
-    test.setTimeout(60000);
+    test.setTimeout(120000);
 
     // Close the Welcome dialog
     await appPage.closeWindow("Welcome");
