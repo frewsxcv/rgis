@@ -26,6 +26,18 @@ pub fn get_rendered_layer_count() -> u32 {
 
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
+pub fn get_active_fade_count() -> u32 {
+    rgis_renderer::ACTIVE_FADE_COUNT.load(std::sync::atomic::Ordering::Relaxed)
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen]
+pub fn set_animations_enabled(enabled: bool) {
+    rgis_renderer::ANIMATIONS_ENABLED.store(enabled, std::sync::atomic::Ordering::Relaxed);
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen]
 pub fn close_window(title: &str) {
     rgis_ui::widget_registry::request_close(title);
 }
@@ -72,7 +84,6 @@ pub fn run() {
         ..default()
     });
     app.add_plugins(MeshPickingPlugin);
-    app.add_plugins(bevy::diagnostic::FrameTimeDiagnosticsPlugin::default());
     app.add_plugins(rgis_ui::Plugin);
     app.add_plugins(rgis_layers::Plugin);
     app.add_plugins(rgis_file_loader::Plugin);

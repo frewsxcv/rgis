@@ -5,6 +5,10 @@ use rgis_primitives::Crs;
 
 // --- Geodesy context (formerly rgis-geodesy) ---
 
+/// Cached WGS 84 (EPSG:4326) operation handle, created once at startup.
+#[derive(Resource)]
+pub struct Wgs84OpHandle(pub geodesy::ctx::OpHandle);
+
 /// Shared geodesy context for coordinate reference system operations.
 ///
 /// This resource wraps `geodesy::ctx::Minimal` in an `Arc<RwLock>` because
@@ -138,11 +142,13 @@ fn insert_target_crs(
         }
     };
     let op_handle = epsg_code_to_geodesy_op_handle(&mut *geodesy_ctx, default_crs)?;
+    let wgs84_op_handle = epsg_code_to_geodesy_op_handle(&mut *geodesy_ctx, 4326)?;
     commands.insert_resource(TargetCrs(Crs {
         epsg_code: Some(default_crs),
         proj_string: None,
         op_handle,
     }));
+    commands.insert_resource(Wgs84OpHandle(wgs84_op_handle));
     Ok(())
 }
 

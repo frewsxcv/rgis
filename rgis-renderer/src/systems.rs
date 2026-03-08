@@ -254,32 +254,144 @@ fn handle_despawn_meshes_event(
     event: On<rgis_events::DespawnMeshesEvent>,
     mut commands: Commands,
     index: Res<RenderEntityIndex>,
+    renderable_query: Query<
+        (),
+        Or<(With<MeshMaterial2d<ColorMaterial>>, With<Sprite>)>,
+    >,
+    children_query: Query<&Children>,
 ) {
+    if !crate::animations_enabled() {
+        for &entity in index.get(event.0) {
+            commands.entity(entity).despawn();
+        }
+        return;
+    }
+    let fade_out = crate::FadeOut {
+        elapsed: 0.0,
+        duration: crate::FADE_DURATION,
+    };
     for &entity in index.get(event.0) {
-        commands.entity(entity).despawn();
+        if renderable_query.get(entity).is_ok() {
+            // Entity directly has materials/sprites (e.g. raster) — fade it out
+            commands
+                .entity(entity)
+                .remove::<crate::FadeIn>()
+                .insert(fade_out);
+        } else {
+            // Parent entity for vector layers — fade out renderable children
+            if let Ok(children) = children_query.get(entity) {
+                for child in children.iter() {
+                    commands
+                        .entity(child)
+                        .remove::<crate::FadeIn>()
+                        .insert(fade_out);
+                }
+            }
+            // Detach children so recursive despawn doesn't kill them,
+            // then despawn the now-childless parent entity
+            commands.entity(entity).detach_all_children().despawn();
+        }
     }
 }
 
 fn handle_layer_became_hidden_event(
     event: On<rgis_events::LayerBecameHiddenEvent>,
+    mut commands: Commands,
     mut query: Query<&mut Visibility>,
+    children_query: Query<&Children>,
+    renderable_query: Query<(), Or<(With<MeshMaterial2d<ColorMaterial>>, With<Sprite>)>>,
     index: Res<RenderEntityIndex>,
 ) {
+    if !crate::animations_enabled() {
+        for &entity in index.get(event.0) {
+            if let Ok(mut visibility) = query.get_mut(entity) {
+                *visibility = Visibility::Hidden;
+            }
+        }
+        return;
+    }
+    let fade_out = crate::VisibilityFadeOut {
+        elapsed: 0.0,
+        duration: crate::FADE_DURATION,
+    };
     for &entity in index.get(event.0) {
-        if let Ok(mut visibility) = query.get_mut(entity) {
-            *visibility = Visibility::Hidden;
+        if renderable_query.get(entity).is_ok() {
+            // Flat entity (e.g. raster) — fade it out directly
+            commands
+                .entity(entity)
+                .remove::<crate::FadeIn>()
+                .insert(fade_out);
+        } else {
+            // Parent entity for vector layers — fade out renderable children
+            if let Ok(children) = children_query.get(entity) {
+                for child in children.iter() {
+                    commands
+                        .entity(child)
+                        .remove::<crate::FadeIn>()
+                        .insert(fade_out);
+                }
+            }
         }
     }
 }
 
 fn handle_layer_became_visible_event(
     event: On<rgis_events::LayerBecameVisibleEvent>,
-    mut query: Query<&mut Visibility>,
+    mut commands: Commands,
+    mut visibility_query: Query<&mut Visibility>,
+    children_query: Query<&Children>,
+    target_alpha_query: Query<&crate::TargetAlpha>,
+    material_query: Query<&MeshMaterial2d<ColorMaterial>, Without<Sprite>>,
+    mut sprite_query: Query<&mut Sprite>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
     index: Res<RenderEntityIndex>,
 ) {
     for &entity in index.get(event.0) {
-        if let Ok(mut visibility) = query.get_mut(entity) {
+        if let Ok(mut visibility) = visibility_query.get_mut(entity) {
             *visibility = Visibility::Visible;
+        }
+    }
+
+    if !crate::animations_enabled() {
+        return;
+    }
+
+    for &entity in index.get(event.0) {
+        // Collect renderable entities: either direct (raster) or children (vector)
+        let has_target_alpha = target_alpha_query.get(entity).is_ok();
+        let renderables: Vec<Entity> = if has_target_alpha {
+            vec![entity]
+        } else if let Ok(children) = children_query.get(entity) {
+            children.iter().collect()
+        } else {
+            continue;
+        };
+
+        for child in renderables {
+            let target_alpha = target_alpha_query
+                .get(child)
+                .map(|ta| ta.0)
+                .unwrap_or(1.0);
+
+            // Set alpha to 0 before fading in
+            if let Ok(handle) = material_query.get(child) {
+                if let Some(mat) = materials.get_mut(&handle.0) {
+                    mat.color.set_alpha(0.0);
+                    mat.alpha_mode = AlphaMode2d::Blend;
+                }
+            }
+            if let Ok(mut sprite) = sprite_query.get_mut(child) {
+                sprite.color.set_alpha(0.0);
+            }
+
+            commands
+                .entity(child)
+                .remove::<crate::VisibilityFadeOut>()
+                .insert(crate::FadeIn {
+                    elapsed: 0.0,
+                    duration: crate::FADE_DURATION,
+                    target_alpha,
+                });
         }
     }
 }
@@ -491,7 +603,19 @@ fn handle_feature_selected_event_despawn(
             match entity_type {
                 RenderEntityType::SelectedPolygon
                 | RenderEntityType::SelectedLineString
-                | RenderEntityType::SelectedPoint => commands.entity(entity).despawn(),
+                | RenderEntityType::SelectedPoint => {
+                    if crate::animations_enabled() {
+                        commands
+                            .entity(entity)
+                            .remove::<crate::FadeIn>()
+                            .insert(crate::FadeOut {
+                                elapsed: 0.0,
+                                duration: crate::FADE_DURATION,
+                            });
+                    } else {
+                        commands.entity(entity).despawn();
+                    }
+                }
                 _ => (),
             }
         }
@@ -550,4 +674,165 @@ pub fn configure(app: &mut App) {
     app.add_observer(handle_layer_became_visible_event);
     app.add_observer(handle_despawn_meshes_event);
     app.add_observer(handle_crs_changed_events);
+    app.add_systems(
+        Update,
+        (animate_fade_in, animate_fade_out, animate_visibility_fade_out, animate_selected_highlight),
+    );
+}
+
+fn animate_fade_in(
+    time: Res<Time>,
+    mut mesh_query: Query<
+        (Entity, &MeshMaterial2d<ColorMaterial>, &mut crate::FadeIn),
+        Without<Sprite>,
+    >,
+    mut sprite_query: Query<(Entity, &mut Sprite, &mut crate::FadeIn)>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    mut commands: Commands,
+) {
+    let dt = time.delta_secs();
+
+    for (entity, handle, mut fade) in mesh_query.iter_mut() {
+        fade.elapsed += dt;
+        let t = (fade.elapsed / fade.duration).min(1.0);
+        if let Some(mat) = materials.get_mut(&handle.0) {
+            mat.color.set_alpha(t * fade.target_alpha);
+        }
+        if t >= 1.0 {
+            commands.entity(entity).remove::<crate::FadeIn>();
+        }
+    }
+
+    for (entity, mut sprite, mut fade) in sprite_query.iter_mut() {
+        fade.elapsed += dt;
+        let t = (fade.elapsed / fade.duration).min(1.0);
+        sprite.color.set_alpha(t * fade.target_alpha);
+        if t >= 1.0 {
+            commands.entity(entity).remove::<crate::FadeIn>();
+        }
+    }
+}
+
+fn animate_fade_out(
+    time: Res<Time>,
+    mut mesh_query: Query<
+        (Entity, &MeshMaterial2d<ColorMaterial>, &mut crate::FadeOut),
+        Without<Sprite>,
+    >,
+    mut sprite_query: Query<(Entity, &mut Sprite, &mut crate::FadeOut)>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    mut commands: Commands,
+) {
+    let dt = time.delta_secs();
+
+    for (entity, handle, mut fade) in mesh_query.iter_mut() {
+        fade.elapsed += dt;
+        let t = (fade.elapsed / fade.duration).min(1.0);
+        if let Some(mat) = materials.get_mut(&handle.0) {
+            mat.color.set_alpha(1.0 - t);
+            mat.alpha_mode = AlphaMode2d::Blend;
+        }
+        if t >= 1.0 {
+            commands.entity(entity).despawn();
+        }
+    }
+
+    for (entity, mut sprite, mut fade) in sprite_query.iter_mut() {
+        fade.elapsed += dt;
+        let t = (fade.elapsed / fade.duration).min(1.0);
+        sprite.color.set_alpha(1.0 - t);
+        if t >= 1.0 {
+            commands.entity(entity).despawn();
+        }
+    }
+}
+
+fn animate_visibility_fade_out(
+    time: Res<Time>,
+    mut mesh_query: Query<
+        (Entity, &MeshMaterial2d<ColorMaterial>, &mut crate::VisibilityFadeOut),
+        Without<Sprite>,
+    >,
+    mut sprite_query: Query<(Entity, &mut Sprite, &mut crate::VisibilityFadeOut)>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    mut commands: Commands,
+    child_of_query: Query<&ChildOf>,
+) {
+    let dt = time.delta_secs();
+
+    // Track entities that need to be hidden once fade completes
+    let mut to_hide: Vec<Entity> = Vec::new();
+
+    for (entity, handle, mut fade) in mesh_query.iter_mut() {
+        fade.elapsed += dt;
+        let t = (fade.elapsed / fade.duration).min(1.0);
+        if let Some(mat) = materials.get_mut(&handle.0) {
+            mat.color.set_alpha(1.0 - t);
+            mat.alpha_mode = AlphaMode2d::Blend;
+        }
+        if t >= 1.0 {
+            commands
+                .entity(entity)
+                .remove::<crate::VisibilityFadeOut>();
+            // Hide the parent container (for vector layers) or self (for rasters)
+            if let Ok(child_of) = child_of_query.get(entity) {
+                to_hide.push(child_of.parent());
+            } else {
+                to_hide.push(entity);
+            }
+        }
+    }
+
+    for (entity, mut sprite, mut fade) in sprite_query.iter_mut() {
+        fade.elapsed += dt;
+        let t = (fade.elapsed / fade.duration).min(1.0);
+        sprite.color.set_alpha(1.0 - t);
+        if t >= 1.0 {
+            commands
+                .entity(entity)
+                .remove::<crate::VisibilityFadeOut>();
+            if let Ok(child_of) = child_of_query.get(entity) {
+                to_hide.push(child_of.parent());
+            } else {
+                to_hide.push(entity);
+            }
+        }
+    }
+
+    for entity in to_hide {
+        commands.entity(entity).insert(Visibility::Hidden);
+    }
+}
+
+fn animate_selected_highlight(
+    time: Res<Time>,
+    mesh_query: Query<(&MeshMaterial2d<ColorMaterial>, &RenderEntityType)>,
+    mut sprite_query: Query<(&mut Sprite, &RenderEntityType)>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+) {
+    if !crate::animations_enabled() {
+        return;
+    }
+    let t = time.elapsed_secs();
+    // Cycle hue over time: base hue ~185° (cyan), oscillate ±30°
+    let hue = 185.0 + 30.0 * (t * 2.5).sin();
+    let pulse = 0.7 + 0.3 * (t * 3.0).sin();
+    let color = Color::hsl(hue, 0.9, 0.55 * pulse + 0.2);
+
+    for (handle, entity_type) in mesh_query.iter() {
+        if matches!(
+            entity_type,
+            RenderEntityType::SelectedPolygon | RenderEntityType::SelectedLineString
+        ) {
+            if let Some(mat) = materials.get_mut(&handle.0) {
+                mat.color = color;
+            }
+        }
+    }
+
+    for (mut sprite, entity_type) in sprite_query.iter_mut() {
+        if matches!(entity_type, RenderEntityType::SelectedPoint) {
+            sprite.color = color;
+        }
+    }
 }

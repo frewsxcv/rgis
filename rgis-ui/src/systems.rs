@@ -13,6 +13,8 @@ fn render_bottom(
     mut bevy_egui_ctx: EguiContexts,
     mouse_pos: Res<rgis_mouse::MousePos>,
     target_crs: Res<rgis_crs::TargetCrs>,
+    geodesy_ctx: Res<rgis_crs::GeodesyContext>,
+    wgs84_op_handle: Res<rgis_crs::Wgs84OpHandle>,
     mut open_change_crs_window_event_writer: MessageWriter<rgis_ui_messages::OpenChangeCrsWindowMessage>,
     mut bottom_panel_height: ResMut<rgis_units::BottomPanelHeight>,
 ) -> Result {
@@ -21,6 +23,8 @@ fn render_bottom(
         egui_ctx: bevy_egui_ctx_mut,
         mouse_pos: &mouse_pos,
         target_crs: &target_crs,
+        geodesy_ctx: &geodesy_ctx,
+        wgs84_op_handle: &wgs84_op_handle,
         open_change_crs_window_event_writer: &mut open_change_crs_window_event_writer,
         bottom_panel_height: &mut bottom_panel_height,
     }
@@ -599,9 +603,6 @@ fn render_top(
     current_tool: Res<State<rgis_settings::Tool>>,
     mut next_tool: ResMut<NextState<rgis_settings::Tool>>,
     mut top_panel_height: ResMut<rgis_units::TopPanelHeight>,
-    mut is_debug_window_open: ResMut<
-        bevy_egui_window::IsWindowOpen<crate::windows::debug::Debug<'static, 'static>>,
-    >,
     mut is_logs_window_open: ResMut<
         bevy_egui_window::IsWindowOpen<crate::windows::logs::Logs<'static>>,
     >,
@@ -642,7 +643,6 @@ fn render_top(
         current_tool: current_tool.get(),
         next_tool: &mut next_tool,
         top_panel_height: &mut top_panel_height,
-        is_debug_window_open: &mut is_debug_window_open,
         is_logs_window_open: &mut is_logs_window_open,
         show_add_layer_window_event_writer: &mut show_add_layer_window_event_writer,
         clear_color: &mut clear_color,
@@ -863,19 +863,12 @@ pub fn configure(app: &mut App) {
             handle_save_file_job,
             handle_download_layer,
             perform_operation,
-            handle_debug_window_close_request,
             handle_fill_color_requests,
         ),
     );
 
-    crate::windows::debug::Debug::setup(app);
     crate::windows::logs::Logs::setup(app);
     crate::windows::welcome::Welcome::setup(app);
-    app.add_systems(
-        EguiPrimaryContextPass,
-        bevy_egui_window::render_window_system::<crate::windows::debug::Debug>
-            .run_if(bevy_egui_window::run_if_is_window_open::<crate::windows::debug::Debug>),
-    );
     app.add_systems(
         EguiPrimaryContextPass,
         bevy_egui_window::render_window_system::<crate::windows::logs::Logs>
@@ -903,16 +896,6 @@ fn handle_fill_color_requests(
                 ));
             }
         }
-    }
-}
-
-fn handle_debug_window_close_request(
-    mut is_window_open: ResMut<
-        bevy_egui_window::IsWindowOpen<crate::windows::debug::Debug<'static, 'static>>,
-    >,
-) {
-    if crate::widget_registry::take_close_request("Debug") {
-        is_window_open.0 = false;
     }
 }
 
