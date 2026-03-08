@@ -1,7 +1,5 @@
 use bevy::prelude::*;
 use bevy_egui::egui;
-use bevy_egui_window as window;
-
 pub struct Top<'a, 'w> {
     pub app_exit_events: &'a mut Messages<AppExit>,
     pub egui_ctx: &'a mut bevy_egui::egui::Context,
@@ -10,8 +8,8 @@ pub struct Top<'a, 'w> {
     pub current_tool: &'a rgis_settings::Tool,
     pub next_tool: &'a mut NextState<rgis_settings::Tool>,
     pub top_panel_height: &'a mut rgis_units::TopPanelHeight,
-    pub is_logs_window_open:
-        &'a mut window::IsWindowOpen<crate::windows::logs::Logs<'static>>,
+    pub next_logs_visibility:
+        &'a mut NextState<bevy_egui_window::WindowVisibility<crate::windows::logs::Logs<'static>>>,
     pub show_add_layer_window_event_writer:
         &'a mut MessageWriter<'w, rgis_ui_messages::ShowAddLayerWindowMessage>,
     pub clear_color: &'a mut ClearColor,
@@ -77,7 +75,9 @@ impl Top<'_, '_> {
                     let logs_btn = ui.button("Logs");
                     crate::widget_registry::register("Logs", logs_btn.rect);
                     if logs_btn.clicked() {
-                        self.is_logs_window_open.0 = true;
+                        self.next_logs_visibility.set(
+                            bevy_egui_window::WindowVisibility::Open,
+                        );
                     }
                     let source_btn = ui.button("Source code");
                     crate::widget_registry::register("Source code", source_btn.rect);
