@@ -181,7 +181,8 @@ fn handle_mesh_building_job_outcome(
 // TODO
 fn handle_layer_z_index_updated_event(
     mut layer_z_index_updated_event_reader: MessageReader<rgis_events::LayerZIndexUpdatedMessage>,
-    mut query: Query<(&mut Transform, &RenderEntityType)>,
+    children_query: Query<&Children>,
+    mut transform_query: Query<(&mut Transform, &RenderEntityType)>,
     id_map: Res<rgis_layers::LayerIdToEntity>,
     layer_order: Res<rgis_layers::LayerOrder>,
     index: Res<RenderEntityIndex>,
@@ -195,10 +196,20 @@ fn handle_layer_z_index_updated_event(
             .map(rgis_layers::LayerIndex)
             .unwrap_or(rgis_layers::LayerIndex(0));
 
-        for &entity in index.get(event.0) {
-            if let Ok((mut transform, render_entity)) = query.get_mut(entity) {
-                let z_index = crate::ZIndex::calculate(layer_index, *render_entity);
+        for &render_entity in index.get(event.0) {
+            // Flat entity (e.g. raster): has RenderEntityType directly
+            if let Ok((mut transform, render_type)) = transform_query.get_mut(render_entity) {
+                let z_index = crate::ZIndex::calculate(layer_index, *render_type);
                 transform.translation.z = z_index.0 as f32;
+            }
+            // Parent-child hierarchy (vector layers): update children
+            if let Ok(children) = children_query.get(render_entity) {
+                for child in children.iter() {
+                    if let Ok((mut transform, render_type)) = transform_query.get_mut(child) {
+                        let z_index = crate::ZIndex::calculate(layer_index, *render_type);
+                        transform.translation.z = z_index.0 as f32;
+                    }
+                }
             }
         }
     }
