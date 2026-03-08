@@ -37,6 +37,11 @@ export class AppPage {
       { timeout: 10000 },
     );
     await this.waitForNextFrame();
+
+    // Disable animations for deterministic test behavior
+    await this.page.evaluate(() =>
+      (window as any).set_animations_enabled?.(false),
+    );
   }
 
   get canvas() {
@@ -64,6 +69,15 @@ export class AppPage {
 
   async closeWindow(title: string) {
     await this.page.evaluate((t) => (window as any).close_window(t), title);
+    await this.waitForNextFrame();
+  }
+
+  async waitForFadesComplete(timeout = 10000) {
+    await this.page.waitForFunction(
+      () => ((window as any).get_active_fade_count?.() ?? 0) === 0,
+      null,
+      { timeout },
+    );
     await this.waitForNextFrame();
   }
 
