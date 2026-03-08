@@ -56,7 +56,6 @@ fn render_tiles(
     )>,
     mut events: crate::panels::side::Events,
     mut tiles_tree: ResMut<crate::tiles::TilesTree>,
-    mut map_pane_rect: ResMut<rgis_units::MapPaneRect>,
     mut side_panel_width: ResMut<rgis_units::SidePanelWidth>,
 ) -> Result {
     let egui_ctx = bevy_egui_ctx.ctx_mut()?;
@@ -82,25 +81,22 @@ fn render_tiles(
         .collect();
 
     // SAFETY: We transmute the Events lifetime to 'static so it can be stored in
-    // RgisBehavior. This is safe because the behavior struct is dropped before
+    // SidePanelBehavior. This is safe because the behavior struct is dropped before
     // this function returns, so the references remain valid.
     let events_ref: &mut crate::panels::side::Events<'static> =
         unsafe { std::mem::transmute(&mut events) };
 
-    let mut behavior = crate::tiles::RgisBehavior {
+    let mut behavior = crate::tiles::SidePanelBehavior {
         snapshots: &snapshots,
         events: events_ref,
-        map_pane_rect: &mut map_pane_rect,
     };
 
-    egui::CentralPanel::default()
-        .frame(egui::Frame::NONE)
-        .show(egui_ctx, |ui| {
-            tiles_tree.0.ui(&mut behavior, ui);
-        });
+    let side_panel = egui::SidePanel::left("left-side-panel").resizable(true);
+    let inner_response = side_panel.show(egui_ctx, |ui| {
+        tiles_tree.0.ui(&mut behavior, ui);
+    });
 
-    // Update side_panel_width based on map pane rect for window positioning compatibility
-    side_panel_width.0 = map_pane_rect.min_x;
+    side_panel_width.0 = inner_response.response.rect.width();
 
     Ok(())
 }

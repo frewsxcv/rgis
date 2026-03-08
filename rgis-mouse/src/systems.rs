@@ -15,14 +15,9 @@ fn cursor_moved_system(
     mut mouse_position: ResMut<crate::MousePos>,
     mut last_cursor_screen_position: ResMut<crate::LastCursorScreenPosition>,
     mut bevy_egui_ctx: bevy_egui::EguiContexts,
-    map_pane_rect: Res<rgis_units::MapPaneRect>,
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
-    let pointer_outside_map = bevy_egui_ctx_mut
-        .input(|i| i.pointer.hover_pos())
-        .map(|pos| !map_pane_rect.contains(pos.x, pos.y))
-        .unwrap_or(true);
-    if pointer_outside_map {
+    if bevy_egui_ctx_mut.is_pointer_over_area() {
         cursor_moved_event_reader.clear();
         return Ok(());
     }
@@ -52,7 +47,6 @@ fn mouse_motion_system(
     mut bevy_egui_ctx: bevy_egui::EguiContexts,
     current_tool: Res<State<rgis_settings::Tool>>,
     mut last_cursor_icon: Local<Option<SystemCursorIcon>>,
-    map_pane_rect: Res<rgis_units::MapPaneRect>,
 ) -> Result {
     let mut window = windows.single_mut()?;
     if let Some(_cursor_icon) = *last_cursor_icon {
@@ -60,13 +54,12 @@ fn mouse_motion_system(
         // window.cursor.icon = cursor_icon;
     }
 
-    // If the pointer is outside the map pane (i.e. over UI), release cursor to egui
+    // If egui wants to do something with the mouse then release the cursor icon to it
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
-    let pointer_outside_map = bevy_egui_ctx_mut
-        .input(|i| i.pointer.hover_pos())
-        .map(|pos| !map_pane_rect.contains(pos.x, pos.y))
-        .unwrap_or(true);
-    if pointer_outside_map || bevy_egui_ctx_mut.is_using_pointer() {
+    if bevy_egui_ctx_mut.wants_pointer_input()
+        || bevy_egui_ctx_mut.is_pointer_over_area()
+        || bevy_egui_ctx_mut.is_using_pointer()
+    {
         mouse_motion_event_reader.clear();
         clear_cursor_icon(&mut last_cursor_icon);
         return Ok(());
@@ -210,14 +203,12 @@ fn mouse_scroll_system(
     mut zoom_camera_events: MessageWriter<rgis_events::ZoomCameraMessage>,
     mouse_position: Res<crate::MousePos>,
     mut bevy_egui_ctx: bevy_egui::EguiContexts,
-    map_pane_rect: Res<rgis_units::MapPaneRect>,
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
-    let pointer_outside_map = bevy_egui_ctx_mut
-        .input(|i| i.pointer.hover_pos())
-        .map(|pos| !map_pane_rect.contains(pos.x, pos.y))
-        .unwrap_or(true);
-    if pointer_outside_map || bevy_egui_ctx_mut.is_using_pointer() {
+    if bevy_egui_ctx_mut.wants_pointer_input()
+        || bevy_egui_ctx_mut.is_pointer_over_area()
+        || bevy_egui_ctx_mut.is_using_pointer()
+    {
         return Ok(());
     }
 
