@@ -11,7 +11,6 @@ workspace = true
 [dependencies]
 bevy = { workspace = true }
 bevy_egui = { workspace = true }
-egui_plot = { workspace = true }
 bevy_egui_window = { path = "../bevy_egui_window" }
 geo-features = { path = "../geo-features" }
 geo-file-loader = { path = "../geo-file-loader" }

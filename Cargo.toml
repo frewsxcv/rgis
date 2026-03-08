@@ -68,7 +68,6 @@ clap = { version = "4", default-features = false, features = [
 colorous = "1"
 crs-definitions = "0.4"
 dark-light = "2.0"
-egui_plot = "0.34"
 geo = "0.32"
 geo-bevy = "10"
 geo-geodesy = "7"
