@@ -376,6 +376,7 @@ fn render_feature_properties_window(
     id_map: Res<rgis_layers::LayerIdToEntity>,
     layer_name_query: Query<&rgis_layers::LayerName>,
     mut render_message_events: ResMut<Messages<rgis_ui_messages::RenderFeaturePropertiesMessage>>,
+    mut features_deselected_writer: MessageWriter<rgis_events::FeaturesDeselectedMessage>,
     side_panel_width: Res<rgis_units::SidePanelWidth>,
     top_panel_height: Res<rgis_units::TopPanelHeight>,
 ) -> Result {
@@ -417,6 +418,7 @@ fn render_feature_properties_window(
 
     if !is_open {
         *state = None;
+        features_deselected_writer.write(rgis_events::FeaturesDeselectedMessage);
     }
     Ok(())
 }
