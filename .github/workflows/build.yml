@@ -12,6 +12,7 @@ env:
 
 jobs:
   x86-64-linux-build-and-test:
+    if: github.event_name != 'push'
     runs-on: ubuntu-latest
 
     steps:
@@ -39,6 +40,7 @@ jobs:
         run: cargo test --target x86_64-unknown-linux-gnu --verbose
 
   wasm32-build-and-test:
+    if: github.event_name != 'push'
     runs-on: ubuntu-latest
 
     steps:
@@ -58,8 +60,7 @@ jobs:
       - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: nightly
-      # https://github.com/rustwasm/wasm-bindgen/issues/4211
-      - run: cargo install --force wasm-bindgen-cli --git "https://github.com/rustwasm/wasm-bindgen" --rev 561bb6a927b36cf9bf5f3e107c5528934912b20b
+      - run: cargo install --force wasm-bindgen-cli --version 0.2.114
       - name: Install wasm Rust target
         run: rustup target add wasm32-unknown-unknown
       - name: Install system dependencies
@@ -97,8 +98,13 @@ jobs:
 
   wasm32-publish:
     if: github.ref == 'refs/heads/main'
-    needs: wasm32-build-and-test
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
       - uses: actions/checkout@v2
@@ -117,8 +123,7 @@ jobs:
       - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: nightly
-      # https://github.com/rustwasm/wasm-bindgen/issues/4211
-      - run: cargo install --force wasm-bindgen-cli --git "https://github.com/rustwasm/wasm-bindgen" --rev 561bb6a927b36cf9bf5f3e107c5528934912b20b
+      - run: cargo install --force wasm-bindgen-cli --version 0.2.114
       - name: Install wasm Rust target
         run: rustup target add wasm32-unknown-unknown
       - name: Install system dependencies
@@ -130,9 +135,10 @@ jobs:
         run: (cd www && npm install)
       - name: Build
         run: ./.github/build.sh --release
-      - name: Deploy to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@v4.2.5
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          branch: gh-pages
-          folder: www/dist/
-          single_commit: true
+          path: www/dist/
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

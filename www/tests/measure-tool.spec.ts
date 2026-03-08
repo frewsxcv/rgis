@@ -1,21 +1,17 @@
-import { test, expect } from "./fixtures/app-fixture";
+import { test } from "./fixtures/app-fixture";
 
 test.describe("measure tool", () => {
   test("measure from San Francisco to New York City", async ({ appPage }) => {
     test.setTimeout(60000);
 
-    // Close the Welcome dialog by clicking its X button
-    await appPage.clickOnCanvas(0.626, 0.443);
+    // Close the Welcome dialog
+    await appPage.closeWindow("Welcome");
 
     // Load the USA States layer from the built-in library
-    await appPage.openAddLayerWindow();
-    await appPage.clickWidget("Library");
-    await appPage.clickWidget("USA");
-    await appPage.clickWidget("Add:States");
-    await appPage.waitForLayerRender();
+    await appPage.addLibraryLayer("USA", "States");
 
-    // Close the Add Layer window by clicking the canvas
-    await appPage.clickOnCanvas(0.222, 0.076);
+    // Close the Add Layer window
+    await appPage.closeWindow("Add Layer");
 
     // Expand the layer in the side panel and zoom to extent
     await appPage.clickWidget("USA: States");
@@ -29,8 +25,8 @@ test.describe("measure tool", () => {
     // with waits are needed to update egui's pointer state (which has a
     // one-frame delay on is_pointer_over_area()).
     const box = await appPage.canvasBoundingBox();
-    const sfX = box.x + box.width * 0.649;
-    const sfY = box.y + box.height * 0.692;
+    const sfX = box.x + box.width * 0.31;
+    const sfY = box.y + box.height * 0.60;
 
     await appPage.page.mouse.move(sfX, sfY);
     await appPage.waitForNextFrame();
@@ -44,8 +40,8 @@ test.describe("measure tool", () => {
     await appPage.waitForNextFrame();
 
     // Click on New York City area to lock the end point
-    const nycX = box.x + box.width * 0.898;
-    const nycY = box.y + box.height * 0.622;
+    const nycX = box.x + box.width * 0.42;
+    const nycY = box.y + box.height * 0.55;
     await appPage.page.mouse.move(nycX, nycY);
     await appPage.waitForNextFrame();
     await appPage.page.mouse.click(nycX, nycY);
@@ -55,6 +51,6 @@ test.describe("measure tool", () => {
     await appPage.page.mouse.move(box.x + box.width * 0.5, box.y + box.height * 0.3);
     await appPage.waitForNextFrame();
 
-    await expect(appPage.page).toHaveScreenshot("measure-tool-line.png");
+    await appPage.expectScreenshot("measure-tool-line.png");
   });
 });

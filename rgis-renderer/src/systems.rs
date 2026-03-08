@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 
-use crate::{jobs::MeshBuildingJob, RenderEntityType};
+use bevy::sprite_render::AlphaMode2d;
+
+use crate::{jobs::MeshBuildingJob, RenderEntityIndex, RenderEntityType};
 
 fn handle_picking_click(
     on: On<Pointer<Click>>,
@@ -8,13 +10,14 @@ fn handle_picking_click(
         &rgis_primitives::LayerId,
         Or<(With<crate::Point>, With<crate::Polygon>, With<crate::LineString>)>,
     >,
-    layers: Res<rgis_layers::Layers>,
-    settings: Res<rgis_settings::RgisSettings>,
+    layer_order: Res<rgis_layers::LayerOrder>,
+    layer_data_query: Query<(&rgis_primitives::LayerId, &rgis_layers::LayerData)>,
+    current_tool: Res<State<rgis_settings::Tool>>,
     mut bevy_egui_ctx: bevy_egui::EguiContexts,
-    mut feature_selected_writer: MessageWriter<rgis_map_events::FeatureSelectedEvent>,
-    mut render_props_writer: MessageWriter<rgis_ui_events::RenderFeaturePropertiesEvent>,
+    mut feature_selected_writer: MessageWriter<rgis_events::FeatureSelectedMessage>,
+    mut render_props_writer: MessageWriter<rgis_ui_messages::RenderFeaturePropertiesMessage>,
 ) {
-    if settings.current_tool != rgis_settings::Tool::Query {
+    if *current_tool.get() != rgis_settings::Tool::Query {
         return;
     }
 
@@ -39,40 +42,64 @@ fn handle_picking_click(
         y: num_t::Num::new(f64::from(hit_position.y)),
     };
 
-    if let Some((layer, feature)) = layers.feature_from_click(coord) {
-        render_props_writer.write(rgis_ui_events::RenderFeaturePropertiesEvent {
-            layer_id: layer.id,
-            properties: feature.properties.clone(),
+    // Build an iterator of (LayerId, &LayerData) in top-to-bottom order
+    let layers_iter = layer_order.iter_top_to_bottom().filter_map(|entity| {
+        layer_data_query.get(entity).ok()
+    });
+    let layers_vec: Vec<_> = layers_iter.map(|(id, data)| (*id, data)).collect();
+
+    if let Some(result) = rgis_layers::feature_from_click(coord, layers_vec.into_iter()) {
+        render_props_writer.write(rgis_ui_messages::RenderFeaturePropertiesMessage {
+            layer_id: result.layer_id,
+            properties: result.properties,
         });
         feature_selected_writer
-            .write(rgis_map_events::FeatureSelectedEvent(layer.id, feature.id));
+            .write(rgis_events::FeatureSelectedMessage(result.layer_id, result.feature.id));
     }
 }
 
 fn layer_loaded(
-    layers: Res<rgis_layers::Layers>,
-    mut event_reader: MessageReader<rgis_layer_events::LayerReprojectedEvent>,
+    id_map: Res<rgis_layers::LayerIdToEntity>,
+    layer_order: Res<rgis_layers::LayerOrder>,
+    layer_query: Query<(
+        &rgis_primitives::LayerId,
+        &rgis_layers::LayerVisible,
+        &rgis_layers::LayerColor,
+        &rgis_layers::LayerPointSize,
+        &rgis_layers::LayerData,
+    )>,
+    mut event_reader: MessageReader<rgis_events::LayerReprojectedMessage>,
     mut job_spawner: bevy_jobs::JobSpawner,
     mut commands: Commands,
     mut images: ResMut<Assets<Image>>,
-    mut meshes_spawned_event_writer: MessageWriter<rgis_renderer_events::MeshesSpawnedEvent>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    mut meshes_spawned_event_writer: MessageWriter<rgis_events::MeshesSpawnedMessage>,
 ) {
     for event in event_reader.read() {
-        let Some(layer) = layers.get(event.0) else {
+        let Some(entity) = id_map.get(event.0) else {
             continue;
         };
+        let Ok((layer_id, visible, _color, _point_size, data)) = layer_query.get(entity) else {
+            continue;
+        };
+        let layer_index = layer_order
+            .index_of(entity)
+            .map(rgis_layers::LayerIndex)
+            .unwrap_or(rgis_layers::LayerIndex(0));
 
-        match &layer.data {
-            rgis_layers::LayerData::Raster { raster } => {
-                let Some(layer_with_index) = layers.get_with_index(event.0) else {
-                    continue;
-                };
+        match data {
+            rgis_layers::LayerData::Raster { raster, projected_grid: Some(grid) } => {
                 crate::spawn_raster(
                     raster,
-                    layer_with_index.0,
-                    layer_with_index.1,
+                    grid,
+                    *layer_id,
+                    visible.0,
+                    layer_index,
                     &mut commands,
                     &mut images,
+                    &mut meshes,
+                    &mut materials,
                 );
                 meshes_spawned_event_writer.write(event.0.into());
                 crate::RENDERED_LAYER_COUNT.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
@@ -82,7 +109,7 @@ fn layer_loaded(
                 ..
             } => {
                 job_spawner.spawn(MeshBuildingJob {
-                    layer_id: layer.id,
+                    layer_id: *layer_id,
                     geometry: geo::Geometry::GeometryCollection(
                         feature_collection.to_geometry_collection(),
                     ),
@@ -98,8 +125,14 @@ fn handle_mesh_building_job_outcome(
     mut commands: Commands,
     mut assets_meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
-    layers: Res<rgis_layers::Layers>,
-    mut meshes_spawned_event_writer: MessageWriter<rgis_renderer_events::MeshesSpawnedEvent>,
+    id_map: Res<rgis_layers::LayerIdToEntity>,
+    layer_order: Res<rgis_layers::LayerOrder>,
+    layer_query: Query<(
+        &rgis_layers::LayerVisible,
+        &rgis_layers::LayerColor,
+        &rgis_layers::LayerPointSize,
+    )>,
+    mut meshes_spawned_event_writer: MessageWriter<rgis_events::MeshesSpawnedMessage>,
     mut finished_jobs: bevy_jobs::FinishedJobs,
     asset_server: Res<AssetServer>,
 ) {
@@ -115,14 +148,25 @@ fn handle_mesh_building_job_outcome(
                 continue;
             }
         };
-        let Some(layer_with_index) = layers.get_with_index(layer_id) else {
+        let Some(entity) = id_map.get(layer_id) else {
             continue;
         };
+        let Ok((visible, color, point_size)) = layer_query.get(entity) else {
+            continue;
+        };
+        let layer_index = layer_order
+            .index_of(entity)
+            .map(rgis_layers::LayerIndex)
+            .unwrap_or(rgis_layers::LayerIndex(0));
 
         crate::spawn_geometry_meshes(
             geometry_mesh,
             &mut materials,
-            layer_with_index,
+            layer_id,
+            visible.0,
+            color,
+            point_size.0,
+            layer_index,
             &mut commands,
             &mut assets_meshes,
             &asset_server,
@@ -136,35 +180,50 @@ fn handle_mesh_building_job_outcome(
 
 // TODO
 fn handle_layer_z_index_updated_event(
-    mut layer_z_index_updated_event_reader: MessageReader<rgis_layer_events::LayerZIndexUpdatedEvent>,
-    mut query: Query<(&rgis_primitives::LayerId, &mut Transform, &RenderEntityType)>,
-    layers: Res<rgis_layers::Layers>,
+    mut layer_z_index_updated_event_reader: MessageReader<rgis_events::LayerZIndexUpdatedMessage>,
+    children_query: Query<&Children>,
+    mut transform_query: Query<(&mut Transform, &RenderEntityType)>,
+    id_map: Res<rgis_layers::LayerIdToEntity>,
+    layer_order: Res<rgis_layers::LayerOrder>,
+    index: Res<RenderEntityIndex>,
 ) {
     for event in layer_z_index_updated_event_reader.read() {
-        let Some(layer_with_index) = layers.get_with_index(event.0) else {
+        let Some(entity) = id_map.get(event.0) else {
             continue;
         };
+        let layer_index = layer_order
+            .index_of(entity)
+            .map(rgis_layers::LayerIndex)
+            .unwrap_or(rgis_layers::LayerIndex(0));
 
-        for (layer_id, mut transform, render_entity) in query.iter_mut() {
-            if *layer_id == event.0 {
-                let z_index = crate::ZIndex::calculate(layer_with_index.1, *render_entity);
+        for &render_entity in index.get(event.0) {
+            // Flat entity (e.g. raster): has RenderEntityType directly
+            if let Ok((mut transform, render_type)) = transform_query.get_mut(render_entity) {
+                let z_index = crate::ZIndex::calculate(layer_index, *render_type);
                 transform.translation.z = z_index.0 as f32;
+            }
+            // Parent-child hierarchy (vector layers): update children
+            if let Ok(children) = children_query.get(render_entity) {
+                for child in children.iter() {
+                    if let Ok((mut transform, render_type)) = transform_query.get_mut(child) {
+                        let z_index = crate::ZIndex::calculate(layer_index, *render_type);
+                        transform.translation.z = z_index.0 as f32;
+                    }
+                }
             }
         }
     }
 }
 
 fn handle_layer_point_size_updated_event(
-    mut events: MessageReader<rgis_layer_events::LayerPointSizeUpdatedEvent>,
-    layers: Res<rgis_layers::Layers>,
-    mut sprite_query: Query<(
-        &mut Sprite,
-        &rgis_primitives::LayerId,
-        &crate::PointSprite,
-    )>,
+    mut events: MessageReader<rgis_events::LayerPointSizeUpdatedMessage>,
+    id_map: Res<rgis_layers::LayerIdToEntity>,
+    point_size_query: Query<&rgis_layers::LayerPointSize>,
+    mut sprite_query: Query<(&mut Sprite, &crate::PointSprite)>,
     camera_query: Query<&GlobalTransform, With<Camera>>,
+    index: Res<RenderEntityIndex>,
 ) {
-    let changed_layers: std::collections::HashSet<rgis_primitives::LayerId> =
+    let changed_layers: Vec<rgis_primitives::LayerId> =
         events.read().map(|event| event.0).collect();
 
     if changed_layers.is_empty() {
@@ -174,67 +233,101 @@ fn handle_layer_point_size_updated_event(
     let camera_transform = camera_query.single().unwrap();
     let (camera_scale, _, _) = camera_transform.to_scale_rotation_translation();
 
-    for (mut sprite, layer_id, point_sprite) in sprite_query.iter_mut() {
-        if changed_layers.contains(layer_id) {
-            if let Some(layer) = layers.get(*layer_id) {
+    for layer_id in changed_layers {
+        let Some(entity) = id_map.get(layer_id) else {
+            continue;
+        };
+        let Ok(point_size) = point_size_query.get(entity) else {
+            continue;
+        };
+        for &entity in index.get(layer_id) {
+            if let Ok((mut sprite, point_sprite)) = sprite_query.get_mut(entity) {
                 sprite.custom_size = Some(
-                    camera_scale.truncate() * layer.point_size * point_sprite.relative_scale,
+                    camera_scale.truncate() * point_size.0 * point_sprite.relative_scale,
                 );
             }
         }
     }
 }
 
-type LayerEntitiesQuery<'world, 'state, 'a> =
-    Query<'world, 'state, (&'a rgis_primitives::LayerId, Entity)>;
-
 fn handle_despawn_meshes_event(
-    mut layer_deleted_event_reader: MessageReader<rgis_renderer_events::DespawnMeshesEvent>,
+    event: On<rgis_events::DespawnMeshesEvent>,
     mut commands: Commands,
-    query: LayerEntitiesQuery,
+    index: Res<RenderEntityIndex>,
 ) {
-    for event in layer_deleted_event_reader.read() {
-        for (layer_id, entity) in query.iter() {
-            if *layer_id == event.0 {
-                commands.entity(entity).despawn();
-            }
-        }
+    for &entity in index.get(event.0) {
+        commands.entity(entity).despawn();
     }
 }
 
 fn handle_layer_became_hidden_event(
-    mut event_reader: MessageReader<rgis_layer_events::LayerBecameHiddenEvent>,
-    mut query: Query<(&rgis_primitives::LayerId, &mut Visibility)>,
+    event: On<rgis_events::LayerBecameHiddenEvent>,
+    mut query: Query<&mut Visibility>,
+    index: Res<RenderEntityIndex>,
 ) {
-    for event in event_reader.read() {
-        for (_, mut visibility) in query.iter_mut().filter(|(i, _)| **i == event.0) {
+    for &entity in index.get(event.0) {
+        if let Ok(mut visibility) = query.get_mut(entity) {
             *visibility = Visibility::Hidden;
         }
     }
 }
 
 fn handle_layer_became_visible_event(
-    mut event_reader: MessageReader<rgis_layer_events::LayerBecameVisibleEvent>,
-    mut query: Query<(&rgis_primitives::LayerId, &mut Visibility)>,
+    event: On<rgis_events::LayerBecameVisibleEvent>,
+    mut query: Query<&mut Visibility>,
+    index: Res<RenderEntityIndex>,
 ) {
-    for event in event_reader.read() {
-        for (_, mut visibility) in query.iter_mut().filter(|(i, _)| **i == event.0) {
+    for &entity in index.get(event.0) {
+        if let Ok(mut visibility) = query.get_mut(entity) {
             *visibility = Visibility::Visible;
         }
     }
 }
 
-fn handle_layer_color_updated_event(
-    mut event_reader: MessageReader<rgis_layer_events::LayerColorUpdatedEvent>,
-    layers: Res<rgis_layers::Layers>,
-    mut point_layer_query: Query<(&rgis_primitives::LayerId, &Children), With<crate::Point>>,
-    mut polygon_layer_query: Query<(&rgis_primitives::LayerId, &Children), With<crate::Polygon>>,
-    mut line_string_layer_query: Query<
-        (&rgis_primitives::LayerId, &Children),
-        With<crate::LineString>,
-    >,
+fn handle_point_color_updated_event(
+    mut event_reader: MessageReader<rgis_events::LayerColorUpdatedMessage>,
+    id_map: Res<rgis_layers::LayerIdToEntity>,
+    color_query: Query<&rgis_layers::LayerColor>,
+    point_layer_query: Query<&Children, With<crate::Point>>,
     mut sprite_fill_query: Query<&mut Sprite, (With<crate::Fill>, Without<crate::Stroke>)>,
     mut sprite_stroke_query: Query<&mut Sprite, (With<crate::Stroke>, Without<crate::Fill>)>,
+    index: Res<RenderEntityIndex>,
+) {
+    for event in event_reader.read() {
+        let (layer_id, is_fill) = match event {
+            rgis_events::LayerColorUpdatedMessage::Fill(layer_id) => (layer_id, true),
+            rgis_events::LayerColorUpdatedMessage::Stroke(layer_id) => (layer_id, false),
+        };
+        let Some(entity) = id_map.get(*layer_id) else {
+            continue;
+        };
+        let Ok(layer_color) = color_query.get(entity) else {
+            continue;
+        };
+
+        for &entity in index.get(*layer_id) {
+            if let Ok(children) = point_layer_query.get(entity) {
+                for child in children.iter() {
+                    if is_fill {
+                        if let Ok(mut sprite) = sprite_fill_query.get_mut(child) {
+                            sprite.color = layer_color.fill.unwrap();
+                        }
+                    } else {
+                        if let Ok(mut sprite) = sprite_stroke_query.get_mut(child) {
+                            sprite.color = layer_color.stroke;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+fn handle_line_string_color_updated_event(
+    mut event_reader: MessageReader<rgis_events::LayerColorUpdatedMessage>,
+    id_map: Res<rgis_layers::LayerIdToEntity>,
+    color_query: Query<&rgis_layers::LayerColor>,
+    line_string_layer_query: Query<&Children, With<crate::LineString>>,
     mut material_fill_query: Query<
         &mut MeshMaterial2d<ColorMaterial>,
         (With<crate::Fill>, Without<crate::Stroke>),
@@ -244,83 +337,112 @@ fn handle_layer_color_updated_event(
         (With<crate::Stroke>, Without<crate::Fill>),
     >,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    index: Res<RenderEntityIndex>,
 ) {
     for event in event_reader.read() {
         let (layer_id, is_fill) = match event {
-            rgis_layer_events::LayerColorUpdatedEvent::Fill(layer_id) => (layer_id, true),
-            rgis_layer_events::LayerColorUpdatedEvent::Stroke(layer_id) => (layer_id, false),
+            rgis_events::LayerColorUpdatedMessage::Fill(layer_id) => (layer_id, true),
+            rgis_events::LayerColorUpdatedMessage::Stroke(layer_id) => (layer_id, false),
         };
-        let Some(layer) = layers.get(*layer_id) else {
+        let Some(entity) = id_map.get(*layer_id) else {
+            continue;
+        };
+        let Ok(layer_color) = color_query.get(entity) else {
             continue;
         };
 
-        // Update the point sprites
-        for child in point_layer_query
-            .iter_mut()
-            .filter(|(i, _children)| **i == layer.id)
-            .flat_map(|(_, children)| children.iter())
-        {
-            if is_fill {
-                if let Ok(mut sprite) = sprite_fill_query.get_mut(child) {
-                    sprite.color = layer.color.fill.unwrap();
-                }
-            } else {
-                if let Ok(mut sprite) = sprite_stroke_query.get_mut(child) {
-                    sprite.color = layer.color.stroke;
-                }
-            }
-        }
-
-        // Update the line string materials
-        for child in line_string_layer_query
-            .iter_mut()
-            .filter(|(i, _children)| **i == layer.id)
-            .flat_map(|(_, children)| children.iter())
-        {
-            if is_fill {
-                if let Ok(mut color_material) = material_fill_query.get_mut(child) {
-                    materials.get_mut(&mut color_material.0).unwrap().color =
-                        layer.color.fill.unwrap();
-                }
-            } else {
-                if let Ok(mut color_material) = material_stroke_query.get_mut(child) {
-                    materials.get_mut(&mut color_material.0).unwrap().color = layer.color.stroke;
-                }
-            }
-        }
-
-        // Update the polygon materials
-        for child in polygon_layer_query
-            .iter_mut()
-            .filter(|(i, _children)| **i == layer.id)
-            .flat_map(|(_, children)| children.iter())
-        {
-            if is_fill {
-                if let Ok(mut color_material) = material_fill_query.get_mut(child) {
-                    materials.get_mut(&mut color_material.0).unwrap().color =
-                        layer.color.fill.unwrap();
-                }
-            } else {
-                if let Ok(mut color_material) = material_stroke_query.get_mut(child) {
-                    materials.get_mut(&mut color_material.0).unwrap().color = layer.color.stroke;
+        for &entity in index.get(*layer_id) {
+            if let Ok(children) = line_string_layer_query.get(entity) {
+                for child in children.iter() {
+                    if is_fill {
+                        if let Ok(mut color_material) = material_fill_query.get_mut(child) {
+                            let mat = materials.get_mut(&mut color_material.0).unwrap();
+                            let color = layer_color.fill.unwrap();
+                            mat.color = color;
+                            mat.alpha_mode = alpha_mode_for_color(color);
+                        }
+                    } else {
+                        if let Ok(mut color_material) = material_stroke_query.get_mut(child) {
+                            let mat = materials.get_mut(&mut color_material.0).unwrap();
+                            mat.color = layer_color.stroke;
+                            mat.alpha_mode = alpha_mode_for_color(layer_color.stroke);
+                        }
+                    }
                 }
             }
         }
     }
 }
 
+fn handle_polygon_color_updated_event(
+    mut event_reader: MessageReader<rgis_events::LayerColorUpdatedMessage>,
+    id_map: Res<rgis_layers::LayerIdToEntity>,
+    color_query: Query<&rgis_layers::LayerColor>,
+    polygon_layer_query: Query<&Children, With<crate::Polygon>>,
+    mut material_fill_query: Query<
+        &mut MeshMaterial2d<ColorMaterial>,
+        (With<crate::Fill>, Without<crate::Stroke>),
+    >,
+    mut material_stroke_query: Query<
+        &mut MeshMaterial2d<ColorMaterial>,
+        (With<crate::Stroke>, Without<crate::Fill>),
+    >,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    index: Res<RenderEntityIndex>,
+) {
+    for event in event_reader.read() {
+        let (layer_id, is_fill) = match event {
+            rgis_events::LayerColorUpdatedMessage::Fill(layer_id) => (layer_id, true),
+            rgis_events::LayerColorUpdatedMessage::Stroke(layer_id) => (layer_id, false),
+        };
+        let Some(entity) = id_map.get(*layer_id) else {
+            continue;
+        };
+        let Ok(layer_color) = color_query.get(entity) else {
+            continue;
+        };
+
+        for &entity in index.get(*layer_id) {
+            if let Ok(children) = polygon_layer_query.get(entity) {
+                for child in children.iter() {
+                    if is_fill {
+                        if let Ok(mut color_material) = material_fill_query.get_mut(child) {
+                            let mat = materials.get_mut(&mut color_material.0).unwrap();
+                            let color = layer_color.fill.unwrap();
+                            mat.color = color;
+                            mat.alpha_mode = alpha_mode_for_color(color);
+                        }
+                    } else {
+                        if let Ok(mut color_material) = material_stroke_query.get_mut(child) {
+                            let mat = materials.get_mut(&mut color_material.0).unwrap();
+                            mat.color = layer_color.stroke;
+                            mat.alpha_mode = alpha_mode_for_color(layer_color.stroke);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+fn alpha_mode_for_color(color: Color) -> AlphaMode2d {
+    if color.alpha() < 1.0 {
+        AlphaMode2d::Blend
+    } else {
+        AlphaMode2d::Opaque
+    }
+}
+
 fn handle_crs_changed_events(
-    mut crs_changed_event_reader: MessageReader<rgis_crs_events::CrsChangedEvent>,
+    _event: On<rgis_events::CrsChangedEvent>,
     query: Query<(&rgis_primitives::LayerId, Entity), With<MeshMaterial2d<ColorMaterial>>>,
     mut commands: Commands,
 ) {
-    for _ in crs_changed_event_reader.read() {
-        // FIXME: there's a race condition here where we'll delete newly generated projected geometry
-        // meshes if this gets executed after we project the new geometries. We should add a filter
-        // in here for the old CRS.
-        for (_, entity) in &query {
-            commands.entity(entity).despawn();
-        }
+    // FIXME: there's a race condition here where we'll delete newly generated projected geometry
+    // meshes if this gets executed after we project the new geometries. We should add a filter
+    // in here for the old CRS.
+    for (_, entity) in &query {
+        commands.entity(entity).despawn();
     }
 }
 
@@ -334,16 +456,19 @@ fn handle_camera_scale_changed_event(
         &rgis_primitives::LayerId,
         &crate::PointSprite,
     )>,
-    layers: Res<rgis_layers::Layers>,
+    id_map: Res<rgis_layers::LayerIdToEntity>,
+    point_size_query: Query<&rgis_layers::LayerPointSize>,
 ) {
     if let Ok(camera_global_transform) = query.single() {
         let (scale, _, _) = camera_global_transform.to_scale_rotation_translation();
 
         for (mut sprite, layer_id, point_sprite) in &mut sprite_query {
-            if let Some(layer) = layers.get(*layer_id) {
-                sprite.custom_size = Some(
-                    scale.truncate() * layer.point_size * point_sprite.relative_scale,
-                );
+            if let Some(entity) = id_map.get(*layer_id) {
+                if let Ok(point_size) = point_size_query.get(entity) {
+                    sprite.custom_size = Some(
+                        scale.truncate() * point_size.0 * point_sprite.relative_scale,
+                    );
+                }
             }
         }
     }
@@ -357,7 +482,7 @@ type SelectedFeatureQuery<'world, 'state, 'a> = Query<
 >;
 
 fn handle_feature_selected_event_despawn(
-    event_reader: MessageReader<rgis_map_events::FeatureSelectedEvent>,
+    event_reader: MessageReader<rgis_events::FeatureSelectedMessage>,
     mut commands: Commands,
     query: SelectedFeatureQuery,
 ) {
@@ -374,15 +499,19 @@ fn handle_feature_selected_event_despawn(
 }
 
 fn handle_feature_selected_event_spawn(
-    mut event_reader: MessageReader<rgis_map_events::FeatureSelectedEvent>,
-    layers: Res<rgis_layers::Layers>,
+    mut event_reader: MessageReader<rgis_events::FeatureSelectedMessage>,
+    id_map: Res<rgis_layers::LayerIdToEntity>,
+    layer_data_query: Query<&rgis_layers::LayerData>,
     mut job_spawner: bevy_jobs::JobSpawner,
 ) {
     for event in event_reader.read() {
-        let Some(layer) = layers.get(event.0) else {
+        let Some(entity) = id_map.get(event.0) else {
             return;
         };
-        let Some(feature) = layer.get_projected_feature(event.1) else {
+        let Ok(data) = layer_data_query.get(entity) else {
+            return;
+        };
+        let Some(feature) = data.get_projected_feature(event.0, event.1) else {
             return;
         };
         let Some(geometry) = feature.geometry.as_ref() else {
@@ -401,18 +530,24 @@ pub fn configure(app: &mut App) {
         Update,
         (
             layer_loaded,
-            handle_layer_became_hidden_event,
-            handle_layer_became_visible_event,
-            handle_layer_color_updated_event,
+            handle_point_color_updated_event,
+            handle_line_string_color_updated_event,
+            handle_polygon_color_updated_event,
             handle_layer_point_size_updated_event,
             handle_layer_z_index_updated_event,
-            handle_despawn_meshes_event,
             handle_mesh_building_job_outcome,
-            handle_crs_changed_events,
             handle_camera_scale_changed_event,
-            handle_feature_selected_event_despawn,
-            handle_feature_selected_event_spawn,
+            // Despawn old selection entities before spawning new ones
+            (
+                handle_feature_selected_event_despawn,
+                handle_feature_selected_event_spawn,
+            )
+                .chain(),
         ),
     );
     app.add_observer(handle_picking_click);
+    app.add_observer(handle_layer_became_hidden_event);
+    app.add_observer(handle_layer_became_visible_event);
+    app.add_observer(handle_despawn_meshes_event);
+    app.add_observer(handle_crs_changed_events);
 }

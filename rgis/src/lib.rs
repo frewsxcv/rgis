@@ -26,6 +26,18 @@ pub fn get_rendered_layer_count() -> u32 {
 
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
+pub fn close_window(title: &str) {
+    rgis_ui::widget_registry::request_close(title);
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen]
+pub fn set_first_layer_fill_color(r: f32, g: f32, b: f32, a: f32) {
+    rgis_ui::widget_registry::request_set_fill_color([r, g, b, a]);
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen]
 pub fn get_all_widget_rects() -> JsValue {
     let all = rgis_ui::widget_registry::get_all();
     let obj = js_sys::Object::new();
@@ -55,28 +67,25 @@ pub fn run() {
             })
             .disable::<bevy::log::LogPlugin>(),
     );
-    app.add_plugins(bevy::log::LogPlugin::default());
+    app.add_plugins(bevy::log::LogPlugin {
+        custom_layer: rgis_ui::log_buffer::create_log_layer,
+        ..default()
+    });
     app.add_plugins(MeshPickingPlugin);
+    app.add_plugins(bevy::diagnostic::FrameTimeDiagnosticsPlugin::default());
     app.add_plugins(rgis_ui::Plugin);
     app.add_plugins(rgis_layers::Plugin);
     app.add_plugins(rgis_file_loader::Plugin);
     app.add_plugins(rgis_renderer::Plugin);
     app.add_plugins(rgis_grid::Plugin);
     app.add_plugins(rgis_mouse::Plugin);
-    app.add_plugins(rgis_keyboard::Plugin);
-    app.add_plugins(rgis_camera::Plugin);
-    app.add_plugins(rgis_ui_events::Plugin);
-    app.add_plugins(rgis_camera_events::Plugin);
-    app.add_plugins(rgis_layer_events::Plugin);
-    app.add_plugins(rgis_map_events::Plugin);
-    app.add_plugins(rgis_file_loader_events::Plugin);
-    app.add_plugins(rgis_crs_events::Plugin);
-    app.add_plugins(rgis_renderer_events::Plugin);
+    app.add_plugins(rgis_camera::Plugin::default());
+    app.add_plugins(rgis_ui_messages::Plugin);
+    app.add_plugins(rgis_events::RgisEventsPlugin);
     app.add_plugins(bevy_jobs::Plugin);
     app.add_plugins(rgis_transform::Plugin);
     app.add_plugins(rgis_settings::Plugin);
-    app.add_plugins(rgis_geodesy::Plugin);
-    app.add_plugins(rgis_crs::Plugin);
+    app.add_plugins(rgis_crs::Plugin::default());
 
     app.run();
 }

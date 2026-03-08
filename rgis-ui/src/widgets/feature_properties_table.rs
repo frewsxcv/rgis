@@ -1,7 +1,7 @@
 use bevy_egui::egui;
 
 pub struct FeaturePropertiesTable<'a> {
-    pub properties: &'a geo_features::Properties,
+    pub properties: &'a [(String, String)],
 }
 
 impl egui::Widget for FeaturePropertiesTable<'_> {
@@ -10,11 +10,9 @@ impl egui::Widget for FeaturePropertiesTable<'_> {
             .num_columns(2)
             .striped(true)
             .show(ui, |ui| {
-                let mut sorted = self.properties.iter().collect::<Vec<_>>();
-                sorted.sort_unstable_by_key(|n| n.0);
-                for (k, v) in sorted.iter() {
-                    ui.label(*k);
-                    ui.label(format!("{v:?}"));
+                for (k, v) in self.properties.iter() {
+                    ui.label(k);
+                    ui.label(v);
                     ui.end_row();
                 }
             })

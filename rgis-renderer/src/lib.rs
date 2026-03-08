@@ -2,10 +2,18 @@ use bevy::{ecs::relationship::RelatedSpawnerCommands, prelude::*};
 use std::sync::atomic::AtomicU32;
 
 mod jobs;
+mod render_entity_index;
 mod systems;
 mod z_index;
 
+pub use render_entity_index::RenderEntityIndex;
+
 /// Counter incremented each time meshes are spawned for a layer (for test polling).
+///
+/// This must remain a global static (rather than an ECS Resource) because it is
+/// read from the `#[wasm_bindgen]` FFI function `get_rendered_layer_count` in
+/// `rgis/src/lib.rs`, which executes outside of Bevy's ECS schedule and cannot
+/// access `Res<T>`.
 pub static RENDERED_LAYER_COUNT: AtomicU32 = AtomicU32::new(0);
 
 use rgis_layers::LayerIndex;
@@ -27,6 +35,9 @@ pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
+        app.init_resource::<RenderEntityIndex>();
+        app.add_observer(render_entity_index::on_add_layer_id);
+        app.add_observer(render_entity_index::on_remove_layer_id);
         systems::configure(app);
     }
 }
@@ -53,15 +64,16 @@ struct Fill;
 #[derive(Copy, Clone, Component)]
 struct Stroke;
 
-#[derive(Copy, Clone, Component)]
-pub struct RasterSprite;
-
 fn spawn_raster(
     raster: &geo_raster::Raster,
-    layer: &rgis_layers::Layer,
+    grid: &rgis_layers::ProjectedRasterGrid,
+    layer_id: rgis_primitives::LayerId,
+    layer_visible: bool,
     layer_index: LayerIndex,
     commands: &mut Commands,
     images: &mut Assets<Image>,
+    meshes: &mut Assets<Mesh>,
+    materials: &mut Assets<ColorMaterial>,
 ) {
     let (bevy_format, pixel_bytes) = match raster.format {
         geo_raster::RasterFormat::R8 => {
@@ -94,52 +106,99 @@ fn spawn_raster(
 
     let image_handle = images.add(image);
 
-    let extent = &raster.extent;
-    let center_x = (extent.min().x + extent.max().x) / 2.0;
-    let center_y = (extent.min().y + extent.max().y) / 2.0;
-    let world_width = extent.max().x - extent.min().x;
-    let world_height = extent.max().y - extent.min().y;
+    // Build a mesh from the projected grid
+    let cols = grid.cols as usize;
+    let rows = grid.rows as usize;
+    let stride = cols + 1;
 
-    let scale_x = world_width as f32 / raster.width as f32;
-    let scale_y = world_height as f32 / raster.height as f32;
+    let mut positions: Vec<[f32; 3]> = Vec::new();
+    let mut uvs: Vec<[f32; 2]> = Vec::new();
+    let mut indices: Vec<u32> = Vec::new();
 
     let z_index = ZIndex::calculate(layer_index, RenderEntityType::Raster);
 
-    let visibility = if layer.visible {
+    // For each grid cell, emit two triangles if all four corner vertices are valid
+    for row in 0..rows {
+        for col in 0..cols {
+            let tl = row * stride + col;
+            let tr = row * stride + col + 1;
+            let bl = (row + 1) * stride + col;
+            let br = (row + 1) * stride + col + 1;
+
+            if !grid.valid[tl] || !grid.valid[tr] || !grid.valid[bl] || !grid.valid[br] {
+                continue;
+            }
+
+            let base = positions.len() as u32;
+
+            // Emit 4 vertices for this quad
+            for &idx in &[tl, tr, bl, br] {
+                let r = idx / stride;
+                let c = idx % stride;
+                let pos = grid.positions[idx];
+                positions.push([pos[0], pos[1], 0.0]);
+                uvs.push([c as f32 / cols as f32, 1.0 - r as f32 / rows as f32]);
+            }
+
+            // Two triangles: tl-bl-tr, tr-bl-br
+            indices.push(base);     // tl
+            indices.push(base + 2); // bl
+            indices.push(base + 1); // tr
+            indices.push(base + 1); // tr
+            indices.push(base + 2); // bl
+            indices.push(base + 3); // br
+        }
+    }
+
+    let mut mesh = Mesh::new(
+        bevy::mesh::PrimitiveTopology::TriangleList,
+        bevy::asset::RenderAssetUsages::RENDER_WORLD | bevy::asset::RenderAssetUsages::MAIN_WORLD,
+    );
+    mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, positions);
+    mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uvs);
+    mesh.insert_indices(bevy::mesh::Indices::U32(indices));
+
+    let visibility = if layer_visible {
         Visibility::Visible
     } else {
         Visibility::Hidden
     };
 
+    let material = materials.add(ColorMaterial {
+        texture: Some(image_handle),
+        ..Default::default()
+    });
+
     commands.spawn((
-        Sprite {
-            image: image_handle,
-            ..Default::default()
-        },
-        Transform::from_xyz(center_x as f32, center_y as f32, z_index.0 as f32)
-            .with_scale(bevy::math::Vec3::new(scale_x, scale_y, 1.0)),
+        Mesh2d(meshes.add(mesh)),
+        MeshMaterial2d(material),
+        Transform::from_xyz(0., 0., z_index.0 as f32),
         visibility,
-        layer.id,
+        layer_id,
         RenderEntityType::Raster,
-        RasterSprite,
     ));
 }
 
+/// Spawn geometry meshes for a layer. Takes individual component values.
 fn spawn_geometry_meshes(
     geometry_mesh: geo_bevy::GeometryMesh,
     materials: &mut Assets<ColorMaterial>,
-    rgis_layers::LayerWithIndex(layer, layer_index): rgis_layers::LayerWithIndex,
+    layer_id: rgis_primitives::LayerId,
+    layer_visible: bool,
+    layer_color: &rgis_layers::LayerColor,
+    layer_point_size: f32,
+    layer_index: LayerIndex,
     commands: &mut Commands,
     assets_meshes: &mut Assets<Mesh>,
     asset_server: &AssetServer,
     is_selected: bool,
 ) {
-    let visibility = if layer.visible {
+    let visibility = if layer_visible {
         Visibility::Visible
     } else {
         Visibility::Hidden
     };
-    let mut entity_commands = commands.spawn((visibility, Transform::default(), layer.id));
+    let mut entity_commands = commands.spawn((visibility, Transform::default(), layer_id));
     match geometry_mesh {
         geo_bevy::GeometryMesh::Point(_) => {
             entity_commands.insert(Point);
@@ -159,7 +218,9 @@ fn spawn_geometry_meshes(
                 asset_server,
                 is_selected,
                 layer_index,
-                layer,
+                layer_id,
+                layer_color,
+                layer_point_size,
             );
         }
         geo_bevy::GeometryMesh::Polygon(polygon_mesh) => {
@@ -170,7 +231,7 @@ fn spawn_geometry_meshes(
                 assets_meshes,
                 is_selected,
                 layer_index,
-                layer,
+                layer_color,
             );
         }
         geo_bevy::GeometryMesh::LineString(line_string_mesh) => {
@@ -181,7 +242,7 @@ fn spawn_geometry_meshes(
                 assets_meshes,
                 is_selected,
                 layer_index,
-                layer,
+                layer_color,
             );
         }
     });
@@ -194,7 +255,7 @@ fn spawn_linestring_geometry(
     assets_meshes: &mut Assets<Mesh>,
     is_selected: bool,
     layer_index: LayerIndex,
-    layer: &rgis_layers::Layer,
+    layer_color: &rgis_layers::LayerColor,
 ) {
     let entity_type = if is_selected {
         RenderEntityType::SelectedLineString
@@ -206,7 +267,7 @@ fn spawn_linestring_geometry(
         if is_selected {
             SELECTED_COLOR
         } else {
-            layer.color.stroke
+            layer_color.stroke
         },
         layer_index,
         line_string_mesh,
@@ -224,7 +285,7 @@ fn spawn_polygon_geometry(
     assets_meshes: &mut Assets<Mesh>,
     is_selected: bool,
     layer_index: LayerIndex,
-    layer: &rgis_layers::Layer,
+    layer_color: &rgis_layers::LayerColor,
 ) {
     let polygon_entity_type = if is_selected {
         RenderEntityType::SelectedPolygon
@@ -242,7 +303,7 @@ fn spawn_polygon_geometry(
         if is_selected {
             SELECTED_COLOR
         } else {
-            match layer.color.fill {
+            match layer_color.fill {
                 Some(color) => color,
                 None => {
                     bevy::log::error!("Expected a fill color for polygon, but none was provided.");
@@ -260,7 +321,7 @@ fn spawn_polygon_geometry(
     // Exterior border
     spawn_helper(
         materials,
-        layer.color.stroke,
+        layer_color.stroke,
         layer_index,
         polygon_mesh.exterior_mesh,
         commands,
@@ -272,7 +333,7 @@ fn spawn_polygon_geometry(
     for mesh in polygon_mesh.interior_meshes {
         spawn_helper(
             materials,
-            layer.color.stroke,
+            layer_color.stroke,
             layer_index,
             mesh,
             commands,
@@ -289,7 +350,9 @@ fn spawn_point_geometry(
     asset_server: &AssetServer,
     is_selected: bool,
     layer_index: LayerIndex,
-    layer: &rgis_layers::Layer,
+    layer_id: rgis_primitives::LayerId,
+    layer_color: &rgis_layers::LayerColor,
+    layer_point_size: f32,
 ) {
     let circle = asset_server.load("circle.png");
     let (stroke_entity_type, fill_entity_type) = if is_selected {
@@ -306,11 +369,12 @@ fn spawn_point_geometry(
         points,
         layer_index,
         stroke_entity_type,
-        layer.color.stroke,
+        layer_color.stroke,
         circle.clone(),
         1.0,
         false,
-        layer,
+        layer_id,
+        layer_point_size,
     );
 
     // Fill
@@ -322,12 +386,13 @@ fn spawn_point_geometry(
         if is_selected {
             SELECTED_COLOR
         } else {
-            layer.color.fill.unwrap()
+            layer_color.fill.unwrap()
         },
         circle.clone(),
         0.7, // Fill should be smaller than stroke.
         true,
-        layer,
+        layer_id,
+        layer_point_size,
     );
 }
 
@@ -366,7 +431,8 @@ fn spawn_point_sprites(
     circle: Handle<Image>,
     scale: f32,
     is_fill: bool,
-    layer: &rgis_layers::Layer,
+    layer_id: rgis_primitives::LayerId,
+    _layer_point_size: f32,
 ) {
     for coord in points {
         let z_index = ZIndex::calculate(layer_index, entity_type);
@@ -379,7 +445,7 @@ fn spawn_point_sprites(
             },
             entity_type,
             transform,
-            layer.id,
+            layer_id,
             PointSprite {
                 relative_scale: scale,
             },

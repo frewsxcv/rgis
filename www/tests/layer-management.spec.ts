@@ -1,32 +1,19 @@
-import { test, expect } from "./fixtures/app-fixture";
+import { test } from "./fixtures/app-fixture";
 
 test.describe("layer management", () => {
   test.beforeEach(async ({ appPage }) => {
     test.setTimeout(60000);
 
-    // Open the Add Layer window first
-    await appPage.openAddLayerWindow();
+    await appPage.addLibraryLayer("World", "Countries");
 
-    // Load World Countries from library
-    await appPage.clickWidget("Library");
-
-    // Expand World folder
-    await appPage.clickWidget("World");
-
-    // Click "+ Add" button next to Countries
-    await appPage.clickWidget("Add:Countries");
-
-    // Wait for layer to load
-    await appPage.waitForLayerRender();
-
-    // Close the Add Layer window by clicking its X button
-    await appPage.clickOnCanvas(0.222, 0.076);
+    // Close the Add Layer window
+    await appPage.closeWindow("Add Layer");
   });
 
   test("loaded layer appears in side panel with collapsing header", async ({
     appPage,
   }) => {
-    await expect(appPage.page).toHaveScreenshot(
+    await appPage.expectScreenshot(
       "layer-loaded-in-side-panel.png",
     );
   });
@@ -36,7 +23,7 @@ test.describe("layer management", () => {
   }) => {
     // Click the ▶ toggle arrow on the "World: Countries" collapsing header
     await appPage.clickWidget("World: Countries");
-    await expect(appPage.page).toHaveScreenshot("layer-details-expanded.png");
+    await appPage.expectScreenshot("layer-details-expanded.png");
   });
 
   test("clicking Manage opens manage layer window", async ({ appPage }) => {
@@ -45,7 +32,7 @@ test.describe("layer management", () => {
 
     // Click "Manage..." button
     await appPage.clickWidget("Manage");
-    await expect(appPage.page).toHaveScreenshot("manage-layer-window.png");
+    await appPage.expectScreenshot("manage-layer-window.png");
   });
 
   test("layer visibility toggle hides the layer", async ({ appPage }) => {
@@ -55,7 +42,7 @@ test.describe("layer management", () => {
     // Click "Visible" checkbox
     await appPage.clickWidget("Toggle Visibility");
     await appPage.waitForNextFrame();
-    await expect(appPage.page).toHaveScreenshot("layer-hidden.png");
+    await appPage.expectScreenshot("layer-hidden.png");
   });
 
   test("zoom to extent centers the map on the layer", async ({ appPage }) => {
@@ -65,7 +52,7 @@ test.describe("layer management", () => {
     // Click "Zoom to Extent" button
     await appPage.clickWidget("Zoom to extent");
     await appPage.waitForNextFrame();
-    await expect(appPage.page).toHaveScreenshot("zoom-to-extent.png");
+    await appPage.expectScreenshot("zoom-to-extent.png");
   });
 
   test("expanding Operations section shows available operations", async ({
@@ -76,6 +63,6 @@ test.describe("layer management", () => {
 
     // Click "Operations" collapsing header
     await appPage.clickWidget("Operations");
-    await expect(appPage.page).toHaveScreenshot("operations-expanded.png");
+    await appPage.expectScreenshot("operations-expanded.png");
   });
 });

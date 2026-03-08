@@ -1,7 +1,8 @@
+use std::sync::Arc;
 use bevy::{ecs::query::QueryIter, prelude::*, window::PrimaryWindow};
 use bevy_egui::{
     egui::{self, Widget},
-    EguiContexts, EguiPrimaryContextPass,
+    EguiContexts, EguiPrimaryContextPass, EguiTextureHandle,
 };
 use bevy_egui_window::Window;
 use geo::{Distance, Geodesic, Haversine, Rhumb};
@@ -12,7 +13,7 @@ fn render_bottom(
     mut bevy_egui_ctx: EguiContexts,
     mouse_pos: Res<rgis_mouse::MousePos>,
     target_crs: Res<rgis_crs::TargetCrs>,
-    mut open_change_crs_window_event_writer: MessageWriter<rgis_ui_events::OpenChangeCrsWindow>,
+    mut open_change_crs_window_event_writer: MessageWriter<rgis_ui_messages::OpenChangeCrsWindowMessage>,
     mut bottom_panel_height: ResMut<rgis_units::BottomPanelHeight>,
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
@@ -29,14 +30,45 @@ fn render_bottom(
 
 fn render_side(
     mut bevy_egui_ctx: EguiContexts,
-    layers: Res<rgis_layers::Layers>,
+    layer_order: Res<rgis_layers::LayerOrder>,
+    layer_query: Query<(
+        Entity,
+        &rgis_primitives::LayerId,
+        &rgis_layers::LayerName,
+        &rgis_layers::LayerVisible,
+        &rgis_layers::LayerColor,
+        &rgis_layers::LayerPointSize,
+        &rgis_layers::LayerData,
+        &rgis_layers::LayerCrs,
+    )>,
     mut events: crate::panels::side::Events,
     mut side_panel_width: ResMut<rgis_units::SidePanelWidth>,
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
+
+    // Build snapshots in top-to-bottom order to avoid passing Query across lifetime boundaries
+    let snapshots: Vec<crate::panels::side::LayerSnapshot> = layer_order
+        .iter_top_to_bottom()
+        .filter_map(|entity| {
+            let (_entity, layer_id, name, visible, color, _point_size, data, crs) =
+                layer_query.get(entity).ok()?;
+            Some(crate::panels::side::LayerSnapshot {
+                layer_id: *layer_id,
+                name: name.0.clone(),
+                visible: visible.0,
+                color: color.clone(),
+                is_vector: data.is_vector(),
+                is_active: data.is_active(),
+                geom_type: data.geom_type(),
+                crs: crs.clone(),
+                unprojected_fc: data.unprojected_feature_collection().cloned(),
+            })
+        })
+        .collect();
+
     crate::panels::side::Side {
         egui_ctx: bevy_egui_ctx_mut,
-        layers: &layers,
+        snapshots,
         events: &mut events,
         side_panel_width: &mut side_panel_width,
     }
@@ -53,70 +85,172 @@ fn handle_open_file_job(
     }
 }
 
+fn handle_download_layer(
+    mut events: MessageReader<rgis_events::DownloadLayerMessage>,
+    id_map: Res<rgis_layers::LayerIdToEntity>,
+    layer_query: Query<(&rgis_layers::LayerName, &rgis_layers::LayerData)>,
+    mut job_spawner: bevy_jobs::JobSpawner,
+) {
+    for event in events.read() {
+        let Some(entity) = id_map.get(event.layer_id) else {
+            warn!("Could not find layer for download");
+            continue;
+        };
+        let Ok((name, data)) = layer_query.get(entity) else {
+            warn!("Could not find layer for download");
+            continue;
+        };
+
+        let Some(fc) = data.unprojected_feature_collection() else {
+            warn!("Cannot download raster layer");
+            continue;
+        };
+
+        match rgis_layers::export::export_feature_collection(fc, event.format) {
+            Ok(data) => {
+                let default_name = format!("{}.{}", name.0, event.format.extension());
+                job_spawner.spawn(crate::save_file::SaveFileJob {
+                    data: data.into_bytes(),
+                    default_name,
+                    format: event.format,
+                });
+            }
+            Err(e) => {
+                error!("Failed to export layer: {}", e);
+            }
+        }
+    }
+}
+
+fn handle_save_file_job(mut finished_jobs: bevy_jobs::FinishedJobs) {
+    while let Some(outcome) = finished_jobs.take_next::<crate::save_file::SaveFileJob>() {
+        if let Err(e) = outcome {
+            error!("Failed to save file: {}", e);
+        }
+    }
+}
+
 fn render_manage_layer_window(
     mut state: Local<crate::ManageLayerWindowState>,
     mut bevy_egui_ctx: EguiContexts,
-    layers: Res<rgis_layers::Layers>,
-    mut color_events: ResMut<Messages<rgis_ui_events::UpdateLayerColorEvent>>,
-    mut point_size_events: ResMut<Messages<rgis_ui_events::UpdateLayerPointSizeEvent>>,
+    id_map: Res<rgis_layers::LayerIdToEntity>,
+    layer_query: Query<(
+        &rgis_layers::LayerName,
+        &rgis_layers::LayerColor,
+        &rgis_layers::LayerPointSize,
+        &rgis_layers::LayerData,
+        &rgis_layers::LayerCrs,
+    )>,
+    mut color_events: ResMut<Messages<rgis_ui_messages::UpdateLayerColorMessage>>,
+    mut point_size_events: ResMut<Messages<rgis_ui_messages::UpdateLayerPointSizeMessage>>,
     mut show_manage_layer_window_event_reader: MessageReader<
-        rgis_ui_events::ShowManageLayerWindowEvent,
+        rgis_ui_messages::ShowManageLayerWindowMessage,
     >,
-    mut duplicate_layer_events: ResMut<Messages<rgis_layer_events::DuplicateLayerEvent>>,
+    mut duplicate_layer_events: ResMut<Messages<rgis_events::DuplicateLayerMessage>>,
+    mut rename_events: ResMut<Messages<rgis_ui_messages::RenameLayerMessage>>,
+    mut name_edit_buffer: Local<String>,
+    mut name_edit_layer_id: Local<Option<rgis_primitives::LayerId>>,
+    side_panel_width: Res<rgis_units::SidePanelWidth>,
+    top_panel_height: Res<rgis_units::TopPanelHeight>,
 ) -> Result {
-    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     if let Some(event) = show_manage_layer_window_event_reader.read().last() {
-        state.is_visible = true;
-        state.layer_id = Some(event.0);
+        *state = Some(event.0);
     }
 
-    crate::windows::manage_layer::ManageLayer {
-        state: &mut state,
-        layers: &layers,
-        egui_ctx: bevy_egui_ctx_mut,
-        color_events: &mut color_events,
-        point_size_events: &mut point_size_events,
-        duplicate_layer_events: &mut duplicate_layer_events,
+    let Some(layer_id) = *state else {
+        return Ok(());
+    };
+
+    let Some(entity) = id_map.get(layer_id) else {
+        *state = None;
+        return Ok(());
+    };
+    let Ok((name, color, point_size, data, crs)) = layer_query.get(entity) else {
+        *state = None;
+        return Ok(());
+    };
+
+    // Initialize or reset the edit buffer when switching layers
+    if *name_edit_layer_id != Some(layer_id) {
+        *name_edit_layer_id = Some(layer_id);
+        name_edit_buffer.clone_from(&name.0);
     }
-    .render();
+
+    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
+    let default_pos = egui::pos2(side_panel_width.0 + 4.0, top_panel_height.0 + 4.0);
+    let mut is_open = true;
+    egui::Window::new("Manage Layer")
+        .default_pos(default_pos)
+        .open(&mut is_open)
+        .show(bevy_egui_ctx_mut, |ui| {
+            crate::windows::manage_layer::ManageLayer {
+                layer_id,
+                name,
+                color,
+                point_size,
+                data,
+                crs,
+                color_events: &mut color_events,
+                point_size_events: &mut point_size_events,
+                duplicate_layer_events: &mut duplicate_layer_events,
+                rename_events: &mut rename_events,
+                name_edit_buffer: &mut name_edit_buffer,
+            }
+            .render(ui);
+        });
+
+    if !is_open {
+        *state = None;
+    }
     Ok(())
 }
 
-struct IsVisible(pub bool);
-
-impl Default for IsVisible {
-    fn default() -> Self {
-        IsVisible(false)
-    }
-}
-
 fn render_add_layer_window(
-    mut is_visible: Local<IsVisible>,
+    mut is_visible: Local<bool>,
     mut selected_file: ResMut<SelectedFile>,
     mut bevy_egui_ctx: EguiContexts,
     mut job_spawner: bevy_jobs::JobSpawner,
     mut state: Local<crate::windows::add_layer::State>,
     mut events: crate::windows::add_layer::Events,
-    geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
+    geodesy_ctx: Res<rgis_crs::GeodesyContext>,
+    side_panel_width: Res<rgis_units::SidePanelWidth>,
+    top_panel_height: Res<rgis_units::TopPanelHeight>,
 ) -> Result {
-    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
+    if crate::widget_registry::take_close_request("Add Layer") {
+        state.reset();
+        *is_visible = false;
+        return Ok(());
+    }
+
     if !events.show_add_layer_window_event_reader.is_empty() {
-        (*is_visible).0 = true;
+        *is_visible = true;
     }
 
     if !events.hide_add_layer_window_events.is_empty() {
         state.reset();
-        (*is_visible).0 = false;
+        *is_visible = false;
     }
 
-    let output = crate::windows::add_layer::AddLayer {
-        state: &mut state,
-        selected_file: &mut selected_file,
-        is_visible: &mut (*is_visible).0,
-        egui_ctx: bevy_egui_ctx_mut,
-        geodesy_ctx: &geodesy_ctx,
+    let mut output = None;
+
+    if *is_visible {
+        let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
+        let default_pos = egui::pos2(side_panel_width.0 + 4.0, top_panel_height.0 + 4.0);
+        egui::Window::new("Add Layer")
+            .resizable(false)
+            .default_pos(default_pos)
+            .open(&mut is_visible)
+            .show(bevy_egui_ctx_mut, |ui| {
+                output = crate::windows::add_layer::AddLayer {
+                    state: &mut state,
+                    selected_file: &mut selected_file,
+                    geodesy_ctx: &geodesy_ctx,
+                }
+                .render(ui);
+            });
+    } else {
+        state.reset();
     }
-    .render();
 
     if let Some(output) = output {
         use crate::windows::add_layer::AddLayerOutput;
@@ -127,7 +261,7 @@ fn render_add_layer_window(
                 source_crs,
             } => {
                 events.load_file_event_writer.write(
-                    rgis_file_loader_events::LoadFileEvent::FromBytes {
+                    rgis_events::LoadFileMessage::FromBytes {
                         file_name: "Inputted file".into(),
                         file_format,
                         bytes: text.into(),
@@ -144,7 +278,7 @@ fn render_add_layer_window(
                 source_crs,
             } => {
                 events.load_file_event_writer.write(
-                    rgis_file_loader_events::LoadFileEvent::FromBytes {
+                    rgis_events::LoadFileMessage::FromBytes {
                         file_name,
                         file_format,
                         bytes: bytes.into(),
@@ -160,7 +294,7 @@ fn render_add_layer_window(
                 source_crs,
             } => {
                 events.load_file_event_writer.write(
-                    rgis_file_loader_events::LoadFileEvent::FromNetwork {
+                    rgis_events::LoadFileMessage::FromNetwork {
                         name,
                         url,
                         source_crs,
@@ -179,72 +313,176 @@ fn render_add_layer_window(
 }
 
 fn handle_open_change_crs_window_event(
-    mut events: MessageReader<rgis_ui_events::OpenChangeCrsWindow>,
-    mut state: ResMut<crate::ChangeCrsWindowState>,
+    mut events: MessageReader<rgis_ui_messages::OpenChangeCrsWindowMessage>,
+    mut is_visible: ResMut<crate::ChangeCrsWindowVisible>,
 ) {
-    if events.read().next().is_some() {
-        state.is_visible = true;
+    if events.read().last().is_some() {
+        is_visible.0 = true;
     }
 }
 
 fn render_change_crs_window(
-    mut state: ResMut<crate::ChangeCrsWindowState>,
+    mut is_visible: ResMut<crate::ChangeCrsWindowVisible>,
     target_crs: Res<rgis_crs::TargetCrs>,
     mut bevy_egui_ctx: EguiContexts,
     mut text_field_value: Local<String>,
-    mut change_crs_event_writer: MessageWriter<rgis_crs_events::ChangeCrsEvent>,
+    mut crs_input_mode: Local<crate::widgets::crs_input::CrsInputMode>,
+    mut change_crs_event_writer: MessageWriter<rgis_events::ChangeCrsMessage>,
     mut crs_input_outcome: Local<Option<crate::widgets::crs_input::Outcome>>,
-    geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
+    geodesy_ctx: Res<rgis_crs::GeodesyContext>,
+    side_panel_width: Res<rgis_units::SidePanelWidth>,
+    top_panel_height: Res<rgis_units::TopPanelHeight>,
+    mut was_visible: Local<bool>,
 ) -> Result {
-    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
-    crate::windows::change_crs::ChangeCrs {
-        is_visible: &mut state.is_visible,
-        egui_ctx: bevy_egui_ctx_mut,
-        text_field_value: &mut text_field_value,
-        change_crs_event_writer: &mut change_crs_event_writer,
-        target_crs: *target_crs,
-        crs_input_outcome: &mut crs_input_outcome,
-        geodesy_ctx: &geodesy_ctx,
+    if crate::widget_registry::take_close_request("Change CRS") {
+        is_visible.0 = false;
+        return Ok(());
     }
-    .render();
+
+    let just_opened = is_visible.0 && !*was_visible;
+    *was_visible = is_visible.0;
+
+    if !is_visible.0 {
+        return Ok(());
+    }
+
+    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
+    let default_pos = egui::pos2(side_panel_width.0 + 4.0, top_panel_height.0 + 4.0);
+    egui::Window::new("Change CRS")
+        .default_pos(default_pos)
+        .open(&mut is_visible.0)
+        .show(bevy_egui_ctx_mut, |ui| {
+            crate::windows::change_crs::ChangeCrs {
+                text_field_value: &mut text_field_value,
+                crs_input_mode: &mut crs_input_mode,
+                change_crs_event_writer: &mut change_crs_event_writer,
+                target_crs: (*target_crs).clone(),
+                crs_input_outcome: &mut crs_input_outcome,
+                geodesy_ctx: &geodesy_ctx,
+                request_focus: just_opened,
+            }
+            .render(ui);
+        });
     Ok(())
 }
 
 fn render_feature_properties_window(
     mut state: Local<crate::FeaturePropertiesWindowState>,
     mut bevy_egui_ctx: EguiContexts,
-    layers: Res<rgis_layers::Layers>,
-    mut render_message_events: ResMut<Messages<rgis_ui_events::RenderFeaturePropertiesEvent>>,
+    id_map: Res<rgis_layers::LayerIdToEntity>,
+    layer_name_query: Query<&rgis_layers::LayerName>,
+    mut render_message_events: ResMut<Messages<rgis_ui_messages::RenderFeaturePropertiesMessage>>,
+    side_panel_width: Res<rgis_units::SidePanelWidth>,
+    top_panel_height: Res<rgis_units::TopPanelHeight>,
 ) -> Result {
-    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     if let Some(event) = render_message_events.drain().last() {
-        state.is_visible = true;
-        state.layer_id = Some(event.layer_id);
-        state.properties = Some(event.properties);
+        if let Some(properties) = event.properties {
+            *state = Some(crate::FeaturePropertiesWindowData {
+                layer_id: event.layer_id,
+                properties,
+            });
+        }
     }
 
-    let Some(layer) = state.layer_id.and_then(|id| layers.get(id)) else {
+    let Some(ref data) = *state else {
         return Ok(());
     };
 
-    crate::windows::feature_properties::FeatureProperties {
-        state: &mut state,
-        layer,
-        egui_ctx: bevy_egui_ctx_mut,
+    let Some(entity) = id_map.get(data.layer_id) else {
+        return Ok(());
+    };
+    let Ok(layer_name) = layer_name_query.get(entity) else {
+        return Ok(());
+    };
+
+    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
+    let default_pos = egui::pos2(side_panel_width.0 + 4.0, top_panel_height.0 + 4.0);
+    let properties = &data.properties;
+    let mut is_open = true;
+    egui::Window::new("Layer Feature Properties")
+        .id(egui::Id::new("Layer Feature Properties Window"))
+        .default_pos(default_pos)
+        .open(&mut is_open)
+        .show(bevy_egui_ctx_mut, |ui| {
+            crate::windows::feature_properties::FeatureProperties {
+                layer_name: &layer_name.0,
+                properties,
+            }
+            .render(ui);
+        });
+
+    if !is_open {
+        *state = None;
     }
-    .render();
+    Ok(())
+}
+
+fn render_attribute_table_window(
+    mut state: Local<crate::AttributeTableWindowState>,
+    mut bevy_egui_ctx: EguiContexts,
+    id_map: Res<rgis_layers::LayerIdToEntity>,
+    layer_query: Query<(&rgis_layers::LayerName, &rgis_layers::LayerData)>,
+    mut show_events: MessageReader<rgis_ui_messages::ShowAttributeTableMessage>,
+    side_panel_width: Res<rgis_units::SidePanelWidth>,
+    top_panel_height: Res<rgis_units::TopPanelHeight>,
+    mut center_camera_on_feature_writer: MessageWriter<rgis_events::CenterCameraOnFeatureMessage>,
+    mut feature_selected_writer: MessageWriter<rgis_events::FeatureSelectedMessage>,
+) -> Result {
+    if let Some(event) = show_events.read().last() {
+        *state = Some(event.0);
+    }
+
+    let Some(layer_id) = *state else {
+        return Ok(());
+    };
+
+    let Some(entity) = id_map.get(layer_id) else {
+        *state = None;
+        return Ok(());
+    };
+    let Ok((name, data)) = layer_query.get(entity) else {
+        *state = None;
+        return Ok(());
+    };
+
+    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
+    let default_pos = egui::pos2(side_panel_width.0 + 4.0, top_panel_height.0 + 40.0);
+    let mut is_open = true;
+    let mut action = None;
+    egui::Window::new(format!("Attribute Table: {}", name.0))
+        .id(egui::Id::new("Attribute Table Window"))
+        .default_pos(default_pos)
+        .default_size([600.0, 400.0])
+        .resizable(true)
+        .open(&mut is_open)
+        .show(bevy_egui_ctx_mut, |ui| {
+            action = crate::windows::attribute_table::AttributeTable { data }.render(ui);
+        });
+
+    match action {
+        Some(crate::windows::attribute_table::AttributeTableAction::ZoomToFeature(feature_id)) => {
+            center_camera_on_feature_writer.write(rgis_events::CenterCameraOnFeatureMessage(layer_id, feature_id));
+        }
+        Some(crate::windows::attribute_table::AttributeTableAction::SelectFeature(feature_id)) => {
+            feature_selected_writer.write(rgis_events::FeatureSelectedMessage(layer_id, feature_id));
+        }
+        None => {}
+    }
+
+    if !is_open {
+        *state = None;
+    }
     Ok(())
 }
 
 fn render_message_window(
     mut state: Local<crate::MessageWindowState>,
     mut bevy_egui_ctx: EguiContexts,
-    mut render_message_events: ResMut<Messages<rgis_ui_events::RenderMessageEvent>>,
+    mut render_message_events: ResMut<Messages<rgis_ui_messages::RenderTextMessage>>,
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     if let Some(event) = render_message_events.drain().last() {
-        state.message = Some(event.0);
-        state.is_visible = true;
+        *state = Some(event.0);
     }
 
     crate::windows::message::Message {
@@ -257,25 +495,41 @@ fn render_message_window(
 
 fn render_operation_window(
     mut state: Local<crate::OperationWindowState>,
-    mut events: ResMut<Messages<rgis_ui_events::OpenOperationWindowEvent>>,
+    mut events: ResMut<Messages<rgis_ui_messages::OpenOperationWindowMessage>>,
     mut bevy_egui_ctx: EguiContexts,
-    create_layer_event_writer: MessageWriter<rgis_layer_events::CreateLayerEvent>,
-    render_message_event_writer: MessageWriter<rgis_ui_events::RenderMessageEvent>,
+    create_layer_event_writer: MessageWriter<rgis_events::CreateLayerMessage>,
+    render_message_event_writer: MessageWriter<rgis_ui_messages::RenderTextMessage>,
+    side_panel_width: Res<rgis_units::SidePanelWidth>,
+    top_panel_height: Res<rgis_units::TopPanelHeight>,
 ) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     if let Some(event) = events.drain().last() {
-        state.is_visible = true;
-        state.operation = Some(event.operation);
-        state.feature_collection = Some(event.feature_collection);
+        *state = Some(crate::OperationWindowData {
+            operation: event.operation,
+            feature_collection: event.feature_collection,
+            source_crs: None,
+            layer_name: event.layer_name,
+        });
     }
 
-    crate::windows::operation::Operation {
-        egui_ctx: bevy_egui_ctx_mut,
-        state: &mut state,
-        create_layer_event_writer,
-        render_message_event_writer,
+    if state.is_some() {
+        let default_pos = egui::pos2(side_panel_width.0 + 4.0, top_panel_height.0 + 4.0);
+        let mut is_open = true;
+        egui::Window::new("Operation")
+            .default_pos(default_pos)
+            .open(&mut is_open)
+            .show(bevy_egui_ctx_mut, |ui| {
+                crate::windows::operation::Operation {
+                    state: &mut state,
+                    create_layer_event_writer,
+                    render_message_event_writer,
+                }
+                .render(ui);
+            });
+        if !is_open {
+            *state = None;
+        }
     }
-    .render();
     Ok(())
 }
 
@@ -331,17 +585,50 @@ impl Widget for InProgressJobWidget<'_> {
     }
 }
 
+#[derive(Default)]
+struct LogoTextures {
+    light: Option<(Handle<Image>, egui::TextureId)>,
+    dark: Option<(Handle<Image>, egui::TextureId)>,
+}
+
 fn render_top(
     mut bevy_egui_ctx: EguiContexts,
     mut app_exit_events: ResMut<Messages<AppExit>>,
     mut windows: Query<&mut bevy::window::Window, With<PrimaryWindow>>,
     mut app_settings: ResMut<rgis_settings::RgisSettings>,
+    current_tool: Res<State<rgis_settings::Tool>>,
+    mut next_tool: ResMut<NextState<rgis_settings::Tool>>,
     mut top_panel_height: ResMut<rgis_units::TopPanelHeight>,
     mut is_debug_window_open: ResMut<
         bevy_egui_window::IsWindowOpen<crate::windows::debug::Debug<'static, 'static>>,
     >,
-    mut show_add_layer_window_event_writer: MessageWriter<rgis_ui_events::ShowAddLayerWindow>,
+    mut is_logs_window_open: ResMut<
+        bevy_egui_window::IsWindowOpen<crate::windows::logs::Logs<'static>>,
+    >,
+    mut show_add_layer_window_event_writer: MessageWriter<rgis_ui_messages::ShowAddLayerWindowMessage>,
+    mut clear_color: ResMut<ClearColor>,
+    asset_server: Res<AssetServer>,
+    mut logo_textures: Local<LogoTextures>,
 ) -> Result {
+    if logo_textures.light.is_none() {
+        let handle: Handle<Image> = asset_server.load("logo-black.png");
+        let texture_id = bevy_egui_ctx.add_image(EguiTextureHandle::Strong(handle.clone()));
+        logo_textures.light = Some((handle, texture_id));
+    }
+    if logo_textures.dark.is_none() {
+        let handle: Handle<Image> = asset_server.load("logo-white.png");
+        let texture_id = bevy_egui_ctx.add_image(EguiTextureHandle::Strong(handle.clone()));
+        logo_textures.dark = Some((handle, texture_id));
+    }
+
+    let logo_texture_id = if app_settings.dark_mode {
+        logo_textures.dark.as_ref()
+    } else {
+        logo_textures.light.as_ref()
+    }
+    .filter(|(handle, _)| asset_server.is_loaded_with_dependencies(handle))
+    .map(|(_, id)| *id);
+
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     let Ok(mut window) = windows.single_mut() else {
         return Ok(());
@@ -352,23 +639,30 @@ fn render_top(
         app_exit_events: &mut app_exit_events,
         window: &mut window,
         app_settings: &mut app_settings,
+        current_tool: current_tool.get(),
+        next_tool: &mut next_tool,
         top_panel_height: &mut top_panel_height,
         is_debug_window_open: &mut is_debug_window_open,
+        is_logs_window_open: &mut is_logs_window_open,
         show_add_layer_window_event_writer: &mut show_add_layer_window_event_writer,
+        clear_color: &mut clear_color,
+        logo_texture_id,
     }
     .render();
     Ok(())
 }
 
-fn set_egui_theme(mut bevy_egui_ctx: EguiContexts, mut clear_color: ResMut<ClearColor>) -> Result {
+fn set_egui_theme(
+    mut bevy_egui_ctx: EguiContexts,
+    mut clear_color: ResMut<ClearColor>,
+    app_settings: Res<rgis_settings::RgisSettings>,
+) -> Result {
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
-    let egui_visuals = match dark_light::detect() {
-        Ok(dark_light::Mode::Dark) => egui::Visuals::dark(),
-        Ok(dark_light::Mode::Light | dark_light::Mode::Unspecified) => egui::Visuals::light(),
-        Err(e) => {
-            error!("Error detecting dark/light mode: {:?}", e);
-            egui::Visuals::light()
-        }
+    let dark_mode = app_settings.dark_mode;
+    let egui_visuals = if dark_mode {
+        egui::Visuals::dark()
+    } else {
+        egui::Visuals::light()
     };
     // Set the background color of the map
     clear_color.0 = egui_color_to_bevy_color(egui_visuals.extreme_bg_color);
@@ -377,7 +671,7 @@ fn set_egui_theme(mut bevy_egui_ctx: EguiContexts, mut clear_color: ResMut<Clear
     Ok(())
 }
 
-fn egui_color_to_bevy_color(egui_color: bevy_egui::egui::Color32) -> Color {
+pub fn egui_color_to_bevy_color(egui_color: bevy_egui::egui::Color32) -> Color {
     Color::srgb_u8(egui_color.r(), egui_color.g(), egui_color.b())
 }
 
@@ -391,14 +685,14 @@ struct AllDistances {
 fn calculate_all_distances(
     start: geo::Coord<f64>,
     end: geo::Coord<f64>,
-    geodesy_ctx: &rgis_geodesy::GeodesyContext,
+    geodesy_ctx: &rgis_crs::GeodesyContext,
     target_crs: &rgis_crs::TargetCrs,
 ) -> Option<AllDistances> {
-    let mut geodesy_ctx_inner = geodesy_ctx.0.write().ok()?;
+    let mut geodesy_ctx_inner = geodesy_ctx.write().ok()?;
     let target_epsg_code = 4326; // WGS 84
 
     let target_op_handle =
-        rgis_geodesy::epsg_code_to_geodesy_op_handle(&mut *geodesy_ctx_inner, target_epsg_code).ok()?;
+        rgis_crs::epsg_code_to_geodesy_op_handle(&mut *geodesy_ctx_inner, target_epsg_code).ok()?;
 
     let transformer = geo_geodesy::Transformer::from_geodesy(
         &*geodesy_ctx_inner,
@@ -428,15 +722,15 @@ fn calculate_all_distances(
 }
 fn render_measure_tool(
     mut bevy_egui_ctx: EguiContexts,
-    rgis_settings: Res<rgis_settings::RgisSettings>,
+    current_tool: Res<State<rgis_settings::Tool>>,
     measure_state: Res<rgis_mouse::MeasureState>,
     mouse_pos: Res<rgis_mouse::MousePos>,
-    geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
+    geodesy_ctx: Res<rgis_crs::GeodesyContext>,
     target_crs: Res<rgis_crs::TargetCrs>,
     camera_q: Query<&Transform, With<Camera>>,
     windows: Query<&bevy::window::Window, With<PrimaryWindow>>,
 ) -> Result {
-    if rgis_settings.current_tool != rgis_settings::Tool::Measure {
+    if *current_tool.get() != rgis_settings::Tool::Measure {
         return Ok(());
     }
 
@@ -555,6 +849,7 @@ pub fn configure(app: &mut App) {
             render_add_layer_window.in_set(RenderSystemSet::Windows),
             render_change_crs_window.in_set(RenderSystemSet::Windows),
             render_feature_properties_window.in_set(RenderSystemSet::Windows),
+            render_attribute_table_window.in_set(RenderSystemSet::Windows),
             render_operation_window.in_set(RenderSystemSet::Windows),
             render_measure_tool.in_set(RenderSystemSet::RenderingTopBottom),
         ),
@@ -565,11 +860,16 @@ pub fn configure(app: &mut App) {
         (
             handle_open_change_crs_window_event,
             handle_open_file_job,
+            handle_save_file_job,
+            handle_download_layer,
             perform_operation,
+            handle_debug_window_close_request,
+            handle_fill_color_requests,
         ),
     );
 
     crate::windows::debug::Debug::setup(app);
+    crate::windows::logs::Logs::setup(app);
     crate::windows::welcome::Welcome::setup(app);
     app.add_systems(
         EguiPrimaryContextPass,
@@ -578,34 +878,70 @@ pub fn configure(app: &mut App) {
     );
     app.add_systems(
         EguiPrimaryContextPass,
+        bevy_egui_window::render_window_system::<crate::windows::logs::Logs>
+            .run_if(bevy_egui_window::run_if_is_window_open::<crate::windows::logs::Logs>),
+    );
+    app.add_systems(
+        EguiPrimaryContextPass,
         crate::windows::welcome::render_welcome_window_system
             .run_if(bevy_egui_window::run_if_is_window_open::<crate::windows::welcome::Welcome>),
     );
 }
 
-#[allow(clippy::too_many_arguments)]
+fn handle_fill_color_requests(
+    layer_order: Res<rgis_layers::LayerOrder>,
+    layer_id_query: Query<&rgis_primitives::LayerId>,
+    mut color_events: ResMut<Messages<rgis_ui_messages::UpdateLayerColorMessage>>,
+) {
+    for rgba in crate::widget_registry::take_fill_color_requests() {
+        // Apply to the first layer
+        if let Some(entity) = layer_order.iter_top_to_bottom().next() {
+            if let Ok(layer_id) = layer_id_query.get(entity) {
+                color_events.write(rgis_ui_messages::UpdateLayerColorMessage::Fill(
+                    *layer_id,
+                    Color::linear_rgba(rgba[0], rgba[1], rgba[2], rgba[3]),
+                ));
+            }
+        }
+    }
+}
+
+fn handle_debug_window_close_request(
+    mut is_window_open: ResMut<
+        bevy_egui_window::IsWindowOpen<crate::windows::debug::Debug<'static, 'static>>,
+    >,
+) {
+    if crate::widget_registry::take_close_request("Debug") {
+        is_window_open.0 = false;
+    }
+}
+
 fn perform_operation(
-    _commands: Commands,
-    mut events: ResMut<Messages<rgis_ui_events::PerformOperationEvent>>,
-    layers: Res<rgis_layers::Layers>,
-    mut open_operation_window_event_writer: MessageWriter<rgis_ui_events::OpenOperationWindowEvent>,
-    mut create_layer_event_writer: MessageWriter<rgis_layer_events::CreateLayerEvent>,
-    mut render_message_event_writer: MessageWriter<rgis_ui_events::RenderMessageEvent>,
+    mut events: ResMut<Messages<rgis_ui_messages::PerformOperationMessage>>,
+    id_map: Res<rgis_layers::LayerIdToEntity>,
+    layer_query: Query<(&rgis_layers::LayerName, &rgis_layers::LayerData, &rgis_layers::LayerCrs)>,
+    mut open_operation_window_event_writer: MessageWriter<rgis_ui_messages::OpenOperationWindowMessage>,
+    mut create_layer_event_writer: MessageWriter<rgis_events::CreateLayerMessage>,
+    mut render_message_event_writer: MessageWriter<rgis_ui_messages::RenderTextMessage>,
 ) {
     for event in events.drain() {
-        let Some(layer) = layers.get(event.layer_id) else {
+        let Some(entity) = id_map.get(event.layer_id) else {
+            error!("Layer not found, cannot perform operation");
+            continue;
+        };
+        let Ok((name, data, crs)) = layer_query.get(entity) else {
             error!("Layer not found, cannot perform operation");
             continue;
         };
 
-        let Some(_) = layer.unprojected_feature_collection() else {
+        let Some(_) = data.unprojected_feature_collection() else {
             error!("Cannot perform operation on raster layer");
             continue;
         };
 
         let mut operation = event.operation;
 
-        let Some(fc) = layer.unprojected_feature_collection() else {
+        let Some(fc) = data.unprojected_feature_collection() else {
             error!("Layer has no unprojected feature collection, cannot perform operation");
             continue;
         };
@@ -613,26 +949,28 @@ fn perform_operation(
         match operation.next_action() {
             rgis_geo_ops::Action::RenderUi => {
                 open_operation_window_event_writer.write(
-                    rgis_ui_events::OpenOperationWindowEvent {
+                    rgis_ui_messages::OpenOperationWindowMessage {
                         operation,
-                        feature_collection: fc.clone(), // TODO: clone?
+                        feature_collection: Arc::clone(fc),
+                        layer_name: name.0.clone(),
                     },
                 );
             }
             rgis_geo_ops::Action::Perform => {
                 // TODO: perform in background job
-                let outcome = operation.perform(fc.clone()); // TODO: clone?
+                let op_name = operation.name().to_string();
+                let outcome = operation.perform(fc);
 
                 match outcome {
                     Ok(rgis_geo_ops::Outcome::FeatureCollection(feature_collection)) => {
-                        create_layer_event_writer.write(rgis_layer_events::CreateLayerEvent {
-                            feature_collection,
-                            name: "foo".into(), // TODO
-                            source_crs: layer.crs,
+                        create_layer_event_writer.write(rgis_events::CreateLayerMessage {
+                            feature_collection: Arc::new(feature_collection),
+                            name: format!("{} of {}", op_name, name.0),
+                            source_crs: crs.0.clone(),
                         });
                     }
                     Ok(rgis_geo_ops::Outcome::Text(text)) => {
-                        render_message_event_writer.write(rgis_ui_events::RenderMessageEvent(text));
+                        render_message_event_writer.write(rgis_ui_messages::RenderTextMessage(text));
                     }
                     Err(e) => {
                         error!("Encountered an error during the operation: {}", e);
@@ -659,13 +997,14 @@ mod tests {
         app.init_asset::<bevy::prelude::Image>();
 
         app.add_plugins(bevy_egui::EguiPlugin::default());
-        app.add_plugins(rgis_geodesy::Plugin);
-        app.add_plugins(rgis_crs_events::Plugin);
-        app.add_plugins(rgis_crs::Plugin);
+        app.add_plugins(rgis_events::RgisEventsPlugin);
+        app.add_plugins(rgis_crs::Plugin::default());
+        app.add_plugins(bevy::state::app::StatesPlugin);
 
+        app.insert_state(rgis_settings::Tool::Measure);
         app.insert_resource(rgis_settings::RgisSettings {
-            current_tool: rgis_settings::Tool::Measure,
             show_scale: true,
+            dark_mode: false,
         });
 
         app.insert_resource(rgis_mouse::MeasureState {
@@ -725,33 +1064,33 @@ mod tests {
     fn test_calculate_all_distances() {
         let mut app = App::new();
         app.add_plugins(MinimalPlugins);
-        app.add_plugins(rgis_geodesy::Plugin);
-        app.add_plugins(rgis_crs_events::Plugin);
-        app.add_plugins(rgis_crs::Plugin);
+        app.add_plugins(rgis_events::RgisEventsPlugin);
+        app.add_plugins(rgis_crs::Plugin::default());
 
         app.update();
 
         // Manually set TargetCrs to 4326 (WGS84) to simplify test and verify logic without projection issues
         let op_handle = {
-            let geodesy_ctx = app.world().resource::<rgis_geodesy::GeodesyContext>();
-            let mut geodesy_ctx_inner = geodesy_ctx.0.write().unwrap();
-            rgis_geodesy::epsg_code_to_geodesy_op_handle(&mut *geodesy_ctx_inner, 4326).unwrap()
+            let geodesy_ctx = app.world().resource::<rgis_crs::GeodesyContext>();
+            let mut geodesy_ctx_inner = geodesy_ctx.write().unwrap();
+            rgis_crs::epsg_code_to_geodesy_op_handle(&mut *geodesy_ctx_inner, 4326).unwrap()
         };
 
         app.insert_resource(rgis_crs::TargetCrs(rgis_primitives::Crs {
-            epsg_code: 4326,
+            epsg_code: Some(4326),
+            proj_string: None,
             op_handle,
         }));
 
-        let geodesy_ctx = app.world().resource::<rgis_geodesy::GeodesyContext>();
+        let geodesy_ctx = app.world().resource::<rgis_crs::GeodesyContext>();
         let target_crs = app.world().resource::<rgis_crs::TargetCrs>();
 
-        // San Francisco (lon: -122.4194°, lat: 37.7749°)
+        // San Francisco (lon: -122.4194, lat: 37.7749)
         let start = geo::Coord {
             x: -122.4194,
             y: 37.7749,
         };
-        // New York City (lon: -74.0060°, lat: 40.7128°)
+        // New York City (lon: -74.0060, lat: 40.7128)
         let end = geo::Coord {
             x: -74.0060,
             y: 40.7128,
@@ -791,7 +1130,7 @@ mod tests {
 
     /// Regression test: geo_geodesy::Transformer::transform() already converts
     /// output from radians to degrees. A previous bug called .to_degrees() again,
-    /// turning valid coordinates like (-122°, 37°) into (-6692°, 2282°). This
+    /// turning valid coordinates like (-122, 37) into (-6692, 2282). This
     /// caused Geodesic to return NaN and Rhumb to return wildly wrong values.
     #[test]
     fn test_double_degrees_conversion_causes_geodesic_nan() {

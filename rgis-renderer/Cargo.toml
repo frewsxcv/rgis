@@ -13,14 +13,11 @@ geo-bevy = { workspace = true }
 geo-projected = { path = "../geo-projected" }
 geo-geom-type = { path = "../geo-geom-type" }
 geo-raster = { path = "../geo-raster" }
-rgis-renderer-events = { path = "../rgis-renderer-events" }
-rgis-layer-events = { path = "../rgis-layer-events" }
-rgis-crs-events = { path = "../rgis-crs-events" }
-rgis-map-events = { path = "../rgis-map-events" }
+rgis-events = { path = "../rgis-events" }
 rgis-primitives = { path = "../rgis-primitives" }
 rgis-layers = { path = "../rgis-layers" }
 rgis-settings = { path = "../rgis-settings" }
-rgis-ui-events = { path = "../rgis-ui-events" }
+rgis-ui-messages = { path = "../rgis-ui-messages" }
 bevy_egui = { workspace = true }
 bevy_jobs = { workspace = true }
 num-t = { workspace = true }

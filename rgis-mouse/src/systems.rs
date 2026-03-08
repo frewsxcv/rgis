@@ -10,8 +10,8 @@ fn run_if_has_cursor_moved_events(cursor_moved_event_reader: MessageReader<Curso
 
 fn cursor_moved_system(
     mut cursor_moved_event_reader: MessageReader<CursorMoved>,
-    mut windows: Query<&mut Window, With<PrimaryWindow>>,
-    query: Query<&mut Transform, With<Camera>>,
+    windows: Query<&Window, With<PrimaryWindow>>,
+    query: Query<&Transform, With<Camera>>,
     mut mouse_position: ResMut<crate::MousePos>,
     mut last_cursor_screen_position: ResMut<crate::LastCursorScreenPosition>,
     mut bevy_egui_ctx: bevy_egui::EguiContexts,
@@ -21,7 +21,7 @@ fn cursor_moved_system(
         cursor_moved_event_reader.clear();
         return Ok(());
     }
-    let window = windows.single_mut()?;
+    let window = windows.single()?;
     let transform = query.single()?;
     if let Some(event) = cursor_moved_event_reader.read().last() {
         let screen_coord = rgis_units::ScreenCoord {
@@ -42,10 +42,10 @@ fn run_if_has_mouse_motion_events(mouse_motion_event_reader: MessageReader<Mouse
 fn mouse_motion_system(
     mut mouse_motion_event_reader: MessageReader<MouseMotion>,
     mouse_button: Res<ButtonInput<MouseButton>>,
-    mut pan_camera_events: MessageWriter<rgis_camera_events::PanCameraEvent>,
+    mut pan_camera_events: MessageWriter<rgis_events::PanCameraMessage>,
     mut windows: Query<&mut Window, With<PrimaryWindow>>,
     mut bevy_egui_ctx: bevy_egui::EguiContexts,
-    rgis_settings: Res<rgis_settings::RgisSettings>,
+    current_tool: Res<State<rgis_settings::Tool>>,
     mut last_cursor_icon: Local<Option<SystemCursorIcon>>,
 ) -> Result {
     let mut window = windows.single_mut()?;
@@ -66,7 +66,7 @@ fn mouse_motion_system(
     }
 
     // Handle panning
-    if rgis_settings.current_tool == rgis_settings::Tool::Pan
+    if *current_tool.get() == rgis_settings::Tool::Pan
         && mouse_button.pressed(MouseButton::Left)
         || mouse_button.pressed(MouseButton::Right)
     {
@@ -89,13 +89,13 @@ fn mouse_motion_system(
             y_sum += event.delta.y;
         }
         if x_sum != 0. || y_sum != 0. {
-            pan_camera_events.write(rgis_camera_events::PanCameraEvent { x: x_sum, y: y_sum });
+            pan_camera_events.write(rgis_events::PanCameraMessage { x: x_sum, y: y_sum });
         }
         return Ok(());
     }
 
     mouse_motion_event_reader.clear();
-    let cursor_icon = match rgis_settings.current_tool {
+    let cursor_icon = match *current_tool.get() {
         rgis_settings::Tool::Pan => SystemCursorIcon::Grab,
         rgis_settings::Tool::Query => SystemCursorIcon::Crosshair,
         rgis_settings::Tool::Measure => SystemCursorIcon::Crosshair,
@@ -117,10 +117,6 @@ fn set_cursor_icon(
 
 fn clear_cursor_icon(last_cursor_icon: &mut Option<SystemCursorIcon>) {
     *last_cursor_icon = None;
-}
-
-fn current_tool_is_measure(rgis_settings: Res<rgis_settings::RgisSettings>) -> bool {
-    rgis_settings.current_tool == rgis_settings::Tool::Measure
 }
 
 const DRAG_HIT_RADIUS_PX: f64 = 10.0;
@@ -204,7 +200,7 @@ fn run_if_has_mouse_scroll_events(mouse_scroll_event_reader: MessageReader<Mouse
 
 fn mouse_scroll_system(
     mut mouse_scroll_event_reader: MessageReader<MouseWheel>,
-    mut zoom_camera_events: MessageWriter<rgis_camera_events::ZoomCameraEvent>,
+    mut zoom_camera_events: MessageWriter<rgis_events::ZoomCameraMessage>,
     mouse_position: Res<crate::MousePos>,
     mut bevy_egui_ctx: bevy_egui::EguiContexts,
 ) -> Result {
@@ -229,7 +225,7 @@ fn mouse_scroll_system(
         })
         .sum();
     if y_amount != 0. {
-        zoom_camera_events.write(rgis_camera_events::ZoomCameraEvent::new(
+        zoom_camera_events.write(rgis_events::ZoomCameraMessage::new(
             y_amount,
             mouse_position.0,
         ));
@@ -239,7 +235,7 @@ fn mouse_scroll_system(
 
 fn run_if_has_recalculate_mouse_position_events(
     recalculate_mouse_position_event_reader: MessageReader<
-        rgis_camera_events::RecalculateMousePositionEvent,
+        rgis_events::RecalculateMousePositionMessage,
     >,
 ) -> bool {
     !recalculate_mouse_position_event_reader.is_empty()
@@ -247,12 +243,12 @@ fn run_if_has_recalculate_mouse_position_events(
 
 fn recalculate_mouse_position_system(
     mut recalculate_mouse_position_event_reader: MessageReader<
-        rgis_camera_events::RecalculateMousePositionEvent,
+        rgis_events::RecalculateMousePositionMessage,
     >,
     mut mouse_position: ResMut<crate::MousePos>,
     last_cursor_screen_position: Res<crate::LastCursorScreenPosition>,
-    windows: Query<&mut Window, With<PrimaryWindow>>,
-    query: Query<&mut Transform, With<Camera>>,
+    windows: Query<&Window, With<PrimaryWindow>>,
+    query: Query<&Transform, With<Camera>>,
 ) -> Result {
     recalculate_mouse_position_event_reader.clear();
 
@@ -274,7 +270,7 @@ pub fn configure(app: &mut App) {
             cursor_moved_system.run_if(run_if_has_cursor_moved_events),
             recalculate_mouse_position_system.run_if(run_if_has_recalculate_mouse_position_events),
             mouse_scroll_system.run_if(run_if_has_mouse_scroll_events),
-            measure_input_system.run_if(current_tool_is_measure),
+            measure_input_system.run_if(in_state(rgis_settings::Tool::Measure)),
             mouse_motion_system.run_if(run_if_has_mouse_motion_events),
         )
             .after(bevy_egui::EguiPreUpdateSet::ProcessInput)

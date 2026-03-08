@@ -9,6 +9,7 @@ pub struct Raster {
     pub data: Vec<u8>,
     pub format: RasterFormat,
     pub extent: geo_types::Rect<f64>,
+    pub epsg_code: Option<u16>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

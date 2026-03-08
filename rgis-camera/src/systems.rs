@@ -6,12 +6,13 @@ pub fn configure(app: &mut App) {
         Update,
         (
             center_camera,
+            center_camera_on_feature,
             pan_camera_system,
             handle_meshes_spawned_events,
             zoom_camera_system,
-            handle_change_crs_event,
         ),
     );
+    app.add_observer(handle_change_crs_event);
 }
 
 fn init_camera(mut commands: Commands) {
@@ -19,15 +20,12 @@ fn init_camera(mut commands: Commands) {
 }
 
 fn handle_change_crs_event(
-    mut change_crs_event_reader: MessageReader<rgis_crs_events::CrsChangedEvent>,
+    event: On<rgis_events::CrsChangedEvent>,
     mut query: Query<&mut Transform, With<Camera>>,
     windows: Query<&Window, With<PrimaryWindow>>,
     ui_margins: rgis_units::UiMargins,
-    geodesy_ctx: Res<rgis_geodesy::GeodesyContext>,
+    geodesy_ctx: Res<rgis_crs::GeodesyContext>,
 ) -> Result {
-    let Some(event) = change_crs_event_reader.read().last() else {
-        return Ok(());
-    };
     let window = windows.single()?;
     let Ok(mut transform) = query.single_mut() else {
         return Ok(());
@@ -40,24 +38,28 @@ fn handle_change_crs_event(
         bottom_offset_px: ui_margins.bottom.0,
     };
     let rect = map_area.projected_geo_rect(&transform, window);
+    let mut geometry: geo::Geometry<_> = rect.into();
 
     {
-        let geodesy_ctx = geodesy_ctx.0.read().unwrap();
+        let geodesy_ctx = geodesy_ctx.read().unwrap();
         let transformer = geo_geodesy::Transformer::from_geodesy(
             &*geodesy_ctx,
             event.old.op_handle,
             event.new.op_handle,
         )?;
-        transformer.transform(&mut (rect.into()))?;
+        transformer.transform(&mut geometry)?;
     }
 
+    let geo::Geometry::Rect(rect) = geometry else {
+        unreachable!()
+    };
     crate::utils::center_camera_on_projected_world_rect(rect, &mut transform, map_area);
 
     Ok(())
 }
 
 fn pan_camera_system(
-    mut pan_camera_event_reader: MessageReader<rgis_camera_events::PanCameraEvent>,
+    mut pan_camera_event_reader: MessageReader<rgis_events::PanCameraMessage>,
     mut query: Query<&mut Transform, With<Camera>>,
 ) {
     if pan_camera_event_reader.is_empty() {
@@ -77,10 +79,10 @@ fn pan_camera_system(
 }
 
 fn zoom_camera_system(
-    mut zoom_camera_event_reader: MessageReader<rgis_camera_events::ZoomCameraEvent>,
+    mut zoom_camera_event_reader: MessageReader<rgis_events::ZoomCameraMessage>,
     mut query: Query<&mut Transform, With<Camera>>,
     mut recalculate_mouse_position_event_writer: MessageWriter<
-        rgis_camera_events::RecalculateMousePositionEvent,
+        rgis_events::RecalculateMousePositionMessage,
     >,
 ) {
     if zoom_camera_event_reader.is_empty() {
@@ -130,8 +132,8 @@ fn zoom_camera_system(
 }
 
 fn handle_meshes_spawned_events(
-    mut meshes_spawned_event_reader: MessageReader<rgis_renderer_events::MeshesSpawnedEvent>,
-    mut center_camera_event_writer: MessageWriter<rgis_camera_events::CenterCameraEvent>,
+    mut meshes_spawned_event_reader: MessageReader<rgis_events::MeshesSpawnedMessage>,
+    mut center_camera_event_writer: MessageWriter<rgis_events::CenterCameraMessage>,
     mut has_moved: Local<bool>,
 ) {
     for event in meshes_spawned_event_reader.read() {
@@ -142,9 +144,10 @@ fn handle_meshes_spawned_events(
     }
 }
 
-fn center_camera(
-    layers: Res<rgis_layers::Layers>,
-    mut event_reader: MessageReader<rgis_camera_events::CenterCameraEvent>,
+fn center_camera_on_feature(
+    id_map: Res<rgis_layers::LayerIdToEntity>,
+    layer_query: Query<&rgis_layers::LayerData>,
+    mut event_reader: MessageReader<rgis_events::CenterCameraOnFeatureMessage>,
     mut query: Query<&mut Transform, With<Camera>>,
     windows: Query<&Window, With<PrimaryWindow>>,
     ui_margins: rgis_units::UiMargins,
@@ -153,25 +156,72 @@ fn center_camera(
         return;
     };
     for event in event_reader.read() {
-        let Some(layer) = layers.get(event.0) else {
+        let Some(entity) = id_map.get(event.0) else {
+            continue;
+        };
+        let Ok(data) = layer_query.get(entity) else {
+            continue;
+        };
+        let Some(fc) = data.get_projected_feature_collection_or_log(event.0) else {
+            continue;
+        };
+        let Some(feature) = fc.features.iter().find(|f| f.id == event.1) else {
+            continue;
+        };
+        let Some(bounding_rect) = feature.bounding_rect else {
+            continue;
+        };
+        let Ok(mut transform) = query.single_mut() else {
+            continue;
+        };
+        let map_area = rgis_units::MapArea {
+            window,
+            right_offset_px: 0.,
+            left_offset_px: ui_margins.left.0,
+            bottom_offset_px: ui_margins.bottom.0,
+            top_offset_px: ui_margins.top.0,
+        };
+        crate::utils::center_camera_on_projected_world_rect(
+            bounding_rect,
+            &mut transform,
+            map_area,
+        );
+    }
+}
+
+fn center_camera(
+    id_map: Res<rgis_layers::LayerIdToEntity>,
+    layer_query: Query<&rgis_layers::LayerData>,
+    mut event_reader: MessageReader<rgis_events::CenterCameraMessage>,
+    mut query: Query<&mut Transform, With<Camera>>,
+    windows: Query<&Window, With<PrimaryWindow>>,
+    ui_margins: rgis_units::UiMargins,
+) {
+    let Ok(window) = windows.single() else {
+        return;
+    };
+    for event in event_reader.read() {
+        let Some(entity) = id_map.get(event.0) else {
+            continue;
+        };
+        let Ok(data) = layer_query.get(entity) else {
             continue;
         };
 
-        let bounding_rect = if let Some(raster) = layer.raster() {
-            let ext = &raster.extent;
+        let bounding_rect = if let rgis_layers::LayerData::Raster { projected_grid: Some(grid), .. } = data {
             use geo_projected::WrapTo;
             geo::Rect::new(
                 geo::Coord {
-                    x: ext.min().x,
-                    y: ext.min().y,
+                    x: grid.extent.min().x,
+                    y: grid.extent.min().y,
                 },
                 geo::Coord {
-                    x: ext.max().x,
-                    y: ext.max().y,
+                    x: grid.extent.max().x,
+                    y: grid.extent.max().y,
                 },
             )
             .wrap::<geo_projected::Projected>()
-        } else if let Some(fc) = layer.get_projected_feature_collection_or_log() {
+        } else if let Some(fc) = data.get_projected_feature_collection_or_log(event.0) {
             match fc.bounding_rect() {
                 Ok(r) => r,
                 Err(_) => continue,

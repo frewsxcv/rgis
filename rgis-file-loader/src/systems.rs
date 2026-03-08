@@ -5,15 +5,16 @@ use rgis_primitives::Crs;
 struct SourceCrs(Crs);
 
 fn handle_network_fetch_finished_jobs(
-    mut load_event_reader: ResMut<Messages<rgis_file_loader_events::LoadFileEvent>>,
+    mut load_event_reader: ResMut<Messages<rgis_events::LoadFileMessage>>,
     mut finished_jobs: bevy_jobs::FinishedJobs,
+    mut render_message_event_writer: MessageWriter<rgis_ui_messages::RenderTextMessage>,
 ) {
     while let Some(outcome) =
         finished_jobs.take_next::<bevy_jobs_fetch::NetworkFetchJob<SourceCrs>>()
     {
         match outcome {
             Ok(fetched) => {
-                load_event_reader.write(rgis_file_loader_events::LoadFileEvent::FromBytes {
+                load_event_reader.write(rgis_events::LoadFileMessage::FromBytes {
                     file_format: geo_file_loader::FileFormat::GeoJson,
                     bytes: fetched.bytes,
                     file_name: fetched.name,
@@ -21,19 +22,22 @@ fn handle_network_fetch_finished_jobs(
                 });
             }
             Err(e) => {
-                error!("Could not fetch file: {:?}", e);
+                let msg = format!("Could not fetch file: {e}");
+                error!("{msg}");
+                render_message_event_writer
+                    .write(rgis_ui_messages::RenderTextMessage(msg));
             }
         }
     }
 }
 
 fn handle_load_file_events(
-    mut load_event_reader: ResMut<Messages<rgis_file_loader_events::LoadFileEvent>>,
+    mut load_event_reader: ResMut<Messages<rgis_events::LoadFileMessage>>,
     mut job_spawner: bevy_jobs::JobSpawner,
 ) {
     for event in load_event_reader.drain() {
         match event {
-            rgis_file_loader_events::LoadFileEvent::FromNetwork {
+            rgis_events::LoadFileMessage::FromNetwork {
                 url,
                 name,
                 source_crs,
@@ -42,7 +46,7 @@ fn handle_load_file_events(
                 user_data: SourceCrs(source_crs),
                 name,
             }),
-            rgis_file_loader_events::LoadFileEvent::FromBytes {
+            rgis_events::LoadFileMessage::FromBytes {
                 file_name,
                 bytes,
                 file_format,
@@ -59,8 +63,10 @@ fn handle_load_file_events(
 
 fn handle_load_file_job_finished_events(
     mut finished_jobs: bevy_jobs::FinishedJobs,
-    mut create_layer_event_writer: MessageWriter<rgis_layer_events::CreateLayerEvent>,
-    mut create_raster_layer_event_writer: MessageWriter<rgis_layer_events::CreateRasterLayerEvent>,
+    mut create_layer_event_writer: MessageWriter<rgis_events::CreateLayerMessage>,
+    mut create_raster_layer_event_writer: MessageWriter<rgis_events::CreateRasterLayerMessage>,
+    mut render_message_event_writer: MessageWriter<rgis_ui_messages::RenderTextMessage>,
+    geodesy_ctx: Res<rgis_crs::GeodesyContext>,
 ) {
     while let Some(outcome) = finished_jobs.take_next::<crate::jobs::LoadFileJob>() {
         match outcome {
@@ -69,19 +75,34 @@ fn handle_load_file_job_finished_events(
                 name,
                 source_crs,
             }) => {
-                create_layer_event_writer.write(rgis_layer_events::CreateLayerEvent {
+                create_layer_event_writer.write(rgis_events::CreateLayerMessage {
                     name,
-                    feature_collection,
+                    feature_collection: std::sync::Arc::new(feature_collection),
                     source_crs,
                 });
             }
             Ok(crate::jobs::LoadFileJobOutcome::Raster {
                 raster,
                 name,
-                source_crs,
+                mut source_crs,
             }) => {
+                // Override source CRS with the EPSG code detected from GeoTIFF metadata
+                if let Some(detected_epsg) = raster.epsg_code {
+                    if Some(detected_epsg) != source_crs.epsg_code {
+                        let mut ctx = geodesy_ctx.write().unwrap();
+                        if let Ok(op_handle) =
+                            rgis_crs::epsg_code_to_geodesy_op_handle(&mut *ctx, detected_epsg)
+                        {
+                            source_crs = Crs {
+                                epsg_code: Some(detected_epsg),
+                                proj_string: None,
+                                op_handle,
+                            };
+                        }
+                    }
+                }
                 create_raster_layer_event_writer.write(
-                    rgis_layer_events::CreateRasterLayerEvent {
+                    rgis_events::CreateRasterLayerMessage {
                         raster,
                         name,
                         source_crs,
@@ -89,7 +110,10 @@ fn handle_load_file_job_finished_events(
                 );
             }
             Err(e) => {
-                error!("Encountered error when loading file: {:?}", e);
+                let msg = format!("Error loading file: {e}");
+                error!("{msg}");
+                render_message_event_writer
+                    .write(rgis_ui_messages::RenderTextMessage(msg));
             }
         }
     }

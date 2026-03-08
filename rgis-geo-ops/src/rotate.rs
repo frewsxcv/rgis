@@ -16,6 +16,10 @@ impl OperationEntry for Rotate {
 }
 
 impl Operation for Rotate {
+    fn name(&self) -> &str {
+        <Self as OperationEntry>::NAME
+    }
+
     fn visit_feature_collection(
         &mut self,
         feature_collection: &geo_features::FeatureCollection<UnprojectedScalar>,

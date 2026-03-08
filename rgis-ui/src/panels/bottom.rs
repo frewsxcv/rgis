@@ -1,20 +1,19 @@
 use bevy::prelude::*;
 use bevy_egui::egui;
-use rgis_ui_events::OpenChangeCrsWindow;
+use rgis_ui_messages::OpenChangeCrsWindowMessage;
 
 pub struct Bottom<'a, 'w> {
     pub egui_ctx: &'a egui::Context,
     pub mouse_pos: &'a rgis_mouse::MousePos,
     pub target_crs: &'a rgis_crs::TargetCrs,
-    pub open_change_crs_window_event_writer: &'a mut MessageWriter<'w, OpenChangeCrsWindow>,
+    pub open_change_crs_window_event_writer: &'a mut MessageWriter<'w, OpenChangeCrsWindowMessage>,
     pub bottom_panel_height: &'a mut rgis_units::BottomPanelHeight,
 }
 
-fn coordinate_precision(epsg_code: u16) -> usize {
-    if (4000..5000).contains(&epsg_code) {
-        6
-    } else {
-        2
+fn coordinate_precision(epsg_code: Option<u16>) -> usize {
+    match epsg_code {
+        Some(code) if (4000..5000).contains(&code) => 6,
+        _ => 2,
     }
 }
 
@@ -39,7 +38,10 @@ impl Bottom<'_, '_> {
             self.open_change_crs_window_event_writer.write_default();
         }
 
-        ui.label(format!("CRS: EPSG:{}", self.target_crs.0.epsg_code));
+        match self.target_crs.0.epsg_code {
+            Some(code) => ui.label(format!("CRS: EPSG:{code}")),
+            None => ui.label("CRS: Custom PROJ"),
+        };
     }
 
     fn render_mouse_position(&mut self, ui: &mut egui::Ui) {

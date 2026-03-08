@@ -70,6 +70,8 @@ impl GeoTiffSource {
             geo_types::coord! { x: max_x, y: max_y },
         );
 
+        let epsg_code = ifd.geo_key_directory().and_then(|gkd| gkd.epsg_code());
+
         let tile_width = ifd.tile_width().ok_or(Error::UnsupportedColorType)?;
         let tile_height = ifd.tile_height().ok_or(Error::UnsupportedColorType)?;
         let (tiles_x, tiles_y) = ifd.tile_count().ok_or(Error::UnsupportedColorType)?;
@@ -77,6 +79,11 @@ impl GeoTiffSource {
         let samples_per_pixel = ifd.samples_per_pixel();
         let decoder_registry = DecoderRegistry::default();
         let is_planar = ifd.planar_configuration() == PlanarConfiguration::Planar;
+
+        // Parse nodata value from GDAL metadata
+        let nodata_f64: Option<f64> = ifd
+            .gdal_nodata()
+            .and_then(|s| s.trim().parse::<f64>().ok());
 
         // Fetch, decode, and normalize all tiles to chunky layout
         let mut decoded_tiles: Vec<(usize, usize, TypedArray, [usize; 3])> =
@@ -108,7 +115,24 @@ impl GeoTiffSource {
             (1, TypedArray::UInt8(_)) => {
                 let mut buf = vec![0u8; (width * height) as usize];
                 stitch_tiles_u8(&decoded_tiles, &mut buf, width, height, tile_width, tile_height, 1);
-                (buf, RasterFormat::R8)
+                let nodata_u8 = nodata_f64.map(|v| v as u8);
+                let (min_val, max_val) = min_max_u8(&buf, nodata_u8);
+                if nodata_u8.is_some() {
+                    let nd = nodata_u8.unwrap();
+                    let mut rgba = Vec::with_capacity(buf.len() * 4);
+                    for &v in &buf {
+                        if v == nd {
+                            rgba.extend_from_slice(&[0, 0, 0, 0]);
+                        } else {
+                            let n = normalize_u8(v, min_val, max_val);
+                            rgba.extend_from_slice(&[n, n, n, 255]);
+                        }
+                    }
+                    (rgba, RasterFormat::Rgba8)
+                } else {
+                    let data: Vec<u8> = buf.iter().map(|&v| normalize_u8(v, min_val, max_val)).collect();
+                    (data, RasterFormat::R8)
+                }
             }
             (1, TypedArray::UInt16(_)) => {
                 let mut buf16 = vec![0u16; (width * height) as usize];
@@ -121,23 +145,45 @@ impl GeoTiffSource {
                     tile_height,
                     1,
                 );
-                let data: Vec<u8> = buf16.iter().map(|v| (v >> 8) as u8).collect();
-                (data, RasterFormat::R8)
+                let nodata_u16 = nodata_f64.map(|v| v as u16);
+                let (min_val, max_val) = min_max_u16(&buf16, nodata_u16);
+                if nodata_u16.is_some() {
+                    let nd = nodata_u16.unwrap();
+                    let mut rgba = Vec::with_capacity(buf16.len() * 4);
+                    for &v in &buf16 {
+                        if v == nd {
+                            rgba.extend_from_slice(&[0, 0, 0, 0]);
+                        } else {
+                            let n = normalize_u16(v, min_val, max_val);
+                            rgba.extend_from_slice(&[n, n, n, 255]);
+                        }
+                    }
+                    (rgba, RasterFormat::Rgba8)
+                } else {
+                    let data: Vec<u8> = buf16.iter().map(|&v| normalize_u16(v, min_val, max_val)).collect();
+                    (data, RasterFormat::R8)
+                }
             }
             (3, TypedArray::UInt8(_)) => {
                 let mut buf = vec![0u8; (width * height) as usize * 3];
                 stitch_tiles_u8(&decoded_tiles, &mut buf, width, height, tile_width, tile_height, 3);
                 let pixel_count = (width * height) as usize;
+                let nodata_u8 = nodata_f64.map(|v| v as u8);
                 let mut rgba = Vec::with_capacity(pixel_count * 4);
                 for i in 0..pixel_count {
                     let base = i * 3;
                     if let (Some(&r), Some(&g), Some(&b)) =
                         (buf.get(base), buf.get(base + 1), buf.get(base + 2))
                     {
+                        let alpha = if nodata_u8.is_some_and(|nd| r == nd && g == nd && b == nd) {
+                            0
+                        } else {
+                            255
+                        };
                         rgba.push(r);
                         rgba.push(g);
                         rgba.push(b);
-                        rgba.push(255);
+                        rgba.push(alpha);
                     }
                 }
                 (rgba, RasterFormat::Rgba8)
@@ -159,13 +205,23 @@ impl GeoTiffSource {
                     3,
                 );
                 let pixel_count = (width * height) as usize;
+                let nodata_u16 = nodata_f64.map(|v| v as u16);
+                let (min_val, max_val) = min_max_u16(&buf16, nodata_u16);
                 let mut rgba = Vec::with_capacity(pixel_count * 4);
                 for i in 0..pixel_count {
                     let base = i * 3;
-                    rgba.push((buf16[base] >> 8) as u8);
-                    rgba.push((buf16[base + 1] >> 8) as u8);
-                    rgba.push((buf16[base + 2] >> 8) as u8);
-                    rgba.push(255);
+                    let r = buf16[base];
+                    let g = buf16[base + 1];
+                    let b = buf16[base + 2];
+                    let alpha = if nodata_u16.is_some_and(|nd| r == nd && g == nd && b == nd) {
+                        0
+                    } else {
+                        255
+                    };
+                    rgba.push(normalize_u16(r, min_val, max_val));
+                    rgba.push(normalize_u16(g, min_val, max_val));
+                    rgba.push(normalize_u16(b, min_val, max_val));
+                    rgba.push(alpha);
                 }
                 (rgba, RasterFormat::Rgba8)
             }
@@ -182,7 +238,10 @@ impl GeoTiffSource {
                     samples_per_pixel.into(),
                 );
                 let pixel_count = (width * height) as usize;
-                let data: Vec<u8> = (0..pixel_count).map(|i| buf[i * spp]).collect();
+                let first_chan: Vec<u8> = (0..pixel_count).map(|i| buf[i * spp]).collect();
+                let nodata_u8 = nodata_f64.map(|v| v as u8);
+                let (min_val, max_val) = min_max_u8(&first_chan, nodata_u8);
+                let data: Vec<u8> = first_chan.iter().map(|&v| normalize_u8(v, min_val, max_val)).collect();
                 (data, RasterFormat::R8)
             }
             (_, TypedArray::UInt16(_)) => {
@@ -198,8 +257,10 @@ impl GeoTiffSource {
                     samples_per_pixel.into(),
                 );
                 let pixel_count = (width * height) as usize;
-                let data: Vec<u8> =
-                    (0..pixel_count).map(|i| (buf16[i * spp] >> 8) as u8).collect();
+                let first_chan: Vec<u16> = (0..pixel_count).map(|i| buf16[i * spp]).collect();
+                let nodata_u16 = nodata_f64.map(|v| v as u16);
+                let (min_val, max_val) = min_max_u16(&first_chan, nodata_u16);
+                let data: Vec<u8> = first_chan.iter().map(|&v| normalize_u16(v, min_val, max_val)).collect();
                 (data, RasterFormat::R8)
             }
             _ => return Err(Error::UnsupportedColorType),
@@ -211,6 +272,7 @@ impl GeoTiffSource {
             data,
             format,
             extent,
+            epsg_code,
         })
     }
 }
@@ -243,6 +305,57 @@ fn planar_to_chunky(data: TypedArray, bands: usize, height: usize, width: usize)
             TypedArray::UInt16(chunky)
         }
         other => other,
+    }
+}
+
+fn normalize_u8(val: u8, min: u8, max: u8) -> u8 {
+    if min == 0 && max == 255 {
+        return val;
+    }
+    if min >= max {
+        return val;
+    }
+    ((val.saturating_sub(min) as u16 * 255) / (max - min) as u16) as u8
+}
+
+fn normalize_u16(val: u16, min: u16, max: u16) -> u8 {
+    if min >= max {
+        return (val >> 8) as u8;
+    }
+    ((val.saturating_sub(min) as u32 * 255) / (max - min) as u32) as u8
+}
+
+fn min_max_u8(data: &[u8], nodata: Option<u8>) -> (u8, u8) {
+    let mut min = u8::MAX;
+    let mut max = u8::MIN;
+    for &v in data {
+        if nodata.is_some_and(|nd| v == nd) {
+            continue;
+        }
+        min = min.min(v);
+        max = max.max(v);
+    }
+    if min > max {
+        (0, 255)
+    } else {
+        (min, max)
+    }
+}
+
+fn min_max_u16(data: &[u16], nodata: Option<u16>) -> (u16, u16) {
+    let mut min = u16::MAX;
+    let mut max = u16::MIN;
+    for &v in data {
+        if nodata.is_some_and(|nd| v == nd) {
+            continue;
+        }
+        min = min.min(v);
+        max = max.max(v);
+    }
+    if min > max {
+        (0, 65535)
+    } else {
+        (min, max)
     }
 }
 

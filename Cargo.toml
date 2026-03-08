@@ -1,22 +1,17 @@
 [workspace]
 members = [
     "geo-features",
+    "geo-fix-antimeridian",
     "geo-geom-type",
     "geo-projected",
     "geo-raster",
     "rgis-camera",
     "rgis-cli",
     "rgis-file-loader",
-    "rgis-ui-events",
-    "rgis-camera-events",
-    "rgis-layer-events",
-    "rgis-map-events",
-    "rgis-file-loader-events",
-    "rgis-crs-events",
-    "rgis-renderer-events",
+    "rgis-ui-messages",
+    "rgis-events",
     "rgis-geo-ops",
     "rgis-grid",
-    "rgis-keyboard",
     "rgis-layers",
     "rgis-library",
     "rgis-mouse",
@@ -27,7 +22,6 @@ members = [
     "rgis",
     "rgis-crs",
     "rgis-primitives",
-    "rgis-geodesy",
     "bevy_egui_window",
 ]
 resolver = "2"
@@ -47,6 +41,7 @@ publish = false
 
 [workspace.dependencies]
 bevy = { version = "0.18", default-features = false, features = [
+    "bevy_state",
     "bevy_winit",
     "bevy_core_pipeline",
     "bevy_gizmos",
@@ -59,7 +54,7 @@ bevy = { version = "0.18", default-features = false, features = [
     "wayland",
     "png",
 ] }
-bevy_egui = "0.39"
+bevy_egui = { git = "https://github.com/frewsxcv/bevy_egui", branch = "integrate-egui-wgpu" }
 bevy_jobs = { git = "https://github.com/frewsxcv/bevy_jobs", rev = "7b412d4ea7f0b7ed65ed7c4e3c8145d59c0df03e" }
 bevy_jobs_fetch = { git = "https://github.com/frewsxcv/bevy_jobs", rev = "7b412d4ea7f0b7ed65ed7c4e3c8145d59c0df03e" }
 bevy_log = "0.18"
@@ -73,16 +68,18 @@ clap = { version = "4", default-features = false, features = [
     "wrap_help",
 ] }
 colorous = "1"
-crs-definitions = "0.3"
+crs-definitions = "0.4"
 dark-light = "2.0"
 egui_plot = "0.34"
 geo = "0.32"
 geo-bevy = "10"
-geo-geodesy = "6"
-geodesy = "0.14"
+geo-geodesy = "7"
+geodesy = "0.15"
 geozero = { git = "https://github.com/georust/geozero.git", branch = "main" }
 num-t = "5"
-rfd = "0.15"
+rfd = "0.17"
+tracing = "0.1"
+tracing-subscriber = "0.3"
 geo-types = "0.7"
 getrandom = { version = "0.2", features = ["js"] }
 async-tiff = { git = "https://github.com/developmentseed/async-tiff", default-features = false, features = ["lzma"] }
@@ -92,10 +89,7 @@ wasm-bindgen = "0.2"
 
 [profile.release]
 debug = true
-# https://github.com/rustwasm/wasm-bindgen/issues/4211
 strip = true
 
-# https://github.com/rustwasm/wasm-bindgen/issues/4211
 [patch.crates-io]
-wasm-bindgen = { git = "https://github.com/rustwasm/wasm-bindgen" }
 dbase = { git = "https://github.com/tmontaigu/dbase-rs.git" }       # https://github.com/tmontaigu/dbase-rs/commit/be4372bd28c9de97531b00099872dcb86e16c1ce

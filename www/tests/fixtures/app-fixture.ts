@@ -26,6 +26,16 @@ export class AppPage {
       null,
       { timeout: 10000 },
     );
+
+    // Wait for logo image asset to load and render
+    await this.page.waitForFunction(
+      () => {
+        const rect = (window as any).get_widget_rect?.("Logo");
+        return !!rect;
+      },
+      null,
+      { timeout: 10000 },
+    );
     await this.waitForNextFrame();
   }
 
@@ -52,6 +62,21 @@ export class AppPage {
     await this.clickWidget("Add Layer");
   }
 
+  async closeWindow(title: string) {
+    await this.page.evaluate((t) => (window as any).close_window(t), title);
+    await this.waitForNextFrame();
+  }
+
+  async stabilizeForScreenshot() {
+    await this.page.mouse.move(0, 0);
+    await this.waitForNextFrame();
+  }
+
+  async expectScreenshot(name: string) {
+    await this.stabilizeForScreenshot();
+    await expect(this.page).toHaveScreenshot(name);
+  }
+
   async clickOnCanvas(xFrac: number, yFrac: number) {
     const box = await this.canvasBoundingBox();
     const x = box.x + box.width * xFrac;
@@ -60,7 +85,16 @@ export class AppPage {
     await this.waitForNextFrame();
   }
 
+  async waitForWidget(label: string, timeout = 10000) {
+    await this.page.waitForFunction(
+      (l) => !!(window as any).get_widget_rect?.(l),
+      label,
+      { timeout },
+    );
+  }
+
   async clickWidget(label: string) {
+    await this.waitForWidget(label);
     const rect = await this.page.evaluate(
       (l) => (window as any).get_widget_rect(l),
       label,
@@ -71,7 +105,29 @@ export class AppPage {
       );
     const cx = (rect[0] + rect[2]) / 2;
     const cy = (rect[1] + rect[3]) / 2;
-    await this.page.mouse.click(cx, cy);
+    // Dispatch pointer events directly on the canvas so that winit/bevy_egui
+    // detects the click (Playwright's mouse.click may not produce pointer
+    // events that winit recognises on all platforms).
+    await this.page.evaluate(
+      ({ x, y }) => {
+        const canvas = document.querySelector("canvas")!;
+        const opts = {
+          clientX: x,
+          clientY: y,
+          bubbles: true,
+          cancelable: true,
+          pointerId: 1,
+          pointerType: "mouse" as const,
+          button: 0,
+          buttons: 1,
+        };
+        canvas.dispatchEvent(new PointerEvent("pointerdown", opts));
+        canvas.dispatchEvent(
+          new PointerEvent("pointerup", { ...opts, buttons: 0 }),
+        );
+      },
+      { x: cx, y: cy },
+    );
     await this.waitForNextFrame();
   }
 
@@ -81,6 +137,20 @@ export class AppPage {
     );
   }
 
+
+  async loadGeoTIFFFile(filePath: string) {
+    await this.openAddLayerWindow();
+    await this.clickWidget("File");
+    await this.clickWidget("GeoTIFF");
+    const fileChooserPromise = this.page.waitForEvent("filechooser");
+    await this.clickWidget("Select file");
+    const fileChooser = await fileChooserPromise;
+    await fileChooser.setFiles(filePath);
+    await this.waitForNextFrame();
+    const countBefore = await this.getRenderedLayerCount();
+    await this.clickWidget("Add layer");
+    await this.waitForLayerRender(countBefore);
+  }
 
   async getRenderedLayerCount(): Promise<number> {
     return await this.page.evaluate(
@@ -99,6 +169,25 @@ export class AppPage {
       baseline,
       { timeout: 30000 },
     );
+    await this.waitForNextFrame();
+  }
+
+  async addLibraryLayer(folder: string, entry: string) {
+    await this.openAddLayerWindow();
+    await this.clickWidget("Library");
+    await this.clickWidget(folder);
+    const countBefore = await this.getRenderedLayerCount();
+    await this.clickWidget(`Add:${entry}`);
+    await this.waitForLayerRender(countBefore);
+  }
+
+  async setFirstLayerFillColor(r: number, g: number, b: number, a: number) {
+    await this.page.evaluate(
+      ({ r, g, b, a }) =>
+        (window as any).set_first_layer_fill_color(r, g, b, a),
+      { r, g, b, a },
+    );
+    await this.waitForNextFrame();
     await this.waitForNextFrame();
   }
 

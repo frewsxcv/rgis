@@ -1,30 +1,45 @@
 use bevy::{ecs::system::SystemParam, prelude::*};
 use bevy_egui::egui::{self, Align, Layout, Widget};
-use rgis_camera_events::CenterCameraEvent;
-use rgis_layer_events::{
-    CreateLayerEvent, DeleteLayerEvent, MoveDirection, MoveLayerEvent,
-    ToggleLayerVisibilityEvent,
+use rgis_events::CenterCameraMessage;
+use rgis_events::{
+    CreateLayerMessage, DeleteLayerMessage, MoveDirection, MoveLayerMessage,
+    ToggleLayerVisibilityMessage,
 };
-use rgis_ui_events::{ShowAddLayerWindow, ShowManageLayerWindowEvent};
+use rgis_ui_messages::{ShowAddLayerWindowMessage, ShowAttributeTableMessage, ShowManageLayerWindowMessage};
 use std::marker;
 
 // const MAX_SIDE_PANEL_WIDTH: f32 = 200.0f32;
 
 #[derive(SystemParam)]
 pub struct Events<'w> {
-    pub toggle_layer_visibility_event_writer: MessageWriter<'w, ToggleLayerVisibilityEvent>,
-    pub center_layer_event_writer: MessageWriter<'w, CenterCameraEvent>,
-    pub delete_layer_event_writer: MessageWriter<'w, DeleteLayerEvent>,
-    pub move_layer_event_writer: MessageWriter<'w, MoveLayerEvent>,
-    pub create_layer_event_writer: MessageWriter<'w, CreateLayerEvent>,
-    pub show_add_layer_window_event_writer: MessageWriter<'w, ShowAddLayerWindow>,
-    pub show_manage_layer_window_event_writer: MessageWriter<'w, ShowManageLayerWindowEvent>,
-    pub perform_operation_event_writer: MessageWriter<'w, rgis_ui_events::PerformOperationEvent>,
+    pub toggle_layer_visibility_event_writer: MessageWriter<'w, ToggleLayerVisibilityMessage>,
+    pub center_layer_event_writer: MessageWriter<'w, CenterCameraMessage>,
+    pub delete_layer_event_writer: MessageWriter<'w, DeleteLayerMessage>,
+    pub move_layer_event_writer: MessageWriter<'w, MoveLayerMessage>,
+    pub create_layer_event_writer: MessageWriter<'w, CreateLayerMessage>,
+    pub show_add_layer_window_event_writer: MessageWriter<'w, ShowAddLayerWindowMessage>,
+    pub show_manage_layer_window_event_writer: MessageWriter<'w, ShowManageLayerWindowMessage>,
+    pub show_attribute_table_event_writer: MessageWriter<'w, ShowAttributeTableMessage>,
+    pub perform_operation_event_writer: MessageWriter<'w, rgis_ui_messages::PerformOperationMessage>,
+    pub download_layer_event_writer: MessageWriter<'w, rgis_events::DownloadLayerMessage>,
+}
+
+/// Snapshot of a single layer's data for UI rendering (avoids Query lifetime issues).
+pub struct LayerSnapshot {
+    pub layer_id: rgis_primitives::LayerId,
+    pub name: String,
+    pub visible: bool,
+    pub color: rgis_layers::LayerColor,
+    pub is_vector: bool,
+    pub is_active: bool,
+    pub geom_type: Option<geo_geom_type::GeomType>,
+    pub crs: rgis_layers::LayerCrs,
+    pub unprojected_fc: Option<std::sync::Arc<geo_features::FeatureCollection<geo_projected::UnprojectedScalar>>>,
 }
 
 pub struct Side<'a, 'w> {
     pub egui_ctx: &'a egui::Context,
-    pub layers: &'a rgis_layers::Layers,
+    pub snapshots: Vec<LayerSnapshot>,
     pub events: &'a mut Events<'w>,
     pub side_panel_width: &'a mut rgis_units::SidePanelWidth,
 }
@@ -57,11 +72,21 @@ impl Side<'_, '_> {
     }
 
     fn render_layers(&mut self, ui: &mut egui::Ui) {
-        for (i, layer) in self.layers.iter_top_to_bottom().enumerate() {
+        let count = self.snapshots.len();
+        for i in 0..count {
+            let snap = &self.snapshots[i];
             ui.add(Layer {
-                is_move_down_enabled: i < self.layers.count() - 1,
+                is_move_down_enabled: i < count - 1,
                 is_move_up_enabled: i > 0,
-                layer,
+                layer_id: snap.layer_id,
+                name: &snap.name,
+                visible: snap.visible,
+                color: &snap.color,
+                is_vector: snap.is_vector,
+                is_active: snap.is_active,
+                geom_type: snap.geom_type,
+                crs: &snap.crs,
+                unprojected_fc: snap.unprojected_fc.as_deref(),
                 events: self.events,
             });
         }
@@ -70,15 +95,21 @@ impl Side<'_, '_> {
 
 pub(crate) struct OperationButton<'a, 'w, Op: rgis_geo_ops::OperationEntry> {
     events: &'a mut Events<'w>,
-    layer: &'a rgis_layers::Layer,
+    layer_id: rgis_primitives::LayerId,
+    geom_type: Option<geo_geom_type::GeomType>,
     operation: marker::PhantomData<Op>,
 }
 
 impl<'a, 'w, Op: rgis_geo_ops::OperationEntry> OperationButton<'a, 'w, Op> {
-    pub(crate) fn new(events: &'a mut Events<'w>, layer: &'a rgis_layers::Layer) -> Self {
+    pub(crate) fn new(
+        events: &'a mut Events<'w>,
+        layer_id: rgis_primitives::LayerId,
+        geom_type: Option<geo_geom_type::GeomType>,
+    ) -> Self {
         OperationButton {
             events,
-            layer,
+            layer_id,
+            geom_type,
             operation: Default::default(),
         }
     }
@@ -87,8 +118,7 @@ impl<'a, 'w, Op: rgis_geo_ops::OperationEntry> OperationButton<'a, 'w, Op> {
 impl<Op: rgis_geo_ops::OperationEntry> egui::Widget for OperationButton<'_, '_, Op> {
     fn ui(self, ui: &mut egui::Ui) -> egui::Response {
         let enabled = self
-            .layer
-            .geom_type()
+            .geom_type
             .map(|gt| Op::ALLOWED_GEOM_TYPES.contains(gt))
             .unwrap_or(false);
         let button = ui.add_enabled(
@@ -97,9 +127,9 @@ impl<Op: rgis_geo_ops::OperationEntry> egui::Widget for OperationButton<'_, '_, 
         );
         if button.clicked() {
             self.events.perform_operation_event_writer.write(
-                rgis_ui_events::PerformOperationEvent {
+                rgis_ui_messages::PerformOperationMessage {
                     operation: Box::new(Op::build()),
-                    layer_id: self.layer.id,
+                    layer_id: self.layer_id,
                 },
             );
         }
@@ -108,17 +138,25 @@ impl<Op: rgis_geo_ops::OperationEntry> egui::Widget for OperationButton<'_, '_, 
 }
 
 struct Layer<'a, 'w> {
-    layer: &'a rgis_layers::Layer,
+    layer_id: rgis_primitives::LayerId,
+    name: &'a str,
+    visible: bool,
+    color: &'a rgis_layers::LayerColor,
+    is_vector: bool,
+    is_active: bool,
+    geom_type: Option<geo_geom_type::GeomType>,
+    crs: &'a rgis_layers::LayerCrs,
+    unprojected_fc: Option<&'a geo_features::FeatureCollection<geo_projected::UnprojectedScalar>>,
     is_move_up_enabled: bool,
     is_move_down_enabled: bool,
     events: &'a mut Events<'w>,
 }
 
 impl Layer<'_, '_> {
-    fn delete_layer(&mut self, layer: &rgis_layers::Layer) {
+    fn delete_layer(&mut self) {
         self.events
             .delete_layer_event_writer
-            .write(DeleteLayerEvent(layer.id));
+            .write(DeleteLayerMessage(self.layer_id));
     }
 }
 
@@ -133,40 +171,37 @@ fn bevy_color_to_egui_color(color: Color) -> egui::Color32 {
 
 impl Widget for Layer<'_, '_> {
     fn ui(mut self, ui: &mut egui::Ui) -> egui::Response {
-        let Layer {
-            layer,
-            is_move_up_enabled,
-            is_move_down_enabled,
-            events: _,
-        } = self;
+        let layer_id = self.layer_id;
+        let is_move_up_enabled = self.is_move_up_enabled;
+        let is_move_down_enabled = self.is_move_down_enabled;
 
-        let header_text = if layer.is_active() {
-            layer.name.clone()
+        let header_text = if self.is_active {
+            self.name.to_string()
         } else {
-            format!("{} (loading...)", layer.name)
+            format!("{} (loading...)", self.name)
         };
 
         let response = egui::CollapsingHeader::new(&header_text)
-            .id_salt(format!("{:?}", layer.id))
+            .id_salt(format!("{:?}", layer_id))
             .show(ui, |ui| {
                 // Visibility toggle
-                let mut visible = layer.visible;
-                let visibility_checkbox = ui.checkbox(&mut visible, "Visible");
+                let mut vis = self.visible;
+                let visibility_checkbox = ui.checkbox(&mut vis, "Visible");
                 crate::widget_registry::register("Toggle Visibility", visibility_checkbox.rect);
                 if visibility_checkbox.changed() {
                     self.events
                         .toggle_layer_visibility_event_writer
-                        .write(ToggleLayerVisibilityEvent(layer.id));
+                        .write(ToggleLayerVisibilityMessage(layer_id));
                 }
 
                 // Color swatch with label
-                let swatch_color = layer.color.fill.unwrap_or(layer.color.stroke);
+                let swatch_color = self.color.fill.unwrap_or(self.color.stroke);
                 let egui_color = bevy_color_to_egui_color(swatch_color);
                 ui.horizontal(|ui| {
                     let (rect, _) =
                         ui.allocate_exact_size(egui::Vec2::splat(12.0), egui::Sense::hover());
                     ui.painter().rect_filled(rect, 2.0, egui_color);
-                    if let Some(geom_type) = layer.geom_type() {
+                    if let Some(geom_type) = self.geom_type {
                         ui.label(format!("Type: {}", geom_type));
                     } else {
                         ui.label("Type: Raster");
@@ -180,7 +215,17 @@ impl Widget for Layer<'_, '_> {
                 if manage_btn.clicked() {
                     self.events
                         .show_manage_layer_window_event_writer
-                        .write(ShowManageLayerWindowEvent(layer.id));
+                        .write(ShowManageLayerWindowMessage(layer_id));
+                }
+
+                if self.is_vector {
+                    let attr_btn = ui.button("Attribute Table");
+                    crate::widget_registry::register("Attribute Table", attr_btn.rect);
+                    if attr_btn.clicked() {
+                        self.events
+                            .show_attribute_table_event_writer
+                            .write(ShowAttributeTableMessage(layer_id));
+                    }
                 }
 
                 let zoom_btn = ui.button("Zoom to Extent");
@@ -188,7 +233,7 @@ impl Widget for Layer<'_, '_> {
                 if zoom_btn.clicked() {
                     self.events
                         .center_layer_event_writer
-                        .write(CenterCameraEvent(layer.id));
+                        .write(CenterCameraMessage(layer_id));
                 }
 
                 ui.separator();
@@ -200,7 +245,7 @@ impl Widget for Layer<'_, '_> {
                     {
                         self.events
                             .move_layer_event_writer
-                            .write(MoveLayerEvent(layer.id, MoveDirection::Up));
+                            .write(MoveLayerMessage(layer_id, MoveDirection::Up));
                     }
 
                     if ui
@@ -209,19 +254,22 @@ impl Widget for Layer<'_, '_> {
                     {
                         self.events
                             .move_layer_event_writer
-                            .write(MoveLayerEvent(layer.id, MoveDirection::Down));
+                            .write(MoveLayerMessage(layer_id, MoveDirection::Down));
                     }
                 });
 
                 ui.separator();
 
-                if layer.is_vector() {
+                if self.is_vector {
                     let ops_header = egui::CollapsingHeader::new("Operations")
-                        .id_salt(format!("{:?}-operations", layer.id))
+                        .id_salt(format!("{:?}-operations", layer_id))
                         .show(ui, |ui| {
                             ui.with_layout(Layout::top_down_justified(Align::LEFT), |ui| {
                                 ui.add(crate::widgets::operations::Operations {
-                                    layer,
+                                    layer_id,
+                                    geom_type: self.geom_type,
+                                    crs: self.crs,
+                                    unprojected_fc: self.unprojected_fc,
                                     events: self.events,
                                 });
                             });
@@ -229,16 +277,37 @@ impl Widget for Layer<'_, '_> {
                     crate::widget_registry::register("Operations", ops_header.header_response.rect);
                 }
 
+                if self.is_vector {
+                    ui.menu_button("Download As...", |ui| {
+                        for format in [
+                            rgis_primitives::ExportFormat::GeoJson,
+                            rgis_primitives::ExportFormat::Wkt,
+                        ] {
+                            let btn = ui.button(format.label());
+                            crate::widget_registry::register(format.label(), btn.rect);
+                            if btn.clicked() {
+                                self.events
+                                    .download_layer_event_writer
+                                    .write(rgis_events::DownloadLayerMessage {
+                                        layer_id: self.layer_id,
+                                        format,
+                                    });
+                                ui.close();
+                            }
+                        }
+                    });
+                }
+
                 ui.separator();
 
                 let remove_btn = ui.button("Remove");
                 crate::widget_registry::register("Remove", remove_btn.rect);
                 if remove_btn.clicked() {
-                    self.delete_layer(layer);
+                    self.delete_layer();
                 }
             });
 
-        crate::widget_registry::register(&layer.name, response.header_response.rect);
+        crate::widget_registry::register(self.name, response.header_response.rect);
         response.header_response
     }
 }

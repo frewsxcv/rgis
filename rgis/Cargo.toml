@@ -14,24 +14,17 @@ crate-type = ["cdylib", "rlib"]
 bevy_jobs = { workspace = true }
 geo = { workspace = true }
 rgis-camera = { path = "../rgis-camera" }
-rgis-camera-events = { path = "../rgis-camera-events" }
 rgis-crs = { path = "../rgis-crs" }
-rgis-crs-events = { path = "../rgis-crs-events" }
+rgis-events = { path = "../rgis-events" }
 rgis-file-loader = { path = "../rgis-file-loader" }
-rgis-file-loader-events = { path = "../rgis-file-loader-events" }
-rgis-geodesy = { path = "../rgis-geodesy" }
 rgis-grid = { path = "../rgis-grid" }
-rgis-keyboard = { path = "../rgis-keyboard" }
-rgis-layer-events = { path = "../rgis-layer-events" }
 rgis-layers = { path = "../rgis-layers" }
-rgis-map-events = { path = "../rgis-map-events" }
 rgis-mouse = { path = "../rgis-mouse" }
 rgis-renderer = { path = "../rgis-renderer" }
-rgis-renderer-events = { path = "../rgis-renderer-events" }
 rgis-settings = { path = "../rgis-settings" }
 rgis-transform = { path = "../rgis-transform" }
 rgis-ui = { path = "../rgis-ui" }
-rgis-ui-events = { path = "../rgis-ui-events" }
+rgis-ui-messages = { path = "../rgis-ui-messages" }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 rgis-cli = { path = "../rgis-cli" }

@@ -1,32 +1,73 @@
-use std::{num, sync};
-
-// The starting value is `1` so we can utilize `NonZeroU16`.
-static NEXT_ID: sync::atomic::AtomicU16 = sync::atomic::AtomicU16::new(1);
+use std::num;
+use std::sync::atomic::{AtomicU16, Ordering};
 
 #[derive(
     Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Hash, bevy::ecs::component::Component,
 )]
 pub struct LayerId(num::NonZeroU16);
 
-impl Default for LayerId {
-    fn default() -> Self {
-        Self::new()
-    }
-}
+static NEXT_LAYER_ID: AtomicU16 = AtomicU16::new(1);
 
 impl LayerId {
+    /// Creates a new unique `LayerId`.
     pub fn new() -> Self {
-        LayerId(new_id())
+        let value = NEXT_LAYER_ID.fetch_add(1, Ordering::Relaxed);
+        LayerId(
+            num::NonZeroU16::new(value).expect("LayerId overflow"),
+        )
+    }
+
+    /// Creates a `LayerId` from a `u16` value.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `value` is 0.
+    pub fn from_u16(value: u16) -> Self {
+        LayerId(
+            num::NonZeroU16::new(value).expect("LayerId value must be non-zero"),
+        )
     }
 }
 
-fn new_id() -> num::NonZeroU16 {
-    // Unsafety: The starting ID is 1 and we always increment.
-    unsafe { num::NonZeroU16::new_unchecked(NEXT_ID.fetch_add(1, sync::atomic::Ordering::SeqCst)) }
+#[derive(Debug, Clone, Copy)]
+pub enum ExportFormat {
+    GeoJson,
+    Wkt,
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+impl ExportFormat {
+    pub fn extension(self) -> &'static str {
+        match self {
+            ExportFormat::GeoJson => "geojson",
+            ExportFormat::Wkt => "wkt",
+        }
+    }
+
+    pub fn label(self) -> &'static str {
+        match self {
+            ExportFormat::GeoJson => "GeoJSON",
+            ExportFormat::Wkt => "WKT",
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Crs {
-    pub epsg_code: u16,
+    pub epsg_code: Option<u16>,
+    pub proj_string: Option<String>,
     pub op_handle: geodesy::ctx::OpHandle,
+}
+
+impl Crs {
+    pub fn is_geographic(&self) -> bool {
+        if let Some(code) = self.epsg_code {
+            crs_definitions::from_code(code)
+                .map(|def| def.proj4.contains("+proj=longlat"))
+                .unwrap_or(true)
+        } else if let Some(ref proj) = self.proj_string {
+            proj.contains("+proj=longlat")
+        } else {
+            true
+        }
+    }
 }

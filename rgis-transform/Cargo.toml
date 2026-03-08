@@ -11,13 +11,13 @@ bevy = { workspace = true }
 geo-features = { path = "../geo-features" }
 geo-projected = { path = "../geo-projected" }
 geo = { workspace = true }
-rgis-layer-events = { path = "../rgis-layer-events" }
-rgis-crs-events = { path = "../rgis-crs-events" }
+rgis-events = { path = "../rgis-events" }
 rgis-primitives = { path = "../rgis-primitives" }
 rgis-layers = { path = "../rgis-layers" }
 rgis-settings = { path = "../rgis-settings" }
 bevy_jobs = { workspace = true }
+crs-definitions = { workspace = true }
 geo-geodesy = { workspace = true }
+geodesy = { workspace = true }
 num-t = { workspace = true }
 rgis-crs = { path = "../rgis-crs" }
-rgis-geodesy = { path = "../rgis-geodesy" }

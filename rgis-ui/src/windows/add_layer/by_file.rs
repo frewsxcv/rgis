@@ -7,7 +7,7 @@ use super::{file::SelectedFile, AddLayerOutput, State};
 pub struct ByFile<'a> {
     pub selected_file: &'a mut SelectedFile,
     pub state: &'a mut State,
-    pub geodesy_ctx: &'a rgis_geodesy::GeodesyContext,
+    pub geodesy_ctx: &'a rgis_crs::GeodesyContext,
 }
 
 impl<'a> ByFile<'a> {
@@ -79,6 +79,8 @@ impl<'a> ByFile<'a> {
             self.geodesy_ctx,
             &mut self.state.crs_input_outcome,
             &mut self.state.crs_input,
+            &mut self.state.crs_input_mode,
+            false,
         ));
 
         ui.separator();
@@ -88,27 +90,21 @@ impl<'a> ByFile<'a> {
         if add_layer_button.clicked() {
             match self.selected_file.0.take() {
                 Some(loaded_file) => {
+                    let outcome = self
+                        .state
+                        .crs_input_outcome
+                        .as_ref()
+                        .unwrap()
+                        .as_ref()
+                        .unwrap();
                     output = Some(AddLayerOutput::LoadFromFile {
                         file_name: loaded_file.file_name,
                         file_format: selected_format,
                         bytes: loaded_file.bytes,
                         source_crs: rgis_primitives::Crs {
-                            epsg_code: self
-                                .state
-                                .crs_input_outcome
-                                .as_ref()
-                                .unwrap()
-                                .as_ref()
-                                .unwrap()
-                                .1,
-                            op_handle: self
-                                .state
-                                .crs_input_outcome
-                                .as_ref()
-                                .unwrap()
-                                .as_ref()
-                                .unwrap()
-                                .0,
+                            epsg_code: outcome.1,
+                            proj_string: outcome.2.clone(),
+                            op_handle: outcome.0,
                         },
                     });
                 }
