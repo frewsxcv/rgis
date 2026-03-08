@@ -64,6 +64,25 @@ struct Fill;
 #[derive(Copy, Clone, Component)]
 struct Stroke;
 
+/// Tracks a fade-in animation. Entities with this component will have their
+/// alpha interpolated from 0 to their target alpha over `duration` seconds.
+#[derive(Component)]
+struct FadeIn {
+    elapsed: f32,
+    duration: f32,
+    target_alpha: f32,
+}
+
+/// Marks an entity for fade-out and despawn. Alpha interpolates from current
+/// value to 0, then the entity is despawned.
+#[derive(Component)]
+struct FadeOut {
+    elapsed: f32,
+    duration: f32,
+}
+
+const FADE_DURATION: f32 = 0.4;
+
 fn spawn_raster(
     raster: &geo_raster::Raster,
     grid: &rgis_layers::ProjectedRasterGrid,
@@ -164,7 +183,9 @@ fn spawn_raster(
     };
 
     let material = materials.add(ColorMaterial {
+        color: Color::srgba(1.0, 1.0, 1.0, 0.0),
         texture: Some(image_handle),
+        alpha_mode: bevy::sprite_render::AlphaMode2d::Blend,
         ..Default::default()
     });
 
@@ -175,6 +196,11 @@ fn spawn_raster(
         visibility,
         layer.id,
         RenderEntityType::Raster,
+        FadeIn {
+            elapsed: 0.0,
+            duration: FADE_DURATION,
+            target_alpha: 1.0,
+        },
     ));
 }
 
@@ -394,13 +420,25 @@ fn spawn_helper<'a>(
     entity_type: RenderEntityType,
     is_fill: bool,
 ) -> bevy::ecs::system::EntityCommands<'a> {
-    let material = materials.add(color);
+    let target_alpha = color.alpha();
+    let mut faded_color = color;
+    faded_color.set_alpha(0.0);
+    let material = materials.add(ColorMaterial {
+        color: faded_color,
+        alpha_mode: bevy::sprite_render::AlphaMode2d::Blend,
+        ..Default::default()
+    });
     let z_index = ZIndex::calculate(layer_index, entity_type);
     let mut entity_commands = commands.spawn((
         Mesh2d(assets_meshes.add(mesh)),
         Transform::from_xyz(0., 0., z_index.0 as f32),
         MeshMaterial2d(material),
         entity_type,
+        FadeIn {
+            elapsed: 0.0,
+            duration: FADE_DURATION,
+            target_alpha,
+        },
     ));
     if is_fill {
         entity_commands.insert(Fill);
@@ -421,12 +459,15 @@ fn spawn_point_sprites(
     is_fill: bool,
     layer: &rgis_layers::Layer,
 ) {
+    let target_alpha = color.alpha();
+    let mut faded_color = color;
+    faded_color.set_alpha(0.0);
     for coord in points {
         let z_index = ZIndex::calculate(layer_index, entity_type);
         let transform = Transform::from_xyz(coord.x, coord.y, z_index.0 as f32);
         let mut entity_commands = commands.spawn((
             Sprite {
-                color,
+                color: faded_color,
                 image: circle.clone(),
                 ..Default::default()
             },
@@ -435,6 +476,11 @@ fn spawn_point_sprites(
             layer.id,
             PointSprite {
                 relative_scale: scale,
+            },
+            FadeIn {
+                elapsed: 0.0,
+                duration: FADE_DURATION,
+                target_alpha,
             },
         ));
         if is_fill {

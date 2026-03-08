@@ -199,7 +199,13 @@ fn handle_despawn_meshes_event(
     index: Res<RenderEntityIndex>,
 ) {
     for &entity in index.get(event.0) {
-        commands.entity(entity).despawn();
+        commands
+            .entity(entity)
+            .remove::<crate::FadeIn>()
+            .insert(crate::FadeOut {
+                elapsed: 0.0,
+                duration: crate::FADE_DURATION,
+            });
     }
 }
 
@@ -419,7 +425,15 @@ fn handle_feature_selected_event_despawn(
             match entity_type {
                 RenderEntityType::SelectedPolygon
                 | RenderEntityType::SelectedLineString
-                | RenderEntityType::SelectedPoint => commands.entity(entity).despawn(),
+                | RenderEntityType::SelectedPoint => {
+                    commands
+                        .entity(entity)
+                        .remove::<crate::FadeIn>()
+                        .insert(crate::FadeOut {
+                            elapsed: 0.0,
+                            duration: crate::FADE_DURATION,
+                        });
+                }
                 _ => (),
             }
         }
@@ -474,7 +488,78 @@ pub fn configure(app: &mut App) {
     app.add_observer(handle_layer_became_visible_event);
     app.add_observer(handle_despawn_meshes_event);
     app.add_observer(handle_crs_changed_events);
-    app.add_systems(Update, animate_selected_highlight);
+    app.add_systems(
+        Update,
+        (animate_fade_in, animate_fade_out, animate_selected_highlight),
+    );
+}
+
+fn animate_fade_in(
+    time: Res<Time>,
+    mut mesh_query: Query<
+        (Entity, &MeshMaterial2d<ColorMaterial>, &mut crate::FadeIn),
+        Without<Sprite>,
+    >,
+    mut sprite_query: Query<(Entity, &mut Sprite, &mut crate::FadeIn)>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    mut commands: Commands,
+) {
+    let dt = time.delta_secs();
+
+    for (entity, handle, mut fade) in mesh_query.iter_mut() {
+        fade.elapsed += dt;
+        let t = (fade.elapsed / fade.duration).min(1.0);
+        if let Some(mat) = materials.get_mut(&handle.0) {
+            mat.color.set_alpha(t * fade.target_alpha);
+            if t >= 1.0 {
+                mat.alpha_mode = alpha_mode_for_color(mat.color);
+                commands.entity(entity).remove::<crate::FadeIn>();
+            }
+        }
+    }
+
+    for (entity, mut sprite, mut fade) in sprite_query.iter_mut() {
+        fade.elapsed += dt;
+        let t = (fade.elapsed / fade.duration).min(1.0);
+        sprite.color.set_alpha(t * fade.target_alpha);
+        if t >= 1.0 {
+            commands.entity(entity).remove::<crate::FadeIn>();
+        }
+    }
+}
+
+fn animate_fade_out(
+    time: Res<Time>,
+    mut mesh_query: Query<
+        (Entity, &MeshMaterial2d<ColorMaterial>, &mut crate::FadeOut),
+        Without<Sprite>,
+    >,
+    mut sprite_query: Query<(Entity, &mut Sprite, &mut crate::FadeOut)>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    mut commands: Commands,
+) {
+    let dt = time.delta_secs();
+
+    for (entity, handle, mut fade) in mesh_query.iter_mut() {
+        fade.elapsed += dt;
+        let t = (fade.elapsed / fade.duration).min(1.0);
+        if let Some(mat) = materials.get_mut(&handle.0) {
+            mat.color.set_alpha(1.0 - t);
+            mat.alpha_mode = AlphaMode2d::Blend;
+        }
+        if t >= 1.0 {
+            commands.entity(entity).despawn();
+        }
+    }
+
+    for (entity, mut sprite, mut fade) in sprite_query.iter_mut() {
+        fade.elapsed += dt;
+        let t = (fade.elapsed / fade.duration).min(1.0);
+        sprite.color.set_alpha(1.0 - t);
+        if t >= 1.0 {
+            commands.entity(entity).despawn();
+        }
+    }
 }
 
 fn animate_selected_highlight(
