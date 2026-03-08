@@ -1,26 +1,31 @@
 use bevy::prelude::*;
 use bevy_egui::egui;
-use bevy_egui_window as window;
-
 pub struct Top<'a, 'w> {
     pub app_exit_events: &'a mut Messages<AppExit>,
     pub egui_ctx: &'a mut bevy_egui::egui::Context,
     pub window: &'a mut Window,
-    pub app_settings: &'a mut rgis_settings::RgisSettings,
+    pub app_settings: &'a rgis_settings::RgisSettings,
     pub current_tool: &'a rgis_settings::Tool,
     pub next_tool: &'a mut NextState<rgis_settings::Tool>,
     pub top_panel_height: &'a mut rgis_units::TopPanelHeight,
-    pub is_logs_window_open:
-        &'a mut window::IsWindowOpen<crate::windows::logs::Logs<'static>>,
+    pub next_logs_visibility:
+        &'a mut NextState<bevy_egui_window::WindowVisibility<crate::windows::logs::Logs<'static>>>,
     pub show_add_layer_window_event_writer:
         &'a mut MessageWriter<'w, rgis_ui_messages::ShowAddLayerWindowMessage>,
-    pub clear_color: &'a mut ClearColor,
     pub logo_texture_id: Option<egui::TextureId>,
 }
 
+/// Describes settings mutations requested by the top panel UI.
+#[derive(Default)]
+pub struct TopPanelOutput {
+    pub toggle_show_scale: bool,
+    pub toggle_dark_mode: bool,
+}
+
 impl Top<'_, '_> {
-    pub fn render(&mut self) {
+    pub fn render(&mut self) -> TopPanelOutput {
         let current_tool = *self.current_tool;
+        let mut output = TopPanelOutput::default();
         let inner_response = egui::TopBottomPanel::top("top_panel").show(self.egui_ctx, |ui| {
             egui::MenuBar::new().ui(ui, |ui| {
                 let mut new_tool = current_tool;
@@ -58,17 +63,10 @@ impl Top<'_, '_> {
                         ))
                         .clicked()
                     {
-                        self.app_settings.show_scale = !self.app_settings.show_scale;
+                        output.toggle_show_scale = true;
                     }
                     if ui.button("Toggle dark mode").clicked() {
-                        self.app_settings.dark_mode = !self.app_settings.dark_mode;
-                        let visuals = if self.app_settings.dark_mode {
-                            egui::Visuals::dark()
-                        } else {
-                            egui::Visuals::light()
-                        };
-                        self.clear_color.0 = crate::systems::egui_color_to_bevy_color(visuals.extreme_bg_color);
-                        self.egui_ctx.set_visuals(visuals);
+                        output.toggle_dark_mode = true;
                         ui.close();
                     }
                 });
@@ -77,7 +75,9 @@ impl Top<'_, '_> {
                     let logs_btn = ui.button("Logs");
                     crate::widget_registry::register("Logs", logs_btn.rect);
                     if logs_btn.clicked() {
-                        self.is_logs_window_open.0 = true;
+                        self.next_logs_visibility.set(
+                            bevy_egui_window::WindowVisibility::Open,
+                        );
                     }
                     let source_btn = ui.button("Source code");
                     crate::widget_registry::register("Source code", source_btn.rect);
@@ -141,5 +141,6 @@ impl Top<'_, '_> {
         });
 
         self.top_panel_height.0 = inner_response.response.rect.height();
+        output
     }
 }

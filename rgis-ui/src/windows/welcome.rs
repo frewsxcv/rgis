@@ -38,18 +38,21 @@ impl bevy_egui_window::Window for Welcome<'_> {
 pub fn render_welcome_window_system(
     window: Welcome<'_>,
     mut bevy_egui_ctx: bevy_egui::EguiContexts,
-    mut is_window_open: ResMut<bevy_egui_window::IsWindowOpen<Welcome<'static>>>,
+    current_state: Res<State<bevy_egui_window::WindowVisibility<Welcome<'static>>>>,
+    mut next_state: ResMut<NextState<bevy_egui_window::WindowVisibility<Welcome<'static>>>>,
 ) -> Result {
     if crate::widget_registry::take_close_request("Welcome") {
-        is_window_open.0 = false;
+        next_state.set(bevy_egui_window::WindowVisibility::Closed);
         return Ok(());
     }
 
     let ctx = bevy_egui_ctx.ctx_mut()?;
 
+    let mut is_open = *current_state.get() == bevy_egui_window::WindowVisibility::Open;
+
     let response = egui::Window::new(window.title())
         .default_width(window.default_width())
-        .open(&mut is_window_open.0)
+        .open(&mut is_open)
         .resizable(false)
         .anchor(egui::Align2::CENTER_CENTER, [0., 0.])
         .show(ctx, |ui| {
@@ -64,8 +67,12 @@ pub fn render_welcome_window_system(
                     .is_some_and(|pos| !response.response.rect.contains(pos))
         });
         if clicked_outside {
-            is_window_open.0 = false;
+            is_open = false;
         }
+    }
+
+    if !is_open {
+        next_state.set(bevy_egui_window::WindowVisibility::Closed);
     }
 
     Ok(())
