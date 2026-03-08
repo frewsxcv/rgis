@@ -4,6 +4,7 @@ pub mod log_buffer;
 mod panels;
 pub mod save_file;
 mod systems;
+pub mod tiles;
 pub mod widget_registry;
 mod widgets;
 mod windows;
@@ -51,7 +52,9 @@ impl bevy::app::Plugin for Plugin {
             .insert_resource(rgis_units::BottomPanelHeight(0.))
             .insert_resource(rgis_units::SidePanelWidth(0.))
             .insert_resource(ChangeCrsWindowVisible::default())
-            .insert_resource(ClearColor::default());
+            .insert_resource(ClearColor::default())
+            .insert_resource(tiles::TilesTree::default())
+            .insert_resource(rgis_units::MapPaneRect::default());
 
         systems::configure(app);
     }
