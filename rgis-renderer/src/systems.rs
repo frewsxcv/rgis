@@ -637,6 +637,35 @@ fn handle_feature_selected_event_despawn(
     }
 }
 
+fn handle_features_deselected_event(
+    event_reader: MessageReader<rgis_events::FeaturesDeselectedMessage>,
+    mut commands: Commands,
+    query: SelectedFeatureQuery,
+) {
+    if !event_reader.is_empty() {
+        for (entity, entity_type) in query.iter() {
+            match entity_type {
+                RenderEntityType::SelectedPolygon
+                | RenderEntityType::SelectedLineString
+                | RenderEntityType::SelectedPoint => {
+                    if crate::animations_enabled() {
+                        commands
+                            .entity(entity)
+                            .remove::<crate::FadeIn>()
+                            .insert(crate::FadeOut {
+                                elapsed: 0.0,
+                                duration: crate::FADE_DURATION,
+                            });
+                    } else {
+                        commands.entity(entity).despawn();
+                    }
+                }
+                _ => (),
+            }
+        }
+    }
+}
+
 fn handle_feature_selected_event_spawn(
     mut event_reader: MessageReader<rgis_events::FeatureSelectedMessage>,
     id_map: Res<rgis_layers::LayerIdToEntity>,
@@ -682,6 +711,7 @@ pub fn configure(app: &mut App) {
                 handle_feature_selected_event_spawn,
             )
                 .chain(),
+            handle_features_deselected_event,
         )
             .in_set(rgis_primitives::RgisSet::Rendering),
     );
