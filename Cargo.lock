@@ -5594,6 +5594,7 @@ dependencies = [
  "rgis-crs",
  "rgis-events",
  "rgis-file-loader",
+ "rgis-grid",
  "rgis-layers",
  "rgis-mouse",
  "rgis-primitives",
@@ -5684,6 +5685,13 @@ dependencies = [
  "geo-geom-type",
  "geo-projected",
  "num-t",
+]
+
+[[package]]
+name = "rgis-grid"
+version = "0.1.0"
+dependencies = [
+ "bevy",
 ]
 
 [[package]]

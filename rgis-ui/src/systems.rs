@@ -17,14 +17,23 @@ fn render_bottom(
     wgs84_op_handle: Res<rgis_crs::Wgs84OpHandle>,
     mut open_change_crs_window_event_writer: MessageWriter<rgis_ui_messages::OpenChangeCrsWindowMessage>,
     mut bottom_panel_height: ResMut<rgis_units::BottomPanelHeight>,
+    mut cached_latlng: Local<Option<(f64, f64)>>,
 ) -> Result {
+    // Only recompute the coordinate transformation when mouse position or CRS changes
+    if mouse_pos.is_changed() || target_crs.is_changed() {
+        *cached_latlng = crate::panels::bottom::projected_to_latlng(
+            &mouse_pos,
+            &target_crs,
+            &geodesy_ctx,
+            &wgs84_op_handle,
+        );
+    }
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     crate::panels::bottom::Bottom {
         egui_ctx: bevy_egui_ctx_mut,
         mouse_pos: &mouse_pos,
         target_crs: &target_crs,
-        geodesy_ctx: &geodesy_ctx,
-        wgs84_op_handle: &wgs84_op_handle,
+        cached_latlng: *cached_latlng,
         open_change_crs_window_event_writer: &mut open_change_crs_window_event_writer,
         bottom_panel_height: &mut bottom_panel_height,
     }
@@ -775,6 +784,7 @@ fn render_measure_tool(
     target_crs: Res<rgis_crs::TargetCrs>,
     camera_q: Query<&Transform, With<Camera>>,
     windows: Query<&bevy::window::Window, With<PrimaryWindow>>,
+    mut cached_distances: Local<Option<AllDistances>>,
 ) -> Result {
     if *current_tool.get() != rgis_settings::Tool::Measure {
         return Ok(());
@@ -795,16 +805,20 @@ fn render_measure_tool(
     let end_screen_pos =
         project_to_screen(geo::Coord { x: end.x.0, y: end.y.0 }, transform, window);
 
-    let start_coord = geo::Coord {
-        x: start.x.0,
-        y: start.y.0,
-    };
-    let end_coord = geo::Coord {
-        x: end.x.0,
-        y: end.y.0,
-    };
-
-    let all_distances = calculate_all_distances(start_coord, end_coord, &geodesy_ctx, &target_crs);
+    // Only recompute distances when inputs change (avoids per-frame coordinate
+    // transformation and geodesic calculations)
+    if measure_state.is_changed() || mouse_pos.is_changed() || target_crs.is_changed() {
+        let start_coord = geo::Coord {
+            x: start.x.0,
+            y: start.y.0,
+        };
+        let end_coord = geo::Coord {
+            x: end.x.0,
+            y: end.y.0,
+        };
+        *cached_distances = calculate_all_distances(start_coord, end_coord, &geodesy_ctx, &target_crs);
+    }
+    let all_distances = &*cached_distances;
 
     let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
     let painter = bevy_egui_ctx_mut.layer_painter(egui::LayerId::new(
@@ -922,13 +936,12 @@ pub fn configure(app: &mut App) {
     crate::windows::welcome::Welcome::setup(app);
     app.add_systems(
         EguiPrimaryContextPass,
-        bevy_egui_window::render_window_system::<crate::windows::logs::Logs>
-            .run_if(in_state(bevy_egui_window::WindowVisibility::<crate::windows::logs::Logs>::Open)),
-    );
-    app.add_systems(
-        EguiPrimaryContextPass,
-        crate::windows::welcome::render_welcome_window_system
-            .run_if(in_state(bevy_egui_window::WindowVisibility::<crate::windows::welcome::Welcome>::Open)),
+        (
+            bevy_egui_window::render_window_system::<crate::windows::logs::Logs>
+                .run_if(in_state(bevy_egui_window::WindowVisibility::<crate::windows::logs::Logs>::Open)),
+            crate::windows::welcome::render_welcome_window_system
+                .run_if(in_state(bevy_egui_window::WindowVisibility::<crate::windows::welcome::Welcome>::Open)),
+        ),
     );
 }
 
