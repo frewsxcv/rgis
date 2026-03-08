@@ -1,5 +1,5 @@
 use bevy::{ecs::relationship::RelatedSpawnerCommands, prelude::*};
-use std::sync::atomic::AtomicU32;
+use std::sync::atomic::{AtomicBool, AtomicU32};
 
 mod jobs;
 mod render_entity_index;
@@ -19,6 +19,10 @@ pub static RENDERED_LAYER_COUNT: AtomicU32 = AtomicU32::new(0);
 /// Number of entities currently fading in or out. Tests can poll this to wait
 /// for animations to finish before taking screenshots.
 pub static ACTIVE_FADE_COUNT: AtomicU32 = AtomicU32::new(0);
+
+/// When false, fade-in/fade-out animations and the pulsing selection highlight
+/// are disabled. Entities spawn at full opacity and despawns are immediate.
+pub static ANIMATIONS_ENABLED: AtomicBool = AtomicBool::new(true);
 
 use rgis_layers::LayerIndex;
 use z_index::ZIndex;
@@ -106,6 +110,10 @@ struct FadeOut {
 }
 
 const FADE_DURATION: f32 = 0.4;
+
+fn animations_enabled() -> bool {
+    ANIMATIONS_ENABLED.load(std::sync::atomic::Ordering::Relaxed)
+}
 
 fn spawn_raster(
     raster: &geo_raster::Raster,
@@ -206,26 +214,33 @@ fn spawn_raster(
         Visibility::Hidden
     };
 
+    let animate = animations_enabled();
     let material = materials.add(ColorMaterial {
-        color: Color::srgba(1.0, 1.0, 1.0, 0.0),
+        color: if animate {
+            Color::srgba(1.0, 1.0, 1.0, 0.0)
+        } else {
+            Color::WHITE
+        },
         texture: Some(image_handle),
         alpha_mode: bevy::sprite_render::AlphaMode2d::Blend,
         ..Default::default()
     });
 
-    commands.spawn((
+    let mut entity_commands = commands.spawn((
         Mesh2d(meshes.add(mesh)),
         MeshMaterial2d(material),
         Transform::from_xyz(0., 0., z_index.0 as f32),
         visibility,
         layer.id,
         RenderEntityType::Raster,
-        FadeIn {
+    ));
+    if animate {
+        entity_commands.insert(FadeIn {
             elapsed: 0.0,
             duration: FADE_DURATION,
             target_alpha: 1.0,
-        },
-    ));
+        });
+    }
 }
 
 fn spawn_geometry_meshes(
@@ -444,26 +459,32 @@ fn spawn_helper<'a>(
     entity_type: RenderEntityType,
     is_fill: bool,
 ) -> bevy::ecs::system::EntityCommands<'a> {
-    let target_alpha = color.alpha();
-    let mut faded_color = color;
-    faded_color.set_alpha(0.0);
-    let material = materials.add(ColorMaterial {
-        color: faded_color,
-        alpha_mode: bevy::sprite_render::AlphaMode2d::Blend,
-        ..Default::default()
-    });
+    let animate = animations_enabled();
+    let material = if animate {
+        let mut faded_color = color;
+        faded_color.set_alpha(0.0);
+        materials.add(ColorMaterial {
+            color: faded_color,
+            alpha_mode: bevy::sprite_render::AlphaMode2d::Blend,
+            ..Default::default()
+        })
+    } else {
+        materials.add(color)
+    };
     let z_index = ZIndex::calculate(layer_index, entity_type);
     let mut entity_commands = commands.spawn((
         Mesh2d(assets_meshes.add(mesh)),
         Transform::from_xyz(0., 0., z_index.0 as f32),
         MeshMaterial2d(material),
         entity_type,
-        FadeIn {
+    ));
+    if animate {
+        entity_commands.insert(FadeIn {
             elapsed: 0.0,
             duration: FADE_DURATION,
-            target_alpha,
-        },
-    ));
+            target_alpha: color.alpha(),
+        });
+    }
     if is_fill {
         entity_commands.insert(Fill);
     } else {
@@ -483,15 +504,20 @@ fn spawn_point_sprites(
     is_fill: bool,
     layer: &rgis_layers::Layer,
 ) {
-    let target_alpha = color.alpha();
-    let mut faded_color = color;
-    faded_color.set_alpha(0.0);
+    let animate = animations_enabled();
+    let sprite_color = if animate {
+        let mut faded_color = color;
+        faded_color.set_alpha(0.0);
+        faded_color
+    } else {
+        color
+    };
     for coord in points {
         let z_index = ZIndex::calculate(layer_index, entity_type);
         let transform = Transform::from_xyz(coord.x, coord.y, z_index.0 as f32);
         let mut entity_commands = commands.spawn((
             Sprite {
-                color: faded_color,
+                color: sprite_color,
                 image: circle.clone(),
                 ..Default::default()
             },
@@ -501,12 +527,14 @@ fn spawn_point_sprites(
             PointSprite {
                 relative_scale: scale,
             },
-            FadeIn {
+        ));
+        if animate {
+            entity_commands.insert(FadeIn {
                 elapsed: 0.0,
                 duration: FADE_DURATION,
-                target_alpha,
-            },
-        ));
+                target_alpha: color.alpha(),
+            });
+        }
         if is_fill {
             entity_commands.insert(Fill);
         } else {

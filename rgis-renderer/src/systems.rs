@@ -203,6 +203,12 @@ fn handle_despawn_meshes_event(
     >,
     children_query: Query<&Children>,
 ) {
+    if !crate::animations_enabled() {
+        for &entity in index.get(event.0) {
+            commands.entity(entity).despawn();
+        }
+        return;
+    }
     let fade_out = crate::FadeOut {
         elapsed: 0.0,
         duration: crate::FADE_DURATION,
@@ -448,13 +454,17 @@ fn handle_feature_selected_event_despawn(
                 RenderEntityType::SelectedPolygon
                 | RenderEntityType::SelectedLineString
                 | RenderEntityType::SelectedPoint => {
-                    commands
-                        .entity(entity)
-                        .remove::<crate::FadeIn>()
-                        .insert(crate::FadeOut {
-                            elapsed: 0.0,
-                            duration: crate::FADE_DURATION,
-                        });
+                    if crate::animations_enabled() {
+                        commands
+                            .entity(entity)
+                            .remove::<crate::FadeIn>()
+                            .insert(crate::FadeOut {
+                                elapsed: 0.0,
+                                duration: crate::FADE_DURATION,
+                            });
+                    } else {
+                        commands.entity(entity).despawn();
+                    }
                 }
                 _ => (),
             }
@@ -589,6 +599,9 @@ fn animate_selected_highlight(
     mut sprite_query: Query<(&mut Sprite, &RenderEntityType)>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
+    if !crate::animations_enabled() {
+        return;
+    }
     let t = time.elapsed_secs();
     // Cycle hue over time: base hue ~185° (cyan), oscillate ±30°
     let hue = 185.0 + 30.0 * (t * 2.5).sin();

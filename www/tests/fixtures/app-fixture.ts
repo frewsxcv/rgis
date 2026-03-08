@@ -37,6 +37,11 @@ export class AppPage {
       { timeout: 10000 },
     );
     await this.waitForNextFrame();
+
+    // Disable animations for deterministic test behavior
+    await this.page.evaluate(() =>
+      (window as any).set_animations_enabled?.(false),
+    );
   }
 
   get canvas() {
@@ -78,7 +83,6 @@ export class AppPage {
 
   async stabilizeForScreenshot() {
     await this.page.mouse.move(0, 0);
-    await this.waitForFadesComplete();
     await this.waitForNextFrame();
   }
 
