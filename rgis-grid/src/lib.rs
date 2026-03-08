@@ -40,34 +40,41 @@ fn grid_color(clear_color: &ClearColor) -> Color {
 #[derive(Component)]
 struct Grid;
 
-/// Stores the previous mesh/material handles so we can remove them when updating.
 #[derive(Default)]
-struct GridState {
+struct LastCameraState {
     translation: Vec3,
     scale: Vec3,
     window_size: Vec2,
-    mesh_handle: Option<Handle<Mesh>>,
-    material_handle: Option<Handle<ColorMaterial>>,
 }
 
-fn spawn_grid(mut commands: Commands) {
+fn spawn_grid(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+) {
+    // Start with an empty mesh; update_grid will populate it on the first frame.
+    let mesh = meshes.add(Mesh::new(
+        bevy::mesh::PrimitiveTopology::TriangleList,
+        bevy::asset::RenderAssetUsages::RENDER_WORLD | bevy::asset::RenderAssetUsages::MAIN_WORLD,
+    ));
+    let material = materials.add(Color::srgba(0.0, 0.0, 0.0, 0.12));
     commands.spawn((
+        Mesh2d(mesh),
+        MeshMaterial2d(material),
         Transform::from_xyz(0.0, 0.0, GRID_Z),
-        Visibility::Visible,
         bevy::picking::Pickable::IGNORE,
         Grid,
     ));
 }
 
 fn update_grid(
-    mut grid_query: Query<Entity, With<Grid>>,
+    grid_query: Query<(&Mesh2d, &MeshMaterial2d<ColorMaterial>), With<Grid>>,
     camera_query: Query<&Transform, With<Camera>>,
     windows: Query<&Window, With<bevy::window::PrimaryWindow>>,
-    mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     clear_color: Res<ClearColor>,
-    mut state: Local<GridState>,
+    mut last_state: Local<LastCameraState>,
 ) {
     let Ok(transform) = camera_query.single() else {
         return;
@@ -75,29 +82,25 @@ fn update_grid(
     let Ok(window) = windows.single() else {
         return;
     };
-    let Ok(grid_entity) = grid_query.single_mut() else {
+    let Ok((mesh_handle, mat_handle)) = grid_query.single() else {
         return;
     };
 
     let window_size = Vec2::new(window.width(), window.height());
-    if transform.translation == state.translation
-        && transform.scale == state.scale
-        && window_size == state.window_size
-        && state.mesh_handle.is_some()
+    if transform.translation == last_state.translation
+        && transform.scale == last_state.scale
+        && window_size == last_state.window_size
     {
         return;
     }
 
-    state.translation = transform.translation;
-    state.scale = transform.scale;
-    state.window_size = window_size;
+    last_state.translation = transform.translation;
+    last_state.scale = transform.scale;
+    last_state.window_size = window_size;
 
-    // Remove old assets
-    if let Some(old_mesh) = state.mesh_handle.take() {
-        meshes.remove(&old_mesh);
-    }
-    if let Some(old_mat) = state.material_handle.take() {
-        materials.remove(&old_mat);
+    // Update material color for current theme
+    if let Some(mat) = materials.get_mut(&mat_handle.0) {
+        mat.color = grid_color(&clear_color);
     }
 
     let camera_scale = transform.scale.x;
@@ -137,23 +140,11 @@ fn update_grid(
         add_rect(&mut positions, &mut indices, center_x, y, width, thickness);
     }
 
-    let mut mesh = Mesh::new(
-        bevy::mesh::PrimitiveTopology::TriangleList,
-        bevy::asset::RenderAssetUsages::RENDER_WORLD | bevy::asset::RenderAssetUsages::MAIN_WORLD,
-    );
-    mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, positions);
-    mesh.insert_indices(bevy::mesh::Indices::U32(indices));
-
-    let mesh_handle = meshes.add(mesh);
-    let mat_handle = materials.add(grid_color(&clear_color));
-
-    state.mesh_handle = Some(mesh_handle.clone());
-    state.material_handle = Some(mat_handle.clone());
-
-    commands
-        .entity(grid_entity)
-        .insert(Mesh2d(mesh_handle))
-        .insert(MeshMaterial2d(mat_handle));
+    // Mutate the existing mesh asset in place
+    if let Some(mesh) = meshes.get_mut(&mesh_handle.0) {
+        mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, positions);
+        mesh.insert_indices(bevy::mesh::Indices::U32(indices));
+    }
 }
 
 fn add_rect(positions: &mut Vec<[f32; 3]>, indices: &mut Vec<u32>, cx: f32, cy: f32, w: f32, h: f32) {
