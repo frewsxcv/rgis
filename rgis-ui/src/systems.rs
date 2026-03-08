@@ -871,13 +871,12 @@ pub fn configure(app: &mut App) {
     crate::windows::welcome::Welcome::setup(app);
     app.add_systems(
         EguiPrimaryContextPass,
-        bevy_egui_window::render_window_system::<crate::windows::logs::Logs>
-            .run_if(bevy_egui_window::run_if_is_window_open::<crate::windows::logs::Logs>),
-    );
-    app.add_systems(
-        EguiPrimaryContextPass,
-        crate::windows::welcome::render_welcome_window_system
-            .run_if(bevy_egui_window::run_if_is_window_open::<crate::windows::welcome::Welcome>),
+        (
+            bevy_egui_window::render_window_system::<crate::windows::logs::Logs>
+                .run_if(bevy_egui_window::run_if_is_window_open::<crate::windows::logs::Logs>),
+            crate::windows::welcome::render_welcome_window_system
+                .run_if(bevy_egui_window::run_if_is_window_open::<crate::windows::welcome::Welcome>),
+        ),
     );
 }
 
