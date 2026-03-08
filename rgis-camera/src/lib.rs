@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 
+pub mod fly_to;
 mod keyboard;
 mod systems;
 mod utils;
@@ -21,6 +22,7 @@ impl bevy::app::Plugin for Plugin {
         app.insert_resource(keyboard::PanAmount(self.pan_amount));
         systems::configure(app);
         keyboard::configure(app);
+        app.add_systems(Update, fly_to::fly_to_system);
     }
 }
 

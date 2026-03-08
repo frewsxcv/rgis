@@ -145,10 +145,11 @@ fn handle_meshes_spawned_events(
 }
 
 fn center_camera_on_feature(
+    mut commands: Commands,
     id_map: Res<rgis_layers::LayerIdToEntity>,
     layer_query: Query<&rgis_layers::LayerData>,
     mut event_reader: MessageReader<rgis_events::CenterCameraOnFeatureMessage>,
-    mut query: Query<&mut Transform, With<Camera>>,
+    query: Query<(Entity, &Transform), With<Camera>>,
     windows: Query<&Window, With<PrimaryWindow>>,
     ui_margins: rgis_units::UiMargins,
 ) {
@@ -171,7 +172,7 @@ fn center_camera_on_feature(
         let Some(bounding_rect) = feature.bounding_rect else {
             continue;
         };
-        let Ok(mut transform) = query.single_mut() else {
+        let Ok((cam_entity, transform)) = query.single() else {
             continue;
         };
         let map_area = rgis_units::MapArea {
@@ -181,19 +182,20 @@ fn center_camera_on_feature(
             bottom_offset_px: ui_margins.bottom.0,
             top_offset_px: ui_margins.top.0,
         };
-        crate::utils::center_camera_on_projected_world_rect(
-            bounding_rect,
-            &mut transform,
-            map_area,
-        );
+        if let Some(target) = crate::utils::compute_target_for_rect(bounding_rect, map_area) {
+            commands
+                .entity(cam_entity)
+                .insert(crate::fly_to::CameraFlyTo::new(transform, &target));
+        }
     }
 }
 
 fn center_camera(
+    mut commands: Commands,
     id_map: Res<rgis_layers::LayerIdToEntity>,
     layer_query: Query<&rgis_layers::LayerData>,
     mut event_reader: MessageReader<rgis_events::CenterCameraMessage>,
-    mut query: Query<&mut Transform, With<Camera>>,
+    query: Query<(Entity, &Transform), With<Camera>>,
     windows: Query<&Window, With<PrimaryWindow>>,
     ui_margins: rgis_units::UiMargins,
 ) {
@@ -230,7 +232,7 @@ fn center_camera(
             continue;
         };
 
-        let Ok(mut transform) = query.single_mut() else {
+        let Ok((cam_entity, transform)) = query.single() else {
             continue;
         };
 
@@ -242,10 +244,10 @@ fn center_camera(
             bottom_offset_px: ui_margins.bottom.0,
             top_offset_px: ui_margins.top.0,
         };
-        crate::utils::center_camera_on_projected_world_rect(
-            bounding_rect,
-            &mut transform,
-            map_area,
-        );
+        if let Some(target) = crate::utils::compute_target_for_rect(bounding_rect, map_area) {
+            commands
+                .entity(cam_entity)
+                .insert(crate::fly_to::CameraFlyTo::new(transform, &target));
+        }
     }
 }
