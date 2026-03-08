@@ -70,7 +70,7 @@ fn features_deselected_message_does_not_refire_on_subsequent_frames() {
 
     app.world_mut()
         .resource_mut::<Messages<rgis_events::FeaturesDeselectedMessage>>()
-        .write_default();
+        .write(rgis_events::FeaturesDeselectedMessage);
 
     // First update: consumes the message and despawns the selected entity.
     app.update();
@@ -130,7 +130,7 @@ fn features_deselected_despawns_only_selected_entities() {
 
     app.world_mut()
         .resource_mut::<Messages<rgis_events::FeaturesDeselectedMessage>>()
-        .write_default();
+        .write(rgis_events::FeaturesDeselectedMessage);
 
     app.update();
 
