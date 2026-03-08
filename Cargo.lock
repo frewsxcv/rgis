@@ -5692,6 +5692,8 @@ name = "rgis-grid"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "crs-definitions",
+ "rgis-crs",
 ]
 
 [[package]]
