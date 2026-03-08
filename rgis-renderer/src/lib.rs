@@ -2,6 +2,7 @@ use bevy::{ecs::relationship::RelatedSpawnerCommands, prelude::*};
 use std::sync::atomic::{AtomicBool, AtomicU32};
 
 mod jobs;
+pub(crate) mod particles;
 mod render_entity_index;
 mod systems;
 mod z_index;

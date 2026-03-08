@@ -16,6 +16,9 @@ fn handle_picking_click(
     mut bevy_egui_ctx: bevy_egui::EguiContexts,
     mut feature_selected_writer: MessageWriter<rgis_events::FeatureSelectedMessage>,
     mut render_props_writer: MessageWriter<rgis_ui_messages::RenderFeaturePropertiesMessage>,
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    camera_query: Query<&GlobalTransform, With<Camera>>,
 ) {
     if *current_tool.get() != rgis_settings::Tool::Query {
         return;
@@ -55,6 +58,18 @@ fn handle_picking_click(
         });
         feature_selected_writer
             .write(rgis_events::FeatureSelectedMessage(result.layer_id, result.feature.id));
+
+        // Spawn selection particle burst at the click position
+        let camera_scale = camera_query
+            .single()
+            .ok()
+            .map(|gt| {
+                let (scale, _, _) = gt.to_scale_rotation_translation();
+                scale.x
+            })
+            .unwrap_or(1.0);
+        let world_pos = bevy::math::Vec2::new(hit_position.x, hit_position.y);
+        crate::particles::spawn_burst(&mut commands, world_pos, camera_scale, &asset_server);
     }
 }
 
@@ -676,7 +691,7 @@ pub fn configure(app: &mut App) {
     app.add_observer(handle_crs_changed_events);
     app.add_systems(
         Update,
-        (animate_fade_in, animate_fade_out, animate_visibility_fade_out, animate_selected_highlight),
+        (animate_fade_in, animate_fade_out, animate_visibility_fade_out, animate_selected_highlight, crate::particles::animate_selection_particles),
     );
 }
 
