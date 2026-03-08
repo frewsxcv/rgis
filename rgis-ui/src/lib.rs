@@ -53,7 +53,8 @@ impl bevy::app::Plugin for Plugin {
             .insert_resource(rgis_units::SidePanelWidth(0.))
             .insert_resource(ChangeCrsWindowVisible::default())
             .insert_resource(ClearColor::default())
-            .insert_resource(tiles::TilesTree::default());
+            .insert_resource(tiles::TilesTree::default())
+            .insert_resource(rgis_units::MapPaneRect::default());
 
         systems::configure(app);
     }

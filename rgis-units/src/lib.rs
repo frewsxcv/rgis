@@ -136,6 +136,21 @@ pub struct TopPanelHeight(pub f32);
 #[derive(Copy, Clone, Resource)]
 pub struct BottomPanelHeight(pub f32);
 
+/// Screen-space rectangle of the map pane (in egui coordinates).
+#[derive(Copy, Clone, Resource, Default)]
+pub struct MapPaneRect {
+    pub left: f32,
+    pub top: f32,
+    pub right: f32,
+    pub bottom: f32,
+}
+
+impl MapPaneRect {
+    pub fn contains(&self, x: f32, y: f32) -> bool {
+        x >= self.left && x <= self.right && y >= self.top && y <= self.bottom
+    }
+}
+
 #[derive(SystemParam)]
 pub struct UiMargins<'w> {
     pub left: Res<'w, SidePanelWidth>,

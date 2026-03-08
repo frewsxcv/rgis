@@ -57,6 +57,7 @@ fn render_tiles(
     mut events: crate::panels::side::Events,
     mut tiles_tree: ResMut<crate::tiles::TilesTree>,
     mut side_panel_width: ResMut<rgis_units::SidePanelWidth>,
+    mut map_pane_rect: ResMut<rgis_units::MapPaneRect>,
 ) -> Result {
     let egui_ctx = bevy_egui_ctx.ctx_mut()?;
 
@@ -81,22 +82,37 @@ fn render_tiles(
         .collect();
 
     // SAFETY: We transmute the Events lifetime to 'static so it can be stored in
-    // SidePanelBehavior. This is safe because the behavior struct is dropped before
+    // TilesBehavior. This is safe because the behavior struct is dropped before
     // this function returns, so the references remain valid.
     let events_ref: &mut crate::panels::side::Events<'static> =
         unsafe { std::mem::transmute(&mut events) };
 
-    let mut behavior = crate::tiles::SidePanelBehavior {
+    let mut behavior = crate::tiles::TilesBehavior {
         snapshots: &snapshots,
         events: events_ref,
+        map_pane_rect: None,
     };
 
-    let side_panel = egui::SidePanel::left("left-side-panel").resizable(true);
-    let inner_response = side_panel.show(egui_ctx, |ui| {
-        tiles_tree.0.ui(&mut behavior, ui);
-    });
+    egui::CentralPanel::default()
+        .frame(egui::Frame::NONE)
+        .show(egui_ctx, |ui| {
+            tiles_tree.0.ui(&mut behavior, ui);
+        });
 
-    side_panel_width.0 = inner_response.response.rect.width();
+    // Update map pane rect resource from what the Map pane reported.
+    if let Some(rect) = behavior.map_pane_rect {
+        map_pane_rect.left = rect.left();
+        map_pane_rect.top = rect.top();
+        map_pane_rect.right = rect.right();
+        map_pane_rect.bottom = rect.bottom();
+    }
+
+    // Derive side panel width from the map pane's left edge
+    // (maintains compatibility with camera offset calculations).
+    side_panel_width.0 = behavior
+        .map_pane_rect
+        .map(|r| r.left())
+        .unwrap_or(0.0);
 
     Ok(())
 }

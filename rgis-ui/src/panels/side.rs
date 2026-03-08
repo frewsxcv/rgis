@@ -37,62 +37,6 @@ pub struct LayerSnapshot {
     pub unprojected_fc: Option<std::sync::Arc<geo_features::FeatureCollection<geo_projected::UnprojectedScalar>>>,
 }
 
-pub struct Side<'a, 'w> {
-    pub egui_ctx: &'a egui::Context,
-    pub snapshots: Vec<LayerSnapshot>,
-    pub events: &'a mut Events<'w>,
-    pub side_panel_width: &'a mut rgis_units::SidePanelWidth,
-}
-
-impl Side<'_, '_> {
-    pub fn render(&mut self) {
-        let side_panel = egui::SidePanel::left("left-side-panel").resizable(true);
-
-        let inner_response = side_panel.show(self.egui_ctx, |ui| {
-            self.render_layers_window(ui);
-        });
-
-        self.side_panel_width.0 = inner_response.response.rect.width();
-    }
-
-    fn render_layers_window(&mut self, ui: &mut egui::Ui) {
-        ui.vertical_centered_justified(|ui| {
-            egui::ScrollArea::vertical().show(ui, |ui| {
-                self.render_layers_heading(ui);
-                ui.add(crate::widgets::add_layer::AddLayer {
-                    events: self.events,
-                });
-                self.render_layers(ui);
-            });
-        });
-    }
-
-    fn render_layers_heading(&mut self, ui: &mut egui::Ui) {
-        ui.heading("Layers");
-    }
-
-    fn render_layers(&mut self, ui: &mut egui::Ui) {
-        let count = self.snapshots.len();
-        for i in 0..count {
-            let snap = &self.snapshots[i];
-            ui.add(Layer {
-                is_move_down_enabled: i < count - 1,
-                is_move_up_enabled: i > 0,
-                layer_id: snap.layer_id,
-                name: &snap.name,
-                visible: snap.visible,
-                color: &snap.color,
-                is_vector: snap.is_vector,
-                is_active: snap.is_active,
-                geom_type: snap.geom_type,
-                crs: &snap.crs,
-                unprojected_fc: snap.unprojected_fc.as_deref(),
-                events: self.events,
-            });
-        }
-    }
-}
-
 pub(crate) struct OperationButton<'a, 'w, Op: rgis_geo_ops::OperationEntry> {
     events: &'a mut Events<'w>,
     layer_id: rgis_primitives::LayerId,
