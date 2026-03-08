@@ -5597,6 +5597,7 @@ dependencies = [
  "rgis-grid",
  "rgis-layers",
  "rgis-mouse",
+ "rgis-primitives",
  "rgis-renderer",
  "rgis-settings",
  "rgis-transform",
@@ -5616,6 +5617,7 @@ dependencies = [
  "rgis-crs",
  "rgis-events",
  "rgis-layers",
+ "rgis-primitives",
  "rgis-units",
 ]
 

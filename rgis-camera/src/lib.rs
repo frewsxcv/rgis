@@ -22,7 +22,7 @@ impl bevy::app::Plugin for Plugin {
         app.insert_resource(keyboard::PanAmount(self.pan_amount));
         systems::configure(app);
         keyboard::configure(app);
-        app.add_systems(Update, fly_to::fly_to_system);
+        app.add_systems(Update, fly_to::fly_to_system.in_set(rgis_primitives::RgisSet::Camera));
     }
 }
 

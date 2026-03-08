@@ -20,6 +20,7 @@ rgis-file-loader = { path = "../rgis-file-loader" }
 rgis-grid = { path = "../rgis-grid" }
 rgis-layers = { path = "../rgis-layers" }
 rgis-mouse = { path = "../rgis-mouse" }
+rgis-primitives = { path = "../rgis-primitives" }
 rgis-renderer = { path = "../rgis-renderer" }
 rgis-settings = { path = "../rgis-settings" }
 rgis-transform = { path = "../rgis-transform" }

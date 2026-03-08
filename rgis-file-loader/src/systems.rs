@@ -126,6 +126,7 @@ pub fn configure(app: &mut App) {
             handle_network_fetch_finished_jobs,
             handle_load_file_events,
             handle_load_file_job_finished_events,
-        ),
+        )
+            .in_set(rgis_primitives::RgisSet::FileLoading),
     );
 }

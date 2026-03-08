@@ -10,7 +10,8 @@ pub fn configure(app: &mut App) {
             pan_camera_system,
             handle_meshes_spawned_events,
             zoom_camera_system,
-        ),
+        )
+            .in_set(rgis_primitives::RgisSet::Camera),
     );
     app.add_observer(handle_change_crs_event);
 }
