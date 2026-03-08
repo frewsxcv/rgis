@@ -5,9 +5,6 @@ use bevy::prelude::*;
 pub struct ShowManageLayerWindowMessage(pub rgis_primitives::LayerId);
 
 #[derive(Default, Message)]
-pub struct OpenChangeCrsWindowMessage;
-
-#[derive(Default, Message)]
 pub struct ShowAddLayerWindowMessage;
 
 #[derive(Default, Message)]
@@ -57,7 +54,6 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_message::<ShowAttributeTableMessage>()
             .add_message::<ShowManageLayerWindowMessage>()
-            .add_message::<OpenChangeCrsWindowMessage>()
             .add_message::<ShowAddLayerWindowMessage>()
             .add_message::<HideAddLayerWindowMessage>()
             .add_message::<RenderTextMessage>()

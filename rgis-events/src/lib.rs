@@ -171,7 +171,7 @@ impl From<rgis_primitives::LayerId> for MeshesSpawnedMessage {
 #[derive(Clone, Copy, Message, Debug)]
 pub struct FeatureSelectedMessage(pub rgis_primitives::LayerId, pub geo_features::FeatureId);
 
-#[derive(Message)]
+#[derive(Default, Message, Debug)]
 pub struct FeaturesDeselectedMessage;
 
 // ── File Loader ─────────────────────────────────────────────────────────────

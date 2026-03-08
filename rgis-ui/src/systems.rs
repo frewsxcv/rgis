@@ -15,7 +15,7 @@ fn render_bottom(
     target_crs: Res<rgis_crs::TargetCrs>,
     geodesy_ctx: Res<rgis_crs::GeodesyContext>,
     wgs84_op_handle: Res<rgis_crs::Wgs84OpHandle>,
-    mut open_change_crs_window_event_writer: MessageWriter<rgis_ui_messages::OpenChangeCrsWindowMessage>,
+    mut change_crs_window_visible: ResMut<crate::ChangeCrsWindowVisible>,
     mut bottom_panel_height: ResMut<rgis_units::BottomPanelHeight>,
     mut cached_latlng: Local<Option<(f64, f64)>>,
 ) -> Result {
@@ -34,7 +34,7 @@ fn render_bottom(
         mouse_pos: &mouse_pos,
         target_crs: &target_crs,
         cached_latlng: *cached_latlng,
-        open_change_crs_window_event_writer: &mut open_change_crs_window_event_writer,
+        change_crs_window_visible: &mut change_crs_window_visible,
         bottom_panel_height: &mut bottom_panel_height,
     }
     .render();
@@ -323,15 +323,6 @@ fn render_add_layer_window(
     }
 
     Ok(())
-}
-
-fn handle_open_change_crs_window_event(
-    mut events: MessageReader<rgis_ui_messages::OpenChangeCrsWindowMessage>,
-    mut is_visible: ResMut<crate::ChangeCrsWindowVisible>,
-) {
-    if events.read().last().is_some() {
-        is_visible.0 = true;
-    }
 }
 
 fn render_change_crs_window(
@@ -920,7 +911,6 @@ pub fn configure(app: &mut App) {
     app.add_systems(
         Update,
         (
-            handle_open_change_crs_window_event,
             handle_open_file_job,
             handle_save_file_job,
             handle_download_layer,
