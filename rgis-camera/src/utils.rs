@@ -1,10 +1,9 @@
 use bevy::prelude::*;
 
-pub(crate) fn center_camera_on_projected_world_rect(
+pub(crate) fn compute_target_for_rect(
     bounding_rect: geo::Rect<geo_projected::ProjectedScalar>,
-    camera_transform: &mut Transform,
     map_area: rgis_units::MapArea,
-) {
+) -> Option<Transform> {
     let layer_center = bounding_rect.center();
     let scale = determine_scale(bounding_rect, map_area.size());
     let camera_scale = crate::CameraScale(scale);
@@ -12,7 +11,7 @@ pub(crate) fn center_camera_on_projected_world_rect(
         Ok(offset) => offset,
         Err(e) => {
             error!("Error converting layer center to camera offset: {:?}", e);
-            return;
+            return None;
         }
     };
     camera_offset.pan_x(
@@ -23,7 +22,22 @@ pub(crate) fn center_camera_on_projected_world_rect(
         (map_area.top_offset_px - map_area.bottom_offset_px) / 2.,
         camera_scale,
     );
-    set_camera_transform(camera_transform, camera_offset, camera_scale);
+    let mut target = Transform::IDENTITY;
+    target.translation = camera_offset.to_transform_translation_vec();
+    target.scale = camera_scale.to_transform_scale_vec();
+    Some(target)
+}
+
+pub(crate) fn center_camera_on_projected_world_rect(
+    bounding_rect: geo::Rect<geo_projected::ProjectedScalar>,
+    camera_transform: &mut Transform,
+    map_area: rgis_units::MapArea,
+) {
+    if let Some(target) = compute_target_for_rect(bounding_rect, map_area) {
+        camera_transform.translation = target.translation;
+        camera_transform.scale = target.scale;
+        debug!("New transform scale: {:?}", camera_transform.scale);
+    }
 }
 
 pub(crate) fn set_camera_transform(
