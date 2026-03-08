@@ -936,13 +936,12 @@ pub fn configure(app: &mut App) {
     crate::windows::welcome::Welcome::setup(app);
     app.add_systems(
         EguiPrimaryContextPass,
-        bevy_egui_window::render_window_system::<crate::windows::logs::Logs>
-            .run_if(in_state(bevy_egui_window::WindowVisibility::<crate::windows::logs::Logs>::Open)),
-    );
-    app.add_systems(
-        EguiPrimaryContextPass,
-        crate::windows::welcome::render_welcome_window_system
-            .run_if(in_state(bevy_egui_window::WindowVisibility::<crate::windows::welcome::Welcome>::Open)),
+        (
+            bevy_egui_window::render_window_system::<crate::windows::logs::Logs>
+                .run_if(in_state(bevy_egui_window::WindowVisibility::<crate::windows::logs::Logs>::Open)),
+            crate::windows::welcome::render_welcome_window_system
+                .run_if(in_state(bevy_egui_window::WindowVisibility::<crate::windows::welcome::Welcome>::Open)),
+        ),
     );
 }
 
