@@ -412,15 +412,21 @@ fn spawn_label(
         bevy::sprite::Anchor::BOTTOM_CENTER
     };
 
+    // Use a large font size scaled to world units so the text appears at a
+    // consistent ~LABEL_FONT_SIZE screen-pixels regardless of zoom.  Bevy's
+    // Text2d font_size is in world units; dividing by camera_scale converts
+    // the desired screen-pixel size into the current world-unit equivalent.
+    let world_font_size = LABEL_FONT_SIZE * camera_scale;
+
     commands.spawn((
         Text2d::new(text),
         TextFont {
-            font_size: LABEL_FONT_SIZE,
+            font_size: world_font_size,
             ..default()
         },
         TextColor(color),
         anchor,
-        Transform::from_xyz(x, y, LABEL_Z).with_scale(Vec3::splat(camera_scale)),
+        Transform::from_xyz(x, y, LABEL_Z),
         bevy::picking::Pickable::IGNORE,
         GridLabel,
     ));
