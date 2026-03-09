@@ -493,11 +493,36 @@ fn render_grid_labels(
             let lat_bottom = y_to_lat(vp.world_bottom);
             let lat_top = y_to_lat(vp.world_top);
 
+            tracing::debug!(
+                cam_x = vp.cam_x,
+                cam_y = vp.cam_y,
+                camera_scale = vp.camera_scale,
+                win_w = vp.win_w,
+                win_h = vp.win_h,
+                world_left = vp.world_left,
+                world_right = vp.world_right,
+                world_bottom = vp.world_bottom,
+                world_top = vp.world_top,
+                lon_left = lon_left,
+                lon_right = lon_right,
+                lat_bottom = lat_bottom,
+                lat_top = lat_top,
+                "grid label viewport"
+            );
+
             let deg_per_px_lon = (lon_right - lon_left) as f32 / vp.win_w;
             let deg_per_px_lat = (lat_top - lat_bottom) as f32 / vp.win_h;
 
             let lon_interval = nice_degree_interval(deg_per_px_lon, MIN_LINE_SPACING_PX);
             let lat_interval = nice_degree_interval(deg_per_px_lat, MIN_LINE_SPACING_PX);
+
+            tracing::debug!(
+                deg_per_px_lon = deg_per_px_lon,
+                deg_per_px_lat = deg_per_px_lat,
+                lon_interval = lon_interval,
+                lat_interval = lat_interval,
+                "grid label intervals"
+            );
 
             let first_lon = (lon_left / lon_interval as f64).floor() as i64;
             let last_lon = (lon_right / lon_interval as f64).ceil() as i64;
@@ -506,6 +531,7 @@ fn render_grid_labels(
                 let x = lon_to_x(lon);
                 let sx = world_to_screen_x(x);
                 let text = format_degree(lon, false);
+                tracing::debug!(i = i, lon = lon, x = x, sx = sx, text = %text, "lon label");
                 painter.text(
                     egui::pos2(sx, label_screen_y),
                     egui::Align2::CENTER_BOTTOM,

@@ -63,8 +63,37 @@ pub fn get_all_widget_rects() -> JsValue {
     obj.into()
 }
 
+#[cfg(not(target_arch = "wasm32"))]
+#[derive(Resource)]
+struct StartupUrl(String);
+
+#[cfg(not(target_arch = "wasm32"))]
+fn load_startup_url(
+    url_res: Res<StartupUrl>,
+    geodesy_ctx: Res<rgis_crs::GeodesyContext>,
+    mut load_file_writer: MessageWriter<rgis_events::LoadFileMessage>,
+) {
+    let mut geodesy_ctx = geodesy_ctx.write().unwrap();
+    let Ok(op_handle) = rgis_crs::epsg_code_to_geodesy_op_handle(&mut *geodesy_ctx, 4326) else {
+        error!("Failed to create op handle for EPSG:4326");
+        return;
+    };
+    load_file_writer.write(rgis_events::LoadFileMessage::FromNetwork {
+        name: url_res.0.clone(),
+        url: url_res.0.clone(),
+        source_crs: rgis_primitives::Crs {
+            epsg_code: Some(4326),
+            proj_string: None,
+            op_handle,
+        },
+    });
+}
+
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen)]
 pub fn run() {
+    #[cfg(not(target_arch = "wasm32"))]
+    let cli_args = rgis_cli::run().ok();
+
     let mut app = App::new();
 
     app.add_plugins(
@@ -97,6 +126,14 @@ pub fn run() {
     app.add_plugins(rgis_transform::Plugin);
     app.add_plugins(rgis_settings::Plugin);
     app.add_plugins(rgis_crs::Plugin::default());
+
+    #[cfg(not(target_arch = "wasm32"))]
+    if let Some(ref args) = cli_args {
+        if let Some(ref url) = args.url {
+            app.insert_resource(StartupUrl(url.clone()));
+            app.add_systems(Startup, load_startup_url);
+        }
+    }
 
     // Establish explicit ordering between system sets to prevent race conditions.
     // For example, Transform must complete before Rendering so that a CRS change
