@@ -412,21 +412,23 @@ fn spawn_label(
         bevy::sprite::Anchor::BOTTOM_CENTER
     };
 
-    // Use a large font size scaled to world units so the text appears at a
-    // consistent ~LABEL_FONT_SIZE screen-pixels regardless of zoom.  Bevy's
-    // Text2d font_size is in world units; dividing by camera_scale converts
-    // the desired screen-pixel size into the current world-unit equivalent.
-    let world_font_size = LABEL_FONT_SIZE * camera_scale;
+    // We want labels that appear at ~LABEL_FONT_SIZE screen-pixels regardless
+    // of zoom. Use a fixed font_size for rasterization (to avoid creating a
+    // massive glyph atlas) and scale the Transform to reach the desired world
+    // size.
+    let base_font_size = 16.0_f32;
+    let desired_world_size = LABEL_FONT_SIZE * camera_scale;
+    let entity_scale = desired_world_size / base_font_size;
 
     commands.spawn((
         Text2d::new(text),
         TextFont {
-            font_size: world_font_size,
+            font_size: base_font_size,
             ..default()
         },
         TextColor(color),
         anchor,
-        Transform::from_xyz(x, y, LABEL_Z),
+        Transform::from_xyz(x, y, LABEL_Z).with_scale(Vec3::splat(entity_scale)),
         bevy::picking::Pickable::IGNORE,
         GridLabel,
     ));
