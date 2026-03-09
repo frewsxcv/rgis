@@ -450,11 +450,14 @@ fn handle_point_color_updated_event(
     }
 }
 
-fn handle_line_string_color_updated_event(
+fn handle_mesh_color_updated_event(
     mut event_reader: MessageReader<rgis_events::LayerColorUpdatedMessage>,
     id_map: Res<rgis_layers::LayerIdToEntity>,
     color_query: Query<&rgis_layers::LayerColor>,
-    line_string_layer_query: Query<&Children, With<crate::LineString>>,
+    mesh_layer_query: Query<
+        &Children,
+        Or<(With<crate::LineString>, With<crate::Polygon>)>,
+    >,
     mut material_fill_query: Query<
         &mut MeshMaterial2d<ColorMaterial>,
         (With<crate::Fill>, Without<crate::Stroke>),
@@ -479,58 +482,7 @@ fn handle_line_string_color_updated_event(
         };
 
         for &entity in index.get(*layer_id) {
-            if let Ok(children) = line_string_layer_query.get(entity) {
-                for child in children.iter() {
-                    if is_fill {
-                        if let Ok(mut color_material) = material_fill_query.get_mut(child) {
-                            let mat = materials.get_mut(&mut color_material.0).unwrap();
-                            let color = layer_color.fill.unwrap();
-                            mat.color = color;
-                            mat.alpha_mode = alpha_mode_for_color(color);
-                        }
-                    } else {
-                        if let Ok(mut color_material) = material_stroke_query.get_mut(child) {
-                            let mat = materials.get_mut(&mut color_material.0).unwrap();
-                            mat.color = layer_color.stroke;
-                            mat.alpha_mode = alpha_mode_for_color(layer_color.stroke);
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-fn handle_polygon_color_updated_event(
-    mut event_reader: MessageReader<rgis_events::LayerColorUpdatedMessage>,
-    id_map: Res<rgis_layers::LayerIdToEntity>,
-    color_query: Query<&rgis_layers::LayerColor>,
-    polygon_layer_query: Query<&Children, With<crate::Polygon>>,
-    mut material_fill_query: Query<
-        &mut MeshMaterial2d<ColorMaterial>,
-        (With<crate::Fill>, Without<crate::Stroke>),
-    >,
-    mut material_stroke_query: Query<
-        &mut MeshMaterial2d<ColorMaterial>,
-        (With<crate::Stroke>, Without<crate::Fill>),
-    >,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-    index: Res<RenderEntityIndex>,
-) {
-    for event in event_reader.read() {
-        let (layer_id, is_fill) = match event {
-            rgis_events::LayerColorUpdatedMessage::Fill(layer_id) => (layer_id, true),
-            rgis_events::LayerColorUpdatedMessage::Stroke(layer_id) => (layer_id, false),
-        };
-        let Some(entity) = id_map.get(*layer_id) else {
-            continue;
-        };
-        let Ok(layer_color) = color_query.get(entity) else {
-            continue;
-        };
-
-        for &entity in index.get(*layer_id) {
-            if let Ok(children) = polygon_layer_query.get(entity) {
+            if let Ok(children) = mesh_layer_query.get(entity) {
                 for child in children.iter() {
                     if is_fill {
                         if let Ok(mut color_material) = material_fill_query.get_mut(child) {
@@ -700,8 +652,7 @@ pub fn configure(app: &mut App) {
         (
             layer_loaded,
             handle_point_color_updated_event,
-            handle_line_string_color_updated_event,
-            handle_polygon_color_updated_event,
+            handle_mesh_color_updated_event,
             handle_layer_point_size_updated_event,
             handle_layer_z_index_updated_event,
             handle_mesh_building_job_outcome,
