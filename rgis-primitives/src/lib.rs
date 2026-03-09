@@ -91,4 +91,16 @@ impl Crs {
             true
         }
     }
+
+    pub fn is_mercator(&self) -> bool {
+        if let Some(code) = self.epsg_code {
+            crs_definitions::from_code(code)
+                .map(|def| def.proj4.contains("+proj=merc"))
+                .unwrap_or(false)
+        } else if let Some(ref proj) = self.proj_string {
+            proj.contains("+proj=merc")
+        } else {
+            false
+        }
+    }
 }

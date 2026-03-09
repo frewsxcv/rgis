@@ -18,32 +18,6 @@ pub struct ReprojectRasterExtentJobOutcome {
 
 const GRID: u32 = 32;
 
-impl ReprojectRasterExtentJob {
-    fn is_geographic(crs: &rgis_primitives::Crs) -> bool {
-        if let Some(code) = crs.epsg_code {
-            crs_definitions::from_code(code)
-                .map(|def| def.proj4.contains("+proj=longlat"))
-                .unwrap_or(true)
-        } else if let Some(ref proj) = crs.proj_string {
-            proj.contains("+proj=longlat")
-        } else {
-            true
-        }
-    }
-
-    fn is_mercator(crs: &rgis_primitives::Crs) -> bool {
-        if let Some(code) = crs.epsg_code {
-            crs_definitions::from_code(code)
-                .map(|def| def.proj4.contains("+proj=merc"))
-                .unwrap_or(false)
-        } else if let Some(ref proj) = crs.proj_string {
-            proj.contains("+proj=merc")
-        } else {
-            false
-        }
-    }
-}
-
 impl bevy_jobs::Job for ReprojectRasterExtentJob {
     type Outcome = Result<ReprojectRasterExtentJobOutcome, geo_geodesy::Error>;
 
@@ -59,13 +33,13 @@ impl bevy_jobs::Job for ReprojectRasterExtentJob {
 
         // Determine if the source CRS is geographic (degrees) or projected (meters).
         // Geographic CRS inputs need degree-to-radian conversion; projected do not.
-        let source_is_geographic = Self::is_geographic(&self.source_crs);
+        let source_is_geographic = self.source_crs.is_geographic();
 
         // If the target CRS is Mercator, clamp geographic source latitudes to
         // ±85.06° — the defined area of use for EPSG:3857. Mercator Y → ∞ at
         // the poles, so without clamping near-polar vertices stretch the extent.
         if source_is_geographic {
-            let target_is_mercator = Self::is_mercator(&self.target_crs);
+            let target_is_mercator = self.target_crs.is_mercator();
             if target_is_mercator {
                 const MERCATOR_LAT_LIMIT: f64 = 85.06;
                 min.y = min.y.max(-MERCATOR_LAT_LIMIT);
