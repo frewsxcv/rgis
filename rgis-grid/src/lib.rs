@@ -413,6 +413,8 @@ fn render_grid_labels(
     windows: Query<&Window, With<bevy::window::PrimaryWindow>>,
     clear_color: Res<ClearColor>,
     target_crs: Option<Res<rgis_crs::TargetCrs>>,
+    side_panel_width: Res<rgis_units::SidePanelWidth>,
+    bottom_panel_height: Res<rgis_units::BottomPanelHeight>,
 ) {
     let Some(vp) = get_viewport_info(&camera_query, &windows) else {
         return;
@@ -434,9 +436,9 @@ fn render_grid_labels(
         vp.win_h / 2.0 - (wy - vp.cam_y) / vp.camera_scale
     };
 
-    // Place longitude labels near the bottom, latitude labels near the left.
-    let label_screen_y = vp.win_h - LABEL_MARGIN_PX - 20.0;
-    let label_screen_x = LABEL_MARGIN_PX + 4.0;
+    // Place longitude labels near the bottom, latitude labels just right of the side panel.
+    let label_screen_y = vp.win_h - bottom_panel_height.0 - LABEL_MARGIN_PX - 20.0;
+    let label_screen_x = side_panel_width.0 + LABEL_MARGIN_PX + 4.0;
 
     let painter = egui_ctx.layer_painter(egui::LayerId::background());
 
