@@ -129,7 +129,8 @@ fn classify_crs(target_crs: &rgis_crs::TargetCrs) -> CrsKind {
 
 // ── Label formatting ────────────────────────────────────────────────────────
 
-/// Format a degree value as D°M'S" with N/S or E/W suffix.
+/// Format a degree value with N/S or E/W suffix.
+/// Uses decimal degrees when the value is small enough that DMS would be confusing.
 fn format_degree(value: f64, is_latitude: bool) -> String {
     let suffix = if is_latitude {
         if value >= 0.0 { "N" } else { "S" }
@@ -142,12 +143,18 @@ fn format_degree(value: f64, is_latitude: bool) -> String {
     let min = rem.floor() as u32;
     let sec = (rem - min as f64) * 60.0;
 
-    if sec.abs() > 0.01 {
-        format!("{deg}\u{00b0}{min}\u{2032}{sec:.0}\u{2033}{suffix}")
+    if deg == 0 && min == 0 && sec.abs() > 0.01 {
+        // Sub-arcminute: show as decimal degrees (e.g. "0.008° N")
+        format!("{abs:.3}\u{00b0} {suffix}")
+    } else if deg == 0 && min > 0 {
+        // Sub-degree: show decimal degrees to avoid "0°30′" looking like "30°"
+        format!("{abs:.2}\u{00b0} {suffix}")
+    } else if sec.abs() > 0.01 {
+        format!("{deg}\u{00b0} {min}\u{2032} {sec:.0}\u{2033} {suffix}")
     } else if min > 0 {
-        format!("{deg}\u{00b0}{min}\u{2032}{suffix}")
+        format!("{deg}\u{00b0} {min}\u{2032} {suffix}")
     } else {
-        format!("{deg}\u{00b0}{suffix}")
+        format!("{deg}\u{00b0} {suffix}")
     }
 }
 
