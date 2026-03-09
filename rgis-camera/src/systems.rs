@@ -47,6 +47,7 @@ fn handle_change_crs_event(
             &*geodesy_ctx,
             event.old.op_handle,
             event.new.op_handle,
+            event.new.is_geographic(),
         )?;
         transformer.transform(&mut geometry)?;
     }

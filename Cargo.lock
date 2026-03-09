@@ -3286,9 +3286,8 @@ dependencies = [
 
 [[package]]
 name = "geo-geodesy"
-version = "7.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cd01048caaf36daaf93683c8b533d54d74366bfea95964270d2314c7234243b2"
+version = "8.0.0"
+source = "git+https://github.com/frewsxcv/geo-geodesy?branch=fix%2Fprojected-crs-to-degrees#b9c50e1441abe96d85844af414eac2b4d2972167"
 dependencies = [
  "crs-definitions",
  "geo",
@@ -5692,8 +5691,10 @@ name = "rgis-grid"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy_egui",
  "crs-definitions",
  "rgis-crs",
+ "tracing",
 ]
 
 [[package]]
