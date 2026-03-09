@@ -1,6 +1,9 @@
 use std::sync::Arc;
+use geo::MapCoords;
 use geo_projected::CastTo;
 use geodesy::prelude::Context;
+
+const MERCATOR_LAT_LIMIT: f64 = 85.06;
 
 pub struct ReprojectRasterExtentJob {
     pub extent: geo::Rect<f64>,
@@ -41,7 +44,6 @@ impl bevy_jobs::Job for ReprojectRasterExtentJob {
         if source_is_geographic {
             let target_is_mercator = self.target_crs.is_mercator();
             if target_is_mercator {
-                const MERCATOR_LAT_LIMIT: f64 = 85.06;
                 min.y = min.y.max(-MERCATOR_LAT_LIMIT);
                 max.y = max.y.min(MERCATOR_LAT_LIMIT);
             }
@@ -193,8 +195,23 @@ impl bevy_jobs::Job for ReprojectGeometryJob {
     }
 
     async fn perform(self, progress_sender: bevy_jobs::Context) -> Self::Outcome {
-        let feature_collection = Arc::unwrap_or_clone(self.feature_collection);
+        let mut feature_collection = Arc::unwrap_or_clone(self.feature_collection);
         let total = feature_collection.features.len();
+
+        // If projecting geographic coordinates to Mercator, clamp latitudes to
+        // ±85.06° to prevent near-pole vertices from producing extreme Y values.
+        if self.source_crs.is_geographic() && self.target_crs.is_mercator() {
+            for feature in &mut feature_collection.features {
+                if let Some(ref mut geom) = feature.geometry {
+                    *geom = geom.map_coords(|coord| geo::Coord {
+                        x: coord.x,
+                        y: geo_projected::UnprojectedScalar::new(
+                            coord.y.0.clamp(-MERCATOR_LAT_LIMIT, MERCATOR_LAT_LIMIT),
+                        ),
+                    });
+                }
+            }
+        }
 
         let mut feature_collection = feature_collection.cast::<geo_projected::Projected>();
 
@@ -207,6 +224,7 @@ impl bevy_jobs::Job for ReprojectGeometryJob {
                 &*geodesy_ctx,
                 self.source_crs.op_handle,
                 self.target_crs.op_handle,
+                self.target_crs.is_geographic(),
             )?;
 
             if let Some(ref mut geometry) = &mut feature.geometry {
