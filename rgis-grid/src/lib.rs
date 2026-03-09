@@ -412,10 +412,9 @@ fn spawn_label(
         bevy::sprite::Anchor::BOTTOM_CENTER
     };
 
-    // We want labels that appear at ~LABEL_FONT_SIZE screen-pixels regardless
-    // of zoom. Use a fixed font_size for rasterization (to avoid creating a
-    // massive glyph atlas) and scale the Transform to reach the desired world
-    // size.
+    // Use a fixed font_size for rasterization and scale the Transform to
+    // reach the desired world size. This avoids creating a massive glyph
+    // atlas at extreme zoom levels.
     let base_font_size = 16.0_f32;
     let desired_world_size = LABEL_FONT_SIZE * camera_scale;
     let entity_scale = desired_world_size / base_font_size;
