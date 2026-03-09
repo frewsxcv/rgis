@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_egui::{egui, EguiContexts, EguiPrimaryContextPass};
 
 pub struct Plugin;
 
@@ -6,6 +7,7 @@ impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_grid);
         app.add_systems(PostUpdate, update_grid);
+        app.add_systems(EguiPrimaryContextPass, render_grid_labels);
     }
 }
 
@@ -164,7 +166,6 @@ fn format_value(value: f32) -> String {
 
 const MIN_LINE_SPACING_PX: f32 = 80.0;
 const GRID_Z: f32 = -0.01;
-const LABEL_Z: f32 = -0.005;
 const LABEL_FONT_SIZE: f32 = 11.0;
 const LABEL_MARGIN_PX: f32 = 4.0;
 
@@ -180,13 +181,13 @@ fn grid_color(clear_color: &ClearColor) -> Color {
     }
 }
 
-fn label_color(clear_color: &ClearColor) -> Color {
+fn label_egui_color(clear_color: &ClearColor) -> egui::Color32 {
     let bg = clear_color.0.to_srgba();
     let luminance = 0.299 * bg.red + 0.587 * bg.green + 0.114 * bg.blue;
     if luminance < 0.5 {
-        Color::srgba(1.0, 1.0, 1.0, 0.35)
+        egui::Color32::from_rgba_unmultiplied(255, 255, 255, 90)
     } else {
-        Color::srgba(0.0, 0.0, 0.0, 0.45)
+        egui::Color32::from_rgba_unmultiplied(0, 0, 0, 115)
     }
 }
 
@@ -195,14 +196,55 @@ fn label_color(clear_color: &ClearColor) -> Color {
 #[derive(Component)]
 struct Grid;
 
-#[derive(Component)]
-struct GridLabel;
-
 #[derive(Default)]
 struct LastCameraState {
     translation: Vec3,
     scale: Vec3,
     window_size: Vec2,
+}
+
+// ── Viewport info shared between grid mesh and label systems ─────────────────
+
+struct ViewportInfo {
+    cam_x: f32,
+    cam_y: f32,
+    camera_scale: f32,
+    win_w: f32,
+    win_h: f32,
+    world_left: f32,
+    world_right: f32,
+    world_bottom: f32,
+    world_top: f32,
+}
+
+fn get_viewport_info(
+    camera_query: &Query<&Transform, With<Camera>>,
+    windows: &Query<&Window, With<bevy::window::PrimaryWindow>>,
+) -> Option<ViewportInfo> {
+    let Ok(transform) = camera_query.single() else {
+        return None;
+    };
+    let Ok(window) = windows.single() else {
+        return None;
+    };
+    let camera_scale = transform.scale.x;
+    let cam_x = transform.translation.x;
+    let cam_y = transform.translation.y;
+    let win_w = window.width();
+    let win_h = window.height();
+    let half_w = win_w * camera_scale * 0.5;
+    let half_h = win_h * camera_scale * 0.5;
+    Some(ViewportInfo {
+        cam_x,
+        cam_y,
+        camera_scale,
+        win_w,
+        win_h,
+        world_left: cam_x - half_w,
+        world_right: cam_x + half_w,
+        world_bottom: cam_y - half_h,
+        world_top: cam_y + half_h,
+    })
 }
 
 // ── Systems ──────────────────────────────────────────────────────────────────
@@ -227,9 +269,7 @@ fn spawn_grid(
 }
 
 fn update_grid(
-    mut commands: Commands,
     grid_query: Query<(&Mesh2d, &MeshMaterial2d<ColorMaterial>), With<Grid>>,
-    label_query: Query<Entity, With<GridLabel>>,
     camera_query: Query<&Transform, With<Camera>>,
     windows: Query<&Window, With<bevy::window::PrimaryWindow>>,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -264,37 +304,18 @@ fn update_grid(
         mat.color = grid_color(&clear_color);
     }
 
-    let camera_scale = transform.scale.x;
-    let cam_x = transform.translation.x;
-    let cam_y = transform.translation.y;
+    let Some(vp) = get_viewport_info(&camera_query, &windows) else {
+        return;
+    };
 
-    let half_w = window.width() * camera_scale * 0.5;
-    let half_h = window.height() * camera_scale * 0.5;
-
-    let world_left = cam_x - half_w;
-    let world_right = cam_x + half_w;
-    let world_bottom = cam_y - half_h;
-    let world_top = cam_y + half_h;
-
-    let thickness = camera_scale;
-    let height = world_top - world_bottom;
-    let center_y = (world_top + world_bottom) * 0.5;
-    let width = world_right - world_left;
-    let center_x = (world_right + world_left) * 0.5;
+    let thickness = vp.camera_scale;
+    let height = vp.world_top - vp.world_bottom;
+    let center_y = (vp.world_top + vp.world_bottom) * 0.5;
+    let width = vp.world_right - vp.world_left;
+    let center_x = (vp.world_right + vp.world_left) * 0.5;
 
     let mut positions: Vec<[f32; 3]> = Vec::new();
     let mut indices: Vec<u32> = Vec::new();
-
-    // Despawn old labels
-    for entity in label_query.iter() {
-        commands.entity(entity).despawn();
-    }
-
-    let lbl_color = label_color(&clear_color);
-    let margin = LABEL_MARGIN_PX * camera_scale;
-    // Position labels at the bottom-left of the viewport with a small inset
-    let label_y = world_bottom + margin;
-    let label_x = world_left + margin;
 
     let crs_kind = target_crs
         .as_ref()
@@ -303,57 +324,47 @@ fn update_grid(
 
     match crs_kind {
         CrsKind::Geographic => {
-            let deg_per_px_x = (world_right - world_left) / window.width();
-            let deg_per_px_y = (world_top - world_bottom) / window.height();
+            let deg_per_px_x = (vp.world_right - vp.world_left) / vp.win_w;
+            let deg_per_px_y = (vp.world_top - vp.world_bottom) / vp.win_h;
 
             let lon_interval = nice_degree_interval(deg_per_px_x, MIN_LINE_SPACING_PX);
             let lat_interval = nice_degree_interval(deg_per_px_y, MIN_LINE_SPACING_PX);
 
-            // Vertical lines (meridians)
-            let first_lon = (world_left / lon_interval).floor() as i64;
-            let last_lon = (world_right / lon_interval).ceil() as i64;
+            let first_lon = (vp.world_left / lon_interval).floor() as i64;
+            let last_lon = (vp.world_right / lon_interval).ceil() as i64;
             for i in first_lon..=last_lon {
                 let x = i as f32 * lon_interval;
                 add_rect(&mut positions, &mut indices, x, center_y, thickness, height);
-                let text = format_degree(x as f64, false);
-                spawn_label(&mut commands, text, x, label_y, camera_scale, lbl_color, false);
             }
 
-            // Horizontal lines (parallels)
-            let first_lat = (world_bottom / lat_interval).floor() as i64;
-            let last_lat = (world_top / lat_interval).ceil() as i64;
+            let first_lat = (vp.world_bottom / lat_interval).floor() as i64;
+            let last_lat = (vp.world_top / lat_interval).ceil() as i64;
             for i in first_lat..=last_lat {
                 let y = i as f32 * lat_interval;
                 add_rect(&mut positions, &mut indices, center_x, y, width, thickness);
-                let text = format_degree(y as f64, true);
-                spawn_label(&mut commands, text, label_x, y, camera_scale, lbl_color, true);
             }
         }
 
         CrsKind::WebMercator => {
-            let lon_left = x_to_lon(world_left);
-            let lon_right = x_to_lon(world_right);
-            let lat_bottom = y_to_lat(world_bottom);
-            let lat_top = y_to_lat(world_top);
+            let lon_left = x_to_lon(vp.world_left);
+            let lon_right = x_to_lon(vp.world_right);
+            let lat_bottom = y_to_lat(vp.world_bottom);
+            let lat_top = y_to_lat(vp.world_top);
 
-            let deg_per_px_lon = (lon_right - lon_left) as f32 / window.width();
-            let deg_per_px_lat = (lat_top - lat_bottom) as f32 / window.height();
+            let deg_per_px_lon = (lon_right - lon_left) as f32 / vp.win_w;
+            let deg_per_px_lat = (lat_top - lat_bottom) as f32 / vp.win_h;
 
             let lon_interval = nice_degree_interval(deg_per_px_lon, MIN_LINE_SPACING_PX);
             let lat_interval = nice_degree_interval(deg_per_px_lat, MIN_LINE_SPACING_PX);
 
-            // Vertical lines (meridians)
             let first_lon = (lon_left / lon_interval as f64).floor() as i64;
             let last_lon = (lon_right / lon_interval as f64).ceil() as i64;
             for i in first_lon..=last_lon {
                 let lon = i as f64 * lon_interval as f64;
                 let x = lon_to_x(lon);
                 add_rect(&mut positions, &mut indices, x, center_y, thickness, height);
-                let text = format_degree(lon, false);
-                spawn_label(&mut commands, text, x, label_y, camera_scale, lbl_color, false);
             }
 
-            // Horizontal lines (parallels)
             let first_lat = (lat_bottom / lat_interval as f64).floor() as i64;
             let last_lat = (lat_top / lat_interval as f64).ceil() as i64;
             for i in first_lat..=last_lat {
@@ -363,30 +374,24 @@ fn update_grid(
                 }
                 let y = lat_to_y(lat);
                 add_rect(&mut positions, &mut indices, center_x, y, width, thickness);
-                let text = format_degree(lat, true);
-                spawn_label(&mut commands, text, label_x, y, camera_scale, lbl_color, true);
             }
         }
 
         CrsKind::Other => {
-            let interval = nice_interval(camera_scale, MIN_LINE_SPACING_PX);
+            let interval = nice_interval(vp.camera_scale, MIN_LINE_SPACING_PX);
 
-            let first_x = (world_left / interval).floor() as i64;
-            let last_x = (world_right / interval).ceil() as i64;
+            let first_x = (vp.world_left / interval).floor() as i64;
+            let last_x = (vp.world_right / interval).ceil() as i64;
             for i in first_x..=last_x {
                 let x = i as f32 * interval;
                 add_rect(&mut positions, &mut indices, x, center_y, thickness, height);
-                let text = format_value(x);
-                spawn_label(&mut commands, text, x, label_y, camera_scale, lbl_color, false);
             }
 
-            let first_y = (world_bottom / interval).floor() as i64;
-            let last_y = (world_top / interval).ceil() as i64;
+            let first_y = (vp.world_bottom / interval).floor() as i64;
+            let last_y = (vp.world_top / interval).ceil() as i64;
             for i in first_y..=last_y {
                 let y = i as f32 * interval;
                 add_rect(&mut positions, &mut indices, center_x, y, width, thickness);
-                let text = format_value(y);
-                spawn_label(&mut commands, text, label_x, y, camera_scale, lbl_color, true);
             }
         }
     }
@@ -397,40 +402,166 @@ fn update_grid(
     }
 }
 
-fn spawn_label(
-    commands: &mut Commands,
-    text: String,
-    x: f32,
-    y: f32,
-    camera_scale: f32,
-    color: Color,
-    is_latitude: bool,
+// ── Egui label rendering ────────────────────────────────────────────────────
+
+fn render_grid_labels(
+    mut egui_ctx: EguiContexts,
+    camera_query: Query<&Transform, With<Camera>>,
+    windows: Query<&Window, With<bevy::window::PrimaryWindow>>,
+    clear_color: Res<ClearColor>,
+    target_crs: Option<Res<rgis_crs::TargetCrs>>,
 ) {
-    let anchor = if is_latitude {
-        bevy::sprite::Anchor::CENTER_LEFT
-    } else {
-        bevy::sprite::Anchor::BOTTOM_CENTER
+    let Some(vp) = get_viewport_info(&camera_query, &windows) else {
+        return;
     };
 
-    // Use a fixed font_size for rasterization and scale the Transform to
-    // reach the desired world size. This avoids creating a massive glyph
-    // atlas at extreme zoom levels.
-    let base_font_size = 16.0_f32;
-    let desired_world_size = LABEL_FONT_SIZE * camera_scale;
-    let entity_scale = desired_world_size / base_font_size;
+    let Ok(egui_ctx) = egui_ctx.ctx_mut() else {
+        return;
+    };
 
-    commands.spawn((
-        Text2d::new(text),
-        TextFont {
-            font_size: base_font_size,
-            ..default()
-        },
-        TextColor(color),
-        anchor,
-        Transform::from_xyz(x, y, LABEL_Z).with_scale(Vec3::splat(entity_scale)),
-        bevy::picking::Pickable::IGNORE,
-        GridLabel,
-    ));
+    let color = label_egui_color(&clear_color);
+    let font_id = egui::FontId::proportional(LABEL_FONT_SIZE);
+
+    // Convert world coordinates to egui screen coordinates.
+    // Egui: (0,0) at top-left, Y increases downward.
+    let world_to_screen_x = |wx: f32| -> f32 {
+        (wx - vp.cam_x) / vp.camera_scale + vp.win_w / 2.0
+    };
+    let world_to_screen_y = |wy: f32| -> f32 {
+        vp.win_h / 2.0 - (wy - vp.cam_y) / vp.camera_scale
+    };
+
+    // Place longitude labels near the bottom, latitude labels near the left.
+    let label_screen_y = vp.win_h - LABEL_MARGIN_PX - 20.0;
+    let label_screen_x = LABEL_MARGIN_PX + 4.0;
+
+    let painter = egui_ctx.layer_painter(egui::LayerId::background());
+
+    let crs_kind = target_crs
+        .as_ref()
+        .map(|crs| classify_crs(crs))
+        .unwrap_or(CrsKind::Other);
+
+    match crs_kind {
+        CrsKind::Geographic => {
+            let deg_per_px_x = (vp.world_right - vp.world_left) / vp.win_w;
+            let deg_per_px_y = (vp.world_top - vp.world_bottom) / vp.win_h;
+            let lon_interval = nice_degree_interval(deg_per_px_x, MIN_LINE_SPACING_PX);
+            let lat_interval = nice_degree_interval(deg_per_px_y, MIN_LINE_SPACING_PX);
+
+            let first_lon = (vp.world_left / lon_interval).floor() as i64;
+            let last_lon = (vp.world_right / lon_interval).ceil() as i64;
+            for i in first_lon..=last_lon {
+                let x = i as f32 * lon_interval;
+                let sx = world_to_screen_x(x);
+                let text = format_degree(x as f64, false);
+                painter.text(
+                    egui::pos2(sx, label_screen_y),
+                    egui::Align2::CENTER_BOTTOM,
+                    text,
+                    font_id.clone(),
+                    color,
+                );
+            }
+
+            let first_lat = (vp.world_bottom / lat_interval).floor() as i64;
+            let last_lat = (vp.world_top / lat_interval).ceil() as i64;
+            for i in first_lat..=last_lat {
+                let y = i as f32 * lat_interval;
+                let sy = world_to_screen_y(y);
+                let text = format_degree(y as f64, true);
+                painter.text(
+                    egui::pos2(label_screen_x, sy),
+                    egui::Align2::LEFT_CENTER,
+                    text,
+                    font_id.clone(),
+                    color,
+                );
+            }
+        }
+
+        CrsKind::WebMercator => {
+            let lon_left = x_to_lon(vp.world_left);
+            let lon_right = x_to_lon(vp.world_right);
+            let lat_bottom = y_to_lat(vp.world_bottom);
+            let lat_top = y_to_lat(vp.world_top);
+
+            let deg_per_px_lon = (lon_right - lon_left) as f32 / vp.win_w;
+            let deg_per_px_lat = (lat_top - lat_bottom) as f32 / vp.win_h;
+
+            let lon_interval = nice_degree_interval(deg_per_px_lon, MIN_LINE_SPACING_PX);
+            let lat_interval = nice_degree_interval(deg_per_px_lat, MIN_LINE_SPACING_PX);
+
+            let first_lon = (lon_left / lon_interval as f64).floor() as i64;
+            let last_lon = (lon_right / lon_interval as f64).ceil() as i64;
+            for i in first_lon..=last_lon {
+                let lon = i as f64 * lon_interval as f64;
+                let x = lon_to_x(lon);
+                let sx = world_to_screen_x(x);
+                let text = format_degree(lon, false);
+                painter.text(
+                    egui::pos2(sx, label_screen_y),
+                    egui::Align2::CENTER_BOTTOM,
+                    text,
+                    font_id.clone(),
+                    color,
+                );
+            }
+
+            let first_lat = (lat_bottom / lat_interval as f64).floor() as i64;
+            let last_lat = (lat_top / lat_interval as f64).ceil() as i64;
+            for i in first_lat..=last_lat {
+                let lat = i as f64 * lat_interval as f64;
+                if lat.abs() > 85.051_129 {
+                    continue;
+                }
+                let y = lat_to_y(lat);
+                let sy = world_to_screen_y(y);
+                let text = format_degree(lat, true);
+                painter.text(
+                    egui::pos2(label_screen_x, sy),
+                    egui::Align2::LEFT_CENTER,
+                    text,
+                    font_id.clone(),
+                    color,
+                );
+            }
+        }
+
+        CrsKind::Other => {
+            let interval = nice_interval(vp.camera_scale, MIN_LINE_SPACING_PX);
+
+            let first_x = (vp.world_left / interval).floor() as i64;
+            let last_x = (vp.world_right / interval).ceil() as i64;
+            for i in first_x..=last_x {
+                let x = i as f32 * interval;
+                let sx = world_to_screen_x(x);
+                let text = format_value(x);
+                painter.text(
+                    egui::pos2(sx, label_screen_y),
+                    egui::Align2::CENTER_BOTTOM,
+                    text,
+                    font_id.clone(),
+                    color,
+                );
+            }
+
+            let first_y = (vp.world_bottom / interval).floor() as i64;
+            let last_y = (vp.world_top / interval).ceil() as i64;
+            for i in first_y..=last_y {
+                let y = i as f32 * interval;
+                let sy = world_to_screen_y(y);
+                let text = format_value(y);
+                painter.text(
+                    egui::pos2(label_screen_x, sy),
+                    egui::Align2::LEFT_CENTER,
+                    text,
+                    font_id.clone(),
+                    color,
+                );
+            }
+        }
+    }
 }
 
 fn add_rect(
