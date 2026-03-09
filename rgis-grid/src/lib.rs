@@ -91,6 +91,7 @@ fn y_to_lat(y: f32) -> f64 {
 
 // ── CRS classification ──────────────────────────────────────────────────────
 
+#[derive(Clone, Copy)]
 enum CrsKind {
     /// Coordinates are in degrees (e.g. EPSG:4326).
     Geographic,
@@ -124,10 +125,48 @@ fn classify_crs(target_crs: &rgis_crs::TargetCrs) -> CrsKind {
     CrsKind::Other
 }
 
+// ── Label formatting ────────────────────────────────────────────────────────
+
+/// Format a degree value as D°M'S" with N/S or E/W suffix.
+fn format_degree(value: f64, is_latitude: bool) -> String {
+    let suffix = if is_latitude {
+        if value >= 0.0 { "N" } else { "S" }
+    } else {
+        if value >= 0.0 { "E" } else { "W" }
+    };
+    let abs = value.abs();
+    let deg = abs.floor() as u32;
+    let rem = (abs - deg as f64) * 60.0;
+    let min = rem.floor() as u32;
+    let sec = (rem - min as f64) * 60.0;
+
+    if sec.abs() > 0.01 {
+        format!("{deg}\u{00b0}{min}\u{2032}{sec:.0}\u{2033}{suffix}")
+    } else if min > 0 {
+        format!("{deg}\u{00b0}{min}\u{2032}{suffix}")
+    } else {
+        format!("{deg}\u{00b0}{suffix}")
+    }
+}
+
+/// Format a generic projected coordinate value.
+fn format_value(value: f32) -> String {
+    if value.abs() >= 1_000_000.0 {
+        format!("{:.0}", value)
+    } else if value.abs() >= 1.0 {
+        format!("{:.1}", value)
+    } else {
+        format!("{:.4}", value)
+    }
+}
+
 // ── Constants ────────────────────────────────────────────────────────────────
 
 const MIN_LINE_SPACING_PX: f32 = 80.0;
 const GRID_Z: f32 = -0.01;
+const LABEL_Z: f32 = -0.005;
+const LABEL_FONT_SIZE: f32 = 11.0;
+const LABEL_MARGIN_PX: f32 = 4.0;
 
 // ── Grid colour ──────────────────────────────────────────────────────────────
 
@@ -141,10 +180,23 @@ fn grid_color(clear_color: &ClearColor) -> Color {
     }
 }
 
+fn label_color(clear_color: &ClearColor) -> Color {
+    let bg = clear_color.0.to_srgba();
+    let luminance = 0.299 * bg.red + 0.587 * bg.green + 0.114 * bg.blue;
+    if luminance < 0.5 {
+        Color::srgba(1.0, 1.0, 1.0, 0.35)
+    } else {
+        Color::srgba(0.0, 0.0, 0.0, 0.45)
+    }
+}
+
 // ── Bevy components / state ──────────────────────────────────────────────────
 
 #[derive(Component)]
 struct Grid;
+
+#[derive(Component)]
+struct GridLabel;
 
 #[derive(Default)]
 struct LastCameraState {
@@ -175,7 +227,9 @@ fn spawn_grid(
 }
 
 fn update_grid(
+    mut commands: Commands,
     grid_query: Query<(&Mesh2d, &MeshMaterial2d<ColorMaterial>), With<Grid>>,
+    label_query: Query<Entity, With<GridLabel>>,
     camera_query: Query<&Transform, With<Camera>>,
     windows: Query<&Window, With<bevy::window::PrimaryWindow>>,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -231,6 +285,17 @@ fn update_grid(
     let mut positions: Vec<[f32; 3]> = Vec::new();
     let mut indices: Vec<u32> = Vec::new();
 
+    // Despawn old labels
+    for entity in label_query.iter() {
+        commands.entity(entity).despawn();
+    }
+
+    let lbl_color = label_color(&clear_color);
+    let margin = LABEL_MARGIN_PX * camera_scale;
+    // Position labels at the bottom-left of the viewport with a small inset
+    let label_y = world_bottom + margin;
+    let label_x = world_left + margin;
+
     let crs_kind = target_crs
         .as_ref()
         .map(|crs| classify_crs(crs))
@@ -238,7 +303,6 @@ fn update_grid(
 
     match crs_kind {
         CrsKind::Geographic => {
-            // Coordinates are already in degrees.
             let deg_per_px_x = (world_right - world_left) / window.width();
             let deg_per_px_y = (world_top - world_bottom) / window.height();
 
@@ -251,6 +315,8 @@ fn update_grid(
             for i in first_lon..=last_lon {
                 let x = i as f32 * lon_interval;
                 add_rect(&mut positions, &mut indices, x, center_y, thickness, height);
+                let text = format_degree(x as f64, false);
+                spawn_label(&mut commands, text, x, label_y, camera_scale, lbl_color, false);
             }
 
             // Horizontal lines (parallels)
@@ -259,11 +325,12 @@ fn update_grid(
             for i in first_lat..=last_lat {
                 let y = i as f32 * lat_interval;
                 add_rect(&mut positions, &mut indices, center_x, y, width, thickness);
+                let text = format_degree(y as f64, true);
+                spawn_label(&mut commands, text, label_x, y, camera_scale, lbl_color, true);
             }
         }
 
         CrsKind::WebMercator => {
-            // Convert viewport bounds from metres to degrees.
             let lon_left = x_to_lon(world_left);
             let lon_right = x_to_lon(world_right);
             let lat_bottom = y_to_lat(world_bottom);
@@ -275,31 +342,33 @@ fn update_grid(
             let lon_interval = nice_degree_interval(deg_per_px_lon, MIN_LINE_SPACING_PX);
             let lat_interval = nice_degree_interval(deg_per_px_lat, MIN_LINE_SPACING_PX);
 
-            // Vertical lines (meridians) – uniform spacing in Mercator.
+            // Vertical lines (meridians)
             let first_lon = (lon_left / lon_interval as f64).floor() as i64;
             let last_lon = (lon_right / lon_interval as f64).ceil() as i64;
             for i in first_lon..=last_lon {
                 let lon = i as f64 * lon_interval as f64;
                 let x = lon_to_x(lon);
                 add_rect(&mut positions, &mut indices, x, center_y, thickness, height);
+                let text = format_degree(lon, false);
+                spawn_label(&mut commands, text, x, label_y, camera_scale, lbl_color, false);
             }
 
-            // Horizontal lines (parallels) – non-uniform spacing in Mercator.
+            // Horizontal lines (parallels)
             let first_lat = (lat_bottom / lat_interval as f64).floor() as i64;
             let last_lat = (lat_top / lat_interval as f64).ceil() as i64;
             for i in first_lat..=last_lat {
                 let lat = i as f64 * lat_interval as f64;
-                // Clamp to valid Mercator range (~±85.05°).
                 if lat.abs() > 85.051_129 {
                     continue;
                 }
                 let y = lat_to_y(lat);
                 add_rect(&mut positions, &mut indices, center_x, y, width, thickness);
+                let text = format_degree(lat, true);
+                spawn_label(&mut commands, text, label_x, y, camera_scale, lbl_color, true);
             }
         }
 
         CrsKind::Other => {
-            // Fall back to generic 1-2-5 intervals in projected units.
             let interval = nice_interval(camera_scale, MIN_LINE_SPACING_PX);
 
             let first_x = (world_left / interval).floor() as i64;
@@ -307,6 +376,8 @@ fn update_grid(
             for i in first_x..=last_x {
                 let x = i as f32 * interval;
                 add_rect(&mut positions, &mut indices, x, center_y, thickness, height);
+                let text = format_value(x);
+                spawn_label(&mut commands, text, x, label_y, camera_scale, lbl_color, false);
             }
 
             let first_y = (world_bottom / interval).floor() as i64;
@@ -314,6 +385,8 @@ fn update_grid(
             for i in first_y..=last_y {
                 let y = i as f32 * interval;
                 add_rect(&mut positions, &mut indices, center_x, y, width, thickness);
+                let text = format_value(y);
+                spawn_label(&mut commands, text, label_x, y, camera_scale, lbl_color, true);
             }
         }
     }
@@ -322,6 +395,35 @@ fn update_grid(
         mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, positions);
         mesh.insert_indices(bevy::mesh::Indices::U32(indices));
     }
+}
+
+fn spawn_label(
+    commands: &mut Commands,
+    text: String,
+    x: f32,
+    y: f32,
+    camera_scale: f32,
+    color: Color,
+    is_latitude: bool,
+) {
+    let anchor = if is_latitude {
+        bevy::sprite::Anchor::CENTER_LEFT
+    } else {
+        bevy::sprite::Anchor::BOTTOM_CENTER
+    };
+
+    commands.spawn((
+        Text2d::new(text),
+        TextFont {
+            font_size: LABEL_FONT_SIZE,
+            ..default()
+        },
+        TextColor(color),
+        anchor,
+        Transform::from_xyz(x, y, LABEL_Z).with_scale(Vec3::splat(camera_scale)),
+        bevy::picking::Pickable::IGNORE,
+        GridLabel,
+    ));
 }
 
 fn add_rect(
