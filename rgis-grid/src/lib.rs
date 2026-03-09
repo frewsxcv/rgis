@@ -144,11 +144,7 @@ fn format_degree(value: f64, is_latitude: bool) -> String {
     let sec = (rem - min as f64) * 60.0;
 
     if deg == 0 && min == 0 && sec.abs() > 0.01 {
-        // Sub-arcminute: show as decimal degrees (e.g. "0.008° N")
-        format!("{abs:.3}\u{00b0} {suffix}")
-    } else if deg == 0 && min > 0 {
-        // Sub-degree: show decimal degrees to avoid "0°30′" looking like "30°"
-        format!("{abs:.2}\u{00b0} {suffix}")
+        format!("{sec:.0}\u{2033} {suffix}")
     } else if sec.abs() > 0.01 {
         format!("{deg}\u{00b0} {min}\u{2032} {sec:.0}\u{2033} {suffix}")
     } else if min > 0 {
