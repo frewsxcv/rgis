@@ -4,29 +4,10 @@ pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, (spawn_grid, spawn_test_ui));
+        app.add_systems(Startup, spawn_grid);
         app.add_systems(PostUpdate, update_grid);
         app.add_systems(Update, update_grid_labels);
     }
-}
-
-fn spawn_test_ui(mut commands: Commands) {
-    commands.spawn((
-        Text::new("HELLO WORLD TEST"),
-        TextFont {
-            font_size: 40.0,
-            ..default()
-        },
-        TextColor(Color::srgba(1.0, 0.0, 0.0, 1.0)),
-        Node {
-            position_type: PositionType::Absolute,
-            left: Val::Px(100.0),
-            top: Val::Px(100.0),
-            ..default()
-        },
-        ZIndex(i32::MAX),
-    ));
-    tracing::info!("spawn_test_ui: spawned HELLO WORLD TEST at (100, 100)");
 }
 
 // ── Degree-friendly intervals ────────────────────────────────────────────────
@@ -440,7 +421,27 @@ fn update_grid_labels(
     target_crs: Option<Res<rgis_crs::TargetCrs>>,
     side_panel_width: Res<rgis_units::SidePanelWidth>,
     bottom_panel_height: Res<rgis_units::BottomPanelHeight>,
+    mut last_state: Local<LastCameraState>,
 ) {
+    let Ok(transform) = camera_query.single() else {
+        return;
+    };
+    let Ok(window) = windows.single() else {
+        return;
+    };
+
+    let window_size = Vec2::new(window.width(), window.height());
+    if transform.translation == last_state.translation
+        && transform.scale == last_state.scale
+        && window_size == last_state.window_size
+    {
+        return;
+    }
+
+    last_state.translation = transform.translation;
+    last_state.scale = transform.scale;
+    last_state.window_size = window_size;
+
     // Despawn all previous labels.
     for entity in label_query.iter() {
         commands.entity(entity).despawn();
@@ -576,8 +577,6 @@ fn update_grid_labels(
         }
     }
 
-    tracing::info!("update_grid_labels: {} labels to spawn, win={}x{}", labels.len(), vp.win_w, vp.win_h);
-
     // Spawn Bevy UI Text nodes positioned absolutely on screen.
     for label in labels {
         // Skip labels outside visible area.
@@ -593,7 +592,6 @@ fn update_grid_labels(
             Justify::Center
         };
 
-        tracing::info!("  spawning label at ({}, {}): {}", label.screen_x, label.screen_y, label.text);
         commands.spawn((
             Text::new(label.text),
             TextFont {
@@ -608,8 +606,6 @@ fn update_grid_labels(
                 top: Val::Px(label.screen_y),
                 ..default()
             },
-            ZIndex(i32::MAX),
-            BackgroundColor(Color::srgba(1.0, 0.0, 0.0, 0.5)),
             bevy::picking::Pickable::IGNORE,
             GridLabel,
         ));
