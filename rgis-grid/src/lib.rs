@@ -410,14 +410,16 @@ fn update_grid(
     }
 }
 
-// ── Bevy UI label rendering ─────────────────────────────────────────────────
+// ── Grid label rendering (world-space Text2d) ──────────────────────────────
 
-/// Collected label: screen position + text.
+const LABEL_Z: f32 = -0.005;
+
+/// Collected label data: world position + text + anchor.
 struct LabelSpec {
-    screen_x: f32,
-    screen_y: f32,
+    world_x: f32,
+    world_y: f32,
     text: String,
-    is_y_axis: bool,
+    anchor: bevy::sprite::Anchor,
 }
 
 fn update_grid_labels(
@@ -467,20 +469,13 @@ fn update_grid_labels(
     };
 
     let color = label_color(&clear_color);
+    let text_scale = vp.camera_scale;
 
-    // Screen positions for label rows.
-    let label_screen_y = vp.win_h - bottom_panel_height.0 - LABEL_MARGIN_PX - 20.0;
-    let label_screen_x = side_panel_width.0 + LABEL_MARGIN_PX + 4.0;
-    let cam_x = (vp.world_left + vp.world_right) * 0.5;
-    let cam_y = (vp.world_bottom + vp.world_top) * 0.5;
-
-    // World → screen coordinate helpers.
-    let world_to_screen_x = |wx: f32| -> f32 {
-        (wx - cam_x) / vp.camera_scale + vp.win_w / 2.0
-    };
-    let world_to_screen_y = |wy: f32| -> f32 {
-        vp.win_h / 2.0 - (wy - cam_y) / vp.camera_scale
-    };
+    // Compute world positions for label edges (offset from viewport edges).
+    let bottom_margin_world = (bottom_panel_height.0 + LABEL_MARGIN_PX + 16.0) * vp.camera_scale;
+    let left_margin_world = (side_panel_width.0 + LABEL_MARGIN_PX + 4.0) * vp.camera_scale;
+    let label_world_y = vp.world_bottom + bottom_margin_world;
+    let label_world_x = vp.world_left + left_margin_world;
 
     let crs_kind = target_crs
         .as_ref()
@@ -501,10 +496,10 @@ fn update_grid_labels(
             for i in first_lon..=last_lon {
                 let x = i as f32 * lon_interval;
                 labels.push(LabelSpec {
-                    screen_x: world_to_screen_x(x),
-                    screen_y: label_screen_y,
+                    world_x: x,
+                    world_y: label_world_y,
                     text: format_degree(x as f64, false),
-                    is_y_axis: false,
+                    anchor: bevy::sprite::Anchor::BOTTOM_CENTER,
                 });
             }
 
@@ -513,10 +508,10 @@ fn update_grid_labels(
             for i in first_lat..=last_lat {
                 let y = i as f32 * lat_interval;
                 labels.push(LabelSpec {
-                    screen_x: label_screen_x,
-                    screen_y: world_to_screen_y(y),
+                    world_x: label_world_x,
+                    world_y: y,
                     text: format_degree(y as f64, true),
-                    is_y_axis: true,
+                    anchor: bevy::sprite::Anchor::CENTER_LEFT,
                 });
             }
         }
@@ -539,10 +534,10 @@ fn update_grid_labels(
                 let lon = i as f64 * lon_interval as f64;
                 let x = lon_to_x(lon);
                 labels.push(LabelSpec {
-                    screen_x: world_to_screen_x(x),
-                    screen_y: label_screen_y,
+                    world_x: x,
+                    world_y: label_world_y,
                     text: format_degree(lon, false),
-                    is_y_axis: false,
+                    anchor: bevy::sprite::Anchor::BOTTOM_CENTER,
                 });
             }
 
@@ -555,10 +550,10 @@ fn update_grid_labels(
                 }
                 let y = lat_to_y(lat);
                 labels.push(LabelSpec {
-                    screen_x: label_screen_x,
-                    screen_y: world_to_screen_y(y),
+                    world_x: label_world_x,
+                    world_y: y,
                     text: format_degree(lat, true),
-                    is_y_axis: true,
+                    anchor: bevy::sprite::Anchor::CENTER_LEFT,
                 });
             }
         }
@@ -571,10 +566,10 @@ fn update_grid_labels(
             for i in first_x..=last_x {
                 let x = i as f32 * interval;
                 labels.push(LabelSpec {
-                    screen_x: world_to_screen_x(x),
-                    screen_y: label_screen_y,
+                    world_x: x,
+                    world_y: label_world_y,
                     text: format_value(x),
-                    is_y_axis: false,
+                    anchor: bevy::sprite::Anchor::BOTTOM_CENTER,
                 });
             }
 
@@ -583,43 +578,29 @@ fn update_grid_labels(
             for i in first_y..=last_y {
                 let y = i as f32 * interval;
                 labels.push(LabelSpec {
-                    screen_x: label_screen_x,
-                    screen_y: world_to_screen_y(y),
+                    world_x: label_world_x,
+                    world_y: y,
                     text: format_value(y),
-                    is_y_axis: true,
+                    anchor: bevy::sprite::Anchor::CENTER_LEFT,
                 });
             }
         }
     }
 
-    // Spawn Bevy UI Text nodes positioned absolutely on screen.
+    // Spawn Text2d entities for each label.
     for label in labels {
-        // Skip labels outside visible area.
-        if label.screen_x < 0.0 || label.screen_x > vp.win_w
-            || label.screen_y < 0.0 || label.screen_y > vp.win_h
-        {
-            continue;
-        }
-
-        let justify = if label.is_y_axis {
-            Justify::Left
-        } else {
-            Justify::Center
-        };
-
         commands.spawn((
-            Text::new(label.text),
+            Text2d::new(label.text),
             TextFont {
                 font: font_res.0.clone(),
                 font_size: LABEL_FONT_SIZE,
                 ..default()
             },
             TextColor(color),
-            TextLayout::new_with_justify(justify),
-            Node {
-                position_type: PositionType::Absolute,
-                left: Val::Px(label.screen_x),
-                top: Val::Px(label.screen_y),
+            label.anchor,
+            Transform {
+                translation: Vec3::new(label.world_x, label.world_y, LABEL_Z),
+                scale: Vec3::new(text_scale, text_scale, 1.0),
                 ..default()
             },
             bevy::picking::Pickable::IGNORE,
