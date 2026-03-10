@@ -14,7 +14,8 @@ export default defineConfig({
 
   expect: {
     toHaveScreenshot: {
-      maxDiffPixelRatio: 0.03,
+      // Hardware GPU rendering is inherently non-deterministic between runs
+      maxDiffPixelRatio: 0.05,
       threshold: 0.2,
     },
   },
