@@ -81,7 +81,7 @@ impl bevy_jobs::Job for ReprojectRasterExtentJob {
                         .is_ok();
 
                 if fwd_ok {
-                    let (x, y) = if Self::is_geographic(&self.target_crs) {
+                    let (x, y) = if self.target_crs.is_geographic() {
                         // Geographic CRS: geodesy outputs radians, convert to degrees
                         (coord[0].0[0].to_degrees(), coord[0].0[1].to_degrees())
                     } else {
