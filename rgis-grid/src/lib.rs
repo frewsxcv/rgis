@@ -373,6 +373,9 @@ fn update_grid(
             let last_lon = (lon_right / lon_interval as f64).ceil() as i64;
             for i in first_lon..=last_lon {
                 let lon = i as f64 * lon_interval as f64;
+                if lon.abs() > 180.0 {
+                    continue;
+                }
                 let x = lon_to_x(lon);
                 add_rect(&mut positions, &mut indices, x, center_y, thickness, height);
             }
@@ -536,6 +539,9 @@ fn update_grid_labels(
             let last_lon = (lon_right / lon_interval as f64).ceil() as i64;
             for i in first_lon..=last_lon {
                 let lon = i as f64 * lon_interval as f64;
+                if lon.abs() > 180.0 {
+                    continue;
+                }
                 let x = lon_to_x(lon);
                 labels.push(LabelSpec {
                     world_x: x,
