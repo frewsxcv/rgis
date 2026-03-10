@@ -744,6 +744,7 @@ fn calculate_all_distances(
         &*geodesy_ctx_inner,
         target_crs.0.op_handle,
         target_op_handle,
+        true, // target is WGS84 (geographic)
     )
     .ok()?;
 

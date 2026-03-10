@@ -3286,9 +3286,9 @@ dependencies = [
 
 [[package]]
 name = "geo-geodesy"
-version = "7.0.0"
+version = "8.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cd01048caaf36daaf93683c8b533d54d74366bfea95964270d2314c7234243b2"
+checksum = "eea53bc39146839cd069e0f7949b2644068f03329758c1dca3be3d00aecbe518"
 dependencies = [
  "crs-definitions",
  "geo",
@@ -5692,6 +5692,10 @@ name = "rgis-grid"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "crs-definitions",
+ "rgis-crs",
+ "rgis-units",
+ "tracing",
 ]
 
 [[package]]
