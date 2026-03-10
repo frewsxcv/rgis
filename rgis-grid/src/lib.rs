@@ -166,7 +166,7 @@ fn format_value(value: f32) -> String {
 
 const MIN_LINE_SPACING_PX: f32 = 80.0;
 const GRID_Z: f32 = -0.01;
-const LABEL_Z: f32 = -0.005;
+const LABEL_Z: f32 = 900.0;
 const LABEL_FONT_SIZE: f32 = 11.0;
 const LABEL_MARGIN_PX: f32 = 8.0;
 
