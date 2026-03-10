@@ -4,9 +4,29 @@ pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_grid);
-        app.add_systems(PostUpdate, (update_grid, update_grid_labels).chain());
+        app.add_systems(Startup, (spawn_grid, spawn_test_ui));
+        app.add_systems(PostUpdate, update_grid);
+        app.add_systems(Update, update_grid_labels);
     }
+}
+
+fn spawn_test_ui(mut commands: Commands) {
+    commands.spawn((
+        Text::new("HELLO WORLD TEST"),
+        TextFont {
+            font_size: 40.0,
+            ..default()
+        },
+        TextColor(Color::srgba(1.0, 0.0, 0.0, 1.0)),
+        Node {
+            position_type: PositionType::Absolute,
+            left: Val::Px(100.0),
+            top: Val::Px(100.0),
+            ..default()
+        },
+        ZIndex(i32::MAX),
+    ));
+    tracing::info!("spawn_test_ui: spawned HELLO WORLD TEST at (100, 100)");
 }
 
 // ── Degree-friendly intervals ────────────────────────────────────────────────
