@@ -2,12 +2,20 @@ use bevy::prelude::*;
 
 pub struct Plugin;
 
+#[derive(Resource)]
+struct GridFont(Handle<Font>);
+
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_grid);
+        app.add_systems(Startup, (spawn_grid, load_grid_font));
         app.add_systems(PostUpdate, update_grid);
         app.add_systems(Update, update_grid_labels);
     }
+}
+
+fn load_grid_font(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let font = asset_server.load("fonts/RobotoMono-VariableFont_wght.ttf");
+    commands.insert_resource(GridFont(font));
 }
 
 // ── Degree-friendly intervals ────────────────────────────────────────────────
@@ -142,13 +150,13 @@ fn format_degree(value: f64, is_latitude: bool) -> String {
     let sec = (rem - min as f64) * 60.0;
 
     if deg == 0 && min == 0 && sec.abs() > 0.01 {
-        format!("{sec:.0}s {suffix}")
+        format!("{sec:.0}\u{2033} {suffix}")
     } else if sec.abs() > 0.01 {
-        format!("{deg}d {min}m {sec:.0}s {suffix}")
+        format!("{deg}\u{00b0}{min}\u{2032}{sec:.0}\u{2033} {suffix}")
     } else if min > 0 {
-        format!("{deg}d {min}m {suffix}")
+        format!("{deg}\u{00b0}{min}\u{2032} {suffix}")
     } else {
-        format!("{deg}d {suffix}")
+        format!("{deg}\u{00b0} {suffix}")
     }
 }
 
@@ -419,6 +427,7 @@ fn update_grid_labels(
     windows: Query<&Window, With<bevy::window::PrimaryWindow>>,
     clear_color: Res<ClearColor>,
     target_crs: Option<Res<rgis_crs::TargetCrs>>,
+    grid_font: Option<Res<GridFont>>,
     side_panel_width: Res<rgis_units::SidePanelWidth>,
     bottom_panel_height: Res<rgis_units::BottomPanelHeight>,
     mut last_state: Local<LastCameraState>,
@@ -595,6 +604,7 @@ fn update_grid_labels(
         commands.spawn((
             Text::new(label.text),
             TextFont {
+                font: grid_font.as_ref().map(|f| f.0.clone()).unwrap_or_default(),
                 font_size: LABEL_FONT_SIZE,
                 ..default()
             },
