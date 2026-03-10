@@ -360,16 +360,13 @@ fn update_grid(
             let lat_top = y_to_lat(vp.world_top);
 
             let deg_per_px_lon = (lon_right - lon_left) as f32 / vp.win_w;
-            // Use latitude range near viewport center to avoid polar Mercator
-            // distortion inflating the interval.
-            let mid_y = (vp.world_bottom + vp.world_top) * 0.5;
-            let quarter_h = (vp.world_top - vp.world_bottom) * 0.25;
-            let lat_q1 = y_to_lat(mid_y - quarter_h);
-            let lat_q3 = y_to_lat(mid_y + quarter_h);
-            let deg_per_px_lat = (lat_q3 - lat_q1) as f32 / (vp.win_h * 0.5);
 
-            let lon_interval = nice_degree_interval(deg_per_px_lon, MIN_LINE_SPACING_PX);
-            let lat_interval = nice_degree_interval(deg_per_px_lat, MIN_LINE_SPACING_PX);
+            // Use the same degree interval for both axes. Mercator's non-linear
+            // y-axis makes per-pixel latitude density meaningless, and geographic
+            // grids conventionally use uniform degree spacing.
+            let interval = nice_degree_interval(deg_per_px_lon, MIN_LINE_SPACING_PX);
+            let lon_interval = interval;
+            let lat_interval = interval;
 
             let first_lon = (lon_left / lon_interval as f64).floor() as i64;
             let last_lon = (lon_right / lon_interval as f64).ceil() as i64;
@@ -529,14 +526,10 @@ fn update_grid_labels(
             let lat_top = y_to_lat(vp.world_top);
 
             let deg_per_px_lon = (lon_right - lon_left) as f32 / vp.win_w;
-            let mid_y = (vp.world_bottom + vp.world_top) * 0.5;
-            let quarter_h = (vp.world_top - vp.world_bottom) * 0.25;
-            let lat_q1 = y_to_lat(mid_y - quarter_h);
-            let lat_q3 = y_to_lat(mid_y + quarter_h);
-            let deg_per_px_lat = (lat_q3 - lat_q1) as f32 / (vp.win_h * 0.5);
 
-            let lon_interval = nice_degree_interval(deg_per_px_lon, MIN_LINE_SPACING_PX);
-            let lat_interval = nice_degree_interval(deg_per_px_lat, MIN_LINE_SPACING_PX);
+            let interval = nice_degree_interval(deg_per_px_lon, MIN_LINE_SPACING_PX);
+            let lon_interval = interval;
+            let lat_interval = interval;
 
             let first_lon = (lon_left / lon_interval as f64).floor() as i64;
             let last_lon = (lon_right / lon_interval as f64).ceil() as i64;
