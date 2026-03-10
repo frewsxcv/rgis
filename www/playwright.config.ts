@@ -31,7 +31,12 @@ export default defineConfig({
         ...devices["Desktop Chrome"],
         viewport: { width: 1280, height: 720 },
         launchOptions: {
-          args: ["--enable-gpu", "--use-angle=default"],
+          args: [
+            "--enable-gpu",
+            ...(process.env.CI
+              ? ["--use-angle=swiftshader"]
+              : ["--use-angle=default"]),
+          ],
         },
       },
     },
