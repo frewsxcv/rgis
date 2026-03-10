@@ -16,7 +16,27 @@ impl bevy::app::Plugin for Plugin {
 fn load_grid_font(mut commands: Commands, mut fonts: ResMut<Assets<Font>>) {
     let font_data = include_bytes!("../../rgis/assets/fonts/RobotoMono-VariableFont_wght.ttf");
     let font = fonts.add(Font::try_from_bytes(font_data.to_vec()).expect("Failed to load embedded font"));
-    commands.insert_resource(GridFont(font));
+    commands.insert_resource(GridFont(font.clone()));
+
+    // Debug: spawn test labels with both default and custom font
+    commands.spawn((
+        Text::new("DEFAULT FONT: 45\u{00b0}30\u{2032}"),
+        TextFont { font_size: 30.0, ..default() },
+        TextColor(Color::srgba(1.0, 0.0, 0.0, 1.0)),
+        Node { position_type: PositionType::Absolute, left: Val::Px(300.0), top: Val::Px(50.0), ..default() },
+    ));
+    commands.spawn((
+        Text::new("ROBOTO FONT: 45\u{00b0}30\u{2032}"),
+        TextFont { font: font.clone(), font_size: 30.0, ..default() },
+        TextColor(Color::srgba(0.0, 1.0, 0.0, 1.0)),
+        Node { position_type: PositionType::Absolute, left: Val::Px(300.0), top: Val::Px(100.0), ..default() },
+    ));
+    commands.spawn((
+        Text::new("ROBOTO ASCII ONLY"),
+        TextFont { font, font_size: 30.0, ..default() },
+        TextColor(Color::srgba(0.0, 0.0, 1.0, 1.0)),
+        Node { position_type: PositionType::Absolute, left: Val::Px(300.0), top: Val::Px(150.0), ..default() },
+    ));
 }
 
 // ── Degree-friendly intervals ────────────────────────────────────────────────
