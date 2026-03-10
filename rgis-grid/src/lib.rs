@@ -142,13 +142,13 @@ fn format_degree(value: f64, is_latitude: bool) -> String {
     let sec = (rem - min as f64) * 60.0;
 
     if deg == 0 && min == 0 && sec.abs() > 0.01 {
-        format!("{sec:.0}\" {suffix}")
+        format!("{sec:.0}s {suffix}")
     } else if sec.abs() > 0.01 {
-        format!("{deg}\u{00b0} {min}' {sec:.0}\" {suffix}")
+        format!("{deg}d {min}m {sec:.0}s {suffix}")
     } else if min > 0 {
-        format!("{deg}\u{00b0} {min}' {suffix}")
+        format!("{deg}d {min}m {suffix}")
     } else {
-        format!("{deg}\u{00b0} {suffix}")
+        format!("{deg}d {suffix}")
     }
 }
 
