@@ -166,7 +166,6 @@ fn format_value(value: f32) -> String {
 
 const MIN_LINE_SPACING_PX: f32 = 80.0;
 const GRID_Z: f32 = -0.01;
-const LABEL_Z: f32 = 900.0;
 const LABEL_FONT_SIZE: f32 = 11.0;
 const LABEL_MARGIN_PX: f32 = 8.0;
 
@@ -402,14 +401,14 @@ fn update_grid(
     }
 }
 
-// ── Text2d label rendering ──────────────────────────────────────────────────
+// ── Bevy UI label rendering ─────────────────────────────────────────────────
 
-/// Collected label data: world position + text + anchor.
+/// Collected label: screen position + text.
 struct LabelSpec {
-    world_x: f32,
-    world_y: f32,
+    screen_x: f32,
+    screen_y: f32,
     text: String,
-    anchor: bevy::sprite::Anchor,
+    is_y_axis: bool,
 }
 
 fn update_grid_labels(
@@ -432,13 +431,20 @@ fn update_grid_labels(
     };
 
     let color = label_color(&clear_color);
-    let text_scale = vp.camera_scale;
 
-    // Compute world positions for label edges (offset from viewport edges).
-    let bottom_margin_world = (bottom_panel_height.0 + LABEL_MARGIN_PX + 16.0) * vp.camera_scale;
-    let left_margin_world = (side_panel_width.0 + LABEL_MARGIN_PX + 4.0) * vp.camera_scale;
-    let label_world_y = vp.world_bottom + bottom_margin_world;
-    let label_world_x = vp.world_left + left_margin_world;
+    // Screen positions for label rows.
+    let label_screen_y = vp.win_h - bottom_panel_height.0 - LABEL_MARGIN_PX - 20.0;
+    let label_screen_x = side_panel_width.0 + LABEL_MARGIN_PX + 4.0;
+    let cam_x = (vp.world_left + vp.world_right) * 0.5;
+    let cam_y = (vp.world_bottom + vp.world_top) * 0.5;
+
+    // World → screen coordinate helpers.
+    let world_to_screen_x = |wx: f32| -> f32 {
+        (wx - cam_x) / vp.camera_scale + vp.win_w / 2.0
+    };
+    let world_to_screen_y = |wy: f32| -> f32 {
+        vp.win_h / 2.0 - (wy - cam_y) / vp.camera_scale
+    };
 
     let crs_kind = target_crs
         .as_ref()
@@ -459,10 +465,10 @@ fn update_grid_labels(
             for i in first_lon..=last_lon {
                 let x = i as f32 * lon_interval;
                 labels.push(LabelSpec {
-                    world_x: x,
-                    world_y: label_world_y,
+                    screen_x: world_to_screen_x(x),
+                    screen_y: label_screen_y,
                     text: format_degree(x as f64, false),
-                    anchor: bevy::sprite::Anchor::BOTTOM_CENTER,
+                    is_y_axis: false,
                 });
             }
 
@@ -471,10 +477,10 @@ fn update_grid_labels(
             for i in first_lat..=last_lat {
                 let y = i as f32 * lat_interval;
                 labels.push(LabelSpec {
-                    world_x: label_world_x,
-                    world_y: y,
+                    screen_x: label_screen_x,
+                    screen_y: world_to_screen_y(y),
                     text: format_degree(y as f64, true),
-                    anchor: bevy::sprite::Anchor::CENTER_LEFT,
+                    is_y_axis: true,
                 });
             }
         }
@@ -497,10 +503,10 @@ fn update_grid_labels(
                 let lon = i as f64 * lon_interval as f64;
                 let x = lon_to_x(lon);
                 labels.push(LabelSpec {
-                    world_x: x,
-                    world_y: label_world_y,
+                    screen_x: world_to_screen_x(x),
+                    screen_y: label_screen_y,
                     text: format_degree(lon, false),
-                    anchor: bevy::sprite::Anchor::BOTTOM_CENTER,
+                    is_y_axis: false,
                 });
             }
 
@@ -513,10 +519,10 @@ fn update_grid_labels(
                 }
                 let y = lat_to_y(lat);
                 labels.push(LabelSpec {
-                    world_x: label_world_x,
-                    world_y: y,
+                    screen_x: label_screen_x,
+                    screen_y: world_to_screen_y(y),
                     text: format_degree(lat, true),
-                    anchor: bevy::sprite::Anchor::CENTER_LEFT,
+                    is_y_axis: true,
                 });
             }
         }
@@ -529,10 +535,10 @@ fn update_grid_labels(
             for i in first_x..=last_x {
                 let x = i as f32 * interval;
                 labels.push(LabelSpec {
-                    world_x: x,
-                    world_y: label_world_y,
+                    screen_x: world_to_screen_x(x),
+                    screen_y: label_screen_y,
                     text: format_value(x),
-                    anchor: bevy::sprite::Anchor::BOTTOM_CENTER,
+                    is_y_axis: false,
                 });
             }
 
@@ -541,28 +547,42 @@ fn update_grid_labels(
             for i in first_y..=last_y {
                 let y = i as f32 * interval;
                 labels.push(LabelSpec {
-                    world_x: label_world_x,
-                    world_y: y,
+                    screen_x: label_screen_x,
+                    screen_y: world_to_screen_y(y),
                     text: format_value(y),
-                    anchor: bevy::sprite::Anchor::CENTER_LEFT,
+                    is_y_axis: true,
                 });
             }
         }
     }
 
-    // Spawn Text2d entities for each label.
+    // Spawn Bevy UI Text nodes positioned absolutely on screen.
     for label in labels {
+        // Skip labels outside visible area.
+        if label.screen_x < 0.0 || label.screen_x > vp.win_w
+            || label.screen_y < 0.0 || label.screen_y > vp.win_h
+        {
+            continue;
+        }
+
+        let justify = if label.is_y_axis {
+            Justify::Left
+        } else {
+            Justify::Center
+        };
+
         commands.spawn((
-            Text2d::new(label.text),
+            Text::new(label.text),
             TextFont {
                 font_size: LABEL_FONT_SIZE,
                 ..default()
             },
             TextColor(color),
-            label.anchor,
-            Transform {
-                translation: Vec3::new(label.world_x, label.world_y, LABEL_Z),
-                scale: Vec3::new(text_scale, text_scale, 1.0),
+            TextLayout::new_with_justify(justify),
+            Node {
+                position_type: PositionType::Absolute,
+                left: Val::Px(label.screen_x),
+                top: Val::Px(label.screen_y),
                 ..default()
             },
             bevy::picking::Pickable::IGNORE,
