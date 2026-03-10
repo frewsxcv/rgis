@@ -556,6 +556,8 @@ fn update_grid_labels(
         }
     }
 
+    tracing::info!("update_grid_labels: {} labels to spawn, win={}x{}", labels.len(), vp.win_w, vp.win_h);
+
     // Spawn Bevy UI Text nodes positioned absolutely on screen.
     for label in labels {
         // Skip labels outside visible area.
@@ -571,6 +573,7 @@ fn update_grid_labels(
             Justify::Center
         };
 
+        tracing::info!("  spawning label at ({}, {}): {}", label.screen_x, label.screen_y, label.text);
         commands.spawn((
             Text::new(label.text),
             TextFont {
