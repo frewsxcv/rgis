@@ -585,6 +585,8 @@ fn update_grid_labels(
                 top: Val::Px(label.screen_y),
                 ..default()
             },
+            ZIndex(i32::MAX),
+            BackgroundColor(Color::srgba(1.0, 0.0, 0.0, 0.5)),
             bevy::picking::Pickable::IGNORE,
             GridLabel,
         ));
