@@ -3287,7 +3287,8 @@ dependencies = [
 [[package]]
 name = "geo-geodesy"
 version = "8.0.0"
-source = "git+https://github.com/frewsxcv/geo-geodesy?branch=fix%2Fprojected-crs-to-degrees#b9c50e1441abe96d85844af414eac2b4d2972167"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "eea53bc39146839cd069e0f7949b2644068f03329758c1dca3be3d00aecbe518"
 dependencies = [
  "crs-definitions",
  "geo",
