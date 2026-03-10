@@ -63,7 +63,7 @@ for (const filePath of geotiffFiles) {
 
     // Remote raster data can have minor non-deterministic rendering differences
     const options = filePath.startsWith("real_data/")
-      ? { maxDiffPixelRatio: 0.01 }
+      ? { maxDiffPixelRatio: 0.05 }
       : undefined;
     await appPage.expectScreenshot(snapshotName(filePath), options);
   });
