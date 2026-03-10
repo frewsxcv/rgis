@@ -641,3 +641,138 @@ fn add_rect(
     indices.push(base + 2);
     indices.push(base + 3);
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // ── nice_degree_interval ────────────────────────────────────────────
+
+    #[test]
+    fn degree_interval_zoomed_out_picks_large_interval() {
+        // ~0.28 deg/px (full world across 1280px)
+        let interval = nice_degree_interval(360.0 / 1280.0, 80.0);
+        assert!(interval >= 15.0, "expected >=15°, got {interval}");
+    }
+
+    #[test]
+    fn degree_interval_zoomed_in_picks_small_interval() {
+        // ~0.001 deg/px (city-level zoom)
+        let interval = nice_degree_interval(0.001, 80.0);
+        assert!(interval <= 1.0, "expected <=1°, got {interval}");
+    }
+
+    #[test]
+    fn degree_interval_returns_value_from_list() {
+        let interval = nice_degree_interval(0.05, 80.0);
+        assert!(
+            DEGREE_INTERVALS.contains(&interval),
+            "interval {interval} not in DEGREE_INTERVALS"
+        );
+    }
+
+    #[test]
+    fn degree_interval_never_below_smallest() {
+        let smallest = *DEGREE_INTERVALS.last().unwrap();
+        let interval = nice_degree_interval(0.0000001, 80.0);
+        assert!(interval >= smallest);
+    }
+
+    // ── nice_interval (1-2-5 generic) ───────────────────────────────────
+
+    #[test]
+    fn nice_interval_picks_round_values() {
+        let interval = nice_interval(1.0, 80.0);
+        // 80 units min spacing → should pick 100
+        assert_eq!(interval, 100.0);
+    }
+
+    #[test]
+    fn nice_interval_scales_with_camera() {
+        let a = nice_interval(1.0, 80.0);
+        let b = nice_interval(10.0, 80.0);
+        assert!(b > a, "larger camera scale should give larger interval");
+    }
+
+    // ── Mercator round-trip ─────────────────────────────────────────────
+
+    #[test]
+    fn lon_x_round_trip() {
+        for lon in [-180.0, -90.0, 0.0, 45.0, 180.0] {
+            let x = lon_to_x(lon);
+            let back = x_to_lon(x);
+            assert!((back - lon).abs() < 1e-4, "lon {lon} -> x {x} -> {back}");
+        }
+    }
+
+    #[test]
+    fn lat_y_round_trip() {
+        for lat in [-85.0, -45.0, 0.0, 45.0, 85.0] {
+            let y = lat_to_y(lat);
+            let back = y_to_lat(y);
+            assert!((back - lat).abs() < 1e-6, "lat {lat} -> y {y} -> {back}");
+        }
+    }
+
+    #[test]
+    fn equator_maps_to_near_zero() {
+        assert!(lat_to_y(0.0).abs() < 1e-6);
+        assert!(lon_to_x(0.0).abs() < 1e-6);
+    }
+
+    #[test]
+    fn mercator_y_increases_with_latitude() {
+        assert!(lat_to_y(45.0) > lat_to_y(0.0));
+        assert!(lat_to_y(0.0) > lat_to_y(-45.0));
+    }
+
+    // ── format_degree ───────────────────────────────────────────────────
+
+    #[test]
+    fn format_degree_zero_latitude() {
+        let s = format_degree(0.0, true);
+        assert_eq!(s, "0\u{00b0} N");
+    }
+
+    #[test]
+    fn format_degree_zero_longitude() {
+        let s = format_degree(0.0, false);
+        assert_eq!(s, "0\u{00b0} E");
+    }
+
+    #[test]
+    fn format_degree_negative_latitude() {
+        let s = format_degree(-45.0, true);
+        assert!(s.ends_with("S"), "expected S suffix, got {s}");
+        assert!(s.contains("45"), "expected 45 in {s}");
+    }
+
+    #[test]
+    fn format_degree_with_minutes() {
+        let s = format_degree(45.5, true);
+        assert!(s.contains("30\u{2032}"), "expected 30′ in {s}");
+    }
+
+    #[test]
+    fn format_degree_west_longitude() {
+        let s = format_degree(-90.0, false);
+        assert!(s.ends_with("W"), "expected W suffix, got {s}");
+    }
+
+    // ── format_value ────────────────────────────────────────────────────
+
+    #[test]
+    fn format_value_large() {
+        assert_eq!(format_value(1_500_000.0), "1500000");
+    }
+
+    #[test]
+    fn format_value_medium() {
+        assert_eq!(format_value(123.4), "123.4");
+    }
+
+    #[test]
+    fn format_value_small() {
+        assert_eq!(format_value(0.0012), "0.0012");
+    }
+}
