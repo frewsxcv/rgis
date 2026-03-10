@@ -23,6 +23,7 @@ fn load_grid_font(mut commands: Commands, asset_server: Res<AssetServer>) {
 /// Degree-friendly intervals sorted largest → smallest.
 /// Whole degrees, then arc-minutes, then arc-seconds.
 const DEGREE_INTERVALS: &[f32] = &[
+    180.0,
     90.0,
     45.0,
     30.0,
