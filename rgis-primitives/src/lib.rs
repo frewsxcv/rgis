@@ -127,3 +127,79 @@ impl Crs {
         parse_bbox_from_wkt(def.wkt)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parse_bbox_web_mercator() {
+        let wkt = r#"PROJCRS["WGS 84 / Pseudo-Mercator",USAGE[BBOX[-85.06,-180,85.06,180]],ID["EPSG",3857]]"#;
+        let area = parse_bbox_from_wkt(wkt).unwrap();
+        assert_eq!(area, AreaOfUse {
+            lat_south: -85.06,
+            lon_west: -180.0,
+            lat_north: 85.06,
+            lon_east: 180.0,
+        });
+    }
+
+    #[test]
+    fn parse_bbox_regional() {
+        let wkt = r#"PROJCRS["Anguilla",USAGE[BBOX[18.11,-63.22,18.33,-62.92]],ID["EPSG",2000]]"#;
+        let area = parse_bbox_from_wkt(wkt).unwrap();
+        assert_eq!(area, AreaOfUse {
+            lat_south: 18.11,
+            lon_west: -63.22,
+            lat_north: 18.33,
+            lon_east: -62.92,
+        });
+    }
+
+    #[test]
+    fn parse_bbox_missing() {
+        assert!(parse_bbox_from_wkt(r#"PROJCRS["no bbox here"]"#).is_none());
+    }
+
+    #[test]
+    fn parse_bbox_malformed() {
+        assert!(parse_bbox_from_wkt("BBOX[1,2,three,4]").is_none());
+        assert!(parse_bbox_from_wkt("BBOX[1,2]").is_none());
+    }
+
+    #[test]
+    fn area_of_use_epsg_3857() {
+        let crs = Crs {
+            epsg_code: Some(3857),
+            proj_string: None,
+            op_handle: geodesy::ctx::OpHandle::default(),
+        };
+        let area = crs.area_of_use().unwrap();
+        assert_eq!(area.lat_south, -85.06);
+        assert_eq!(area.lat_north, 85.06);
+        assert_eq!(area.lon_west, -180.0);
+        assert_eq!(area.lon_east, 180.0);
+    }
+
+    #[test]
+    fn area_of_use_epsg_4326() {
+        let crs = Crs {
+            epsg_code: Some(4326),
+            proj_string: None,
+            op_handle: geodesy::ctx::OpHandle::default(),
+        };
+        let area = crs.area_of_use().unwrap();
+        assert_eq!(area.lat_south, -90.0);
+        assert_eq!(area.lat_north, 90.0);
+    }
+
+    #[test]
+    fn area_of_use_no_epsg_code() {
+        let crs = Crs {
+            epsg_code: None,
+            proj_string: Some("+proj=merc".into()),
+            op_handle: geodesy::ctx::OpHandle::default(),
+        };
+        assert!(crs.area_of_use().is_none());
+    }
+}
