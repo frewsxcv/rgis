@@ -691,6 +691,28 @@ fn apply_deferred_settings(
     settings_to_apply.toggle_dark_mode = false;
 }
 
+fn setup_egui_fonts(mut bevy_egui_ctx: EguiContexts) -> Result {
+    let bevy_egui_ctx_mut = bevy_egui_ctx.ctx_mut()?;
+    let roboto_data = include_bytes!("../../rgis/assets/fonts/Roboto-VariableFont_wdth_wght.ttf");
+    let mut fonts = egui::FontDefinitions::default();
+    fonts.font_data.insert(
+        "Roboto".to_owned(),
+        egui::FontData::from_static(roboto_data).into(),
+    );
+    fonts
+        .families
+        .entry(egui::FontFamily::Proportional)
+        .or_default()
+        .insert(0, "Roboto".to_owned());
+    fonts
+        .families
+        .entry(egui::FontFamily::Monospace)
+        .or_default()
+        .insert(0, "Roboto".to_owned());
+    bevy_egui_ctx_mut.set_fonts(fonts);
+    Ok(())
+}
+
 /// Synchronizes the egui theme and clear color when `RgisSettings` changes.
 /// Thanks to the deferred-mutation pattern in `render_top` / `apply_deferred_settings`,
 /// `RgisSettings` is only marked as changed when a setting is actually toggled,
@@ -875,7 +897,7 @@ pub fn configure(app: &mut App) {
 
     app.add_systems(
         PostStartup,
-        (bevy_egui::setup_primary_egui_context_system, sync_egui_theme).chain(),
+        (bevy_egui::setup_primary_egui_context_system, setup_egui_fonts, sync_egui_theme).chain(),
     );
 
     app.configure_sets(
