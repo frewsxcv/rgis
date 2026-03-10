@@ -14,7 +14,7 @@ impl bevy::app::Plugin for Plugin {
 }
 
 fn load_grid_font(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let font = asset_server.load("fonts/RobotoMono-VariableFont_wght.ttf");
+    let font = asset_server.load("fonts/RobotoCondensed-VariableFont_wght.ttf");
     commands.insert_resource(GridFont(font));
 }
 
