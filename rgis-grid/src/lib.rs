@@ -13,9 +13,8 @@ impl bevy::app::Plugin for Plugin {
     }
 }
 
-fn load_grid_font(mut commands: Commands, mut fonts: ResMut<Assets<Font>>) {
-    let font_data = include_bytes!("../../rgis/assets/fonts/RobotoMono-VariableFont_wght.ttf");
-    let font = fonts.add(Font::try_from_bytes(font_data.to_vec()).expect("Failed to load embedded font"));
+fn load_grid_font(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let font = asset_server.load("fonts/RobotoMono-VariableFont_wght.ttf");
     commands.insert_resource(GridFont(font));
 }
 
