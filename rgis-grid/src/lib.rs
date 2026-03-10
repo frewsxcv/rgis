@@ -432,6 +432,11 @@ fn update_grid_labels(
     bottom_panel_height: Res<rgis_units::BottomPanelHeight>,
     mut last_state: Local<LastCameraState>,
 ) {
+    // Wait for the font to be available before spawning labels.
+    let Some(ref font_res) = grid_font else {
+        return;
+    };
+
     let Ok(transform) = camera_query.single() else {
         return;
     };
@@ -443,6 +448,7 @@ fn update_grid_labels(
     if transform.translation == last_state.translation
         && transform.scale == last_state.scale
         && window_size == last_state.window_size
+        && !label_query.is_empty()
     {
         return;
     }
@@ -604,7 +610,7 @@ fn update_grid_labels(
         commands.spawn((
             Text::new(label.text),
             TextFont {
-                font: grid_font.as_ref().map(|f| f.0.clone()).unwrap_or_default(),
+                font: font_res.0.clone(),
                 font_size: LABEL_FONT_SIZE,
                 ..default()
             },
