@@ -86,9 +86,9 @@ export class AppPage {
     await this.waitForNextFrame();
   }
 
-  async expectScreenshot(name: string, options?: { maxDiffPixelRatio?: number }) {
+  async expectScreenshot(name: string) {
     await this.stabilizeForScreenshot();
-    await expect(this.page).toHaveScreenshot(name, options);
+    await expect(this.page).toHaveScreenshot(name);
   }
 
   async clickOnCanvas(xFrac: number, yFrac: number) {
