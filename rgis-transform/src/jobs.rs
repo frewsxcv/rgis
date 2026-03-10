@@ -83,8 +83,13 @@ impl bevy_jobs::Job for ReprojectRasterExtentJob {
                         .is_ok();
 
                 if fwd_ok {
-                    let x = coord[0].0[0].to_degrees();
-                    let y = coord[0].0[1].to_degrees();
+                    let (x, y) = if self.target_crs.is_geographic() {
+                        // Geographic CRS: geodesy outputs radians, convert to degrees
+                        (coord[0].0[0].to_degrees(), coord[0].0[1].to_degrees())
+                    } else {
+                        // Projected CRS: geodesy outputs linear units (e.g. metres)
+                        (coord[0].0[0], coord[0].0[1])
+                    };
                     if x.is_finite() && y.is_finite() {
                         positions.push([x as f32, y as f32]);
                         valid.push(true);

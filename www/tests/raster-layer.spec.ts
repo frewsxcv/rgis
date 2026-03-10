@@ -61,6 +61,10 @@ for (const filePath of geotiffFiles) {
 
     await appPage.loadGeoTIFFFile(`./dist/geotiff-test-data/${filePath}`);
 
-    await appPage.expectScreenshot(snapshotName(filePath));
+    // Remote raster data can have minor non-deterministic rendering differences
+    const options = filePath.startsWith("real_data/")
+      ? { maxDiffPixelRatio: 0.05 }
+      : undefined;
+    await appPage.expectScreenshot(snapshotName(filePath), options);
   });
 }

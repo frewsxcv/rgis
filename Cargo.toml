@@ -50,6 +50,8 @@ bevy = { version = "0.18", default-features = false, features = [
     "bevy_sprite_render",
     "bevy_ui",
     "bevy_picking",
+    "bevy_text",
+    "default_font",
     "wayland",
     "png",
 ] }

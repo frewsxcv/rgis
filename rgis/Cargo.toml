@@ -11,6 +11,7 @@ workspace = true
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
+bevy = { workspace = true }
 bevy_jobs = { workspace = true }
 geo = { workspace = true }
 rgis-camera = { path = "../rgis-camera" }
@@ -29,7 +30,6 @@ rgis-ui-messages = { path = "../rgis-ui-messages" }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 rgis-cli = { path = "../rgis-cli" }
-bevy = { workspace = true }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 js-sys = { workspace = true }

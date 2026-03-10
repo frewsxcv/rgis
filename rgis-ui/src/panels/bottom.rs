@@ -26,6 +26,7 @@ pub fn projected_to_latlng(
         &*geodesy_ctx_inner,
         target_crs.0.op_handle,
         wgs84_op_handle.0,
+        true, // WGS84 is geographic
     )
     .ok()?;
 

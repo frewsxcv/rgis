@@ -8,3 +8,7 @@ workspace = true
 
 [dependencies]
 bevy = { workspace = true }
+crs-definitions = { workspace = true }
+rgis-crs = { path = "../rgis-crs" }
+rgis-units = { path = "../rgis-units" }
+tracing = { workspace = true }
