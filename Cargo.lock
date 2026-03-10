@@ -5691,9 +5691,9 @@ name = "rgis-grid"
 version = "0.1.0"
 dependencies = [
  "bevy",
- "bevy_egui",
  "crs-definitions",
  "rgis-crs",
+ "rgis-units",
  "tracing",
 ]
 

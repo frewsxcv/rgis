@@ -1,13 +1,11 @@
 use bevy::prelude::*;
-use bevy_egui::{egui, EguiContexts, EguiPrimaryContextPass};
 
 pub struct Plugin;
 
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_grid);
-        app.add_systems(PostUpdate, update_grid);
-        app.add_systems(EguiPrimaryContextPass, render_grid_labels);
+        app.add_systems(PostUpdate, (update_grid, update_grid_labels).chain());
     }
 }
 
@@ -130,7 +128,6 @@ fn classify_crs(target_crs: &rgis_crs::TargetCrs) -> CrsKind {
 // ── Label formatting ────────────────────────────────────────────────────────
 
 /// Format a degree value with N/S or E/W suffix.
-/// Uses decimal degrees when the value is small enough that DMS would be confusing.
 fn format_degree(value: f64, is_latitude: bool) -> String {
     let suffix = if is_latitude {
         if value >= 0.0 { "N" } else { "S" }
@@ -169,8 +166,9 @@ fn format_value(value: f32) -> String {
 
 const MIN_LINE_SPACING_PX: f32 = 80.0;
 const GRID_Z: f32 = -0.01;
+const LABEL_Z: f32 = -0.005;
 const LABEL_FONT_SIZE: f32 = 11.0;
-const LABEL_MARGIN_PX: f32 = 4.0;
+const LABEL_MARGIN_PX: f32 = 8.0;
 
 // ── Grid colour ──────────────────────────────────────────────────────────────
 
@@ -184,13 +182,13 @@ fn grid_color(clear_color: &ClearColor) -> Color {
     }
 }
 
-fn label_egui_color(clear_color: &ClearColor) -> egui::Color32 {
+fn label_color(clear_color: &ClearColor) -> Color {
     let bg = clear_color.0.to_srgba();
     let luminance = 0.299 * bg.red + 0.587 * bg.green + 0.114 * bg.blue;
     if luminance < 0.5 {
-        egui::Color32::from_rgba_unmultiplied(255, 255, 255, 90)
+        Color::srgba(1.0, 1.0, 1.0, 0.35)
     } else {
-        egui::Color32::from_rgba_unmultiplied(0, 0, 0, 115)
+        Color::srgba(0.0, 0.0, 0.0, 0.45)
     }
 }
 
@@ -198,6 +196,9 @@ fn label_egui_color(clear_color: &ClearColor) -> egui::Color32 {
 
 #[derive(Component)]
 struct Grid;
+
+#[derive(Component)]
+struct GridLabel;
 
 #[derive(Default)]
 struct LastCameraState {
@@ -209,8 +210,6 @@ struct LastCameraState {
 // ── Viewport info shared between grid mesh and label systems ─────────────────
 
 struct ViewportInfo {
-    cam_x: f32,
-    cam_y: f32,
     camera_scale: f32,
     win_w: f32,
     win_h: f32,
@@ -231,15 +230,13 @@ fn get_viewport_info(
         return None;
     };
     let camera_scale = transform.scale.x;
-    let cam_x = transform.translation.x;
-    let cam_y = transform.translation.y;
     let win_w = window.width();
     let win_h = window.height();
     let half_w = win_w * camera_scale * 0.5;
     let half_h = win_h * camera_scale * 0.5;
+    let cam_x = transform.translation.x;
+    let cam_y = transform.translation.y;
     Some(ViewportInfo {
-        cam_x,
-        cam_y,
         camera_scale,
         win_w,
         win_h,
@@ -405,10 +402,19 @@ fn update_grid(
     }
 }
 
-// ── Egui label rendering ────────────────────────────────────────────────────
+// ── Text2d label rendering ──────────────────────────────────────────────────
 
-fn render_grid_labels(
-    mut egui_ctx: EguiContexts,
+/// Collected label data: world position + text + anchor.
+struct LabelSpec {
+    world_x: f32,
+    world_y: f32,
+    text: String,
+    anchor: bevy::sprite::Anchor,
+}
+
+fn update_grid_labels(
+    mut commands: Commands,
+    label_query: Query<Entity, With<GridLabel>>,
     camera_query: Query<&Transform, With<Camera>>,
     windows: Query<&Window, With<bevy::window::PrimaryWindow>>,
     clear_color: Res<ClearColor>,
@@ -416,36 +422,30 @@ fn render_grid_labels(
     side_panel_width: Res<rgis_units::SidePanelWidth>,
     bottom_panel_height: Res<rgis_units::BottomPanelHeight>,
 ) {
+    // Despawn all previous labels.
+    for entity in label_query.iter() {
+        commands.entity(entity).despawn();
+    }
+
     let Some(vp) = get_viewport_info(&camera_query, &windows) else {
         return;
     };
 
-    let Ok(egui_ctx) = egui_ctx.ctx_mut() else {
-        return;
-    };
+    let color = label_color(&clear_color);
+    let text_scale = vp.camera_scale;
 
-    let color = label_egui_color(&clear_color);
-    let font_id = egui::FontId::proportional(LABEL_FONT_SIZE);
-
-    // Convert world coordinates to egui screen coordinates.
-    // Egui: (0,0) at top-left, Y increases downward.
-    let world_to_screen_x = |wx: f32| -> f32 {
-        (wx - vp.cam_x) / vp.camera_scale + vp.win_w / 2.0
-    };
-    let world_to_screen_y = |wy: f32| -> f32 {
-        vp.win_h / 2.0 - (wy - vp.cam_y) / vp.camera_scale
-    };
-
-    // Place longitude labels near the bottom, latitude labels just right of the side panel.
-    let label_screen_y = vp.win_h - bottom_panel_height.0 - LABEL_MARGIN_PX - 20.0;
-    let label_screen_x = side_panel_width.0 + LABEL_MARGIN_PX + 4.0;
-
-    let painter = egui_ctx.layer_painter(egui::LayerId::background());
+    // Compute world positions for label edges (offset from viewport edges).
+    let bottom_margin_world = (bottom_panel_height.0 + LABEL_MARGIN_PX + 16.0) * vp.camera_scale;
+    let left_margin_world = (side_panel_width.0 + LABEL_MARGIN_PX + 4.0) * vp.camera_scale;
+    let label_world_y = vp.world_bottom + bottom_margin_world;
+    let label_world_x = vp.world_left + left_margin_world;
 
     let crs_kind = target_crs
         .as_ref()
         .map(|crs| classify_crs(crs))
         .unwrap_or(CrsKind::Other);
+
+    let mut labels: Vec<LabelSpec> = Vec::new();
 
     match crs_kind {
         CrsKind::Geographic => {
@@ -458,30 +458,24 @@ fn render_grid_labels(
             let last_lon = (vp.world_right / lon_interval).ceil() as i64;
             for i in first_lon..=last_lon {
                 let x = i as f32 * lon_interval;
-                let sx = world_to_screen_x(x);
-                let text = format_degree(x as f64, false);
-                painter.text(
-                    egui::pos2(sx, label_screen_y),
-                    egui::Align2::CENTER_BOTTOM,
-                    text,
-                    font_id.clone(),
-                    color,
-                );
+                labels.push(LabelSpec {
+                    world_x: x,
+                    world_y: label_world_y,
+                    text: format_degree(x as f64, false),
+                    anchor: bevy::sprite::Anchor::BOTTOM_CENTER,
+                });
             }
 
             let first_lat = (vp.world_bottom / lat_interval).floor() as i64;
             let last_lat = (vp.world_top / lat_interval).ceil() as i64;
             for i in first_lat..=last_lat {
                 let y = i as f32 * lat_interval;
-                let sy = world_to_screen_y(y);
-                let text = format_degree(y as f64, true);
-                painter.text(
-                    egui::pos2(label_screen_x, sy),
-                    egui::Align2::LEFT_CENTER,
-                    text,
-                    font_id.clone(),
-                    color,
-                );
+                labels.push(LabelSpec {
+                    world_x: label_world_x,
+                    world_y: y,
+                    text: format_degree(y as f64, true),
+                    anchor: bevy::sprite::Anchor::CENTER_LEFT,
+                });
             }
         }
 
@@ -491,52 +485,23 @@ fn render_grid_labels(
             let lat_bottom = y_to_lat(vp.world_bottom);
             let lat_top = y_to_lat(vp.world_top);
 
-            tracing::debug!(
-                cam_x = vp.cam_x,
-                cam_y = vp.cam_y,
-                camera_scale = vp.camera_scale,
-                win_w = vp.win_w,
-                win_h = vp.win_h,
-                world_left = vp.world_left,
-                world_right = vp.world_right,
-                world_bottom = vp.world_bottom,
-                world_top = vp.world_top,
-                lon_left = lon_left,
-                lon_right = lon_right,
-                lat_bottom = lat_bottom,
-                lat_top = lat_top,
-                "grid label viewport"
-            );
-
             let deg_per_px_lon = (lon_right - lon_left) as f32 / vp.win_w;
             let deg_per_px_lat = (lat_top - lat_bottom) as f32 / vp.win_h;
 
             let lon_interval = nice_degree_interval(deg_per_px_lon, MIN_LINE_SPACING_PX);
             let lat_interval = nice_degree_interval(deg_per_px_lat, MIN_LINE_SPACING_PX);
 
-            tracing::debug!(
-                deg_per_px_lon = deg_per_px_lon,
-                deg_per_px_lat = deg_per_px_lat,
-                lon_interval = lon_interval,
-                lat_interval = lat_interval,
-                "grid label intervals"
-            );
-
             let first_lon = (lon_left / lon_interval as f64).floor() as i64;
             let last_lon = (lon_right / lon_interval as f64).ceil() as i64;
             for i in first_lon..=last_lon {
                 let lon = i as f64 * lon_interval as f64;
                 let x = lon_to_x(lon);
-                let sx = world_to_screen_x(x);
-                let text = format_degree(lon, false);
-                tracing::debug!(i = i, lon = lon, x = x, sx = sx, text = %text, "lon label");
-                painter.text(
-                    egui::pos2(sx, label_screen_y),
-                    egui::Align2::CENTER_BOTTOM,
-                    text,
-                    font_id.clone(),
-                    color,
-                );
+                labels.push(LabelSpec {
+                    world_x: x,
+                    world_y: label_world_y,
+                    text: format_degree(lon, false),
+                    anchor: bevy::sprite::Anchor::BOTTOM_CENTER,
+                });
             }
 
             let first_lat = (lat_bottom / lat_interval as f64).floor() as i64;
@@ -547,15 +512,12 @@ fn render_grid_labels(
                     continue;
                 }
                 let y = lat_to_y(lat);
-                let sy = world_to_screen_y(y);
-                let text = format_degree(lat, true);
-                painter.text(
-                    egui::pos2(label_screen_x, sy),
-                    egui::Align2::LEFT_CENTER,
-                    text,
-                    font_id.clone(),
-                    color,
-                );
+                labels.push(LabelSpec {
+                    world_x: label_world_x,
+                    world_y: y,
+                    text: format_degree(lat, true),
+                    anchor: bevy::sprite::Anchor::CENTER_LEFT,
+                });
             }
         }
 
@@ -566,32 +528,46 @@ fn render_grid_labels(
             let last_x = (vp.world_right / interval).ceil() as i64;
             for i in first_x..=last_x {
                 let x = i as f32 * interval;
-                let sx = world_to_screen_x(x);
-                let text = format_value(x);
-                painter.text(
-                    egui::pos2(sx, label_screen_y),
-                    egui::Align2::CENTER_BOTTOM,
-                    text,
-                    font_id.clone(),
-                    color,
-                );
+                labels.push(LabelSpec {
+                    world_x: x,
+                    world_y: label_world_y,
+                    text: format_value(x),
+                    anchor: bevy::sprite::Anchor::BOTTOM_CENTER,
+                });
             }
 
             let first_y = (vp.world_bottom / interval).floor() as i64;
             let last_y = (vp.world_top / interval).ceil() as i64;
             for i in first_y..=last_y {
                 let y = i as f32 * interval;
-                let sy = world_to_screen_y(y);
-                let text = format_value(y);
-                painter.text(
-                    egui::pos2(label_screen_x, sy),
-                    egui::Align2::LEFT_CENTER,
-                    text,
-                    font_id.clone(),
-                    color,
-                );
+                labels.push(LabelSpec {
+                    world_x: label_world_x,
+                    world_y: y,
+                    text: format_value(y),
+                    anchor: bevy::sprite::Anchor::CENTER_LEFT,
+                });
             }
         }
+    }
+
+    // Spawn Text2d entities for each label.
+    for label in labels {
+        commands.spawn((
+            Text2d::new(label.text),
+            TextFont {
+                font_size: LABEL_FONT_SIZE,
+                ..default()
+            },
+            TextColor(color),
+            label.anchor,
+            Transform {
+                translation: Vec3::new(label.world_x, label.world_y, LABEL_Z),
+                scale: Vec3::new(text_scale, text_scale, 1.0),
+                ..default()
+            },
+            bevy::picking::Pickable::IGNORE,
+            GridLabel,
+        ));
     }
 }
 
