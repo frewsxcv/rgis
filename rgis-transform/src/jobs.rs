@@ -42,10 +42,20 @@ impl bevy_jobs::Job for ReprojectRasterExtentJob {
         // values from stretching the projected extent.
         if source_is_geographic {
             if let Some(area) = self.target_crs.area_of_use() {
-                min.x = min.x.max(area.lon_west);
-                min.y = min.y.max(area.lat_south);
-                max.x = max.x.min(area.lon_east);
-                max.y = max.y.min(area.lat_north);
+                let clamped_min_x = min.x.max(area.lon_west);
+                let clamped_min_y = min.y.max(area.lat_south);
+                let clamped_max_x = max.x.min(area.lon_east);
+                let clamped_max_y = max.y.min(area.lat_north);
+                // Only apply clamping if the extent still has positive area.
+                // An inverted extent (min > max) means the source is entirely
+                // outside the target CRS's valid area — e.g. projected meter
+                // coordinates mistakenly treated as degrees — so skip clamping.
+                if clamped_min_x <= clamped_max_x && clamped_min_y <= clamped_max_y {
+                    min.x = clamped_min_x;
+                    min.y = clamped_min_y;
+                    max.x = clamped_max_x;
+                    max.y = clamped_max_y;
+                }
             }
         }
 
@@ -208,16 +218,29 @@ impl bevy_jobs::Job for ReprojectGeometryJob {
         // (e.g. Mercator Y → ∞ at the poles) from producing extreme values.
         if self.source_crs.is_geographic() {
             if let Some(area) = self.target_crs.area_of_use() {
-                for feature in &mut feature_collection.features {
-                    if let Some(ref mut geom) = feature.geometry {
-                        *geom = geom.map_coords(|coord| geo::Coord {
-                            x: geo_projected::UnprojectedScalar::new(
-                                coord.x.0.clamp(area.lon_west, area.lon_east),
-                            ),
-                            y: geo_projected::UnprojectedScalar::new(
-                                coord.y.0.clamp(area.lat_south, area.lat_north),
-                            ),
-                        });
+                // Only clamp if the bounding rect is within the area of use.
+                // If all coordinates fall outside (e.g. projected meter coords
+                // mistakenly tagged as geographic), clamping would collapse the
+                // geometry to a degenerate line or point.
+                let bbox = feature_collection.bounding_rect();
+                let within_area = bbox.map_or(true, |r| {
+                    r.min().x.0 <= area.lon_east
+                        && r.max().x.0 >= area.lon_west
+                        && r.min().y.0 <= area.lat_north
+                        && r.max().y.0 >= area.lat_south
+                });
+                if within_area {
+                    for feature in &mut feature_collection.features {
+                        if let Some(ref mut geom) = feature.geometry {
+                            *geom = geom.map_coords(|coord| geo::Coord {
+                                x: geo_projected::UnprojectedScalar::new(
+                                    coord.x.0.clamp(area.lon_west, area.lon_east),
+                                ),
+                                y: geo_projected::UnprojectedScalar::new(
+                                    coord.y.0.clamp(area.lat_south, area.lat_north),
+                                ),
+                            });
+                        }
                     }
                 }
             }
