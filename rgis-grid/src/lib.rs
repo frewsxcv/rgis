@@ -2,11 +2,21 @@ use bevy::prelude::*;
 
 pub struct Plugin;
 
+#[derive(Resource)]
+struct GridFont(Handle<Font>);
+
 impl bevy::app::Plugin for Plugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_grid);
-        app.add_systems(PostUpdate, (update_grid, update_grid_labels).chain());
+        app.add_systems(Startup, (spawn_grid, load_grid_font));
+        app.add_systems(PostUpdate, update_grid);
+        app.add_systems(Update, update_grid_labels);
     }
+}
+
+fn load_grid_font(mut commands: Commands, mut fonts: ResMut<Assets<Font>>) {
+    let font_data = include_bytes!("../../rgis/assets/fonts/RobotoCondensed-VariableFont_wght.ttf");
+    let font = fonts.add(Font::try_from_bytes(font_data.to_vec()).expect("Failed to load grid font"));
+    commands.insert_resource(GridFont(font));
 }
 
 // ── Degree-friendly intervals ────────────────────────────────────────────────
@@ -14,6 +24,7 @@ impl bevy::app::Plugin for Plugin {
 /// Degree-friendly intervals sorted largest → smallest.
 /// Whole degrees, then arc-minutes, then arc-seconds.
 const DEGREE_INTERVALS: &[f32] = &[
+    180.0,
     90.0,
     45.0,
     30.0,
@@ -141,11 +152,11 @@ fn format_degree(value: f64, is_latitude: bool) -> String {
     let sec = (rem - min as f64) * 60.0;
 
     if deg == 0 && min == 0 && sec.abs() > 0.01 {
-        format!("{sec:.0}\" {suffix}")
+        format!("{sec:.0}\u{2033} {suffix}")
     } else if sec.abs() > 0.01 {
-        format!("{deg}\u{00b0} {min}' {sec:.0}\" {suffix}")
+        format!("{deg}\u{00b0}{min}\u{2032}{sec:.0}\u{2033} {suffix}")
     } else if min > 0 {
-        format!("{deg}\u{00b0} {min}' {suffix}")
+        format!("{deg}\u{00b0}{min}\u{2032} {suffix}")
     } else {
         format!("{deg}\u{00b0} {suffix}")
     }
@@ -166,7 +177,6 @@ fn format_value(value: f32) -> String {
 
 const MIN_LINE_SPACING_PX: f32 = 80.0;
 const GRID_Z: f32 = -0.01;
-const LABEL_Z: f32 = -0.005;
 const LABEL_FONT_SIZE: f32 = 11.0;
 const LABEL_MARGIN_PX: f32 = 8.0;
 
@@ -352,15 +362,21 @@ fn update_grid(
             let lat_top = y_to_lat(vp.world_top);
 
             let deg_per_px_lon = (lon_right - lon_left) as f32 / vp.win_w;
-            let deg_per_px_lat = (lat_top - lat_bottom) as f32 / vp.win_h;
 
-            let lon_interval = nice_degree_interval(deg_per_px_lon, MIN_LINE_SPACING_PX);
-            let lat_interval = nice_degree_interval(deg_per_px_lat, MIN_LINE_SPACING_PX);
+            // Use the same degree interval for both axes. Mercator's non-linear
+            // y-axis makes per-pixel latitude density meaningless, and geographic
+            // grids conventionally use uniform degree spacing.
+            let interval = nice_degree_interval(deg_per_px_lon, MIN_LINE_SPACING_PX);
+            let lon_interval = interval;
+            let lat_interval = interval;
 
             let first_lon = (lon_left / lon_interval as f64).floor() as i64;
             let last_lon = (lon_right / lon_interval as f64).ceil() as i64;
             for i in first_lon..=last_lon {
                 let lon = i as f64 * lon_interval as f64;
+                if lon.abs() > 180.0 {
+                    continue;
+                }
                 let x = lon_to_x(lon);
                 add_rect(&mut positions, &mut indices, x, center_y, thickness, height);
             }
@@ -402,7 +418,9 @@ fn update_grid(
     }
 }
 
-// ── Text2d label rendering ──────────────────────────────────────────────────
+// ── Grid label rendering (world-space Text2d) ──────────────────────────────
+
+const LABEL_Z: f32 = -0.005;
 
 /// Collected label data: world position + text + anchor.
 struct LabelSpec {
@@ -419,9 +437,36 @@ fn update_grid_labels(
     windows: Query<&Window, With<bevy::window::PrimaryWindow>>,
     clear_color: Res<ClearColor>,
     target_crs: Option<Res<rgis_crs::TargetCrs>>,
+    grid_font: Option<Res<GridFont>>,
     side_panel_width: Res<rgis_units::SidePanelWidth>,
     bottom_panel_height: Res<rgis_units::BottomPanelHeight>,
+    mut last_state: Local<LastCameraState>,
 ) {
+    // Wait for the font to be available before spawning labels.
+    let Some(ref font_res) = grid_font else {
+        return;
+    };
+
+    let Ok(transform) = camera_query.single() else {
+        return;
+    };
+    let Ok(window) = windows.single() else {
+        return;
+    };
+
+    let window_size = Vec2::new(window.width(), window.height());
+    if transform.translation == last_state.translation
+        && transform.scale == last_state.scale
+        && window_size == last_state.window_size
+        && !label_query.is_empty()
+    {
+        return;
+    }
+
+    last_state.translation = transform.translation;
+    last_state.scale = transform.scale;
+    last_state.window_size = window_size;
+
     // Despawn all previous labels.
     for entity in label_query.iter() {
         commands.entity(entity).despawn();
@@ -486,15 +531,18 @@ fn update_grid_labels(
             let lat_top = y_to_lat(vp.world_top);
 
             let deg_per_px_lon = (lon_right - lon_left) as f32 / vp.win_w;
-            let deg_per_px_lat = (lat_top - lat_bottom) as f32 / vp.win_h;
 
-            let lon_interval = nice_degree_interval(deg_per_px_lon, MIN_LINE_SPACING_PX);
-            let lat_interval = nice_degree_interval(deg_per_px_lat, MIN_LINE_SPACING_PX);
+            let interval = nice_degree_interval(deg_per_px_lon, MIN_LINE_SPACING_PX);
+            let lon_interval = interval;
+            let lat_interval = interval;
 
             let first_lon = (lon_left / lon_interval as f64).floor() as i64;
             let last_lon = (lon_right / lon_interval as f64).ceil() as i64;
             for i in first_lon..=last_lon {
                 let lon = i as f64 * lon_interval as f64;
+                if lon.abs() > 180.0 {
+                    continue;
+                }
                 let x = lon_to_x(lon);
                 labels.push(LabelSpec {
                     world_x: x,
@@ -555,6 +603,7 @@ fn update_grid_labels(
         commands.spawn((
             Text2d::new(label.text),
             TextFont {
+                font: font_res.0.clone(),
                 font_size: LABEL_FONT_SIZE,
                 ..default()
             },
@@ -592,4 +641,139 @@ fn add_rect(
     indices.push(base);
     indices.push(base + 2);
     indices.push(base + 3);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // ── nice_degree_interval ────────────────────────────────────────────
+
+    #[test]
+    fn degree_interval_zoomed_out_picks_large_interval() {
+        // ~0.28 deg/px (full world across 1280px)
+        let interval = nice_degree_interval(360.0 / 1280.0, 80.0);
+        assert!(interval >= 15.0, "expected >=15°, got {interval}");
+    }
+
+    #[test]
+    fn degree_interval_zoomed_in_picks_small_interval() {
+        // ~0.001 deg/px (city-level zoom)
+        let interval = nice_degree_interval(0.001, 80.0);
+        assert!(interval <= 1.0, "expected <=1°, got {interval}");
+    }
+
+    #[test]
+    fn degree_interval_returns_value_from_list() {
+        let interval = nice_degree_interval(0.05, 80.0);
+        assert!(
+            DEGREE_INTERVALS.contains(&interval),
+            "interval {interval} not in DEGREE_INTERVALS"
+        );
+    }
+
+    #[test]
+    fn degree_interval_never_below_smallest() {
+        let smallest = *DEGREE_INTERVALS.last().unwrap();
+        let interval = nice_degree_interval(0.0000001, 80.0);
+        assert!(interval >= smallest);
+    }
+
+    // ── nice_interval (1-2-5 generic) ───────────────────────────────────
+
+    #[test]
+    fn nice_interval_picks_round_values() {
+        let interval = nice_interval(1.0, 80.0);
+        // 80 units min spacing → should pick 100
+        assert_eq!(interval, 100.0);
+    }
+
+    #[test]
+    fn nice_interval_scales_with_camera() {
+        let a = nice_interval(1.0, 80.0);
+        let b = nice_interval(10.0, 80.0);
+        assert!(b > a, "larger camera scale should give larger interval");
+    }
+
+    // ── Mercator round-trip ─────────────────────────────────────────────
+
+    #[test]
+    fn lon_x_round_trip() {
+        for lon in [-180.0, -90.0, 0.0, 45.0, 180.0] {
+            let x = lon_to_x(lon);
+            let back = x_to_lon(x);
+            assert!((back - lon).abs() < 1e-4, "lon {lon} -> x {x} -> {back}");
+        }
+    }
+
+    #[test]
+    fn lat_y_round_trip() {
+        for lat in [-85.0, -45.0, 0.0, 45.0, 85.0] {
+            let y = lat_to_y(lat);
+            let back = y_to_lat(y);
+            assert!((back - lat).abs() < 1e-6, "lat {lat} -> y {y} -> {back}");
+        }
+    }
+
+    #[test]
+    fn equator_maps_to_near_zero() {
+        assert!(lat_to_y(0.0).abs() < 1e-6);
+        assert!(lon_to_x(0.0).abs() < 1e-6);
+    }
+
+    #[test]
+    fn mercator_y_increases_with_latitude() {
+        assert!(lat_to_y(45.0) > lat_to_y(0.0));
+        assert!(lat_to_y(0.0) > lat_to_y(-45.0));
+    }
+
+    // ── format_degree ───────────────────────────────────────────────────
+
+    #[test]
+    fn format_degree_zero_latitude() {
+        let s = format_degree(0.0, true);
+        assert_eq!(s, "0\u{00b0} N");
+    }
+
+    #[test]
+    fn format_degree_zero_longitude() {
+        let s = format_degree(0.0, false);
+        assert_eq!(s, "0\u{00b0} E");
+    }
+
+    #[test]
+    fn format_degree_negative_latitude() {
+        let s = format_degree(-45.0, true);
+        assert!(s.ends_with("S"), "expected S suffix, got {s}");
+        assert!(s.contains("45"), "expected 45 in {s}");
+    }
+
+    #[test]
+    fn format_degree_with_minutes() {
+        let s = format_degree(45.5, true);
+        assert!(s.contains("30\u{2032}"), "expected 30′ in {s}");
+    }
+
+    #[test]
+    fn format_degree_west_longitude() {
+        let s = format_degree(-90.0, false);
+        assert!(s.ends_with("W"), "expected W suffix, got {s}");
+    }
+
+    // ── format_value ────────────────────────────────────────────────────
+
+    #[test]
+    fn format_value_large() {
+        assert_eq!(format_value(1_500_000.0), "1500000");
+    }
+
+    #[test]
+    fn format_value_medium() {
+        assert_eq!(format_value(123.4), "123.4");
+    }
+
+    #[test]
+    fn format_value_small() {
+        assert_eq!(format_value(0.0012), "0.0012");
+    }
 }
