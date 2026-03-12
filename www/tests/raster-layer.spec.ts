@@ -57,7 +57,11 @@ test("load eox_cloudless with Countries overlay", async ({ appPage }) => {
 
 for (const filePath of geotiffFiles) {
   test(`load GeoTIFF: ${filePath}`, async ({ appPage }) => {
-    test.setTimeout(60000);
+    // GeoTIFF tests involve WASM decoding + GPU reprojection + rendering,
+    // which can be slow on resource-constrained CI runners especially when
+    // retries run in parallel with other tests. Use test.slow() to triple
+    // the default timeout.
+    test.slow();
 
     await appPage.loadGeoTIFFFile(`./dist/geotiff-test-data/${filePath}`);
 
